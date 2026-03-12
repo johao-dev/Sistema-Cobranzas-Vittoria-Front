@@ -1,24 +1,120 @@
-<div class="page-header"><div><div class="page-title">Materiales</div><div class="page-subtitle">Catálogo maestro de materiales de obra.</div></div></div>
+<div class="page-header">
+  <div>
+    <div class="page-title">Materiales</div>
+    <div class="page-subtitle">Catálogo maestro de materiales de obra.</div>
+  </div>
+</div>
+
 <div class="split">
   <section class="panel">
     <div class="panel-title">Listado</div>
-    <div class="filters"><div class="field"><label>Especialidad</label><select [(ngModel)]="filtroEspecialidad" (change)="load()"><option [ngValue]="null">Todas</option><option *ngFor="let e of especialidades" [ngValue]="e.idEspecialidad">{{ e.nombre }}</option></select></div></div>
-    <div *ngIf="!rows.length" class="empty-state">No hay materiales registrados.</div>
-    <div *ngIf="rows.length" class="table-wrap"><table><thead><tr><th>Especialidad</th><th>Código</th><th>Descripción</th><th>Unidad</th><th>Stock mínimo</th><th></th></tr></thead><tbody>
-      <tr *ngFor="let row of rows"><td>{{ row.especialidad }}</td><td>{{ row.codigo || '-' }}</td><td>{{ row.descripcion }}</td><td>{{ row.unidadMedida }}</td><td>{{ row.stockMinimo }}</td><td><button class="btn btn-secondary" (click)="edit(row)">Editar</button></td></tr>
-    </tbody></table></div>
+
+    <div class="filters">
+      <div class="field">
+        <label>Especialidad</label>
+        <select [(ngModel)]="filtroEspecialidad" (change)="load()">
+          <option [ngValue]="null">Todas</option>
+          <option *ngFor="let e of especialidades" [ngValue]="e.idEspecialidad">
+            {{ e.nombre }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <div *ngIf="!rows.length" class="empty-state">
+      No hay materiales registrados.
+    </div>
+
+    <div *ngIf="rows.length" class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Especialidad</th>
+            <th>Código</th>
+            <th>Descripción</th>
+            <th>Unidad</th>
+            <th>Stock mínimo</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows">
+            <td>{{ row.especialidad }}</td>
+            <td>{{ row.codigo || '-' }}</td>
+            <td>{{ row.descripcion }}</td>
+            <td>{{ row.unidadMedida }}</td>
+            <td>{{ row.stockMinimo }}</td>
+            <td>
+              <button class="btn btn-secondary" (click)="edit(row)">Editar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </section>
+
   <section class="panel">
     <div class="panel-title">Formulario</div>
+
     <div class="form-grid two">
-      <div class="field"><label>Especialidad</label><select [(ngModel)]="form.idEspecialidad"><option [ngValue]="null">Seleccionar</option><option *ngFor="let e of especialidades" [ngValue]="e.idEspecialidad">{{ e.nombre }}</option></select></div>
-      <div class="field"><label>Código</label><input [(ngModel)]="form.codigo"></div>
-      <div class="field" style="grid-column:1/-1;"><label>Descripción</label><input [(ngModel)]="form.descripcion"></div>
-      <div class="field"><label>Unidad de medida</label><input [(ngModel)]="form.unidadMedida"></div>
-      <div class="field"><label>Stock mínimo</label><input type="number" [(ngModel)]="form.stockMinimo"></div>
-      <div class="field"><label>Estado</label><select [(ngModel)]="form.activo"><option [ngValue]="true">Activo</option><option [ngValue]="false">Inactivo</option></select></div>
+      <div class="field">
+        <label>Especialidad</label>
+        <select [(ngModel)]="form.idEspecialidad">
+          <option [ngValue]="null">Seleccionar</option>
+          <option *ngFor="let e of especialidades" [ngValue]="e.idEspecialidad">
+            {{ e.nombre }}
+          </option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Código</label>
+        <input [(ngModel)]="form.codigo" />
+      </div>
+
+      <div class="field" style="grid-column: 1 / -1;">
+        <label>Descripción</label>
+        <input [(ngModel)]="form.descripcion" />
+      </div>
+
+      <div class="field">
+        <label>Unidad de medida</label>
+        <select [(ngModel)]="form.unidadMedida">
+          <option value="">Seleccionar</option>
+          <option *ngFor="let u of unidadesMedida" [value]="u.nombre">
+            {{ u.nombre }}
+          </option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Stock mínimo</label>
+        <input type="number" [(ngModel)]="form.stockMinimo" />
+      </div>
+
+      <div class="field">
+        <label>Estado</label>
+        <select [(ngModel)]="form.activo">
+          <option [ngValue]="true">Activo</option>
+          <option [ngValue]="false">Inactivo</option>
+        </select>
+      </div>
     </div>
-    <div class="toolbar" style="margin-top:14px;"><button class="btn btn-primary" (click)="save()" [disabled]="!form.idEspecialidad || !form.descripcion || !form.unidadMedida">Guardar</button><button class="btn btn-ghost" (click)="reset()">Limpiar</button></div>
-    <div *ngIf="msg" class="empty-state" style="margin-top:14px; padding:14px;">{{ msg }}</div>
+
+    <div class="toolbar" style="margin-top: 14px;">
+      <button
+        class="btn btn-primary"
+        (click)="save()"
+        [disabled]="!form.idEspecialidad || !form.descripcion || !form.unidadMedida"
+      >
+        Guardar
+      </button>
+
+      <button class="btn btn-ghost" (click)="reset()">Limpiar</button>
+    </div>
+
+    <div *ngIf="msg" class="empty-state" style="margin-top: 14px; padding: 14px;">
+      {{ msg }}
+    </div>
   </section>
 </div>

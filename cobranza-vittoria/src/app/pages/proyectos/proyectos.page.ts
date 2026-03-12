@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
 import { MaestraService } from '../../core/services/maestra.service';
 
 @Component({
@@ -22,17 +23,24 @@ export class ProyectosPage implements OnInit {
   msg = '';
   saving = false;
 
-  constructor(private maestra: MaestraService) {}
+  constructor(
+    private maestra: MaestraService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.load();
   }
 
-  load(): void {
-    this.maestra.proyectos().subscribe({
-      next: (x) => this.rows = x ?? [],
-      error: () => this.rows = []
-    });
+  async load(): Promise<void> {
+    try {
+      const data = await firstValueFrom(this.maestra.proyectos());
+      this.rows = data ?? [];
+    } catch {
+      this.rows = [];
+    } finally {
+      this.cdr.detectChanges();
+    }
   }
 
   edit(row: any): void {
@@ -43,15 +51,19 @@ export class ProyectosPage implements OnInit {
       activo: row.activo ?? true
     };
     this.msg = '';
+    this.cdr.detectChanges();
   }
 
-  save(): void {
+  async save(): Promise<void> {
     this.msg = '';
 
     if (!this.form.nombreProyecto?.trim()) {
       this.msg = 'Debes ingresar el nombre del proyecto.';
+      this.cdr.detectChanges();
       return;
     }
+
+    const isEdit = !!this.form.idProyecto;
 
     const dto = {
       idProyecto: this.form.idProyecto,
@@ -60,29 +72,42 @@ export class ProyectosPage implements OnInit {
       activo: !!this.form.activo
     };
 
-    this.saving = true;
+    console.log('DTO proyecto =>', dto);
 
-    this.maestra.guardarProyecto(dto).subscribe({
-      next: (res) => {
-        this.saving = false;
-        this.msg = `Proyecto guardado correctamente. ID: ${res?.idProyecto ?? ''}`;
-        this.reset();
-        this.load();
-      },
-      error: (e) => {
-        this.saving = false;
-        this.msg = e?.error?.message || 'No se pudo guardar el proyecto.';
-        console.error('Error guardando proyecto =>', e);
-      }
-    });
+    this.saving = true;
+    this.cdr.detectChanges();
+
+    try {
+      const res = await firstValueFrom(this.maestra.guardarProyecto(dto));
+      console.log('Respuesta proyecto =>', res);
+
+      this.msg = isEdit
+        ? `Proyecto editado correctamente. ID: ${res?.idProyecto ?? this.form.idProyecto ?? ''}`
+        : `Proyecto guardado correctamente. ID: ${res?.idProyecto ?? ''}`;
+
+      this.reset(false);
+      await this.load();
+    } catch (e: any) {
+      console.error('Error guardando proyecto =>', e);
+      this.msg = e?.error?.message || 'No se pudo guardar el proyecto.';
+    } finally {
+      this.saving = false;
+      this.cdr.detectChanges();
+    }
   }
 
-  reset(): void {
+  reset(clearMessage: boolean = false): void {
     this.form = {
       idProyecto: null,
       nombreProyecto: '',
       descripcion: '',
       activo: true
     };
+
+    if (clearMessage) {
+      this.msg = '';
+    }
+
+    this.cdr.detectChanges();
   }
 }

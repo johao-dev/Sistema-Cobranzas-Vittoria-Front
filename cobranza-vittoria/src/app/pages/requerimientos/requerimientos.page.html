@@ -1,45 +1,25 @@
 <div class="page-header">
   <div>
     <div class="page-title">Requerimientos</div>
-    <div class="page-subtitle">Registro de solicitudes de compra desde obra y validación de almacén.</div>
+    <div class="page-subtitle">Registro, edición y envío a orden de compra.</div>
   </div>
 </div>
 
 <div class="page-grid-2">
   <section class="panel">
     <div class="panel-title">Listado</div>
-
-    <div *ngIf="!rows.length" class="empty-state">
-      No hay requerimientos registrados.
-    </div>
-
+    <div *ngIf="!rows.length" class="empty-state">No hay requerimientos registrados.</div>
     <div *ngIf="rows.length" class="table-wrap">
       <table>
-        <thead>
-          <tr>
-            <th>Número</th>
-            <th>Especialidad</th>
-            <th>Proyecto</th>
-            <th>Solicitante</th>
-            <th>Estado</th>
-            <th></th>
-          </tr>
-        </thead>
+        <thead><tr><th>Número</th><th>Especialidad</th><th>Proyecto</th><th>Solicitante</th><th>Estado</th><th></th></tr></thead>
         <tbody>
           <tr *ngFor="let row of rows">
             <td>{{ row.numeroRequerimiento }}</td>
             <td>{{ row.especialidad }}</td>
             <td>{{ row.nombreProyecto }}</td>
             <td>{{ row.solicitante }}</td>
-            <td>
-              <span class="badge badge--pending">{{ row.estado }}</span>
-            </td>
-            <td class="actions">
-              <button class="btn btn-secondary" (click)="view(row)">Ver</button>
-              <button class="btn btn-success" (click)="validar(row.idRequerimiento, 'Conforme')">
-                Validar
-              </button>
-            </td>
+            <td><span class="badge badge--pending">{{ row.estado }}</span></td>
+            <td class="actions"><button class="btn btn-secondary" (click)="view(row)">Ver</button></td>
           </tr>
         </tbody>
       </table>
@@ -47,26 +27,23 @@
 
     <div *ngIf="detalle" class="panel" style="margin-top:18px;">
       <div class="panel-title">Detalle del requerimiento</div>
-
       <div class="toolbar">
         <span class="list-chip">N° {{ detalle.requerimiento?.numeroRequerimiento }}</span>
         <span class="list-chip">{{ detalle.requerimiento?.estado }}</span>
+        <button class="btn btn-primary" *ngIf="puedeEditarDetalle" (click)="editarDesdeDetalle()">Editar</button>
+        <button class="btn btn-success" *ngIf="puedeEnviarOC" (click)="enviarAOC()">Enviar a OC</button>
+        <span class="list-chip" *ngIf="!puedeEditarDetalle && !puedeEnviarOC" style="background:#fee2e2; color:#991b1b;">Bloqueado</span>
       </div>
 
       <div class="table-wrap" *ngIf="detalle.items?.length">
         <table>
-          <thead>
-            <tr>
-              <th>Material</th>
-              <th>Unidad</th>
-              <th>Cantidad</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Material</th><th>Unidad</th><th>Cantidad</th><th>Observación</th></tr></thead>
           <tbody>
             <tr *ngFor="let x of detalle.items">
               <td>{{ x.material }}</td>
               <td>{{ x.unidadMedida }}</td>
               <td>{{ x.cantidad }}</td>
+              <td>{{ x.observacion || '-' }}</td>
             </tr>
           </tbody>
         </table>
@@ -75,112 +52,35 @@
   </section>
 
   <section class="panel">
-    <div class="panel-title">Nuevo requerimiento</div>
-
+    <div class="panel-title">{{ editando ? 'Editar requerimiento' : 'Nuevo requerimiento' }}</div>
     <div class="form-grid two">
-      <div class="field">
-        <label>Número</label>
-        <input [(ngModel)]="form.numeroRequerimiento" />
-      </div>
-
-      <div class="field">
-        <label>Fecha</label>
-        <input type="date" [(ngModel)]="form.fechaRequerimiento" />
-      </div>
-
-      <div class="field">
-        <label>Especialidad</label>
-        <select [(ngModel)]="form.idEspecialidad">
-          <option [ngValue]="null">Seleccionar</option>
-          <option *ngFor="let e of especialidades" [ngValue]="e.idEspecialidad">
-            {{ e.nombre }}
-          </option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label>Proyecto</label>
-        <select [(ngModel)]="form.idProyecto">
-          <option [ngValue]="null">Seleccionar</option>
-          <option *ngFor="let p of proyectos" [ngValue]="p.idProyecto">
-            {{ p.nombreProyecto }}
-          </option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label>Solicitante</label>
-        <select [(ngModel)]="form.idUsuarioSolicitante">
-          <option [ngValue]="null">Seleccionar</option>
-          <option *ngFor="let u of usuarios" [ngValue]="u.idUsuario">
-            {{ u.nombres }} {{ u.apellidos || '' }}
-          </option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label>Fecha entrega</label>
-        <input type="date" [(ngModel)]="form.fechaEntrega" />
-      </div>
-
-      <div class="field" style="grid-column:1/-1;">
-        <label>Descripción</label>
-        <textarea [(ngModel)]="form.descripcion"></textarea>
-      </div>
-
-      <div class="field" style="grid-column:1/-1;">
-        <label>Observación</label>
-        <textarea [(ngModel)]="form.observacion"></textarea>
-      </div>
+      <div class="field"><label>Número</label><input [(ngModel)]="form.numeroRequerimiento" /></div>
+      <div class="field"><label>Fecha</label><input type="date" [(ngModel)]="form.fechaRequerimiento" /></div>
+      <div class="field"><label>Especialidad</label><select [(ngModel)]="form.idEspecialidad"><option [ngValue]="null">Seleccionar</option><option *ngFor="let e of especialidades" [ngValue]="e.idEspecialidad">{{ e.nombre }}</option></select></div>
+      <div class="field"><label>Proyecto</label><select [(ngModel)]="form.idProyecto"><option [ngValue]="null">Seleccionar</option><option *ngFor="let p of proyectos" [ngValue]="p.idProyecto">{{ p.nombreProyecto }}</option></select></div>
+      <div class="field"><label>Solicitante</label><select [(ngModel)]="form.idUsuarioSolicitante"><option [ngValue]="null">Seleccionar</option><option *ngFor="let u of usuarios" [ngValue]="u.idUsuario">{{ u.nombres }} {{ u.apellidos || '' }}</option></select></div>
+      <div class="field"><label>Fecha entrega</label><input type="date" [(ngModel)]="form.fechaEntrega" /></div>
+      <div class="field" style="grid-column:1/-1;"><label>Descripción</label><textarea [(ngModel)]="form.descripcion"></textarea></div>
+      <div class="field" style="grid-column:1/-1;"><label>Observación</label><textarea [(ngModel)]="form.observacion"></textarea></div>
     </div>
 
     <div class="panel" style="margin-top:18px; padding:16px;">
       <div class="panel-title" style="font-size:1rem;">Detalle</div>
-
       <div class="form-grid two">
-        <div class="field">
-          <label>Material</label>
-          <select [(ngModel)]="item.idMaterial">
-            <option [ngValue]="null">Seleccionar</option>
-            <option *ngFor="let m of materiales" [ngValue]="m.idMaterial">
-              {{ m.descripcion }}
-            </option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Cantidad</label>
-          <input type="number" [(ngModel)]="item.cantidad" />
-        </div>
-
-        <div class="field" style="grid-column:1/-1;">
-          <label>Observación item</label>
-          <input [(ngModel)]="item.observacion" />
-        </div>
+        <div class="field"><label>Material</label><select [(ngModel)]="item.idMaterial"><option [ngValue]="null">Seleccionar</option><option *ngFor="let m of materiales" [ngValue]="m.idMaterial">{{ m.descripcion }}</option></select></div>
+        <div class="field"><label>Cantidad</label><input type="number" [(ngModel)]="item.cantidad" /></div>
+        <div class="field" style="grid-column:1/-1;"><label>Observación item</label><input [(ngModel)]="item.observacion" /></div>
       </div>
-
-      <div class="toolbar">
-        <button class="btn btn-secondary" (click)="addItem()">Agregar item</button>
-      </div>
-
+      <div class="toolbar"><button class="btn btn-secondary" (click)="addItem()">Agregar item</button></div>
       <div *ngIf="form.items.length" class="table-wrap">
         <table>
-          <thead>
-            <tr>
-              <th>Material</th>
-              <th>Cantidad</th>
-              <th>Observación</th>
-              <th></th>
-            </tr>
-          </thead>
+          <thead><tr><th>Material</th><th>Cantidad</th><th>Observación</th><th></th></tr></thead>
           <tbody>
             <tr *ngFor="let x of form.items; index as i">
               <td>{{ x.material }}</td>
               <td>{{ x.cantidad }}</td>
               <td>{{ x.observacion || '-' }}</td>
-              <td>
-                <button class="btn btn-danger" (click)="removeItem(i)">Quitar</button>
-              </td>
+              <td><button class="btn btn-danger" (click)="removeItem(i)">Quitar</button></td>
             </tr>
           </tbody>
         </table>
@@ -188,14 +88,10 @@
     </div>
 
     <div class="toolbar" style="margin-top:14px;">
-      <button class="btn btn-primary" (click)="save()" [disabled]="saving">
-        {{ saving ? 'Guardando...' : 'Guardar requerimiento' }}
-      </button>
+      <button class="btn btn-primary" (click)="save()" [disabled]="saving">{{ saving ? 'Guardando...' : (editando ? 'Actualizar requerimiento' : 'Guardar requerimiento') }}</button>
       <button class="btn btn-ghost" (click)="reset()">Limpiar</button>
     </div>
 
-    <div *ngIf="msg" class="success-box">
-      {{ msg }}
-    </div>
+    <div *ngIf="msg" class="success-box">{{ msg }}</div>
   </section>
 </div>

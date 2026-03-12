@@ -1,26 +1,133 @@
-<div class="page-header"><div><div class="page-title">Órdenes de compra</div><div class="page-subtitle">Generación y control de órdenes de compra.</div></div></div>
+<div class="page-header">
+  <div>
+    <div class="page-title">Órdenes de compra</div>
+    <div class="page-subtitle">Bandeja de requerimientos enviados y listado de OCs generadas.</div>
+  </div>
+</div>
+
 <div class="split">
   <section class="panel">
-    <div class="panel-title">Listado</div>
-    <div *ngIf="!rows.length" class="empty-state">No hay órdenes de compra registradas.</div>
-    <div *ngIf="rows.length" class="table-wrap"><table><thead><tr><th>Número</th><th>Requerimiento</th><th>Proveedor</th><th>Proyecto</th><th>Estado</th><th>Total</th><th></th></tr></thead><tbody>
-      <tr *ngFor="let row of rows"><td>{{ row.numeroOrdenCompra }}</td><td>{{ row.numeroRequerimiento }}</td><td>{{ row.proveedor }}</td><td>{{ row.nombreProyecto }}</td><td><span class="badge badge--pending">{{ row.estado }}</span></td><td>{{ row.total }}</td><td><button class="btn btn-secondary" (click)="view(row)">Ver</button></td></tr>
-    </tbody></table></div>
-    <div *ngIf="detalle" class="panel" style="margin-top:18px;"><div class="panel-title">Detalle de orden</div><div class="toolbar"><span class="list-chip">{{ detalle.ordenCompra.numeroOrdenCompra }}</span><span class="list-chip">{{ detalle.ordenCompra.proveedor }}</span><span class="list-chip">Total {{ detalle.ordenCompra.total }}</span></div><div class="table-wrap" *ngIf="detalle.items?.length"><table><thead><tr><th>Material</th><th>Cantidad</th><th>PU</th><th>Subtotal</th></tr></thead><tbody><tr *ngFor="let item of detalle.items"><td>{{ item.material }}</td><td>{{ item.cantidad }}</td><td>{{ item.precioUnitario }}</td><td>{{ item.subtotal }}</td></tr></tbody></table></div></div>
-  </section>
-  <section class="panel">
-    <div class="panel-title">Nueva orden</div>
-    <div class="form-grid two">
-      <div class="field"><label>Número</label><input [(ngModel)]="form.numeroOrdenCompra"></div>
-      <div class="field"><label>Fecha</label><input type="date" [(ngModel)]="form.fechaOrdenCompra"></div>
-      <div class="field"><label>Requerimiento</label><select [(ngModel)]="form.idRequerimiento"><option [ngValue]="null">Seleccionar</option><option *ngFor="let r of requerimientos" [ngValue]="r.idRequerimiento">{{ r.numeroRequerimiento }}</option></select></div>
-      <div class="field"><label>Proveedor</label><select [(ngModel)]="form.idProveedor"><option [ngValue]="null">Seleccionar</option><option *ngFor="let p of proveedores" [ngValue]="p.idProveedor">{{ p.razonSocial }}</option></select></div>
-      <div class="field"><label>Proyecto</label><select [(ngModel)]="form.idProyecto"><option [ngValue]="null">Seleccionar</option><option *ngFor="let p of proyectos" [ngValue]="p.idProyecto">{{ p.nombreProyecto }}</option></select></div>
-      <div class="field"><label>Ruta PDF</label><input [(ngModel)]="form.rutaPdf"></div>
-      <div class="field" style="grid-column:1/-1;"><label>Descripción</label><textarea [(ngModel)]="form.descripcion"></textarea></div>
+    <div class="panel-title">Bandeja de RQ enviados a OC</div>
+
+    <div *ngIf="!rqPendientesOc.length" class="empty-state">
+      No hay requerimientos enviados a OC.
     </div>
-    <div class="panel" style="margin-top:18px; padding:16px;"><div class="panel-title" style="font-size:1rem;">Detalle</div><div class="form-grid"><div class="field"><label>Material</label><select [(ngModel)]="item.idMaterial"><option [ngValue]="null">Seleccionar</option><option *ngFor="let m of materiales" [ngValue]="m.idMaterial">{{ m.descripcion }}</option></select></div><div class="field"><label>Cantidad</label><input type="number" [(ngModel)]="item.cantidad"></div><div class="field"><label>Precio unitario</label><input type="number" [(ngModel)]="item.precioUnitario"></div></div><div class="toolbar"><button class="btn btn-secondary" (click)="addItem()">Agregar item</button></div><div *ngIf="form.items.length" class="table-wrap"><table><thead><tr><th>Material</th><th>Cantidad</th><th>PU</th><th></th></tr></thead><tbody><tr *ngFor="let x of form.items; index as i"><td>{{ x.material }}</td><td>{{ x.cantidad }}</td><td>{{ x.precioUnitario }}</td><td><button class="btn btn-danger" (click)="removeItem(i)">Quitar</button></td></tr></tbody></table></div></div>
-    <div class="toolbar" style="margin-top:14px;"><button class="btn btn-primary" (click)="save()" [disabled]="!form.numeroOrdenCompra || !form.idRequerimiento || !form.idProveedor || !form.idProyecto || !form.fechaOrdenCompra || !form.items.length">Guardar orden</button><button class="btn btn-ghost" (click)="reset()">Limpiar</button></div>
+
+    <div *ngIf="rqPendientesOc.length" class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>RQ</th><th>Especialidad</th><th>Proyecto</th><th>Solicitante</th><th>Estado</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rqPendientesOc">
+            <td>{{ row.numeroRequerimiento }}</td>
+            <td>{{ row.especialidad }}</td>
+            <td>{{ row.nombreProyecto }}</td>
+            <td>{{ row.solicitante }}</td>
+            <td><span class="badge badge--pending">{{ row.estado }}</span></td>
+            <td><button class="btn btn-secondary" (click)="procesarRq(row)">Procesar</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel" style="margin-top:18px;">
+      <div class="panel-title">Órdenes de compra generadas</div>
+
+      <div *ngIf="!ordenesCreadas.length" class="empty-state">
+        No hay órdenes de compra generadas.
+      </div>
+
+      <div *ngIf="ordenesCreadas.length" class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N° OC</th><th>RQ</th><th>Proveedor</th><th>Proyecto</th><th>Estado</th><th>Total</th><th></th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of ordenesCreadas">
+              <td>{{ row.numeroOrdenCompra }}</td>
+              <td>{{ row.numeroRequerimiento || '-' }}</td>
+              <td>{{ row.proveedor || '-' }}</td>
+              <td>{{ row.nombreProyecto || '-' }}</td>
+              <td><span class="badge badge--pending">{{ row.estado }}</span></td>
+              <td>{{ row.total }}</td>
+              <td><button class="btn btn-secondary" (click)="verOc(row)">Ver</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-title">Continuar flujo de OC</div>
+
+    <div *ngIf="!detalleRq && !detalleOc" class="empty-state">
+      Selecciona un requerimiento enviado o una OC generada.
+    </div>
+
+    <div *ngIf="detalleRq">
+      <div class="toolbar" style="margin-bottom:14px;">
+        <span class="list-chip">RQ {{ detalleRq.requerimiento?.numeroRequerimiento }}</span>
+        <span class="list-chip">{{ detalleRq.requerimiento?.estado }}</span>
+      </div>
+
+      <div class="form-grid two">
+        <div class="field"><label>Número OC</label><input [(ngModel)]="form.numeroOrdenCompra"></div>
+        <div class="field"><label>Fecha</label><input type="date" [(ngModel)]="form.fechaOrdenCompra"></div>
+        <div class="field"><label>Proveedor</label><select [(ngModel)]="form.idProveedor"><option [ngValue]="null">Seleccionar</option><option *ngFor="let p of proveedores" [ngValue]="p.idProveedor">{{ p.razonSocial }}</option></select></div>
+        <div class="field"><label>Proyecto</label><select [(ngModel)]="form.idProyecto"><option [ngValue]="null">Seleccionar</option><option *ngFor="let p of proyectos" [ngValue]="p.idProyecto">{{ p.nombreProyecto }}</option></select></div>
+        <div class="field"><label>Usuario creación</label><select [(ngModel)]="form.idUsuarioCreacion"><option [ngValue]="null">Seleccionar</option><option *ngFor="let u of usuarios" [ngValue]="u.idUsuario">{{ u.nombres }} {{ u.apellidos || '' }}</option></select></div>
+        <div class="field"><label>Ruta PDF</label><input [(ngModel)]="form.rutaPdf"></div>
+        <div class="field" style="grid-column:1/-1;"><label>Descripción</label><textarea [(ngModel)]="form.descripcion"></textarea></div>
+      </div>
+
+      <div class="panel" style="margin-top:18px; padding:16px;">
+        <div class="panel-title" style="font-size:1rem;">Detalle jalado del requerimiento</div>
+        <div class="table-wrap" *ngIf="form.items.length">
+          <table>
+            <thead><tr><th>Material</th><th>Unidad</th><th>Cantidad</th><th>Precio unitario</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let x of form.items">
+                <td>{{ x.material }}</td>
+                <td>{{ x.unidadMedida }}</td>
+                <td>{{ x.cantidad }}</td>
+                <td><input type="number" [(ngModel)]="x.precioUnitario"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="toolbar" style="margin-top:14px;">
+        <button class="btn btn-primary" (click)="save()">Generar OC</button>
+        <button class="btn btn-ghost" (click)="resetFormulario()">Limpiar</button>
+      </div>
+    </div>
+
+    <div *ngIf="detalleOc" class="panel">
+      <div class="panel-title">Detalle de OC generada</div>
+      <div class="toolbar" style="margin-bottom:14px;">
+        <span class="list-chip">{{ detalleOc.ordenCompra?.numeroOrdenCompra }}</span>
+        <span class="list-chip">{{ detalleOc.ordenCompra?.estado }}</span>
+      </div>
+
+      <div class="table-wrap" *ngIf="detalleOc.items?.length">
+        <table>
+          <thead><tr><th>Material</th><th>Unidad</th><th>Cantidad</th><th>PU</th><th>Subtotal</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let item of detalleOc.items">
+              <td>{{ item.material }}</td>
+              <td>{{ item.unidadMedida }}</td>
+              <td>{{ item.cantidad }}</td>
+              <td>{{ item.precioUnitario }}</td>
+              <td>{{ item.subtotal }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <div *ngIf="msg" class="empty-state" style="margin-top:14px; padding:14px;">{{ msg }}</div>
   </section>
 </div>

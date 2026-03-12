@@ -1,33 +1,179 @@
-<div class="page-header"><div><div class="page-title">Proveedores</div><div class="page-subtitle">Gestión de proveedores y especialidades relacionadas.</div></div></div>
+<div class="page-header">
+  <div>
+    <div class="page-title">Proveedores</div>
+    <div class="page-subtitle">Gestión de proveedores y especialidades relacionadas.</div>
+  </div>
+</div>
+
 <div class="split">
   <section class="panel">
     <div class="panel-title">Listado</div>
-    <div class="filters"><div class="field"><label>Especialidad</label><select [(ngModel)]="filtroEspecialidad" (change)="load()"><option [ngValue]="null">Todas</option><option *ngFor="let e of especialidades" [ngValue]="e.idEspecialidad">{{ e.nombre }}</option></select></div></div>
-    <div *ngIf="!rows.length" class="empty-state">No hay proveedores registrados.</div>
-    <div *ngIf="rows.length" class="table-wrap"><table><thead><tr><th>Proveedor</th><th>RUC</th><th>Contacto</th><th>Teléfono</th><th></th></tr></thead><tbody>
-      <tr *ngFor="let row of rows"><td>{{ row.razonSocial }}</td><td>{{ row.ruc }}</td><td>{{ row.contacto || '-' }}</td><td>{{ row.telefono || '-' }}</td><td><button class="btn btn-secondary" (click)="edit(row)">Editar</button></td></tr>
-    </tbody></table></div>
+
+    <div class="filters">
+      <div class="field">
+        <label>Especialidad</label>
+        <select [(ngModel)]="filtroEspecialidad" (change)="load()">
+          <option [ngValue]="null">Todas</option>
+          <option *ngFor="let e of especialidades" [ngValue]="e.idEspecialidad">
+            {{ e.nombre }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <div *ngIf="!rows.length" class="empty-state">
+      No hay proveedores registrados.
+    </div>
+
+    <div *ngIf="rows.length" class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Proveedor</th>
+            <th>RUC</th>
+            <th>Contacto</th>
+            <th>Teléfono</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows">
+            <td>{{ row.razonSocial }}</td>
+            <td>{{ row.ruc }}</td>
+            <td>{{ row.contacto || '-' }}</td>
+            <td>{{ row.telefono || '-' }}</td>
+            <td>
+              <button class="btn btn-secondary" (click)="edit(row)">Editar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </section>
+
   <section class="panel">
     <div class="panel-title">Formulario</div>
+
     <div class="form-grid two">
-      <div class="field"><label>Razón social</label><input [(ngModel)]="form.razonSocial"></div>
-      <div class="field"><label>RUC</label><input [(ngModel)]="form.ruc"></div>
-      <div class="field"><label>Contacto</label><input [(ngModel)]="form.contacto"></div>
-      <div class="field"><label>Teléfono</label><input [(ngModel)]="form.telefono"></div>
-      <div class="field"><label>Correo</label><input [(ngModel)]="form.correo"></div>
-      <div class="field"><label>Dirección</label><input [(ngModel)]="form.direccion"></div>
-      <div class="field"><label>Banco</label><input [(ngModel)]="form.banco"></div>
-      <div class="field"><label>Cuenta corriente</label><input [(ngModel)]="form.cuentaCorriente"></div>
-      <div class="field"><label>CCI</label><input [(ngModel)]="form.cci"></div>
-      <div class="field"><label>Cuenta detracción</label><input [(ngModel)]="form.cuentaDetraccion"></div>
-      <div class="field"><label>Trabaja con proveedor</label><input [(ngModel)]="form.trabajamosConProveedor"></div>
-      <div class="field"><label>Estado</label><select [(ngModel)]="form.activo"><option [ngValue]="true">Activo</option><option [ngValue]="false">Inactivo</option></select></div>
-      <div class="field" style="grid-column:1/-1;"><label>Descripción servicio</label><textarea [(ngModel)]="form.descripcionServicio"></textarea></div>
-      <div class="field" style="grid-column:1/-1;"><label>Observación</label><textarea [(ngModel)]="form.observacion"></textarea></div>
+      <div class="field">
+        <label>Razón social</label>
+        <input [(ngModel)]="form.razonSocial" />
+      </div>
+
+      <div class="field">
+        <label>RUC</label>
+        <input [(ngModel)]="form.ruc" />
+      </div>
+
+      <div class="field">
+        <label>Contacto</label>
+        <input [(ngModel)]="form.contacto" />
+      </div>
+
+      <div class="field">
+        <label>Teléfono</label>
+        <input [(ngModel)]="form.telefono" />
+      </div>
+
+      <div class="field">
+        <label>Correo</label>
+        <input [(ngModel)]="form.correo" />
+      </div>
+
+      <div class="field">
+        <label>Dirección</label>
+        <input [(ngModel)]="form.direccion" />
+      </div>
+
+      <div class="field">
+        <label>Banco</label>
+        <input [(ngModel)]="form.banco" />
+      </div>
+
+      <div class="field">
+        <label>Cuenta corriente</label>
+        <input [(ngModel)]="form.cuentaCorriente" />
+      </div>
+
+      <div class="field">
+        <label>CCI</label>
+        <input [(ngModel)]="form.cci" />
+      </div>
+
+      <div class="field">
+        <label>Cuenta detracción</label>
+        <input [(ngModel)]="form.cuentaDetraccion" />
+      </div>
+
+      <div class="field">
+        <label>Trabaja con proveedor</label>
+        <input [(ngModel)]="form.trabajamosConProveedor" />
+      </div>
+
+      <div class="field">
+        <label>Estado</label>
+        <select [(ngModel)]="form.activo">
+          <option [ngValue]="true">Activo</option>
+          <option [ngValue]="false">Inactivo</option>
+        </select>
+      </div>
+
+      <div class="field" style="grid-column: 1 / -1;">
+        <label>Descripción servicio</label>
+        <textarea [(ngModel)]="form.descripcionServicio"></textarea>
+      </div>
+
+      <div class="field" style="grid-column: 1 / -1;">
+        <label>Observación</label>
+        <textarea [(ngModel)]="form.observacion"></textarea>
+      </div>
     </div>
-    <div class="toolbar" style="margin-top:14px;"><button class="btn btn-primary" (click)="save()" [disabled]="!form.razonSocial || !form.ruc">Guardar</button><button class="btn btn-ghost" (click)="reset()">Limpiar</button></div>
-    <div class="panel" style="padding:16px; margin-top:18px;"><div class="panel-title" style="font-size:1rem;">Asignar especialidad</div><div class="form-grid two"><div class="field"><label>Especialidad</label><select [(ngModel)]="asignacion.idEspecialidad"><option [ngValue]="null">Seleccionar</option><option *ngFor="let e of especialidades" [ngValue]="e.idEspecialidad">{{ e.nombre }}</option></select></div><div class="field"><label>Estado</label><select [(ngModel)]="asignacion.activo"><option [ngValue]="true">Activo</option><option [ngValue]="false">Inactivo</option></select></div></div><div class="toolbar"><button class="btn btn-success" (click)="asignarEspecialidad()" [disabled]="!form.idProveedor || !asignacion.idEspecialidad">Asignar</button></div></div>
-    <div *ngIf="msg" class="empty-state" style="margin-top:14px; padding:14px;">{{ msg }}</div>
+
+    <div class="toolbar" style="margin-top: 14px;">
+      <button class="btn btn-primary" (click)="save()" [disabled]="!form.razonSocial || !form.ruc">
+        Guardar
+      </button>
+      <button class="btn btn-ghost" (click)="reset()">Limpiar</button>
+    </div>
+
+    <div class="panel" style="padding: 16px; margin-top: 18px;">
+      <div class="panel-title" style="font-size: 1rem;">Especialidades</div>
+
+      <div *ngIf="!form.idProveedor" class="empty-state" style="margin-bottom: 12px;">
+        Guarda primero el proveedor para luego asociarle una o varias especialidades.
+      </div>
+
+      <div class="form-grid two">
+        <div
+          class="field"
+          *ngFor="let e of especialidades"
+          style="margin-bottom: 8px;"
+        >
+          <label style="display: flex; align-items: center; gap: 8px;">
+            <input
+              type="checkbox"
+              [checked]="especialidadesSeleccionadas.includes(e.idEspecialidad)"
+              (change)="onEspecialidadToggle(e.idEspecialidad, $any($event.target).checked)"
+              [disabled]="!form.idProveedor"
+            />
+            {{ e.nombre }}
+          </label>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <button
+          class="btn btn-success"
+          (click)="guardarEspecialidadesProveedor()"
+          [disabled]="!form.idProveedor"
+        >
+          Guardar especialidades
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="msg" class="empty-state" style="margin-top: 14px; padding: 14px;">
+      {{ msg }}
+    </div>
   </section>
 </div>

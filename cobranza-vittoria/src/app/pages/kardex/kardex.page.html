@@ -1,3 +1,90 @@
-<div class="page-header"><div><div class="page-title">Kardex</div><div class="page-subtitle">Movimientos de almacén y resumen de stock por material.</div></div></div>
-<section class="panel"><div class="panel-title">Filtros</div><div class="filters"><div class="field"><label>Material</label><select [(ngModel)]="filtros.idMaterial" (change)="load()"><option [ngValue]="null">Todos</option><option *ngFor="let m of materiales" [ngValue]="m.idMaterial">{{ m.descripcion }}</option></select></div><div class="field"><label>Especialidad</label><select [(ngModel)]="filtros.idEspecialidad" (change)="load()"><option [ngValue]="null">Todas</option><option *ngFor="let e of especialidades" [ngValue]="e.idEspecialidad">{{ e.nombre }}</option></select></div><div class="field"><label>Fecha desde</label><input type="date" [(ngModel)]="filtros.fechaDesde" (change)="load()"></div><div class="field"><label>Fecha hasta</label><input type="date" [(ngModel)]="filtros.fechaHasta" (change)="load()"></div></div></section>
-<div class="split"><section class="panel"><div class="panel-title">Movimientos</div><div *ngIf="!rows.length" class="empty-state">No hay movimientos para los filtros seleccionados.</div><div *ngIf="rows.length" class="table-wrap"><table><thead><tr><th>Fecha</th><th>Material</th><th>Tipo</th><th>Entrada</th><th>Salida</th><th>Stock</th></tr></thead><tbody><tr *ngFor="let row of rows"><td>{{ row.fechaMovimiento | date:'yyyy-MM-dd' }}</td><td>{{ row.material }}</td><td>{{ row.tipoMovimiento }}</td><td>{{ row.cantidadEntrada }}</td><td>{{ row.cantidadSalida }}</td><td>{{ row.stockResultante }}</td></tr></tbody></table></div></section><section class="panel"><div class="panel-title">Resumen</div><div *ngIf="!resumen.length" class="empty-state">No hay resumen disponible.</div><div *ngIf="resumen.length" class="table-wrap"><table><thead><tr><th>Material</th><th>Especialidad</th><th>Entradas</th><th>Salidas</th><th>Stock</th></tr></thead><tbody><tr *ngFor="let row of resumen"><td>{{ row.material }}</td><td>{{ row.especialidad }}</td><td>{{ row.totalEntradas }}</td><td>{{ row.totalSalidas }}</td><td>{{ row.stockActual }}</td></tr></tbody></table></div></section></div>
+<div class="page-header">
+  <div>
+    <div class="page-title">Kardex</div>
+    <div class="page-subtitle">Una sola tabla de almacén separada por especialidad.</div>
+  </div>
+</div>
+
+<section class="panel">
+  <div class="panel-title">Filtros</div>
+
+  <div class="form-grid four">
+    <div class="field">
+      <label>Material</label>
+      <select [(ngModel)]="filtros.idMaterial">
+        <option [ngValue]="null">Todos</option>
+        <option *ngFor="let m of materiales" [ngValue]="m.idMaterial">
+          {{ m.descripcion }}
+        </option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Especialidad</label>
+      <select [(ngModel)]="filtros.idEspecialidad">
+        <option [ngValue]="null">Todas</option>
+        <option *ngFor="let e of especialidades" [ngValue]="e.idEspecialidad">
+          {{ e.nombre }}
+        </option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Fecha desde</label>
+      <input type="date" [(ngModel)]="filtros.fechaDesde" />
+    </div>
+
+    <div class="field">
+      <label>Fecha hasta</label>
+      <input type="date" [(ngModel)]="filtros.fechaHasta" />
+    </div>
+  </div>
+
+  <div class="toolbar" style="margin-top: 14px;">
+    <button class="btn btn-primary" (click)="load()">Filtrar</button>
+    <button class="btn btn-secondary" (click)="exportarPdf()">Exportar PDF</button>
+  </div>
+</section>
+
+<section class="panel" style="margin-top: 18px;">
+  <div class="panel-title">Kardex por especialidad</div>
+
+  <div *ngIf="!rows.length" class="empty-state">
+    No hay movimientos para mostrar.
+  </div>
+
+  <div *ngIf="rows.length" class="table-wrap">
+    <table id="tabla-kardex-export">
+      <thead>
+        <tr>
+          <th>Especialidad</th>
+          <th>Fecha</th>
+          <th>Material</th>
+          <th>Tipo</th>
+          <th>Documento</th>
+          <th>Entrada</th>
+          <th>Salida</th>
+          <th>Stock</th>
+          <th>Observación</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rows; let i = index">
+          <td>
+            <strong *ngIf="esNuevoGrupo(i)">
+              {{ row.especialidad || row.Especialidad || '-' }}
+            </strong>
+          </td>
+          <td>{{ row.fechaMovimiento || row.FechaMovimiento || '-' }}</td>
+          <td>{{ row.material || row.Material || '-' }}</td>
+          <td>{{ row.tipoMovimiento || row.TipoMovimiento || '-' }}</td>
+          <td>{{ row.documentoReferencia || row.DocumentoReferencia || '-' }}</td>
+          <td>{{ row.cantidadEntrada || row.CantidadEntrada || row.entrada || row.Entrada || 0 }}</td>
+          <td>{{ row.cantidadSalida || row.CantidadSalida || row.salida || row.Salida || 0 }}</td>
+          <td>{{ row.stockResultante || row.StockResultante || row.stock || row.Stock || 0 }}</td>
+          <td>{{ row.observacion || row.Observacion || '-' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

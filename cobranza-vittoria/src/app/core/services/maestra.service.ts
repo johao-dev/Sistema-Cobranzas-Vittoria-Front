@@ -62,8 +62,25 @@ export class MaestraService {
   }
 
   guardarMaterial(dto: any) {
-    return dto.idMaterial
-      ? this.api.http.put<any>(`${this.api.baseUrl}/api/maestra/materiales/${dto.idMaterial}`, dto)
-      : this.api.http.post<any>(`${this.api.baseUrl}/api/maestra/materiales`, dto);
+    const payload = {
+      idMaterial: dto.idMaterial ? Number(dto.idMaterial) : null,
+      idEspecialidad: dto.idEspecialidad != null ? Number(dto.idEspecialidad) : 0,
+      codigo: (dto.codigo ?? '').toString().trim(),
+      descripcion: (dto.descripcion ?? '').toString().trim(),
+      unidadMedida: (dto.unidadMedida ?? '').toString().trim(),
+      stockMinimo: dto.stockMinimo != null && dto.stockMinimo !== ''
+        ? Number(dto.stockMinimo)
+        : 0,
+      activo: !!dto.activo
+    };
+
+    return payload.idMaterial
+      ? this.api.http.put<any>(`${this.api.baseUrl}/api/maestra/materiales/${payload.idMaterial}`, payload)
+      : this.api.http.post<any>(`${this.api.baseUrl}/api/maestra/materiales`, payload);
+  }
+
+  unidadesMedida(activo?: boolean | null) {
+    const qs = activo === undefined || activo === null ? '' : `?activo=${activo}`;
+    return this.api.http.get<any[]>(`${this.api.baseUrl}/api/maestra/unidades-medida${qs}`);
   }
 }

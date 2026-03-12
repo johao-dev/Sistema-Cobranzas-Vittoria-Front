@@ -1,4 +1,3 @@
-
 export interface Especialidad {
   idEspecialidad: number;
   nombre: string;
@@ -32,13 +31,21 @@ export interface Proveedor {
   activo: boolean;
 }
 
+export interface UnidadMedida {
+  idUnidadMedida: number;
+  codigo: string;
+  nombre: string;
+  activo: boolean;
+}
+
 export interface Material {
   idMaterial: number;
   idEspecialidad: number;
   especialidad?: string | null;
   codigo?: string | null;
   descripcion: string;
-  unidadMedida: string;
+  unidadMedida?: string | null;
+  idUnidadMedida?: number | null;
   stockMinimo: number;
   activo: boolean;
 }

@@ -132,3 +132,13 @@ th { background: #f8f9fc; font-weight: 800; white-space: nowrap; }
   .grid-cards, .filters, .form-grid, .kpi-strip { grid-template-columns: 1fr; }
   .page-header { flex-direction: column; }
 }
+
+.success-box{
+  margin-top:14px;
+  padding:14px 16px;
+  border-radius:14px;
+  background:#eef9f3;
+  border:1px solid #d8efe2;
+  color:#20714d;
+  font-weight:700;
+}

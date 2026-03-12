@@ -20,6 +20,11 @@ export class RequerimientosPage implements OnInit {
   usuarios: any[] = [];
   detalle: any = null;
 
+  editando = false;
+  puedeEditarDetalle = false;
+  puedeEnviarOC = false;
+  requerimientoEditandoId: number | null = null;
+
   form: any = {
     numeroRequerimiento: '',
     fechaRequerimiento: '',
@@ -54,31 +59,16 @@ export class RequerimientosPage implements OnInit {
 
   load(): void {
     this.compras.requerimientos().subscribe({
-      next: (x) => this.rows = x ?? [],
+      next: (x: any) => this.rows = x ?? [],
       error: () => this.rows = []
     });
   }
 
   loadCatalogos(): void {
-    this.maestra.especialidades().subscribe({
-      next: (x) => this.especialidades = x ?? [],
-      error: () => this.especialidades = []
-    });
-
-    this.maestra.proyectos().subscribe({
-      next: (x) => this.proyectos = x ?? [],
-      error: () => this.proyectos = []
-    });
-
-    this.maestra.materiales().subscribe({
-      next: (x) => this.materiales = x ?? [],
-      error: () => this.materiales = []
-    });
-
-    this.seguridad.usuarios().subscribe({
-      next: (x) => this.usuarios = x ?? [],
-      error: () => this.usuarios = []
-    });
+    this.maestra.especialidades(true).subscribe({ next: (x: any) => this.especialidades = x ?? [], error: () => this.especialidades = [] });
+    this.maestra.proyectos(true).subscribe({ next: (x: any) => this.proyectos = x ?? [], error: () => this.proyectos = [] });
+    this.maestra.materiales(true).subscribe({ next: (x: any) => this.materiales = x ?? [], error: () => this.materiales = [] });
+    this.seguridad.usuarios().subscribe({ next: (x: any) => this.usuarios = x ?? [], error: () => this.usuarios = [] });
   }
 
   addItem(): void {
@@ -94,9 +84,7 @@ export class RequerimientosPage implements OnInit {
       return;
     }
 
-    const material = this.materiales.find(
-      m => m.idMaterial === Number(this.item.idMaterial)
-    );
+    const material = this.materiales.find((m: any) => m.idMaterial === Number(this.item.idMaterial));
 
     this.form.items.push({
       idMaterial: Number(this.item.idMaterial),
@@ -105,11 +93,7 @@ export class RequerimientosPage implements OnInit {
       observacion: this.item.observacion ?? ''
     });
 
-    this.item = {
-      idMaterial: null,
-      cantidad: 1,
-      observacion: ''
-    };
+    this.item = { idMaterial: null, cantidad: 1, observacion: '' };
   }
 
   removeItem(index: number): void {
@@ -118,34 +102,68 @@ export class RequerimientosPage implements OnInit {
 
   view(row: any): void {
     this.compras.requerimiento(row.idRequerimiento).subscribe({
-      next: (x) => this.detalle = x,
-      error: () => this.detalle = null
+      next: (x: any) => {
+        this.detalle = x;
+        this.puedeEditarDetalle = !!x?.puedeEditar;
+        const estado = (x?.requerimiento?.estado || '').toUpperCase();
+        this.puedeEnviarOC = estado === 'REGISTRADO';
+      },
+      error: () => {
+        this.detalle = null;
+        this.puedeEditarDetalle = false;
+        this.puedeEnviarOC = false;
+      }
     });
   }
 
-  validar(id: number, resultado: string): void {
-    const usuario = this.usuarios?.[0];
-
-    if (!usuario) {
-      this.msg = 'No hay usuarios disponibles para registrar la validación.';
+  editarDesdeDetalle(): void {
+    if (!this.detalle?.requerimiento?.idRequerimiento) return;
+    if (!this.puedeEditarDetalle) {
+      this.msg = 'Este requerimiento ya no puede modificarse.';
       return;
     }
 
-    this.compras.validarRequerimiento(id, {
-      idUsuario: usuario.idUsuario,
-      resultado,
-      observacion: ''
-    }).subscribe({
-      next: () => {
-        this.msg = 'Validación registrada correctamente.';
-        this.load();
+    const req = this.detalle.requerimiento;
+    const items = this.detalle.items || [];
 
-        if (this.detalle?.requerimiento?.idRequerimiento === id) {
-          this.view({ idRequerimiento: id });
-        }
+    this.editando = true;
+    this.requerimientoEditandoId = req.idRequerimiento;
+
+    this.form = {
+      numeroRequerimiento: req.numeroRequerimiento ?? '',
+      fechaRequerimiento: this.toDateInput(req.fechaRequerimiento),
+      idEspecialidad: req.idEspecialidad ?? null,
+      idProyecto: req.idProyecto ?? null,
+      descripcion: req.descripcion ?? '',
+      fechaEntrega: this.toDateInput(req.fechaEntrega),
+      idUsuarioSolicitante: req.idUsuarioSolicitante ?? null,
+      observacion: req.observacion ?? '',
+      items: items.map((x: any) => ({
+        idMaterial: x.idMaterial,
+        material: x.material,
+        cantidad: Number(x.cantidad),
+        observacion: x.observacion ?? ''
+      }))
+    };
+
+    this.msg = 'Editando requerimiento.';
+  }
+
+  enviarAOC(): void {
+    const id = this.detalle?.requerimiento?.idRequerimiento;
+    if (!id) return;
+
+    const usuario = this.usuarios?.[0];
+    const idUsuario = usuario?.idUsuario ?? null;
+
+    this.compras.enviarAOrdenCompra(id, idUsuario).subscribe({
+      next: () => {
+        this.msg = 'Requerimiento enviado a orden de compra.';
+        this.load();
+        this.view({ idRequerimiento: id });
       },
-      error: (e) => {
-        this.msg = e?.error?.message || 'No se pudo validar el requerimiento.';
+      error: (e: any) => {
+        this.msg = e?.error?.message || 'No se pudo enviar a orden de compra.';
       }
     });
   }
@@ -157,27 +175,22 @@ export class RequerimientosPage implements OnInit {
       this.msg = 'Debes ingresar el número de requerimiento.';
       return;
     }
-
     if (!this.form.fechaRequerimiento) {
       this.msg = 'Debes ingresar la fecha del requerimiento.';
       return;
     }
-
     if (!this.form.idEspecialidad) {
       this.msg = 'Debes seleccionar una especialidad.';
       return;
     }
-
     if (!this.form.idProyecto) {
       this.msg = 'Debes seleccionar un proyecto.';
       return;
     }
-
     if (!this.form.idUsuarioSolicitante) {
       this.msg = 'Debes seleccionar un solicitante.';
       return;
     }
-
     if (!this.form.items.length) {
       this.msg = 'Debes agregar al menos un item.';
       return;
@@ -199,29 +212,42 @@ export class RequerimientosPage implements OnInit {
       }))
     };
 
-    console.log('DTO requerimiento =>', dto);
-
     this.saving = true;
 
-    this.compras.crearRequerimiento(dto).subscribe({
-      next: (res) => {
-        console.log('Respuesta crear requerimiento =>', res);
+    const request = this.editando && this.requerimientoEditandoId
+      ? this.compras.actualizarRequerimiento(this.requerimientoEditandoId, dto)
+      : this.compras.crearRequerimiento(dto);
+
+    request.subscribe({
+      next: () => {
+        const idActual = this.requerimientoEditandoId;
+        const estabaEditando = this.editando;
 
         this.saving = false;
-        this.msg = `Requerimiento creado correctamente. ID: ${res?.idRequerimiento ?? ''}`;
+        this.msg = estabaEditando
+          ? 'Requerimiento actualizado correctamente.'
+          : 'Requerimiento creado correctamente.';
 
         this.reset();
         this.load();
+
+        if (estabaEditando && idActual) {
+          this.view({ idRequerimiento: idActual });
+        }
       },
-      error: (e) => {
-        console.error('Error al guardar requerimiento =>', e);
+      error: (e: any) => {
         this.saving = false;
-        this.msg = e?.error?.message || 'No se pudo crear el requerimiento.';
+        this.msg = e?.error?.message || 'No se pudo guardar el requerimiento.';
       }
     });
   }
 
   reset(): void {
+    this.editando = false;
+    this.requerimientoEditandoId = null;
+    this.puedeEditarDetalle = false;
+    this.puedeEnviarOC = false;
+
     this.form = {
       numeroRequerimiento: '',
       fechaRequerimiento: '',
@@ -239,5 +265,12 @@ export class RequerimientosPage implements OnInit {
       cantidad: 1,
       observacion: ''
     };
+  }
+
+  private toDateInput(value: any): string {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return date.toISOString().slice(0, 10);
   }
 }

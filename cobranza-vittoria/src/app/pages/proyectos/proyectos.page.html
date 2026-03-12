@@ -70,7 +70,7 @@
       <button class="btn btn-primary" (click)="save()" [disabled]="saving">
         {{ saving ? 'Guardando...' : 'Guardar proyecto' }}
       </button>
-      <button class="btn btn-ghost" (click)="reset()">Limpiar</button>
+      <button class="btn btn-ghost" (click)="reset(true)">Limpiar</button>
     </div>
 
     <div *ngIf="msg" class="success-box">
