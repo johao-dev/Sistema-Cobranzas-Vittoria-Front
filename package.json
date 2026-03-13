@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "cobranza-vittoria": "file:cobranza-vittoria"
+  }
+}
