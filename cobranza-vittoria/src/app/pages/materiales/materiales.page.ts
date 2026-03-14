@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { NotificationService } from '../../core/services/notification.service';
 
 import { MaestraService } from '../../core/services/maestra.service';
 
@@ -28,7 +29,10 @@ export class MaterialesPage implements OnInit {
     activo: true
   };
 
-  constructor(private maestra: MaestraService) {}
+  constructor(
+    private maestra: MaestraService,
+    private notifyService: NotificationService
+  ) {}
 
   ngOnInit() {
     this.maestra.especialidades(true).subscribe(x => {
@@ -109,6 +113,8 @@ export class MaterialesPage implements OnInit {
         this.msg = payload.idMaterial
           ? 'Material actualizado correctamente.'
           : 'Material guardado correctamente.';
+          
+        this.notifyService.show(this.msg, 'success');
 
         this.reset();
         this.load();
@@ -125,6 +131,7 @@ export class MaterialesPage implements OnInit {
         }
 
         this.msg = e?.error?.message || 'No se pudo guardar el material.';
+        this.notifyService.show(this.msg, 'error');
       }
     });
   }

@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
+import { NotificationService } from '../../core/services/notification.service';
 import { MaestraService } from '../../core/services/maestra.service';
 
 @Component({
@@ -25,6 +26,7 @@ export class ProyectosPage implements OnInit {
 
   constructor(
     private maestra: MaestraService,
+    private notifyService: NotificationService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -85,11 +87,14 @@ export class ProyectosPage implements OnInit {
         ? `Proyecto editado correctamente. ID: ${res?.idProyecto ?? this.form.idProyecto ?? ''}`
         : `Proyecto guardado correctamente. ID: ${res?.idProyecto ?? ''}`;
 
+      this.notifyService.show(this.msg, 'success');
+
       this.reset(false);
       await this.load();
     } catch (e: any) {
       console.error('Error guardando proyecto =>', e);
       this.msg = e?.error?.message || 'No se pudo guardar el proyecto.';
+      this.notifyService.show(this.msg, 'error');
     } finally {
       this.saving = false;
       this.cdr.detectChanges();

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ComprasService } from '../../core/services/compras.service';
 import { MaestraService } from '../../core/services/maestra.service';
 import { SeguridadService } from '../../core/services/seguridad.service';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   standalone: true,
@@ -49,7 +50,8 @@ export class RequerimientosPage implements OnInit {
   constructor(
     private compras: ComprasService,
     private maestra: MaestraService,
-    private seguridad: SeguridadService
+    private seguridad: SeguridadService,
+    private notifyService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -159,11 +161,13 @@ export class RequerimientosPage implements OnInit {
     this.compras.enviarAOrdenCompra(id, idUsuario).subscribe({
       next: () => {
         this.msg = 'Requerimiento enviado a orden de compra.';
+        this.notifyService.show(this.msg, 'success');
         this.load();
         this.view({ idRequerimiento: id });
       },
       error: (e: any) => {
         this.msg = e?.error?.message || 'No se pudo enviar a orden de compra.';
+        this.notifyService.show(this.msg, 'error');
       }
     });
   }
@@ -227,6 +231,7 @@ export class RequerimientosPage implements OnInit {
         this.msg = estabaEditando
           ? 'Requerimiento actualizado correctamente.'
           : 'Requerimiento creado correctamente.';
+        this.notifyService.show(this.msg, 'success');
 
         this.reset();
         this.load();
@@ -238,6 +243,7 @@ export class RequerimientosPage implements OnInit {
       error: (e: any) => {
         this.saving = false;
         this.msg = e?.error?.message || 'No se pudo guardar el requerimiento.';
+        this.notifyService.show(this.msg, 'error');
       }
     });
   }
