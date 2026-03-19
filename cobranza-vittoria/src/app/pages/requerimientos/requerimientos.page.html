@@ -131,7 +131,7 @@
               <td>{{ x.material }}</td>
               <td>{{ x.cantidad }}</td>
               <td>{{ x.observacion || '-' }}</td>
-              <td><button class="btn btn-danger" (click)="removeItem(i)">Quitar</button></td>
+              <td class="actions"><button class="btn btn-secondary" (click)="abrirModalEspecialidades(i)">Editar</button> <button class="btn btn-danger" (click)="removeItem(i)">Quitar</button></td>
             </tr>
           </tbody>
         </table>
@@ -155,7 +155,7 @@
   <div class="modal-card">
     <div class="modal-header">
       <div>
-        <div class="panel-title" style="margin:0;">Agregar ítem</div>
+        <div class="panel-title" style="margin:0;">{{ editingItemIndex !== null ? 'Editar ítem' : 'Agregar ítem' }}</div>
         <div class="helper-text" style="margin:6px 0 0 0;">Selecciona primero la especialidad y luego el material correspondiente.</div>
       </div>
       <button class="btn btn-ghost" (click)="cerrarModalEspecialidades()">Cerrar</button>
@@ -191,7 +191,7 @@
 
     <div class="toolbar" style="margin-top:14px; justify-content:flex-end;">
       <button class="btn btn-ghost" (click)="cerrarModalEspecialidades()">Cancelar</button>
-      <button class="btn btn-primary" (click)="agregarItemDesdeModal()">Agregar ítem</button>
+      <button class="btn btn-primary" (click)="agregarItemDesdeModal()">{{ editingItemIndex !== null ? 'Guardar cambios' : 'Agregar ítem' }}</button>
     </div>
   </div>
 </div>

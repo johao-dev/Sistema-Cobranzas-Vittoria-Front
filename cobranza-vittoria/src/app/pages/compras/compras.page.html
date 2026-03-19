@@ -31,7 +31,7 @@
         <tbody>
           <tr *ngFor="let row of pendientes">
             <td>{{ row.numeroOrdenCompra || row.NumeroOrdenCompra || '-' }}</td>
-            <td>{{ row.fechaOrdenCompra || row.FechaOrdenCompra || '-' }}</td>
+            <td>{{ formatFechaSolo(row.fechaOrdenCompra || row.FechaOrdenCompra) }}</td>
             <td>{{ row.numeroRequerimiento || row.NumeroRequerimiento || '-' }}</td>
             <td>{{ row.proveedor || row.Proveedor || '-' }}</td>
             <td>{{ row.especialidad || row.Especialidad || '-' }}</td>
@@ -70,7 +70,7 @@
           <tbody>
             <tr *ngFor="let row of comprasCerradas">
               <td>{{ row.numeroCompra || row.NumeroCompra || '-' }}</td>
-              <td>{{ row.fechaCompra || row.FechaCompra || '-' }}</td>
+              <td>{{ formatFechaSolo(row.fechaCompra || row.FechaCompra) }}</td>
               <td>{{ row.numeroOrdenCompra || row.NumeroOrdenCompra || '-' }}</td>
               <td>{{ row.numeroRequerimiento || row.NumeroRequerimiento || '-' }}</td>
               <td>{{ row.proveedor || row.Proveedor || '-' }}</td>
@@ -125,8 +125,17 @@
       <div class="form-grid two" style="margin-top:18px;">
         <div class="field"><label>Número compra</label><input [(ngModel)]="form.numeroCompra"></div>
         <div class="field"><label>Fecha compra</label><input type="date" [(ngModel)]="form.fechaCompra"></div>
-        <div class="field"><label>Monto total</label><input [ngModel]="montoTotalCalculado" readonly></div>
+        <div class="field">
+          <label>Incluye IGV</label>
+          <select [(ngModel)]="form.incluyeIgv">
+            <option [ngValue]="true">Sí</option>
+            <option [ngValue]="false">No</option>
+          </select>
+        </div>
         <div class="field"><label>Proveedor ID</label><input type="number" [(ngModel)]="form.idProveedor" readonly></div>
+        <div class="field"><label>Subtotal sin IGV</label><input [ngModel]="subtotalSinIgvCalculado" readonly></div>
+        <div class="field"><label>Monto IGV</label><input [ngModel]="montoIgvCalculado" readonly></div>
+        <div class="field"><label>Monto total</label><input [ngModel]="montoTotalCalculado" readonly></div>
         <div class="field" style="grid-column:1/-1;"><label>Observación</label><textarea [(ngModel)]="form.observacion"></textarea></div>
       </div>
 
@@ -173,7 +182,7 @@
               <tr *ngFor="let d of documentos">
                 <td>{{ d.nombreArchivo || d.NombreArchivo }}</td>
                 <td>{{ d.extension || d.Extension }}</td>
-                <td>{{ d.fechaCreacion || d.FechaCreacion }}</td>
+                <td>{{ formatFechaSolo(d.fechaCreacion || d.FechaCreacion) }}</td>
                 <td>{{ d.rutaArchivo || d.RutaArchivo }}</td>
               </tr>
             </tbody>

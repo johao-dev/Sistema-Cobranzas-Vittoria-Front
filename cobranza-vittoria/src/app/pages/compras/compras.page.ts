@@ -24,6 +24,9 @@ export class ComprasPage implements OnInit {
     idOrdenCompra: null,
     idProveedor: null,
     fechaCompra: '',
+    incluyeIgv: true,
+    subtotalSinIgv: 0,
+    montoIgv: 0,
     montoTotal: 0,
     observacion: ''
   };
@@ -67,7 +70,10 @@ export class ComprasPage implements OnInit {
           idOrdenCompra: oc?.idOrdenCompra ?? oc?.IdOrdenCompra ?? null,
           idProveedor: oc?.idProveedor ?? oc?.IdProveedor ?? null,
           fechaCompra: '',
-          montoTotal: total,
+          incluyeIgv: true,
+          subtotalSinIgv: this.redondear(total / 1.18),
+          montoIgv: this.redondear(total - (total / 1.18)),
+          montoTotal: this.redondear(total),
           observacion: ''
         };
 
@@ -89,6 +95,11 @@ export class ComprasPage implements OnInit {
         this.detalleCompra = x;
         this.detalleOc = null;
         this.documentos = x?.documentos || [];
+        const compra = x?.compra || x || {};
+        this.form.incluyeIgv = compra?.incluyeIGV ?? compra?.IncluyeIGV ?? compra?.incluyeIgv ?? true;
+        this.form.subtotalSinIgv = Number(compra?.subtotalSinIGV ?? compra?.SubtotalSinIGV ?? compra?.subtotalSinIgv ?? 0);
+        this.form.montoIgv = Number(compra?.montoIGV ?? compra?.MontoIGV ?? compra?.montoIgv ?? 0);
+        this.form.montoTotal = Number(compra?.montoTotal ?? compra?.MontoTotal ?? 0);
       },
       error: () => {
         this.detalleCompra = null;
@@ -109,6 +120,9 @@ export class ComprasPage implements OnInit {
       idOrdenCompra: Number(this.form.idOrdenCompra),
       idProveedor: Number(this.form.idProveedor),
       fechaCompra: this.form.fechaCompra,
+      incluyeIGV: !!this.form.incluyeIgv,
+      subtotalSinIGV: this.subtotalSinIgvCalculado,
+      montoIGV: this.montoIgvCalculado,
       montoTotal: this.montoTotalCalculado,
       observacion: this.form.observacion || '',
       items: (this.detalleOc?.items || []).map((item: any) => ({
@@ -150,13 +164,46 @@ export class ComprasPage implements OnInit {
     });
   }
 
-  get montoTotalCalculado(): number {
+  get montoBaseCalculado(): number {
     const items = this.detalleOc?.items || [];
-    return items.reduce((acc: number, item: any) => {
+    return this.redondear(items.reduce((acc: number, item: any) => {
       const cantidad = Number(item.cantidad || item.Cantidad || 0);
       const pu = Number(item.precioUnitario || item.PrecioUnitario || 0);
       return acc + (cantidad * pu);
-    }, 0);
+    }, 0));
+  }
+
+  get subtotalSinIgvCalculado(): number {
+    if (this.form.incluyeIgv) {
+      return this.redondear(this.montoBaseCalculado / 1.18);
+    }
+    return this.redondear(this.montoBaseCalculado);
+  }
+
+  get montoIgvCalculado(): number {
+    if (this.form.incluyeIgv) {
+      return this.redondear(this.montoBaseCalculado - this.subtotalSinIgvCalculado);
+    }
+    return this.redondear(this.montoBaseCalculado * 0.18);
+  }
+
+  get montoTotalCalculado(): number {
+    if (this.form.incluyeIgv) {
+      return this.redondear(this.montoBaseCalculado);
+    }
+    return this.redondear(this.subtotalSinIgvCalculado + this.montoIgvCalculado);
+  }
+
+  formatFechaSolo(valor: any): string {
+    if (!valor) return '-';
+    const raw = String(valor);
+    if (raw.includes('T')) return raw.slice(0, 10);
+    if (raw.includes(' ')) return raw.slice(0, 10);
+    return raw.length >= 10 ? raw.slice(0, 10) : raw;
+  }
+
+  private redondear(valor: number): number {
+    return Math.round((Number(valor || 0) + Number.EPSILON) * 100) / 100;
   }
 
   resetForm() {
@@ -166,6 +213,9 @@ export class ComprasPage implements OnInit {
       idOrdenCompra: null,
       idProveedor: null,
       fechaCompra: '',
+      incluyeIgv: true,
+      subtotalSinIgv: 0,
+      montoIgv: 0,
       montoTotal: 0,
       observacion: ''
     };

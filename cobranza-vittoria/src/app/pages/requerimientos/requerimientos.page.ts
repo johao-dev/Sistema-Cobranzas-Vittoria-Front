@@ -32,6 +32,7 @@ export class RequerimientosPage implements OnInit {
   requerimientoEditandoId: number | null = null;
 
   modalEspecialidades = false;
+  editingItemIndex: number | null = null;
   modalItem = {
     idEspecialidad: null as number | null,
     idMaterial: null as number | null,
@@ -90,9 +91,23 @@ export class RequerimientosPage implements OnInit {
     this.seguridad.usuarios().subscribe({ next: (x: any) => this.usuarios = x ?? [], error: () => this.usuarios = [] });
   }
 
-  abrirModalEspecialidades(): void {
+  abrirModalEspecialidades(index?: number): void {
     this.msg = '';
     this.modalEspecialidades = true;
+
+    if (index !== undefined && index !== null && index >= 0) {
+      const item = this.form.items[index];
+      this.editingItemIndex = index;
+      this.modalItem = {
+        idEspecialidad: item?.idEspecialidad ?? null,
+        idMaterial: item?.idMaterial ?? null,
+        cantidad: Number(item?.cantidad ?? 1),
+        observacion: item?.observacion ?? ''
+      };
+      return;
+    }
+
+    this.editingItemIndex = null;
     this.modalItem = {
       idEspecialidad: null,
       idMaterial: null,
@@ -103,6 +118,7 @@ export class RequerimientosPage implements OnInit {
 
   cerrarModalEspecialidades(): void {
     this.modalEspecialidades = false;
+    this.editingItemIndex = null;
     this.modalItem = {
       idEspecialidad: null,
       idMaterial: null,
@@ -136,14 +152,22 @@ export class RequerimientosPage implements OnInit {
     const material = this.materiales.find((m: any) => m.idMaterial === Number(this.modalItem.idMaterial));
     const especialidad = this.especialidades.find((e: any) => e.idEspecialidad === Number(this.modalItem.idEspecialidad));
 
-    this.form.items.push({
+    const nuevoItem = {
       idMaterial: Number(this.modalItem.idMaterial),
       idEspecialidad: Number(this.modalItem.idEspecialidad),
       especialidad: material?.especialidad ?? especialidad?.nombre ?? '',
       material: material?.descripcion ?? '',
       cantidad: Number(this.modalItem.cantidad),
       observacion: this.modalItem.observacion ?? ''
-    });
+    };
+
+    if (this.editingItemIndex !== null && this.editingItemIndex >= 0) {
+      this.form.items[this.editingItemIndex] = nuevoItem;
+      this.msg = 'Ítem actualizado correctamente.';
+    } else {
+      this.form.items.push(nuevoItem);
+      this.msg = 'Ítem agregado correctamente.';
+    }
 
     this.cerrarModalEspecialidades();
   }
@@ -303,6 +327,7 @@ export class RequerimientosPage implements OnInit {
     this.puedeEditarDetalle = false;
     this.puedeEnviarOC = false;
     this.modalEspecialidades = false;
+    this.editingItemIndex = null;
 
     this.form = {
       numeroRequerimiento: '',
