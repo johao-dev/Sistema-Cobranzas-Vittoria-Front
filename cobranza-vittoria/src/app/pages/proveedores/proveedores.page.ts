@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
+import { NotificationService } from '../../core/services/notification.service';
 
 import { MaestraService } from '../../core/services/maestra.service';
 
@@ -38,7 +39,7 @@ export class ProveedoresPage implements OnInit {
     activo: true
   };
 
-  constructor(private maestra: MaestraService) {}
+  constructor(private maestra: MaestraService, private notifyService: NotificationService) {}
 
   ngOnInit() {
     this.maestra.especialidades(true).subscribe(x => (this.especialidades = x || []));
@@ -117,10 +118,13 @@ export class ProveedoresPage implements OnInit {
           ? 'Proveedor guardado correctamente. Ahora puedes guardar sus especialidades.'
           : 'Proveedor guardado correctamente.';
 
+        this.notifyService.show(this.msg, 'success');
+
         this.load();
       },
       error: e => {
         this.msg = e?.error?.message || 'No se pudo guardar el proveedor.';
+        this.notifyService.show(this.msg, 'error');
       }
     });
   }
@@ -162,10 +166,12 @@ export class ProveedoresPage implements OnInit {
     forkJoin(requests.length ? requests : [of(null)]).subscribe({
       next: () => {
         this.msg = 'Especialidades actualizadas correctamente.';
+        this.notifyService.show(this.msg, 'success');
         this.load();
       },
       error: e => {
         this.msg = e?.error?.message || 'No se pudieron actualizar las especialidades.';
+        this.notifyService.show(this.msg, 'error');
       }
     });
   }
