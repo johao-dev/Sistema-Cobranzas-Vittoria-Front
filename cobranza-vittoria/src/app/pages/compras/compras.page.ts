@@ -54,7 +54,7 @@ export class ComprasPage implements OnInit {
   modalIndex = -1;
   modalItem: PrecioItem | null = null;
 
-  constructor(private compras: ComprasService, private cdr: ChangeDetectorRef) {}
+  constructor(private compras: ComprasService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit() {
     this.load();
