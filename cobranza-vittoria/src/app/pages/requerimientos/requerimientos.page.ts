@@ -76,14 +76,27 @@ export class RequerimientosPage implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.setFormDefaults(true);
     this.load();
     this.loadCatalogos();
   }
 
   load(): void {
     this.compras.requerimientos(this.filtros).subscribe({
-      next: (x: any) => { this.rows = x ?? []; this.cdr.detectChanges(); },
-      error: () => { this.rows = []; this.cdr.detectChanges(); }
+      next: (x: any) => {
+        this.rows = x ?? [];
+        if (!this.editando && !this.form.items.length && !this.form.idProyecto && !this.form.idUsuarioSolicitante) {
+          this.setFormDefaults(true);
+        }
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.rows = [];
+        if (!this.editando && !this.form.items.length && !this.form.idProyecto && !this.form.idUsuarioSolicitante) {
+          this.setFormDefaults(true);
+        }
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -257,12 +270,10 @@ export class RequerimientosPage implements OnInit {
     this.msg = '';
 
     if (!this.form.numeroRequerimiento?.trim()) {
-      this.msg = 'Debes ingresar el número de requerimiento.';
-      return;
+      this.form.numeroRequerimiento = this.getNextNumeroRequerimiento();
     }
     if (!this.form.fechaRequerimiento) {
-      this.msg = 'Debes ingresar la fecha del requerimiento.';
-      return;
+      this.form.fechaRequerimiento = this.todayIso();
     }
     if (!this.form.idProyecto) {
       this.msg = 'Debes seleccionar un proyecto.';
@@ -273,7 +284,7 @@ export class RequerimientosPage implements OnInit {
       return;
     }
     if (!this.form.items.length) {
-      this.msg = 'Debes agregar al menos un item.';
+      this.msg = 'Debes agregar al menos un ítem.';
       return;
     }
 
@@ -357,6 +368,35 @@ export class RequerimientosPage implements OnInit {
       cantidad: 1,
       observacion: ''
     };
+
+    this.setFormDefaults(true);
+  }
+
+  private setFormDefaults(force = false): void {
+    if (this.editando) return;
+    if (force || !this.form.numeroRequerimiento) {
+      this.form.numeroRequerimiento = this.getNextNumeroRequerimiento();
+    }
+    if (force || !this.form.fechaRequerimiento) {
+      this.form.fechaRequerimiento = this.todayIso();
+    }
+  }
+
+  private getNextNumeroRequerimiento(): string {
+    const max = (this.rows || []).reduce((acc: number, row: any) => Math.max(acc, this.extractNumericValue(row?.numeroRequerimiento)), 0);
+    return String(max + 1);
+  }
+
+  private extractNumericValue(value: any): number {
+    const parts = String(value ?? '').match(/\d+/g);
+    if (!parts?.length) return 0;
+    return Number(parts.join('')) || 0;
+  }
+
+  private todayIso(): string {
+    const date = new Date();
+    const offset = date.getTimezoneOffset();
+    return new Date(date.getTime() - offset * 60000).toISOString().slice(0, 10);
   }
 
   private toDateInput(value: any): string {

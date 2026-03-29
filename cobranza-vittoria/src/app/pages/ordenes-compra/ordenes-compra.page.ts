@@ -75,6 +75,8 @@ export class OrdenesCompraPage implements OnInit {
 
         this.form.idRequerimiento = req?.idRequerimiento ?? null;
         this.form.idProyecto = req?.idProyecto ?? null;
+        this.form.numeroOrdenCompra = this.getNextNumeroOrdenCompra();
+        this.form.fechaOrdenCompra = this.todayIso();
         this.form.items = items.map((it: any) => ({
           especialidad: it.especialidad || req?.especialidad || row?.especialidad || '-',
           idMaterial: it.idMaterial,
@@ -85,7 +87,7 @@ export class OrdenesCompraPage implements OnInit {
           precioUnitario: 0
         }));
 
-        this.msg = 'RQ cargado para continuar flujo de OC.';
+        this.msg = 'RQ cargado para continuar flujo de O.C.';
         this.cdr.detectChanges();
       },
       error: () => {
@@ -113,14 +115,14 @@ export class OrdenesCompraPage implements OnInit {
 
   save() {
     const dto = {
-      numeroOrdenCompra: (this.form.numeroOrdenCompra || '').trim(),
+      numeroOrdenCompra: (this.form.numeroOrdenCompra || '').trim() || this.getNextNumeroOrdenCompra(),
       idRequerimiento: Number(this.form.idRequerimiento),
       idProveedor: Number((this.form.items || []).find((x: any) => Number(x.idProveedor))?.idProveedor || 0),
       idProyecto: Number(this.form.idProyecto),
-      fechaOrdenCompra: this.form.fechaOrdenCompra,
-      descripcion: this.form.descripcion || '',
+      fechaOrdenCompra: this.form.fechaOrdenCompra || this.todayIso(),
+      descripcion: '',
       idUsuarioCreacion: this.form.idUsuarioCreacion ? Number(this.form.idUsuarioCreacion) : null,
-      rutaPdf: this.form.rutaPdf || '',
+      rutaPdf: '',
       items: (this.form.items || []).map((x: any) => ({
         idMaterial: Number(x.idMaterial),
         cantidad: Number(x.cantidad),
@@ -129,11 +131,10 @@ export class OrdenesCompraPage implements OnInit {
       }))
     };
 
-    if (!dto.idRequerimiento) { this.msg = 'Debes seleccionar un RQ enviado a OC.'; return; }
-    if (!dto.numeroOrdenCompra) { this.msg = 'Debes ingresar el número de orden.'; return; }
+    if (!dto.idRequerimiento) { this.msg = 'Debes seleccionar un RQ enviado a O.C.'; return; }
     if (!dto.idProyecto) { this.msg = 'Debes seleccionar proyecto.'; return; }
     if (!dto.fechaOrdenCompra) { this.msg = 'Debes ingresar la fecha.'; return; }
-    if (!dto.items.length) { this.msg = 'La orden debe tener items.'; return; }
+    if (!dto.items.length) { this.msg = 'La orden debe tener ítems.'; return; }
     if (dto.items.some((x: any) => !x.idProveedor)) { this.msg = 'Debes seleccionar proveedor por cada material.'; return; }
 
     this.compras.crearOrden(dto).subscribe({
@@ -159,5 +160,22 @@ export class OrdenesCompraPage implements OnInit {
       rutaPdf: '',
       items: []
     };
+  }
+
+  private getNextNumeroOrdenCompra(): string {
+    const max = (this.ordenesCreadas || []).reduce((acc: number, row: any) => Math.max(acc, this.extractNumericValue(row?.numeroOrdenCompra)), 0);
+    return String(max + 1);
+  }
+
+  private extractNumericValue(value: any): number {
+    const parts = String(value ?? '').match(/\d+/g);
+    if (!parts?.length) return 0;
+    return Number(parts.join('')) || 0;
+  }
+
+  private todayIso(): string {
+    const date = new Date();
+    const offset = date.getTimezoneOffset();
+    return new Date(date.getTime() - offset * 60000).toISOString().slice(0, 10);
   }
 }

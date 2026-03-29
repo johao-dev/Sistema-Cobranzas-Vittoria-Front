@@ -1,67 +1,66 @@
 <div class="page-header">
   <div>
     <div class="page-title">Compras</div>
-    <div class="page-subtitle">Pendientes desde OC y compras cerradas con documentos adjuntos.</div>
+    <div class="page-subtitle">Pendientes desde O.C. y compras cerradas con documentos adjuntos.</div>
   </div>
 </div>
 
-<div class="split">
+<div class="split split--form">
   <section class="panel">
-    <div class="panel-title">OC pendientes de compra</div>
+    <div class="panel-title">Ordenes de Compra pendientes de compra</div>
 
     <div *ngIf="!pendientes.length" class="empty-state">
-      No hay OCs pendientes de compra.
+      No hay Ordenes de Compra pendientes de compra.
     </div>
 
-    <div *ngIf="pendientes.length" class="table-wrap">
+    <div *ngIf="pendientes.length" class="table-wrap table-wrap--sticky-actions">
       <table>
         <thead>
           <tr>
-            <th>N° OC</th><th>Fecha</th><th>RQ</th><th>Proveedor</th><th>Especialidad</th><th>Proyecto</th><th>Estado</th><th>Total</th><th></th>
+            <th>N° O.C.</th><th>Fecha</th><th>RQ</th><th>Proveedor</th><th>Especialidad</th><th>Proyecto</th><th>Estado</th><th class="actions-col">Acciones</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let row of pendientes">
             <td>{{ row.numeroOrdenCompra || row.NumeroOrdenCompra || '-' }}</td>
-            <td>{{ row.fechaOrdenCompra || row.FechaOrdenCompra || '-' }}</td>
+            <td>{{ (row.fechaOrdenCompra || row.FechaOrdenCompra) ? ((row.fechaOrdenCompra || row.FechaOrdenCompra) | date:'dd/MM/yyyy') : '-' }}</td>
             <td>{{ row.numeroRequerimiento || row.NumeroRequerimiento || '-' }}</td>
             <td>{{ row.proveedor || row.Proveedor || '-' }}</td>
             <td>{{ row.especialidad || row.Especialidad || '-' }}</td>
             <td>{{ row.nombreProyecto || row.NombreProyecto || '-' }}</td>
             <td><span class="badge badge--pending">{{ row.estado || row.Estado || '-' }}</span></td>
-            <td>{{ row.total || row.Total || 0 }}</td>
-            <td><button class="btn btn-secondary" (click)="procesarPendiente(row)">Procesar</button></td>
+            <td><div class="actions actions--end"><button class="btn btn-secondary" (click)="procesarPendiente(row)">Procesar</button></div></td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <div class="panel" style="margin-top:18px;">
+    <div class="panel panel-embedded">
       <div class="panel-title">Compras cerradas</div>
 
       <div *ngIf="!comprasCerradas.length" class="empty-state">
         No hay compras cerradas.
       </div>
 
-      <div *ngIf="comprasCerradas.length" class="table-wrap">
+      <div *ngIf="comprasCerradas.length" class="table-wrap table-wrap--sticky-actions">
         <table>
           <thead>
             <tr>
-              <th>N° Compra</th><th>Fecha</th><th>OC</th><th>RQ</th><th>Proveedor</th><th>Especialidad</th><th>Proyecto</th><th>Estado</th><th>Total</th><th></th>
+              <th>N° Compra</th><th>Fecha</th><th>O.C.</th><th>RQ</th><th>Proveedor</th><th>Especialidad</th><th>Proyecto</th><th>Estado</th><th>Total</th><th class="actions-col">Acciones</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let row of comprasCerradas">
               <td>{{ row.numeroCompra || row.NumeroCompra || '-' }}</td>
-              <td>{{ row.fechaCompra || row.FechaCompra || '-' }}</td>
+              <td>{{ (row.fechaCompra || row.FechaCompra) ? ((row.fechaCompra || row.FechaCompra) | date:'dd/MM/yyyy') : '-' }}</td>
               <td>{{ row.numeroOrdenCompra || row.NumeroOrdenCompra || '-' }}</td>
               <td>{{ row.numeroRequerimiento || row.NumeroRequerimiento || '-' }}</td>
               <td>{{ row.proveedor || row.Proveedor || '-' }}</td>
               <td>{{ row.especialidad || row.Especialidad || '-' }}</td>
               <td>{{ row.nombreProyecto || row.NombreProyecto || '-' }}</td>
               <td><span class="badge badge--pending">{{ row.estado || row.Estado || '-' }}</span></td>
-              <td>{{ row.montoTotal || row.MontoTotal || row.total || row.Total || 0 }}</td>
-              <td><button class="btn btn-secondary" (click)="verCompra(row)">Ver</button></td>
+              <td class="table-number">{{ (row.montoTotal || row.MontoTotal || row.total || row.Total || 0) | number:'1.2-2' }}</td>
+              <td><div class="actions actions--end"><button class="btn btn-secondary" (click)="verCompra(row)">Ver</button></div></td>
             </tr>
           </tbody>
         </table>
@@ -69,11 +68,11 @@
     </div>
   </section>
 
-  <section class="panel">
+  <section class="panel panel--form">
     <div class="panel-title">Detalle / cierre de compra</div>
 
     <div *ngIf="!detalleOc && !detalleCompra" class="empty-state">
-      Selecciona una OC pendiente o una compra cerrada.
+      Selecciona una O.C. pendiente o una compra cerrada.
     </div>
 
     <div *ngIf="detalleOc">
@@ -81,22 +80,25 @@
         <span class="list-chip">{{ detalleOc.ordenCompra?.numeroOrdenCompra || detalleOc.ordenCompra?.NumeroOrdenCompra }}</span>
         <span class="list-chip">{{ detalleOc.ordenCompra?.estado || detalleOc.ordenCompra?.Estado }}</span>
       </div>
-      
-      <div class="toolbar" style="margin-bottom: 14px;">
-        <label>Especialidad:</label>
-        <select [(ngModel)]="filtrosTabla.especialidad" style="margin-left: 8px;">
-          <option value="TODAS">TODAS</option>
-          <option *ngFor="let e of especialidadesDisponibles" [value]="e">{{ e }}</option>
-        </select>
-        
-        <label style="margin-left: 15px;">Proveedor:</label>
-        <select [(ngModel)]="filtrosTabla.proveedor" style="margin-left: 8px;">
-          <option value="TODOS">TODOS</option>
-          <option *ngFor="let p of proveedoresDisponibles" [value]="p">{{ p }}</option>
-        </select>
+
+      <div class="toolbar filters-inline" style="margin-bottom:14px;">
+        <div class="field inline-field">
+          <label>Especialidad</label>
+          <select [(ngModel)]="filtrosTabla.especialidad">
+            <option value="TODAS">TODAS</option>
+            <option *ngFor="let e of especialidadesDisponibles" [value]="e">{{ e }}</option>
+          </select>
+        </div>
+        <div class="field inline-field">
+          <label>Proveedor</label>
+          <select [(ngModel)]="filtrosTabla.proveedor">
+            <option value="TODOS">TODOS</option>
+            <option *ngFor="let p of proveedoresDisponibles" [value]="p">{{ p }}</option>
+          </select>
+        </div>
       </div>
 
-      <div class="table-wrap purchase-table" *ngIf="itemPrecios.length">
+      <div class="table-wrap table-wrap--sticky-actions purchase-table" *ngIf="itemPrecios.length">
         <table>
           <thead>
             <tr>
@@ -115,7 +117,7 @@
               <td>{{ x.unidadMedida }}</td>
               <td>{{ x.cantidad }}</td>
               <td>{{ x.proveedor }}</td>
-              <td><button class="btn btn-secondary" (click)="abrirPrecioPorItem(x)">{{ x.total > 0 ? 'Editar precio' : 'Colocar precio' }}</button></td>
+              <td><div class="actions actions--end"><button class="btn btn-secondary" (click)="abrirPrecioPorItem(x)">{{ x.total > 0 ? 'Editar precio' : 'Colocar precio' }}</button></div></td>
             </tr>
             <tr *ngIf="!itemsFiltrados.length">
               <td colspan="6" class="empty-row">No hay ítems con el filtro seleccionado.</td>
@@ -123,18 +125,14 @@
           </tbody>
         </table>
       </div>
-      
-      <div class="panel" style="margin-top:18px; padding:16px;" *ngIf="itemPrecios.length">
-        <div class="panel-title" style="font-size:1rem;">Totales y Registro de la Compra</div>
-        <div class="form-grid two" style="margin-top:10px;">
-          <div class="field"><label>Número compra</label><input [(ngModel)]="form.numeroCompra"></div>
-          <div class="field"><label>Fecha compra</label><input type="date" [(ngModel)]="form.fechaCompra"></div>
-          
-          <div class="field"><label>Subtotal sin IGV</label><input [ngModel]="subtotalGeneral" readonly></div>
-          <div class="field"><label>Monto IGV</label><input [ngModel]="igvGeneral" readonly></div>
-          <div class="field"><label>Monto total</label><input [ngModel]="totalGeneral" readonly></div>
-          
-          <div class="field" style="grid-column:1/-1;">
+
+      <div class="panel panel-embedded purchase-register" *ngIf="itemPrecios.length">
+        <div class="panel-title purchase-register__title">Totales y Registro de la Compra</div>
+        <div class="helper-strip">El número de compra y la fecha se generan automáticamente. Los montos se calculan dentro de cada ítem.</div>
+        <div class="form-grid two purchase-register-grid">
+          <div class="field auto-field"><label>Número compra</label><input [(ngModel)]="form.numeroCompra" readonly></div>
+          <div class="field auto-field"><label>Fecha compra</label><input type="date" [(ngModel)]="form.fechaCompra" readonly></div>
+          <div class="field full-width">
             <button class="btn btn-primary" (click)="registrarCompra()">Registrar compra y subir documentos</button>
             <button class="btn btn-ghost" (click)="resetForm()">Cancelar / Limpiar</button>
           </div>
@@ -156,29 +154,29 @@
               <td>{{ item.material || item.Material }}</td>
               <td>{{ item.unidadMedida || item.UnidadMedida }}</td>
               <td>{{ item.cantidad || item.Cantidad }}</td>
-              <td>{{ item.precioUnitario || item.PrecioUnitario }}</td>
-              <td>{{ item.subtotal || item.Subtotal || (item.cantidad * item.precioUnitario) | number:'1.2-2' }}</td>
+              <td class="table-number">{{ (item.precioUnitario || item.PrecioUnitario || 0) | number:'1.2-2' }}</td>
+              <td class="table-number">{{ (item.subtotal || item.Subtotal || (item.cantidad * item.precioUnitario) || 0) | number:'1.2-2' }}</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <div class="panel" style="margin-top:18px; padding:16px;">
-        <div class="panel-title" style="font-size:1rem;">Documentos subidos</div>
+      <div class="panel panel-embedded docs-panel">
+        <div class="panel-title docs-title">Documentos subidos</div>
 
         <div *ngIf="!documentos.length" class="empty-state">
           No hay documentos adjuntos.
         </div>
 
-        <div *ngIf="documentos.length" class="table-wrap">
+        <div *ngIf="documentos.length" class="table-wrap table-wrap--sticky-actions">
           <table>
             <thead><tr><th>Archivo</th><th>Extensión</th><th>Fecha</th><th>Acción</th></tr></thead>
             <tbody>
               <tr *ngFor="let d of documentos">
                 <td>{{ d.nombreArchivo || d.NombreArchivo }}</td>
                 <td>{{ d.extension || d.Extension }}</td>
-                <td>{{ d.fechaCreacion || d.FechaCreacion }}</td>
-                <td><button class="btn btn-secondary" (click)="downloadDocumento(d, detalleCompra)">Descargar</button></td>
+                <td>{{ (d.fechaCreacion || d.FechaCreacion) ? ((d.fechaCreacion || d.FechaCreacion) | date:'dd/MM/yyyy') : '-' }}</td>
+                <td><div class="actions actions--end"><button class="btn btn-secondary" (click)="downloadDocumento(d, detalleCompra)">Descargar</button></div></td>
               </tr>
             </tbody>
           </table>
@@ -190,46 +188,80 @@
   </section>
 </div>
 
-<div class="modal open" *ngIf="modalOpen">
-  <div class="modal-overlay" (click)="cerrarModal()"></div>
-  <div class="modal-pane">
-    <div class="modal-header">
-      <div class="modal-title">Precio para {{ modalItem?.material }}</div>
-      <button class="modal-close" (click)="cerrarModal()">×</button>
+<div class="modal-backdrop" *ngIf="modalOpen && modalItem">
+  <div class="modal-card purchase-modal">
+    <div class="modal-header purchase-modal__header">
+      <div>
+        <div class="panel-title purchase-modal__title">Precio para {{ modalItem.material }}</div>
+        <div class="modal-sub">Completa el cálculo de la línea y adjunta los PDFs de sustento.</div>
+      </div>
+      <button class="modal-close" type="button" (click)="cerrarModal()">×</button>
     </div>
-    <div class="modal-body">
-      <div class="form-grid two">
+
+    <div class="purchase-modal__meta">
+      <div class="meta-card">
+        <span class="meta-label">Especialidad</span>
+        <strong>{{ modalItem.especialidad }}</strong>
+      </div>
+      <div class="meta-card">
+        <span class="meta-label">Proveedor</span>
+        <strong>{{ modalItem.proveedor }}</strong>
+      </div>
+      <div class="meta-card">
+        <span class="meta-label">Unidad</span>
+        <strong>{{ modalItem.unidadMedida }}</strong>
+      </div>
+      <div class="meta-card">
+        <span class="meta-label">Cantidad</span>
+        <strong>{{ modalItem.cantidad }}</strong>
+      </div>
+    </div>
+
+    <div class="field full-width field-segmented">
+      <label>Incluye IGV</label>
+      <div class="segmented-control">
+        <button type="button" class="segmented-option" [class.active]="modalItem.incluyeIgv" (click)="setModalIncluyeIgv(true)">Sí</button>
+        <button type="button" class="segmented-option" [class.active]="!modalItem.incluyeIgv" (click)="setModalIncluyeIgv(false)">No</button>
+      </div>
+    </div>
+
+    <div class="form-grid two purchase-modal__grid">
+      <div class="field">
+        <label>Precio unitario</label>
+        <input type="number" [(ngModel)]="modalItem.precioUnitario" (ngModelChange)="onModalPrecioChange()">
+      </div>
+      <div class="field">
+        <label>Monto total</label>
+        <input type="number" [(ngModel)]="modalItem.total" (ngModelChange)="onModalTotalChange()">
+      </div>
+
+      <ng-container *ngIf="modalItem.incluyeIgv">
         <div class="field">
-          <label>Cantidad</label>
-          <input type="number" [(ngModel)]="modalItem!.cantidad" (ngModelChange)="onModalTotalChange()" readonly>
+          <label>Subtotal sin IGV</label>
+          <input type="number" [ngModel]="modalItem.subtotalSinIgv" readonly>
         </div>
         <div class="field">
-          <label>Incluye IGV</label>
-          <div style="margin-top: 8px;">
-            <input type="checkbox" [(ngModel)]="modalItem!.incluyeIgv" (change)="onModalIncluyeIgvChange()"> Sí incluye
-          </div>
+          <label>Monto IGV</label>
+          <input type="number" [ngModel]="modalItem.montoIgv" readonly>
         </div>
-        <div class="field">
-          <label>Precio Unitario</label>
-          <input type="number" [(ngModel)]="modalItem!.precioUnitario" (ngModelChange)="onModalPrecioChange()">
-        </div>
-        <div class="field">
-          <label>Total</label>
-          <input type="number" [(ngModel)]="modalItem!.total" (ngModelChange)="onModalTotalChange()">
-        </div>
-        <div class="field" style="grid-column:1/-1;">
-          <label>Observación del ítem</label>
-          <input [(ngModel)]="modalItem!.observacion">
-        </div>
-        <div class="field" style="grid-column:1/-1;">
-          <label>Adjuntar PDFs (Cotización / Sustento)</label>
-          <input type="file" multiple accept=".pdf,application/pdf" (change)="onModalFilesSelected($event)" #modalFilesInput>
-          <div style="font-size: 0.8em; margin-top: 5px;" *ngIf="modalItem?.files?.length">
-            Se subirán {{ modalItem?.files?.length }} archivos PDF.
+      </ng-container>
+
+      <div class="field full-width">
+        <label>Observación del ítem</label>
+        <input [(ngModel)]="modalItem.observacion">
+      </div>
+      <div class="field full-width">
+        <label>Adjuntar PDFs (cotización / sustento)</label>
+        <input type="file" multiple accept=".pdf,application/pdf" (change)="onModalFilesSelected($event)" #modalFilesInput>
+        <div class="file-chip-list" *ngIf="modalItem.files?.length">
+          <div class="file-chip" *ngFor="let file of modalItem.files; index as i">
+            <span>{{ file.name }}</span>
+            <button type="button" class="file-chip__remove" (click)="removeModalFile(i)">Quitar</button>
           </div>
         </div>
       </div>
     </div>
+
     <div class="modal-footer">
       <button class="btn btn-primary" (click)="guardarPrecioItem()">Guardar precio</button>
       <button class="btn btn-ghost" (click)="cerrarModal()">Cancelar</button>

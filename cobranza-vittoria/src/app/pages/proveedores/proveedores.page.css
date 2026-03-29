@@ -1,11 +1,23 @@
+
 .providers-layout {
   align-items: start;
 }
-
+.providers-layout .panel--form {
+  max-width: 470px;
+  justify-self: end;
+}
 .providers-toolbar {
   margin-bottom: 0;
 }
-
 .providers-message {
   background: #fafbff;
+}
+.providers-layout textarea {
+  min-height: 92px;
+}
+@media (max-width: 1320px) {
+  .providers-layout .panel--form {
+    max-width: none;
+    justify-self: stretch;
+  }
 }

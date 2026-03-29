@@ -1,24 +1,24 @@
 <div class="page-header">
   <div>
     <div class="page-title">Requerimientos</div>
-    <div class="page-subtitle">Registro, edición y envío a orden de compra.</div>
+    <div class="page-subtitle">Registro, edición y envío a orden de compra en una sola vista.</div>
   </div>
 </div>
 
-<div class="page-grid-2">
+<div class="page-grid-2 split--form requer-layout">
   <section class="panel">
     <div class="panel-title">Detalle del requerimiento</div>
 
-    <div *ngIf="!detalle" class="empty-state">Selecciona un requerimiento del listado para ver primero el detalle.</div>
+    <div *ngIf="!detalle" class="empty-state">Selecciona un requerimiento del listado para revisar el detalle completo.</div>
 
     <div *ngIf="detalle">
-      <div class="toolbar">
+      <div class="toolbar detail-toolbar">
         <span class="list-chip">N° {{ detalle.requerimiento?.numeroRequerimiento }}</span>
         <span class="list-chip">{{ detalle.requerimiento?.estado }}</span>
         <span class="list-chip">{{ detalle.requerimiento?.especialidades || '-' }}</span>
         <button class="btn btn-primary" *ngIf="puedeEditarDetalle" (click)="editarDesdeDetalle()">Editar</button>
-        <button class="btn btn-success" *ngIf="puedeEnviarOC" (click)="enviarAOC()">Enviar a OC</button>
-        <span class="list-chip" *ngIf="!puedeEditarDetalle && !puedeEnviarOC" style="background:#fee2e2; color:#991b1b;">Bloqueado</span>
+        <button class="btn btn-success" *ngIf="puedeEnviarOC" (click)="enviarAOC()">Enviar a O.C.</button>
+        <span class="list-chip blocked-chip" *ngIf="!puedeEditarDetalle && !puedeEnviarOC">Bloqueado</span>
       </div>
 
       <div class="table-wrap" *ngIf="detalle.items?.length">
@@ -37,7 +37,7 @@
       </div>
     </div>
 
-    <div class="panel" style="margin-top:18px;">
+    <div class="panel panel-embedded">
       <div class="panel-title">Listado</div>
 
       <div class="filters-grid">
@@ -71,7 +71,7 @@
       </div>
 
       <div *ngIf="!rows.length" class="empty-state">No hay requerimientos registrados.</div>
-      <div *ngIf="rows.length" class="table-wrap">
+      <div *ngIf="rows.length" class="table-wrap table-wrap--sticky-actions requer-table">
         <table>
           <thead>
             <tr>
@@ -81,7 +81,7 @@
               <th>Proyecto</th>
               <th>Solicitante</th>
               <th>Estado</th>
-              <th></th>
+              <th class="actions-col">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -92,7 +92,7 @@
               <td>{{ row.nombreProyecto }}</td>
               <td>{{ row.solicitante }}</td>
               <td><span class="badge badge--pending">{{ row.estado }}</span></td>
-              <td class="actions"><button class="btn btn-secondary" (click)="view(row)">Ver</button></td>
+              <td><div class="actions actions--end"><button class="btn btn-secondary" (click)="view(row)">Ver</button></div></td>
             </tr>
           </tbody>
         </table>
@@ -100,23 +100,45 @@
     </div>
   </section>
 
-  <section class="panel">
+  <section class="panel panel--form requer-form-panel">
     <div class="panel-title">{{ editando ? 'Editar requerimiento' : 'Nuevo requerimiento' }}</div>
-    <div class="helper-text">Un requerimiento puede incluir materiales de varias especialidades. Las especialidades se calculan automáticamente según los ítems agregados.</div>
-    <div class="form-grid two">
-      <div class="field"><label>Número</label><input [(ngModel)]="form.numeroRequerimiento" /></div>
-      <div class="field"><label>Fecha</label><input type="date" [(ngModel)]="form.fechaRequerimiento" /></div>
-      <div class="field"><label>Proyecto</label><select [(ngModel)]="form.idProyecto"><option [ngValue]="null">Seleccionar</option><option *ngFor="let p of proyectos" [ngValue]="p.idProyecto">{{ p.nombreProyecto }}</option></select></div>
-      <div class="field"><label>Solicitante</label><select [(ngModel)]="form.idUsuarioSolicitante"><option [ngValue]="null">Seleccionar</option><option *ngFor="let u of usuarios" [ngValue]="u.idUsuario">{{ u.nombres }} {{ u.apellidos || '' }}</option></select></div>
-      <div class="field"><label>Fecha entrega</label><input type="date" [(ngModel)]="form.fechaEntrega" /></div>
-      <div class="field full-row"><label>Descripción</label><textarea [(ngModel)]="form.descripcion"></textarea></div>
-      <div class="field full-row"><label>Observación</label><textarea [(ngModel)]="form.observacion"></textarea></div>
+    <div class="helper-text">Número y fecha se generan automáticamente. Completa proyecto, solicitante, entrega e ítems.</div>
+
+    <div class="form-grid two requer-form-grid">
+      <div class="field auto-field">
+        <label>Número</label>
+        <input [(ngModel)]="form.numeroRequerimiento" readonly />
+      </div>
+      <div class="field auto-field">
+        <label>Fecha</label>
+        <input type="date" [(ngModel)]="form.fechaRequerimiento" readonly />
+      </div>
+      <div class="field">
+        <label>Proyecto</label>
+        <select [(ngModel)]="form.idProyecto">
+          <option [ngValue]="null">Seleccionar</option>
+          <option *ngFor="let p of proyectos" [ngValue]="p.idProyecto">{{ p.nombreProyecto }}</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Solicitante</label>
+        <select [(ngModel)]="form.idUsuarioSolicitante">
+          <option [ngValue]="null">Seleccionar</option>
+          <option *ngFor="let u of usuarios" [ngValue]="u.idUsuario">{{ u.nombres }} {{ u.apellidos || '' }}</option>
+        </select>
+      </div>
+      <div class="field compact-field">
+        <label>Fecha entrega</label>
+        <input type="date" [(ngModel)]="form.fechaEntrega" />
+      </div>
     </div>
 
-    <div class="panel" style="margin-top:18px; padding:16px;">
-      <div class="panel-title" style="font-size:1rem;">Detalle</div>
-
-      <div class="toolbar" style="margin-bottom:12px;">
+    <div class="detail-card">
+      <div class="detail-card__head">
+        <div>
+          <div class="panel-title detail-card__title">Detalle</div>
+          <div class="helper-text detail-card__text">Agrega materiales por especialidad y ajusta cantidades.</div>
+        </div>
         <button class="btn btn-secondary" (click)="abrirModalEspecialidades()">Agregar material por especialidad</button>
       </div>
 
@@ -127,9 +149,9 @@
         </div>
       </div>
 
-      <div *ngIf="form.items.length" class="table-wrap">
+      <div *ngIf="form.items.length" class="table-wrap table-wrap--sticky-actions">
         <table>
-          <thead><tr><th>Especialidad</th><th>Material</th><th>Unidad</th><th>Cantidad</th><th>Observación</th><th></th></tr></thead>
+          <thead><tr><th>Especialidad</th><th>Material</th><th>Unidad</th><th>Cantidad</th><th>Observación</th><th class="actions-col">Acciones</th></tr></thead>
           <tbody>
             <tr *ngFor="let x of form.items; index as i">
               <td>{{ x.especialidad || '-' }}</td>
@@ -137,18 +159,18 @@
               <td>{{ x.unidadMedida || x.unidad || '-' }}</td>
               <td>{{ x.cantidad }}</td>
               <td>{{ x.observacion || '-' }}</td>
-              <td class="actions"><button class="btn btn-secondary" (click)="abrirModalEspecialidades(i)">Editar</button> <button class="btn btn-danger" (click)="removeItem(i)">Quitar</button></td>
+              <td><div class="actions actions--end"><button class="btn btn-secondary" (click)="abrirModalEspecialidades(i)">Editar</button><button class="btn btn-danger" (click)="removeItem(i)">Quitar</button></div></td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <div *ngIf="!form.items.length" class="empty-state" style="margin-top:0;">
-        Aún no agregaste ítems. Usa el botón <strong>Agregar material por especialidad</strong>.
+      <div *ngIf="!form.items.length" class="empty-state empty-state--tight">
+        Todavía no agregaste ítems al requerimiento.
       </div>
     </div>
 
-    <div class="toolbar" style="margin-top:14px;">
+    <div class="toolbar form-actions">
       <button class="btn btn-primary" (click)="save()" [disabled]="saving">{{ saving ? 'Guardando...' : (editando ? 'Actualizar requerimiento' : 'Guardar requerimiento') }}</button>
       <button class="btn btn-ghost" (click)="reset()">Limpiar</button>
     </div>
@@ -190,7 +212,7 @@
       </div>
 
       <div class="field">
-        <label>Observación item</label>
+        <label>Observación ítem</label>
         <input [(ngModel)]="modalItem.observacion" />
       </div>
     </div>

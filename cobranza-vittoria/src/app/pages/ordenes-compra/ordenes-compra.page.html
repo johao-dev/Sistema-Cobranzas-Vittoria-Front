@@ -1,58 +1,58 @@
 <div class="page-header">
   <div>
     <div class="page-title">Órdenes de compra</div>
-    <div class="page-subtitle">Bandeja de requerimientos enviados y listado de OCs generadas.</div>
+    <div class="page-subtitle">Bandeja de requerimientos enviados y listado de O.C. generadas.</div>
   </div>
 </div>
 
-<div class="split">
+<div class="split split--form">
   <section class="panel">
-    <div class="panel-title">Bandeja de RQ enviados a OC</div>
+    <div class="panel-title">Bandeja de RQ enviados a O.C.</div>
 
     <div *ngIf="!rqPendientesOc.length" class="empty-state">
-      No hay requerimientos enviados a OC.
+      No hay requerimientos enviados a O.C.
     </div>
 
-    <div *ngIf="rqPendientesOc.length" class="table-wrap">
+    <div *ngIf="rqPendientesOc.length" class="table-wrap table-wrap--sticky-actions">
       <table>
         <thead>
-          <tr><th>RQ</th><th>Fecha</th><th>Especialidad</th><th>Proyecto</th><th>Solicitante</th><th>Estado</th><th></th></tr>
+          <tr><th>RQ</th><th>Fecha</th><th>Especialidad</th><th>Proyecto</th><th>Solicitante</th><th>Estado</th><th class="actions-col">Acciones</th></tr>
         </thead>
         <tbody>
           <tr *ngFor="let row of rqPendientesOc">
             <td>{{ row.numeroRequerimiento }}</td>
-            <td>{{ row.fechaRequerimiento | date:'yyyy-MM-dd' }}</td>
+            <td>{{ row.fechaRequerimiento | date:'dd/MM/yyyy' }}</td>
             <td>{{ row.especialidad }}</td>
             <td>{{ row.nombreProyecto }}</td>
             <td>{{ row.solicitante }}</td>
             <td><span class="badge badge--pending">{{ row.estado }}</span></td>
-            <td><button class="btn btn-secondary" (click)="procesarRq(row)">Procesar</button></td>
+            <td><div class="actions actions--end"><button class="btn btn-secondary" (click)="procesarRq(row)">Procesar</button></div></td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <div class="panel" style="margin-top:18px;">
+    <div class="panel panel-embedded">
       <div class="panel-title">Órdenes de compra generadas</div>
 
       <div *ngIf="!ordenesCreadas.length" class="empty-state">
         No hay órdenes de compra generadas.
       </div>
 
-      <div *ngIf="ordenesCreadas.length" class="table-wrap">
+      <div *ngIf="ordenesCreadas.length" class="table-wrap table-wrap--sticky-actions">
         <table>
           <thead>
-            <tr><th>N° OC</th><th>Fecha</th><th>RQ</th><th>Proveedor</th><th>Proyecto</th><th>Estado</th><th></th></tr>
+            <tr><th>N° O.C.</th><th>Fecha</th><th>RQ</th><th>Proveedor</th><th>Proyecto</th><th>Estado</th><th class="actions-col">Acciones</th></tr>
           </thead>
           <tbody>
             <tr *ngFor="let row of ordenesCreadas">
               <td>{{ row.numeroOrdenCompra }}</td>
-              <td>{{ row.fechaOrdenCompra | date:'yyyy-MM-dd' }}</td>
+              <td>{{ row.fechaOrdenCompra | date:'dd/MM/yyyy' }}</td>
               <td>{{ row.numeroRequerimiento || '-' }}</td>
               <td>{{ row.proveedor || '-' }}</td>
               <td>{{ row.nombreProyecto || '-' }}</td>
               <td><span class="badge badge--pending">{{ row.estado }}</span></td>
-              <td><button class="btn btn-secondary" (click)="verOc(row)">Ver</button></td>
+              <td><div class="actions actions--end"><button class="btn btn-secondary" (click)="verOc(row)">Ver</button></div></td>
             </tr>
           </tbody>
         </table>
@@ -60,11 +60,11 @@
     </div>
   </section>
 
-  <section class="panel">
-    <div class="panel-title">Continuar flujo de OC</div>
+  <section class="panel panel--form">
+    <div class="panel-title">Continuar flujo de O.C.</div>
 
     <div *ngIf="!detalleRq && !detalleOc" class="empty-state">
-      Selecciona un requerimiento enviado o una OC generada.
+      Selecciona un requerimiento enviado o una O.C. generada.
     </div>
 
     <div *ngIf="detalleRq">
@@ -73,28 +73,28 @@
         <span class="list-chip">{{ detalleRq.requerimiento?.estado }}</span>
       </div>
 
-      <div class="form-grid two">
-        <div class="field"><label>Número OC</label><input [(ngModel)]="form.numeroOrdenCompra"></div>
-        <div class="field"><label>Fecha</label><input type="date" [(ngModel)]="form.fechaOrdenCompra"></div>
+      <div class="oc-form-note">El número de O.C. se genera correlativamente y la fecha toma el día de hoy.</div>
+
+      <div class="form-grid two oc-form-grid">
+        <div class="field auto-field"><label>Número O.C.</label><input [(ngModel)]="form.numeroOrdenCompra" readonly></div>
+        <div class="field auto-field"><label>Fecha</label><input type="date" [(ngModel)]="form.fechaOrdenCompra" readonly></div>
         <div class="field"><label>Proyecto</label><select [(ngModel)]="form.idProyecto"><option [ngValue]="null">Seleccionar</option><option *ngFor="let p of proyectos" [ngValue]="p.idProyecto">{{ p.nombreProyecto }}</option></select></div>
         <div class="field"><label>Usuario creación</label><select [(ngModel)]="form.idUsuarioCreacion"><option [ngValue]="null">Seleccionar</option><option *ngFor="let u of usuarios" [ngValue]="u.idUsuario">{{ u.nombres }} {{ u.apellidos || '' }}</option></select></div>
-        <div class="field"><label>Ruta PDF</label><input [(ngModel)]="form.rutaPdf"></div>
-        <div class="field" style="grid-column:1/-1;"><label>Descripción</label><textarea [(ngModel)]="form.descripcion"></textarea></div>
       </div>
 
-      <div class="panel" style="margin-top:18px; padding:16px;">
-        <div class="panel-title" style="font-size:1rem;">Detalle jalado del requerimiento</div>
+      <div class="panel panel-embedded panel-compact">
+        <div class="panel-title panel-subtitle">Detalle jalado del requerimiento</div>
         <div class="table-wrap" *ngIf="form.items.length">
           <table>
-            <thead><tr><th>Especialidad</th><th>Material</th><th>Unidad</th><th>Cantidad</th><th>Proveedor</th></tr></thead>
+            <thead><tr><th>Especialidad</th><th>Material</th><th>Unidad</th><th>Cantidad</th><th class="provider-column">Proveedor</th></tr></thead>
             <tbody>
               <tr *ngFor="let x of form.items">
                 <td>{{ x.especialidad }}</td>
                 <td>{{ x.material }}</td>
                 <td>{{ x.unidadMedida }}</td>
                 <td>{{ x.cantidad }}</td>
-                <td>
-                  <select [(ngModel)]="x.idProveedor">
+                <td class="provider-cell">
+                  <select [(ngModel)]="x.idProveedor" class="provider-select">
                     <option [ngValue]="null">Seleccionar</option>
                     <option *ngFor="let p of proveedores" [ngValue]="p.idProveedor">{{ p.razonSocial }}</option>
                   </select>
@@ -106,13 +106,13 @@
       </div>
 
       <div class="toolbar" style="margin-top:14px;">
-        <button class="btn btn-primary" (click)="save()">Generar OC</button>
+        <button class="btn btn-primary" (click)="save()">Generar O.C.</button>
         <button class="btn btn-ghost" (click)="resetFormulario()">Limpiar</button>
       </div>
     </div>
 
-    <div *ngIf="detalleOc" class="panel">
-      <div class="panel-title">Detalle de OC generada</div>
+    <div *ngIf="detalleOc" class="panel panel-embedded panel-compact">
+      <div class="panel-title">Detalle de O.C. generada</div>
       <div class="toolbar" style="margin-bottom:14px;">
         <span class="list-chip">{{ detalleOc.ordenCompra?.numeroOrdenCompra }}</span>
         <span class="list-chip">{{ detalleOc.ordenCompra?.estado }}</span>

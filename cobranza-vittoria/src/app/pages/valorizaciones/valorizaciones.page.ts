@@ -76,7 +76,7 @@ export class ValorizacionesPage implements OnInit {
   }
 
   get porcentajeGarantiaActual(): number {
-    return Number(this.cabecera?.porcentajeGarantia ?? 0.04);
+    return Number(this.cabecera?.porcentajeGarantia ?? 0.05);
   }
 
   get porcentajeDetraccionActual(): number {
@@ -89,7 +89,7 @@ export class ValorizacionesPage implements OnInit {
 
   get montoDetraccionCalculado(): number {
     return this.formDetalle.aplicaDetraccion && this.detraccionHabilitadaPorMonto
-      ? this.redondear(Number(this.formDetalle.montoFactura || 0) * this.porcentajeDetraccionActual) : 0;
+      ? this.redondearEntero(Number(this.formDetalle.montoFactura || 0) * this.porcentajeDetraccionActual) : 0;
   }
 
   get montoGarantiaCalculado(): number {
@@ -190,6 +190,9 @@ export class ValorizacionesPage implements OnInit {
       porcentajeGarantia: cfg.porcentajeGarantia,
       porcentajeDetraccion: cfg.porcentajeDetraccion
     };
+    this.resumen = this.buildResumenInicial(cfg);
+    this.detalle = [];
+    this.syncDetalleCalculados();
   }
 
   crearDesdeConfiguracion(row: any) {
@@ -203,8 +206,9 @@ export class ValorizacionesPage implements OnInit {
     };
     this.onConfiguracionSeleccionada();
     this.detalle = [];
-    this.resumen = null;
+    this.resumen = this.buildResumenInicial(row);
     this.formDetalle = this.detalleVacio();
+    this.syncDetalleCalculados();
   }
 
   guardarValorizacion(): void {
@@ -253,6 +257,7 @@ export class ValorizacionesPage implements OnInit {
           usuario: 'system'
         };
         this.formDetalle = this.detalleVacio(idValorizacion);
+        this.syncDetalleCalculados();
         this.cdr.detectChanges();
       },
       error: e => { this.msg = e?.error?.message || 'No se pudo obtener la valorización.'; this.cdr.detectChanges(); },
@@ -262,6 +267,12 @@ export class ValorizacionesPage implements OnInit {
 
   onDetalleMontoFacturaChange(): void {
     if (!this.detraccionHabilitadaPorMonto) this.formDetalle.aplicaDetraccion = false;
+    this.syncDetalleCalculados();
+  }
+
+  onDetalleReglasChange(): void {
+    if (!this.detraccionHabilitadaPorMonto) this.formDetalle.aplicaDetraccion = false;
+    this.syncDetalleCalculados();
   }
 
   guardarDetalle(): void {
@@ -277,7 +288,7 @@ export class ValorizacionesPage implements OnInit {
       numeroOperacion: '',
       bancoTransferencia: '',
       bancoDestino: '',
-      montoTransferido: Number(this.formDetalle.montoTransferido || 0),
+      montoTransferido: this.montoAAbonarCalculado,
       porcentajeDetraccionAplicado: this.formDetalle.aplicaDetraccion && this.detraccionHabilitadaPorMonto ? this.porcentajeDetraccionActual : 0,
       porcentajeGarantiaAplicado: this.formDetalle.aplicaGarantia ? this.porcentajeGarantiaActual : 0,
       usuario: 'system'
@@ -347,6 +358,7 @@ export class ValorizacionesPage implements OnInit {
     this.resumen = null;
     this.formValorizacion = { idValorizacion: null, idConfiguracion: null, periodo: this.defaultPeriodo(), empresa: '', observacion: '', usuario: 'system' };
     this.formDetalle = this.detalleVacio();
+    this.syncDetalleCalculados();
   }
 
   private defaultPeriodo(): string {
@@ -373,6 +385,25 @@ export class ValorizacionesPage implements OnInit {
     return Math.round((Number(value || 0) + Number.EPSILON) * 100) / 100;
   }
 
+  private redondearEntero(value: number): number {
+    return Math.round(Number(value || 0));
+  }
+
+  private syncDetalleCalculados(): void {
+    this.formDetalle.montoTransferido = this.montoAAbonarCalculado;
+  }
+
+  private buildResumenInicial(source?: any): any {
+    return {
+      cotizacion: Number(source?.montoCotizacion ?? source?.cotizacion ?? this.cabecera?.cotizacion ?? 0),
+      garantia: 0,
+      facturado: 0,
+      transferido: 0,
+      resta: 0,
+      liquidar: 0
+    };
+  }
+
   private mapConfiguracion(x: any): any {
     return {
       idConfiguracion: x?.idConfiguracion ?? x?.idProveedorEspecialidadCotizacion ?? null,
@@ -386,7 +417,7 @@ export class ValorizacionesPage implements OnInit {
       servicio: x?.servicio ?? '',
       moneda: x?.moneda ?? 'PEN',
       montoCotizacion: Number(x?.montoCotizacion ?? 0),
-      porcentajeGarantia: Number(x?.porcentajeGarantia ?? 0.04),
+      porcentajeGarantia: Number(x?.porcentajeGarantia ?? 0.05),
       porcentajeDetraccion: Number(x?.porcentajeDetraccion ?? 0.04)
     };
   }

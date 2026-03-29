@@ -1,21 +1,21 @@
 <div class="page-header"><div><div class="page-title">Usuarios</div><div class="page-subtitle">Gestión de usuarios y asignación de roles.</div></div></div>
-<div class="split">
+<div class="split split--form">
   <section class="panel">
     <div class="panel-title">Listado</div>
     <div class="filters"><div class="field"><label>Estado</label><select [(ngModel)]="filtroActivo" (change)="load()"><option [ngValue]="null">Todos</option><option [ngValue]="true">Activos</option><option [ngValue]="false">Inactivos</option></select></div></div>
     <div *ngIf="!rows.length" class="empty-state">No hay usuarios registrados.</div>
-    <div *ngIf="rows.length" class="table-wrap"><table><thead><tr><th>Nombres</th><th>Login</th><th>Correo</th><th>Estado</th><th></th></tr></thead><tbody>
-      <tr *ngFor="let row of rows"><td>{{ row.nombres }} {{ row.apellidos || '' }}</td><td>{{ row.usuarioLogin }}</td><td>{{ row.correo || '-' }}</td><td><span class="badge" [class.badge--ok]="row.activo" [class.badge--neutral]="!row.activo">{{ row.activo ? 'Activo' : 'Inactivo' }}</span></td><td><button class="btn btn-secondary" (click)="select(row)">Editar</button></td></tr>
+    <div *ngIf="rows.length" class="table-wrap table-wrap--sticky-actions"><table><thead><tr><th>Nombres</th><th>Login</th><th>Correo</th><th>Estado</th><th class="actions-col">Acciones</th></tr></thead><tbody>
+      <tr *ngFor="let row of rows"><td>{{ row.nombres }} {{ row.apellidos || '' }}</td><td>{{ row.usuarioLogin }}</td><td>{{ row.correo || '-' }}</td><td><span class="badge" [class.badge--ok]="row.activo" [class.badge--neutral]="!row.activo">{{ row.activo ? 'Activo' : 'Inactivo' }}</span></td><td><div class="actions actions--end"><button class="btn btn-secondary" (click)="select(row)">Editar</button></div></td></tr>
     </tbody></table></div>
   </section>
-  <section class="panel">
+  <section class="panel panel--form">
     <div class="panel-title">Formulario</div>
     <div class="form-grid two">
       <div class="field"><label>Nombres</label><input [(ngModel)]="form.nombres"></div>
       <div class="field"><label>Apellidos</label><input [(ngModel)]="form.apellidos"></div>
       <div class="field"><label>Correo</label><input [(ngModel)]="form.correo"></div>
       <div class="field"><label>Login</label><input [(ngModel)]="form.usuarioLogin"></div>
-      <div class="field"><label>PasswordHash</label><input [(ngModel)]="form.passwordHash"></div>
+      <div class="field"><label>Contraseña</label><input [(ngModel)]="form.passwordHash"></div>
       <div class="field"><label>Estado</label><select [(ngModel)]="form.activo"><option [ngValue]="true">Activo</option><option [ngValue]="false">Inactivo</option></select></div>
     </div>
     <div class="toolbar" style="margin-top:14px;"><button class="btn btn-primary" (click)="save()" [disabled]="!form.nombres || !form.usuarioLogin || !form.passwordHash">Guardar</button><button class="btn btn-ghost" (click)="reset()">Limpiar</button></div>

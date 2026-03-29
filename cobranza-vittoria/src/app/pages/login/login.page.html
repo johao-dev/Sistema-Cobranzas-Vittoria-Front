@@ -1,0 +1,40 @@
+<div class="login-shell">
+  <section class="login-panel login-panel--visual">
+    <img src="/logo-vittoria.png?v=3" alt="Vittoria" class="login-brand" />
+    <div class="login-badge">Sistema interno</div>
+    <h1>Control de gastos Vittoria</h1>
+    <p>Accede con tu usuario para ingresar a compras, valorizaciones, kardex y gastos administrativos.</p>
+    <ul class="login-highlights">
+      <li>Compras y O.C. con trazabilidad</li>
+      <li>Valorizaciones con resumen y facturas</li>
+      <li>Gastos administrativos con documentos</li>
+    </ul>
+  </section>
+
+  <section class="login-panel login-panel--form">
+    <div class="login-form__header">
+      <div class="login-form__eyebrow">Bienvenido</div>
+      <h2>Iniciar sesión</h2>
+      <p>Usa tu usuario y contraseña registrados en el sistema.</p>
+    </div>
+
+    <div class="field">
+      <label>Usuario</label>
+      <input type="text" [(ngModel)]="form.usuarioLogin" placeholder="Tu usuario" (keyup.enter)="submit()" />
+    </div>
+
+    <div class="field">
+      <label>Contraseña</label>
+      <div class="password-box">
+        <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="form.password" placeholder="Tu contraseña" (keyup.enter)="submit()" />
+        <button type="button" class="password-box__toggle" (click)="showPassword = !showPassword">
+          {{ showPassword ? 'Ocultar' : 'Ver' }}
+        </button>
+      </div>
+    </div>
+
+    <button type="button" class="btn btn-primary login-submit" [disabled]="loading" (click)="submit()">
+      {{ loading ? 'Ingresando...' : 'Ingresar' }}
+    </button>
+  </section>
+</div>

@@ -5,7 +5,7 @@
   </div>
 </div>
 
-<div class="split providers-layout">
+<div class="split split--form providers-layout">
   <section class="panel">
     <div class="panel-title">Listado</div>
 
@@ -13,7 +13,7 @@
       No hay proveedores registrados.
     </div>
 
-    <div *ngIf="rows.length" class="table-wrap">
+    <div *ngIf="rows.length" class="table-wrap table-wrap--sticky-actions">
       <table>
         <thead>
           <tr>
@@ -22,7 +22,7 @@
             <th>Contacto</th>
             <th>Teléfono</th>
             <th>Correo</th>
-            <th></th>
+            <th class="actions-col">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -32,16 +32,14 @@
             <td>{{ row.contacto || '-' }}</td>
             <td>{{ row.telefono || '-' }}</td>
             <td>{{ row.correo || '-' }}</td>
-            <td>
-              <button class="btn btn-secondary" (click)="edit(row)">Editar</button>
-            </td>
+            <td><div class="actions actions--end"><button class="btn btn-secondary" (click)="edit(row)">Editar</button></div></td>
           </tr>
         </tbody>
       </table>
     </div>
   </section>
 
-  <section class="panel">
+  <section class="panel panel--form">
     <div class="panel-title">Formulario</div>
 
     <div class="form-grid two">
@@ -97,7 +95,7 @@
 
       <div class="field">
         <label>Trabaja con proveedor</label>
-        <input [(ngModel)]="form.trabajamosConProveedor" />
+        <select [(ngModel)]="form.trabajamosConProveedor"><option value="SI">Sí</option><option value="NO">No</option></select>
       </div>
 
       <div class="field">

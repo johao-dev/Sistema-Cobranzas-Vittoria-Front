@@ -81,10 +81,10 @@ export class ComprasPage implements OnInit {
         const oc = x?.ordenCompra || x?.head || {};
 
         this.form = {
-          numeroCompra: '',
+          numeroCompra: this.getNextNumeroCompra(),
           idOrdenCompra: oc?.idOrdenCompra ?? oc?.IdOrdenCompra ?? null,
           idProveedor: oc?.idProveedor ?? oc?.IdProveedor ?? null,
-          fechaCompra: ''
+          fechaCompra: this.todayIso()
         };
 
         this.itemPrecios = ((x?.items || []) as any[]).map((it: any) => ({
@@ -118,13 +118,13 @@ export class ComprasPage implements OnInit {
 
         this.itemPrecios.forEach(x => this.recalcularItem(x));
         this.filtrosTabla = { especialidad: 'TODAS', proveedor: 'TODOS' };
-        this.msg = 'OC cargada para continuar el flujo de compra.';
+        this.msg = 'O.C. cargada para continuar el flujo de compra.';
         this.cdr.detectChanges();
       },
       error: () => {
         this.detalleOc = null;
         this.itemPrecios = [];
-        this.msg = 'No se pudo cargar la OC pendiente.';
+        this.msg = 'No se pudo cargar la O.C. pendiente.';
         this.cdr.detectChanges();
       }
     });
@@ -220,6 +220,12 @@ export class ComprasPage implements OnInit {
     }
   }
 
+  setModalIncluyeIgv(value: boolean) {
+    if (!this.modalItem) return;
+    this.modalItem.incluyeIgv = value;
+    this.recalcularItem(this.modalItem);
+  }
+
   onModalPrecioChange() {
     if (!this.modalItem) return;
     const cantidad = Number(this.modalItem.cantidad || 0);
@@ -236,17 +242,16 @@ export class ComprasPage implements OnInit {
     this.recalcularItem(this.modalItem);
   }
 
-  onModalIncluyeIgvChange() {
-    if (!this.modalItem) return;
-    this.recalcularItem(this.modalItem);
-  }
-
   onModalFilesSelected(event: any) {
     if (!this.modalItem) return;
     const files = Array.from(event?.target?.files || []) as File[];
-    this.modalItem.files = files.filter((f: File) =>
-      f.name.toLowerCase().endsWith('.pdf')
-    );
+    const nuevos = files.filter((f: File) => f.name.toLowerCase().endsWith('.pdf'));
+    this.modalItem.files = [...(this.modalItem.files || []), ...nuevos];
+  }
+
+  removeModalFile(index: number) {
+    if (!this.modalItem) return;
+    this.modalItem.files.splice(index, 1);
   }
 
   guardarPrecioItem() {
@@ -277,16 +282,14 @@ export class ComprasPage implements OnInit {
 
   registrarCompra() {
     if (!this.form.idOrdenCompra) {
-      this.msg = 'Debes seleccionar una OC pendiente.';
+      this.msg = 'Debes seleccionar una O.C. pendiente.';
       return;
     }
     if (!(this.form.numeroCompra || '').trim()) {
-      this.msg = 'Debes ingresar el número de compra.';
-      return;
+      this.form.numeroCompra = this.getNextNumeroCompra();
     }
     if (!(this.form.fechaCompra || '').trim()) {
-      this.msg = 'Debes ingresar la fecha de compra.';
-      return;
+      this.form.fechaCompra = this.todayIso();
     }
     if (!this.itemPrecios.length) {
       this.msg = 'No hay ítems para registrar.';
@@ -382,9 +385,26 @@ export class ComprasPage implements OnInit {
       item.subtotalSinIgv = this.round(total / 1.18);
       item.montoIgv = this.round(total - item.subtotalSinIgv);
     } else {
-      item.subtotalSinIgv = 0;
+      item.subtotalSinIgv = this.round(total);
       item.montoIgv = 0;
     }
+  }
+
+  private getNextNumeroCompra(): string {
+    const max = (this.comprasCerradas || []).reduce((acc: number, row: any) => Math.max(acc, this.extractNumericValue(row?.numeroCompra || row?.NumeroCompra)), 0);
+    return String(max + 1);
+  }
+
+  private extractNumericValue(value: any): number {
+    const parts = String(value ?? '').match(/\d+/g);
+    if (!parts?.length) return 0;
+    return Number(parts.join('')) || 0;
+  }
+
+  private todayIso(): string {
+    const date = new Date();
+    const offset = date.getTimezoneOffset();
+    return new Date(date.getTime() - offset * 60000).toISOString().slice(0, 10);
   }
 
   private round(value: number): number {

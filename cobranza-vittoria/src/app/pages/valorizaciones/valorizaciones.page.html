@@ -3,10 +3,7 @@
     <div class="page-title">Valorizaciones</div>
     <div class="page-subtitle">Configuración inicial, detalle de emisión de factura y resumen total por valorización.</div>
   </div>
-  <div class="actions">
-    <button class="btn btn-secondary" (click)="aplicarFiltros()">Actualizar</button>
-    <button class="btn btn-primary" (click)="nuevaValorizacion()">Nueva valorización</button>
-  </div>
+
 </div>
 
 <div class="layout-stack">
@@ -66,7 +63,7 @@
       <button class="btn btn-primary" (click)="guardarConfiguracion()">Guardar configuración</button>
     </div>
 
-    <div class="table-wrap top-gap" *ngIf="configuraciones.length">
+    <div class="table-wrap table-wrap--sticky-actions top-gap" *ngIf="configuraciones.length">
       <table>
         <thead>
           <tr>
@@ -77,7 +74,7 @@
             <th>Servicio</th>
             <th>Moneda</th>
             <th>Cotización</th>
-            <th></th>
+            <th class="actions-col">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -89,10 +86,9 @@
             <td>{{ row.servicio || '-' }}</td>
             <td>{{ row.moneda || '-' }}</td>
             <td>{{ formatMoney(row.montoCotizacion, row.moneda) }}</td>
-            <td class="actions">
+            <td><div class="actions actions--end">
               <button class="btn btn-secondary" (click)="editarConfiguracion(row)">Editar</button>
-              <button class="btn btn-primary" (click)="crearDesdeConfiguracion(row)">Usar</button>
-            </td>
+              <button class="btn btn-primary" (click)="crearDesdeConfiguracion(row)">Usar</button></div></td>
           </tr>
         </tbody>
       </table>
@@ -211,25 +207,29 @@
           <textarea [(ngModel)]="formDetalle.descripcion"></textarea>
         </div>
 
-        <div class="option-card">
+        <div class="option-card option-card--compact">
           <label class="checkline">
-            <input type="checkbox" [(ngModel)]="formDetalle.aplicaDetraccion" [disabled]="!detraccionHabilitadaPorMonto" />
-            Aplicar detracción
+            <input type="checkbox" [(ngModel)]="formDetalle.aplicaDetraccion" (ngModelChange)="onDetalleReglasChange()" [disabled]="!detraccionHabilitadaPorMonto" />
+            <span class="checkline__copy">
+              <span class="checkline__title">Aplicar detracción</span>
+              <span class="hint">Automática desde S/ 700.00</span>
+            </span>
           </label>
-          <div class="hint">Automática desde S/ 700.00</div>
         </div>
 
-        <div class="option-card">
+        <div class="option-card option-card--compact">
           <label class="checkline">
-            <input type="checkbox" [(ngModel)]="formDetalle.aplicaGarantia" />
-            Aplicar garantía
+            <input type="checkbox" [(ngModel)]="formDetalle.aplicaGarantia" (ngModelChange)="onDetalleReglasChange()" />
+            <span class="checkline__copy">
+              <span class="checkline__title">Aplicar garantía</span>
+              <span class="hint">Retención según proveedor</span>
+            </span>
           </label>
-          <div class="hint">Retención según proveedor</div>
         </div>
 
         <div class="field">
           <label>Transferido</label>
-          <input type="number" [(ngModel)]="formDetalle.montoTransferido" />
+          <input type="number" [(ngModel)]="formDetalle.montoTransferido" readonly />
         </div>
 
         <div class="field">
@@ -272,6 +272,7 @@
       <table>
         <thead>
           <tr>
+            <th>Proveedor</th>
             <th>Fecha de factura</th>
             <th>Nro factura (serie)</th>
             <th>Monto factura</th>
@@ -285,6 +286,7 @@
         </thead>
         <tbody>
           <tr *ngFor="let row of detalle">
+            <td>{{ row.proveedor || cabecera?.proveedor || '-' }}</td>
             <td>{{ row.fechaFactura | date:'dd/MM/yyyy' }}</td>
             <td>{{ row.numeroFactura || '-' }}</td>
             <td>{{ formatMoney(row.montoFactura, monedaActual) }}</td>

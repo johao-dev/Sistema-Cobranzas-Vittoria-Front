@@ -1,87 +1,127 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
-import { MaestraService } from '../../core/services/maestra.service';
+import { CommonModule, CurrencyPipe } from '@angular/common';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Subscription, forkJoin, of } from 'rxjs';
+import { catchError, filter } from 'rxjs/operators';
 import { ComprasService } from '../../core/services/compras.service';
-import { AlmacenService } from '../../core/services/almacen.service';
-import { SeguridadService } from '../../core/services/seguridad.service';
+import { ValorizacionesService } from '../../core/services/valorizaciones.service';
+import { NavigationEnd, Router } from '@angular/router';
 
 @Component({
   standalone: true,
   selector: 'app-dashboard-page',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, CurrencyPipe],
   templateUrl: './dashboard.page.html',
   styleUrls: ['./dashboard.page.css']
 })
-export class DashboardPage implements OnInit {
-  stats = {
-    especialidades: 0,
-    proveedores: 0,
-    materiales: 0,
-    proyectos: 0,
-    usuarios: 0,
-    requerimientos: 0,
-    ordenes: 0,
-    compras: 0,
-    kardex: 0
-  };
-
-  cargando = true;
+export class DashboardPage implements OnInit, OnDestroy {
+  loading = true;
+  cards = [
+    { key: 'compras', label: 'Compras registradas', value: 0 },
+    { key: 'facturado', label: 'Valorizado facturado', value: 0 },
+    { key: 'transferido', label: 'Valorizado transferido', value: 0 },
+    { key: 'garantia', label: 'Garantías retenidas', value: 0 },
+    { key: 'detraccion', label: 'Detracciones', value: 0 },
+  ];
+  chartRows: Array<{ label: string; value: number; width: number }> = [];
+  hasData = false;
+  private routeSub?: Subscription;
 
   constructor(
-    private maestra: MaestraService,
-    private compras: ComprasService,
-    private almacen: AlmacenService,
-    private seguridad: SeguridadService,
-    private cdr: ChangeDetectorRef
+    private comprasService: ComprasService,
+    private valorizacionesService: ValorizacionesService,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
-    this.loadDashboard();
-
-    setTimeout(() => {
-      this.cargando = false;
-      this.cdr.detectChanges();
-    }, 1500);
+    this.load();
+    this.routeSub = this.router.events.pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd)).subscribe(event => {
+      if (event.urlAfterRedirects.includes('/dashboard')) this.load();
+    });
   }
 
-  private loadDashboard(): void {
-    this.maestra.especialidades()
-      .pipe(catchError(() => of([])))
-      .subscribe((x: any[]) => { this.stats.especialidades = x.length; this.cdr.detectChanges(); });
+  ngOnDestroy(): void {
+    this.routeSub?.unsubscribe();
+  }
 
-    this.maestra.proveedores()
-      .pipe(catchError(() => of([])))
-      .subscribe((x: any[]) => { this.stats.proveedores = x.length; this.cdr.detectChanges(); });
+  @HostListener('window:focus')
+  onWindowFocus(): void {
+    if (this.router.url.includes('/dashboard')) this.load();
+  }
 
-    this.maestra.materiales()
-      .pipe(catchError(() => of([])))
-      .subscribe((x: any[]) => { this.stats.materiales = x.length; this.cdr.detectChanges(); });
+  @HostListener('document:visibilitychange')
+  onVisibilityChange(): void {
+    if (!document.hidden && this.router.url.includes('/dashboard')) this.load();
+  }
 
-    this.maestra.proyectos()
-      .pipe(catchError(() => of([])))
-      .subscribe((x: any[]) => { this.stats.proyectos = x.length; this.cdr.detectChanges(); });
+  load(): void {
+    this.loading = true;
+    forkJoin({
+      compras: this.comprasService.compras().pipe(catchError(() => of([]))),
+      valorizaciones: this.valorizacionesService.valorizaciones().pipe(catchError(() => of([]))),
+    }).subscribe({
+      next: ({ compras, valorizaciones }) => {
+        const comprasRows = this.asArray(compras);
+        const valorizacionesRows = this.asArray(valorizaciones);
 
-    this.seguridad.usuarios()
-      .pipe(catchError(() => of([])))
-      .subscribe((x: any[]) => { this.stats.usuarios = x.length; this.cdr.detectChanges(); });
+        const totalCompras = this.sum(comprasRows, ['montoTotal', 'MontoTotal', 'total', 'Total']);
+        const totalFacturado = this.sum(valorizacionesRows, ['facturado', 'Facturado']);
+        const totalTransferido = this.sum(valorizacionesRows, ['transferido', 'Transferido']);
+        const totalGarantia = this.sum(valorizacionesRows, ['garantia', 'Garantia']);
+        const totalDetraccion = this.sum(valorizacionesRows, ['detraccion', 'Detraccion']);
 
-    this.compras.requerimientos()
-      .pipe(catchError(() => of([])))
-      .subscribe((x: any[]) => { this.stats.requerimientos = x.length; this.cdr.detectChanges(); });
+        this.cards = [
+          { key: 'compras', label: 'Compras registradas', value: totalCompras },
+          { key: 'facturado', label: 'Valorizado facturado', value: totalFacturado },
+          { key: 'transferido', label: 'Valorizado transferido', value: totalTransferido },
+          { key: 'garantia', label: 'Garantías retenidas', value: totalGarantia },
+          { key: 'detraccion', label: 'Detracciones', value: totalDetraccion },
+        ];
 
-    this.compras.ordenes()
-      .pipe(catchError(() => of([])))
-      .subscribe((x: any[]) => { this.stats.ordenes = x.length; this.cdr.detectChanges(); });
+        const maxValue = Math.max(...valorizacionesRows.map(row => this.toNumber(this.read(row, ['facturado', 'Facturado']))), 0);
+        this.chartRows = valorizacionesRows.slice(0, 12).map((row: any, idx: number) => {
+          const value = this.toNumber(this.read(row, ['facturado', 'Facturado']));
+          const proveedor = this.read(row, ['proveedor', 'Proveedor']) || 'Proveedor';
+          const especialidad = this.read(row, ['especialidad', 'Especialidad']) || 'Especialidad';
+          const periodo = this.read(row, ['periodo', 'Periodo']) || this.read(row, ['empresa', 'Empresa']) || `Val ${idx + 1}`;
+          return {
+            label: `${periodo} · ${proveedor} · ${especialidad}`,
+            value,
+            width: maxValue > 0 ? Math.max(8, Math.round((value / maxValue) * 100)) : 0,
+          };
+        });
 
-    this.compras.compras()
-      .pipe(catchError(() => of([])))
-      .subscribe((x: any[]) => { this.stats.compras = x.length; this.cdr.detectChanges(); });
+        this.hasData = this.cards.some(card => card.value > 0) || this.chartRows.some(row => row.value > 0);
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+        this.cards = this.cards.map(card => ({ ...card, value: 0 }));
+        this.chartRows = [];
+        this.hasData = false;
+      }
+    });
+  }
 
-    this.almacen.resumen()
-      .pipe(catchError(() => of([])))
-      .subscribe((x: any[]) => { this.stats.kardex = x.length; this.cdr.detectChanges(); });
+  private asArray(value: any): any[] {
+    if (Array.isArray(value)) return value;
+    if (Array.isArray(value?.data)) return value.data;
+    if (Array.isArray(value?.items)) return value.items;
+    return [];
+  }
+
+  private read(row: any, keys: string[]): any {
+    for (const key of keys) {
+      if (row?.[key] !== undefined && row?.[key] !== null) return row[key];
+    }
+    return null;
+  }
+
+  private toNumber(value: any): number {
+    const n = Number(value ?? 0);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  private sum(rows: any[], keys: string[]): number {
+    return rows.reduce((acc, row) => acc + this.toNumber(this.read(row, keys)), 0);
   }
 }

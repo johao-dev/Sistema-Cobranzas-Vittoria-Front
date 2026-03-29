@@ -10,19 +10,28 @@ import { OrdenesCompraPage } from './pages/ordenes-compra/ordenes-compra.page';
 import { ComprasPage } from './pages/compras/compras.page';
 import { KardexPage } from './pages/kardex/kardex.page';
 import { ValorizacionesPage } from './pages/valorizaciones/valorizaciones.page';
+import { CategoriasGastoPage } from './pages/categorias-gasto/categorias-gasto.page';
+import { ProveedoresGastoPage } from './pages/proveedores-gasto/proveedores-gasto.page';
+import { GastosAdministrativosPage } from './pages/gastos-administrativos/gastos-administrativos.page';
+import { LoginPage } from './pages/login/login.page';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  { path: 'dashboard', component: DashboardPage },
-  { path: 'especialidades', component: EspecialidadesPage },
-  { path: 'proveedores', component: ProveedoresPage },
-  { path: 'materiales', component: MaterialesPage },
-  { path: 'proyectos', component: ProyectosPage },
-  { path: 'usuarios', component: UsuariosPage },
-  { path: 'requerimientos', component: RequerimientosPage },
-  { path: 'ordenes-compra', component: OrdenesCompraPage },
-  { path: 'compras', component: ComprasPage },
-  { path: 'kardex', component: KardexPage },
-  { path: 'valorizaciones', component: ValorizacionesPage },
+  { path: 'login', component: LoginPage },
+  { path: 'dashboard', component: DashboardPage, canActivate: [authGuard] },
+  { path: 'especialidades', canActivate: [authGuard], component: EspecialidadesPage },
+  { path: 'proveedores', canActivate: [authGuard], component: ProveedoresPage },
+  { path: 'materiales', canActivate: [authGuard], component: MaterialesPage },
+  { path: 'proyectos', canActivate: [authGuard], component: ProyectosPage },
+  { path: 'usuarios', canActivate: [authGuard], component: UsuariosPage },
+  { path: 'requerimientos', canActivate: [authGuard], component: RequerimientosPage },
+  { path: 'ordenes-compra', canActivate: [authGuard], component: OrdenesCompraPage },
+  { path: 'compras', canActivate: [authGuard], component: ComprasPage },
+  { path: 'kardex', canActivate: [authGuard], component: KardexPage },
+  { path: 'valorizaciones', canActivate: [authGuard], component: ValorizacionesPage },
+  { path: 'proveedores-gasto', canActivate: [authGuard], component: ProveedoresGastoPage },
+  { path: 'categorias-gasto', canActivate: [authGuard], component: CategoriasGastoPage },
+  { path: 'gastos-administrativos', canActivate: [authGuard], component: GastosAdministrativosPage },
   { path: '**', redirectTo: 'dashboard' }
 ];

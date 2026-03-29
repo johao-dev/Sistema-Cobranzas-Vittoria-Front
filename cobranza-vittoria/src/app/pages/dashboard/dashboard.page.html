@@ -1,75 +1,37 @@
 <div class="page-header">
   <div>
-    <div class="page-title">Dashboard</div>
-    <div class="page-subtitle">Indicadores generales y accesos directos del sistema.</div>
+    <div class="page-title">Dashboard de compras</div>
+    <div class="page-subtitle">Resumen ejecutivo de compras y valorizaciones del sistema.</div>
   </div>
+  <button class="btn btn-secondary" type="button" (click)="load()">Actualizar</button>
 </div>
 
-<div *ngIf="cargando" class="empty-state">
-  Cargando indicadores...
-</div>
+<div *ngIf="loading" class="empty-state">Cargando dashboard...</div>
 
-<div *ngIf="!cargando">
-  <div class="grid-cards">
-    <div class="stat-card">
-      <div class="stat-label">Especialidades</div>
-      <div class="stat-value">{{ stats.especialidades }}</div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-label">Proveedores</div>
-      <div class="stat-value">{{ stats.proveedores }}</div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-label">Materiales</div>
-      <div class="stat-value">{{ stats.materiales }}</div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-label">Proyectos</div>
-      <div class="stat-value">{{ stats.proyectos }}</div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-label">Usuarios</div>
-      <div class="stat-value">{{ stats.usuarios }}</div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-label">Requerimientos</div>
-      <div class="stat-value">{{ stats.requerimientos }}</div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-label">Órdenes de compra</div>
-      <div class="stat-value">{{ stats.ordenes }}</div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-label">Compras</div>
-      <div class="stat-value">{{ stats.compras }}</div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-label">Kardex</div>
-      <div class="stat-value">{{ stats.kardex }}</div>
-    </div>
+<div *ngIf="!loading">
+  <div class="dashboard-kpis">
+    <article class="kpi-card" *ngFor="let card of cards">
+      <div class="kpi-card__label">{{ card.label }}</div>
+      <div class="kpi-card__value">{{ card.value | currency:'PEN':'symbol':'1.2-2' }}</div>
+    </article>
   </div>
 
-  <section class="panel">
-    <div class="panel-title">Accesos directos</div>
-    <div class="toolbar">
-      <a class="btn btn-primary" routerLink="/requerimientos">Requerimientos</a>
-      <a class="btn btn-primary" routerLink="/ordenes-compra">Órdenes de compra</a>
-      <a class="btn btn-primary" routerLink="/compras">Compras</a>
-      <a class="btn btn-primary" routerLink="/kardex">Kardex</a>
-
-      <a class="btn btn-secondary" routerLink="/proveedores">Proveedores</a>
-      <a class="btn btn-secondary" routerLink="/materiales">Materiales</a>
-      <a class="btn btn-secondary" routerLink="/especialidades">Especialidades</a>
-      <a class="btn btn-secondary" routerLink="/proyectos">Proyectos</a>
-      <a class="btn btn-secondary" routerLink="/usuarios">Usuarios</a>
+  <section class="panel" *ngIf="chartRows.length; else noChart">
+    <div class="panel-title">Valorizaciones</div>
+    <div class="chart-list">
+      <div class="chart-row" *ngFor="let item of chartRows">
+        <div class="chart-row__label">{{ item.label }}</div>
+        <div class="chart-row__track">
+          <div class="chart-row__bar" [style.width.%]="item.width"></div>
+        </div>
+        <div class="chart-row__value">{{ item.value | currency:'PEN':'symbol':'1.2-2' }}</div>
+      </div>
     </div>
   </section>
+
+  <ng-template #noChart>
+    <div class="empty-state">No se encontraron valorizaciones para construir el gráfico.</div>
+  </ng-template>
+
+  <div class="empty-state" *ngIf="!hasData">No se encontraron datos para construir el dashboard todavía.</div>
 </div>

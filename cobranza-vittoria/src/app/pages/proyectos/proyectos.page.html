@@ -5,7 +5,7 @@
   </div>
 </div>
 
-<div class="page-grid-2">
+<div class="page-grid-2 split--form">
   <section class="panel">
     <div class="panel-title">Listado</div>
 
@@ -13,7 +13,7 @@
       No hay proyectos configurados.
     </div>
 
-    <div *ngIf="rows.length" class="table-wrap">
+    <div *ngIf="rows.length" class="table-wrap table-wrap--sticky-actions">
       <table>
         <thead>
           <tr>
@@ -21,7 +21,7 @@
             <th>Descripción</th>
             <th>Fecha</th>
             <th>Estado</th>
-            <th></th>
+            <th class="actions-col">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -34,16 +34,14 @@
                 {{ row.activo ? 'Activo' : 'Inactivo' }}
               </span>
             </td>
-            <td>
-              <button class="btn btn-secondary" (click)="edit(row)">Editar</button>
-            </td>
+            <td><div class="actions actions--end"><button class="btn btn-secondary" (click)="edit(row)">Editar</button></div></td>
           </tr>
         </tbody>
       </table>
     </div>
   </section>
 
-  <section class="panel">
+  <section class="panel panel--form">
     <div class="panel-title">
       {{ form.idProyecto ? 'Editar proyecto' : 'Nuevo proyecto' }}
     </div>

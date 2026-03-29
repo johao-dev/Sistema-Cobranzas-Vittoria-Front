@@ -87,25 +87,50 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 110px;
+  min-height: 76px;
+}
+
+.option-card--compact {
+  background: #fff;
 }
 
 .checkline {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   font-weight: 700;
+}
+
+.checkline input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--violet);
+}
+
+.checkline__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.checkline__title {
+  font-size: .98rem;
+  font-weight: 800;
+  color: #1f2430;
 }
 
 .hint,
 .muted {
-  margin-top: 8px;
+  margin-top: 0;
   color: #6b7280;
-  font-size: 0.9rem;
+  font-size: 0.84rem;
+  line-height: 1.35;
 }
 
 .calc-cards {
   display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
 }
 
@@ -171,7 +196,18 @@
 @media (max-width: 780px) {
   .config-grid,
   .head-grid,
-  .kpi-grid {
+  .kpi-grid,
+  .calc-cards {
     grid-template-columns: 1fr;
   }
 }
+
+
+.layout-stack .table-wrap.table-wrap--sticky-actions td:last-child .actions {
+  justify-content: flex-end;
+}
+
+.option-card { min-height: 64px; padding: 12px; }
+.checkline { gap: 10px; }
+.checkline__title { font-size: .92rem; }
+.checkline__copy .hint { font-size: .8rem; line-height: 1.25; }

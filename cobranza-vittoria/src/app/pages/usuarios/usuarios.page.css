@@ -1,0 +1,14 @@
+
+:host {
+  display: block;
+}
+.split .panel--form {
+  max-width: 470px;
+  justify-self: end;
+}
+@media (max-width: 1320px) {
+  .split .panel--form {
+    max-width: none;
+    justify-self: stretch;
+  }
+}

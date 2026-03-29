@@ -1,0 +1,200 @@
+<div class="page-header">
+  <div>
+    <div class="page-title">Gastos administrativos</div>
+    <div class="page-subtitle">Registro de gastos, filtros rápidos y control de factura y pago.</div>
+  </div>
+</div>
+
+<div class="hero-strip">
+  <article class="hero-stat">
+    <div class="hero-stat__label">Categorías activas</div>
+    <div class="hero-stat__value">{{ categorias.length }}</div>
+  </article>
+  <article class="hero-stat">
+    <div class="hero-stat__label">Proveedores de gasto</div>
+    <div class="hero-stat__value">{{ proveedores.length }}</div>
+  </article>
+  <article class="hero-stat">
+    <div class="hero-stat__label">Registros visibles</div>
+    <div class="hero-stat__value">{{ rows.length }}</div>
+  </article>
+</div>
+
+<div class="admin-split">
+  <section class="panel">
+    <div class="panel-title">Listado</div>
+
+    <div class="filters compact-filters">
+      <div class="field">
+        <label>Categoría</label>
+        <select [(ngModel)]="filtros.idCategoriaGasto" (change)="onCategoriaFiltroChange()">
+          <option value="">Todas</option>
+          <option *ngFor="let c of categorias" [ngValue]="c.idCategoriaGasto">{{ c.nombre }}</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Proveedor</label>
+        <select [(ngModel)]="filtros.idProveedorGastoAdministrativo" (change)="load()">
+          <option value="">Todos</option>
+          <option *ngFor="let p of proveedoresFiltroFiltrados" [ngValue]="p.idProveedorGastoAdministrativo">{{ p.razonSocial }}</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Estado</label>
+        <select [(ngModel)]="filtros.activo" (change)="load()">
+          <option value="">Todos</option>
+          <option value="true">Activo</option>
+          <option value="false">Inactivo</option>
+        </select>
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="empty-state">Cargando gastos administrativos...</div>
+    <div *ngIf="!loading && !rows.length" class="empty-state">No hay gastos administrativos registrados.</div>
+
+    <div *ngIf="!loading && rows.length" class="table-wrap table-wrap--sticky-actions">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Categoría</th>
+            <th>Proveedor</th>
+            <th>Monto</th>
+            <th>Moneda</th>
+            <th>Facturas</th>
+            <th>Pagos</th>
+            <th>Estado</th>
+            <th class="actions-col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows">
+            <td>{{ readValue(row, 'fecha', 'Fecha') | date:'dd/MM/yyyy' }}</td>
+            <td>{{ readValue(row, 'categoria', 'Categoria') || '-' }}</td>
+            <td>{{ readValue(row, 'proveedor', 'Proveedor') || '-' }}</td>
+            <td class="table-number">{{ (readValue(row, 'monto', 'Monto') || 0) | number:'1.2-2' }}</td>
+            <td>{{ readValue(row, 'moneda', 'Moneda') || 'PEN' }}</td>
+            <td>{{ readValue(row, 'totalFacturas', 'TotalFacturas') || 0 }}</td>
+            <td>{{ readValue(row, 'totalPagos', 'TotalPagos') || 0 }}</td>
+            <td>
+              <span class="badge" [class.badge--ok]="readValue(row, 'activo', 'Activo')" [class.badge--neutral]="!readValue(row, 'activo', 'Activo')">
+                {{ readValue(row, 'activo', 'Activo') ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+            <td>
+              <div class="actions actions--stack-mobile actions--end">
+                <button class="btn btn-secondary" (click)="edit(row)">Editar</button>
+                <button class="btn btn-ghost" (click)="abrirArchivos(row)">Archivos</button>
+                <button class="btn btn-danger" (click)="remove(row)" [disabled]="!readValue(row, 'activo', 'Activo')">Desactivar</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="toolbar toolbar--compact" *ngIf="form.idGastoAdministrativo && archivosTargetRow">
+      <button class="btn btn-ghost" (click)="cerrarArchivos()">Cerrar archivos</button>
+    </div>
+  </section>
+
+  <section class="panel panel--form panel--sticky">
+    <div class="panel-title">Formulario</div>
+
+    <div class="form-grid two two--admin">
+      <div class="field">
+        <label>Fecha</label>
+        <input type="date" [(ngModel)]="form.fecha" />
+      </div>
+
+      <div class="field">
+        <label>Moneda</label>
+        <select [(ngModel)]="form.moneda">
+          <option value="PEN">PEN</option>
+          <option value="USD">USD</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Categoría</label>
+        <select [(ngModel)]="form.idCategoriaGasto" (ngModelChange)="onCategoriaFormularioChange()">
+          <option [ngValue]="null">Seleccionar</option>
+          <option *ngFor="let c of categorias" [ngValue]="c.idCategoriaGasto">{{ c.nombre }}</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Proveedor</label>
+        <select [(ngModel)]="form.idProveedorGastoAdministrativo">
+          <option [ngValue]="null">Seleccionar</option>
+          <option *ngFor="let p of proveedoresFormFiltrados" [ngValue]="p.idProveedorGastoAdministrativo">{{ p.razonSocial }}</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Monto</label>
+        <input type="number" min="0" step="0.01" [(ngModel)]="form.monto" placeholder="0.00" />
+      </div>
+
+      <div class="field">
+        <label>Estado</label>
+        <select [(ngModel)]="form.activo">
+          <option [ngValue]="true">Activo</option>
+          <option [ngValue]="false">Inactivo</option>
+        </select>
+      </div>
+
+      <div class="field" style="grid-column: 1 / -1;">
+        <label>Descripción</label>
+        <textarea [(ngModel)]="form.descripcion" placeholder="Detalle breve del gasto"></textarea>
+      </div>
+    </div>
+
+    <div class="toolbar toolbar--compact">
+      <button class="btn btn-primary" (click)="save()">Guardar gasto</button>
+      <button class="btn btn-ghost" (click)="reset()">Limpiar</button>
+    </div>
+
+    <div class="form-tip" *ngIf="!form.idGastoAdministrativo">Los archivos se gestionan desde el botón <strong>Archivos</strong> de la lista, después de guardar el gasto.</div>
+
+    <div class="documents-grid" *ngIf="form.idGastoAdministrativo && archivosTargetRow">
+      <section class="documents-card">
+        <div class="documents-card__title">Facturas</div>
+        <input type="file" accept=".pdf,application/pdf" multiple (change)="onFilesSelected($event, 'Factura')" />
+        <div class="toolbar toolbar--compact">
+          <button class="btn btn-secondary" (click)="upload('Factura')">Subir factura</button>
+        </div>
+        <div class="docs-list" *ngIf="documentosPorTipo('Factura').length; else noFacturaDocs">
+          <a class="doc-item" *ngFor="let doc of documentosPorTipo('Factura')" [href]="downloadUrl(doc)" target="_blank">
+            <span>{{ readValue(doc, 'nombreArchivo', 'NombreArchivo') }}</span>
+            <span class="doc-item__meta">{{ readValue(doc, 'fechaCreacion', 'FechaCreacion') | date:'dd/MM/yyyy' }}</span>
+          </a>
+        </div>
+        <ng-template #noFacturaDocs>
+          <div class="empty-inline">Aún no hay facturas subidas.</div>
+        </ng-template>
+      </section>
+
+      <section class="documents-card">
+        <div class="documents-card__title">Pagos</div>
+        <input type="file" accept=".pdf,application/pdf" multiple (change)="onFilesSelected($event, 'Pago')" />
+        <div class="toolbar toolbar--compact">
+          <button class="btn btn-secondary" (click)="upload('Pago')">Subir pago</button>
+        </div>
+        <div class="docs-list" *ngIf="documentosPorTipo('Pago').length; else noPagoDocs">
+          <a class="doc-item" *ngFor="let doc of documentosPorTipo('Pago')" [href]="downloadUrl(doc)" target="_blank">
+            <span>{{ readValue(doc, 'nombreArchivo', 'NombreArchivo') }}</span>
+            <span class="doc-item__meta">{{ readValue(doc, 'fechaCreacion', 'FechaCreacion') | date:'dd/MM/yyyy' }}</span>
+          </a>
+        </div>
+        <ng-template #noPagoDocs>
+          <div class="empty-inline">Aún no hay pagos subidos.</div>
+        </ng-template>
+      </section>
+    </div>
+    <div class="toolbar toolbar--compact" *ngIf="form.idGastoAdministrativo && archivosTargetRow">
+      <button class="btn btn-ghost" (click)="cerrarArchivos()">Cerrar archivos</button>
+    </div>
+  </section>
+</div>

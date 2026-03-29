@@ -1,44 +1,70 @@
-<div class="app-shell">
-  <aside class="sidebar">
-    <div class="brand brand--stacked">
-      <img src="/logo-vittoria.png?v=3" alt="Vittoria" class="brand__logo brand__logo--sidebar" />
-      <div class="brand__subtitle">Sistema de control de gastos</div>
+<div class="app-shell" [class.app-shell--sidebar-collapsed]="sidebarCollapsed" [class.app-shell--mobile-open]="mobileMenuOpen" [class.app-shell--auth-free]="isLoginRoute()">
+  <div class="sidebar-backdrop" *ngIf="!isLoginRoute()" (click)="closeMobileMenu()"></div>
+
+  <aside class="sidebar" *ngIf="!isLoginRoute()" aria-label="Menú principal">
+    <div class="sidebar__header">
+      <div class="brand brand--stacked">
+        <img src="/logo-vittoria.png?v=3" alt="Vittoria" class="brand__logo brand__logo--sidebar" />
+        <div class="brand__subtitle">Sistema de control de gastos</div>
+      </div>
+
+      <button type="button" class="sidebar-toggle" (click)="toggleSidebar()" [attr.aria-label]="sidebarCollapsed ? 'Expandir menú' : 'Contraer menú'">
+        <span>{{ sidebarCollapsed ? '›' : '‹' }}</span>
+      </button>
     </div>
 
-    <div class="nav-section">
-      <div class="nav-section__title">General</div>
-      <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
-    </div>
+    <nav class="sidebar__nav">
+      <div class="nav-section">
+        <div class="nav-section__title">General</div>
+        <a routerLink="/dashboard" routerLinkActive="active" (click)="closeMobileMenu()">Dashboard</a>
+      </div>
 
-    <div class="nav-section">
-      <div class="nav-section__title">Mantenimiento</div>
-      <a routerLink="/especialidades" routerLinkActive="active">Especialidades</a>
-      <a routerLink="/proveedores" routerLinkActive="active">Proveedores</a>
-      <a routerLink="/materiales" routerLinkActive="active">Materiales</a>
-      <a routerLink="/proyectos" routerLinkActive="active">Proyectos</a>
-      <a routerLink="/usuarios" routerLinkActive="active">Usuarios</a>
-    </div>
+      <div class="nav-section">
+        <div class="nav-section__title">Operación</div>
+        <a routerLink="/requerimientos" routerLinkActive="active" (click)="closeMobileMenu()">Requerimientos</a>
+        <a routerLink="/ordenes-compra" routerLinkActive="active" (click)="closeMobileMenu()">Órdenes de compra</a>
+        <a routerLink="/compras" routerLinkActive="active" (click)="closeMobileMenu()">Compras</a>
+        <a routerLink="/kardex" routerLinkActive="active" (click)="closeMobileMenu()">Kardex</a>
+        <a routerLink="/valorizaciones" routerLinkActive="active" (click)="closeMobileMenu()">Valorizaciones</a>
+        <a routerLink="/gastos-administrativos" routerLinkActive="active" (click)="closeMobileMenu()">Gastos administrativos</a>
+      </div>
 
-    <div class="nav-section">
-      <div class="nav-section__title">Operación</div>
-      <a routerLink="/requerimientos" routerLinkActive="active">Requerimientos</a>
-      <a routerLink="/ordenes-compra" routerLinkActive="active">Órdenes de compra</a>
-      <a routerLink="/compras" routerLinkActive="active">Compras</a>
-      <a routerLink="/kardex" routerLinkActive="active">Kardex</a>
-      <a routerLink="/valorizaciones" routerLinkActive="active">Valorizaciones</a>
-    </div>
+      <div class="nav-section">
+        <div class="nav-section__title">Mantenimiento</div>
+        <a routerLink="/especialidades" routerLinkActive="active" (click)="closeMobileMenu()">Especialidades</a>
+        <a routerLink="/proveedores" routerLinkActive="active" (click)="closeMobileMenu()">Proveedores</a>
+        <a routerLink="/materiales" routerLinkActive="active" (click)="closeMobileMenu()">Materiales</a>
+        <a routerLink="/proyectos" routerLinkActive="active" (click)="closeMobileMenu()">Proyectos</a>
+        <a routerLink="/usuarios" routerLinkActive="active" (click)="closeMobileMenu()">Usuarios</a>
+        <a routerLink="/proveedores-gasto" routerLinkActive="active" (click)="closeMobileMenu()">Proveedores de gasto</a>
+        <a routerLink="/categorias-gasto" routerLinkActive="active" (click)="closeMobileMenu()">Categorías de gasto</a>
+      </div>
+    </nav>
   </aside>
 
   <section class="main-shell">
-    <header class="topbar">
-      <div class="topbar__brand">
-        <img src="/logo-vittoria.png?v=3" alt="Vittoria" class="topbar__logo" />
-        <div>
-          <div class="topbar__title">Vittoria</div>
-          <div class="topbar__subtitle">Compras, almacén y control operativo</div>
+    <header class="topbar" *ngIf="!isLoginRoute()">
+      <div class="topbar__left">
+        <button type="button" class="menu-toggle" (click)="toggleSidebar()" aria-label="Mostrar u ocultar menú">☰</button>
+        <div class="topbar__brand">
+          <img src="/logo-vittoria.png?v=3" alt="Vittoria" class="topbar__logo" />
+          <div class="topbar__brand-copy">
+            <div class="topbar__title">Vittoria</div>
+            <div class="topbar__subtitle">Compras, almacén y control operativo</div>
+          </div>
         </div>
       </div>
-      <div class="topbar__pill">Proyecto listo para prueba</div>
+
+      <div class="topbar__actions" *ngIf="isAuthenticated">
+        <div class="profile-pill">
+          <div class="profile-pill__avatar">{{ profileInitials }}</div>
+          <div class="profile-pill__content">
+            <div class="profile-pill__name">{{ profileName }}</div>
+            <div class="profile-pill__role">{{ profileRole }}</div>
+          </div>
+        </div>
+        <button type="button" class="btn-logout" (click)="logout()">Salir</button>
+      </div>
     </header>
 
     <main class="page-container">

@@ -1,0 +1,21 @@
+
+.admin-split {
+  align-items: start;
+}
+.admin-split .panel--form {
+  max-width: 430px;
+  justify-self: end;
+}
+.compact-filters { margin-bottom: 14px; }
+.actions-col { width: 132px; }
+.form-grid.one { grid-template-columns: 1fr; }
+.toolbar--compact { margin-top: 16px; }
+@media (max-width: 1320px) {
+  .admin-split .panel--form {
+    max-width: none;
+    justify-self: stretch;
+  }
+}
+@media (max-width: 760px) {
+  .actions--stack-mobile { flex-direction: column; }
+}

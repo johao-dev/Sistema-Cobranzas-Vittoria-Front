@@ -1,0 +1,88 @@
+
+.admin-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(430px, 520px);
+  gap: 20px;
+  align-items: start;
+}
+.compact-filters { margin-bottom: 14px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.panel--sticky { position: sticky; top: 92px; }
+.actions-col { width: 136px; }
+.toolbar--compact { margin-top: 14px; }
+.documents-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.documents-card {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px;
+  background: #fbfcff;
+}
+.documents-card__title { font-weight: 800; margin-bottom: 12px; }
+.docs-list { display: flex; flex-direction: column; gap: 8px; }
+.doc-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: white;
+  border: 1px solid var(--border);
+  text-decoration: none;
+}
+.doc-item__meta { color: var(--muted); font-size: .8rem; white-space: nowrap; }
+.empty-inline {
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  color: var(--muted);
+  background: white;
+  text-align: center;
+}
+.form-grid.two--admin {
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 14px;
+}
+.hero-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.hero-stat {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px 16px;
+  background: linear-gradient(180deg, #fff 0%, #fafbff 100%);
+}
+.hero-stat__label { color: var(--muted); font-weight: 700; font-size: .84rem; margin-bottom: 6px; }
+.hero-stat__value { font-size: 1.15rem; font-weight: 800; }
+.form-tip {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  background: #fafbff;
+  color: var(--muted);
+}
+.table-wrap td:nth-child(4) {
+  white-space: nowrap;
+}
+@media (max-width: 1320px) {
+  .admin-split { grid-template-columns: 1fr; }
+  .panel--sticky { position: static; }
+}
+@media (max-width: 980px) {
+  .compact-filters { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  .documents-grid, .hero-strip, .form-grid.two--admin { grid-template-columns: 1fr; }
+  .actions--stack-mobile { flex-direction: column; }
+  .doc-item { flex-direction: column; align-items: flex-start; }
+}
+
+.actions-col { width: 210px; }
