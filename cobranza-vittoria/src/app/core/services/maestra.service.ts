@@ -45,6 +45,10 @@ export class MaestraService {
       : this.api.http.post<any>(`${this.api.baseUrl}/api/maestra/proveedores`, dto);
   }
 
+  consultaRuc(ruc: string) {
+    return this.api.http.get<any>(`${this.api.baseUrl}/api/maestra/proveedores/consulta-ruc/${ruc}`);
+  }
+
   setProveedorEspecialidad(idProveedor: number, dto: any) {
     return this.api.http.post<any>(`${this.api.baseUrl}/api/maestra/proveedores/${idProveedor}/especialidades`, dto);
   }
