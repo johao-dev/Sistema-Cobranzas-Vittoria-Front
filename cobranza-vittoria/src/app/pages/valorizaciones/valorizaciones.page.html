@@ -1,14 +1,37 @@
 <div class="page-header">
   <div>
     <div class="page-title">Valorizaciones</div>
-    <div class="page-subtitle">Configuración inicial, detalle de emisión de factura y resumen total por valorización.</div>
+    <div class="page-subtitle">Flujo: configuración inicial, uso de configuración, emisión de factura, resumen y facturas registradas.</div>
   </div>
+</div>
 
+<div class="flow-strip">
+  <div class="flow-step">
+    <span class="flow-step__index">1</span>
+    <div>
+      <strong>Guardar configuración inicial</strong>
+      <p>Se registra proyecto, proveedor, especialidad, moneda y cotización.</p>
+    </div>
+  </div>
+  <div class="flow-step">
+    <span class="flow-step__index">2</span>
+    <div>
+      <strong>Usar configuración</strong>
+      <p>Desde el listado, se elige una configuración para emitir facturas.</p>
+    </div>
+  </div>
+  <div class="flow-step">
+    <span class="flow-step__index">3</span>
+    <div>
+      <strong>Resumen y facturas</strong>
+      <p>Se muestra solo la información de la configuración elegida.</p>
+    </div>
+  </div>
 </div>
 
 <div class="layout-stack">
   <section class="panel">
-    <div class="panel-title">1. Configuración de valorización</div>
+    <div class="panel-title">1. Configuración inicial</div>
 
     <div class="form-grid config-grid">
       <div class="field">
@@ -43,16 +66,6 @@
         </select>
       </div>
 
-      <div class="field">
-        <label>Empresa</label>
-        <input [(ngModel)]="formConfiguracion.empresa" />
-      </div>
-
-      <div class="field">
-        <label>Servicio</label>
-        <input [(ngModel)]="formConfiguracion.servicio" />
-      </div>
-
       <div class="field span-2">
         <label>Cotización</label>
         <input type="number" [(ngModel)]="formConfiguracion.montoCotizacion" />
@@ -61,17 +74,20 @@
 
     <div class="toolbar top-gap">
       <button class="btn btn-primary" (click)="guardarConfiguracion()">Guardar configuración</button>
+      <button class="btn btn-ghost" (click)="limpiarConfiguracion()">Limpiar</button>
     </div>
+  </section>
 
-    <div class="table-wrap table-wrap--sticky-actions top-gap" *ngIf="configuraciones.length">
+  <section class="panel">
+    <div class="panel-title">2. Listado de configuraciones</div>
+
+    <div class="table-wrap table-wrap--sticky-actions" *ngIf="configuraciones.length">
       <table>
         <thead>
           <tr>
             <th>Proyecto</th>
             <th>Proveedor</th>
             <th>Especialidad</th>
-            <th>Empresa</th>
-            <th>Servicio</th>
             <th>Moneda</th>
             <th>Cotización</th>
             <th class="actions-col">Acciones</th>
@@ -82,109 +98,48 @@
             <td>{{ row.proyecto || '-' }}</td>
             <td>{{ row.proveedor || '-' }}</td>
             <td>{{ row.especialidad || '-' }}</td>
-            <td>{{ row.empresa || '-' }}</td>
-            <td>{{ row.servicio || '-' }}</td>
             <td>{{ row.moneda || '-' }}</td>
             <td>{{ formatMoney(row.montoCotizacion, row.moneda) }}</td>
-            <td><div class="actions actions--end">
-              <button class="btn btn-secondary" (click)="editarConfiguracion(row)">Editar</button>
-              <button class="btn btn-primary" (click)="crearDesdeConfiguracion(row)">Usar</button></div></td>
+            <td>
+              <div class="actions actions--end">
+                <button class="btn btn-secondary" (click)="editarConfiguracion(row)">Editar</button>
+                <button class="btn btn-primary" (click)="usarConfiguracion(row)">Usar</button>
+              </div>
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <div *ngIf="!configuraciones.length" class="empty-state top-gap">No hay configuraciones registradas.</div>
+    <div *ngIf="!configuraciones.length" class="empty-state">No hay configuraciones registradas.</div>
   </section>
 
-  <div class="two-col">
+  <section class="panel" *ngIf="configuracionEnUso">
+    <div class="panel-title">Configuración en uso</div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Proyecto</div><div class="kpi-value kpi-value--sm">{{ configuracionEnUso.proyecto || '-' }}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Proveedor</div><div class="kpi-value kpi-value--sm">{{ configuracionEnUso.proveedor || '-' }}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Especialidad</div><div class="kpi-value kpi-value--sm">{{ configuracionEnUso.especialidad || '-' }}</div></div>
+      <div class="kpi-card kpi-card--accent"><div class="kpi-label">Cotización</div><div class="kpi-value">{{ formatMoney(configuracionEnUso.montoCotizacion, configuracionEnUso.moneda) }}</div></div>
+    </div>
+
+    <div class="form-grid top-gap">
+      <div class="field">
+        <label>Periodo</label>
+        <input [(ngModel)]="formValorizacion.periodo" placeholder="Ej. 2026-03" />
+      </div>
+      <div class="field span-3">
+        <label>Observación</label>
+        <textarea [(ngModel)]="formValorizacion.observacion"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <div class="two-col two-col--detail">
     <section class="panel">
-      <div class="panel-title">2. Cabecera de valorización</div>
-
-      <div class="form-grid head-grid">
-        <div class="field span-2">
-          <label>Configuración</label>
-          <select [(ngModel)]="formValorizacion.idConfiguracion" (ngModelChange)="onConfiguracionSeleccionada()">
-            <option [ngValue]="null">Seleccione</option>
-            <option *ngFor="let c of configuraciones" [ngValue]="c.idConfiguracion">
-              {{ (c.empresa || '-') + ' / ' + (c.especialidad || '-') + ' / ' + (c.proveedor || '-') }}
-            </option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Periodo</label>
-          <input [(ngModel)]="formValorizacion.periodo" placeholder="Ej. 2026-03" />
-        </div>
-
-        <div class="field">
-          <label>Empresa</label>
-          <input [(ngModel)]="formValorizacion.empresa" />
-        </div>
-
-        <div class="field span-2">
-          <label>Observación</label>
-          <textarea [(ngModel)]="formValorizacion.observacion"></textarea>
-        </div>
-      </div>
-
-      <div class="toolbar top-gap">
-        <button class="btn btn-primary" (click)="guardarValorizacion()">Guardar valorización</button>
-      </div>
-    </section>
-
-    <section class="panel">
-      <div class="panel-title">3. Resumen total de valorización</div>
-
-      <div *ngIf="resumen" class="kpi-grid">
-        <div class="kpi-card">
-          <div class="kpi-label">Cotización</div>
-          <div class="kpi-value">{{ formatMoney(resumen.cotizacion, monedaActual) }}</div>
-        </div>
-
-        <div class="kpi-card">
-          <div class="kpi-label">Garantía</div>
-          <div class="kpi-value">{{ formatMoney(resumen.garantia, monedaActual) }}</div>
-        </div>
-
-        <div class="kpi-card">
-          <div class="kpi-label">Facturado</div>
-          <div class="kpi-value">{{ formatMoney(resumen.facturado, monedaActual) }}</div>
-        </div>
-
-        <div class="kpi-card">
-          <div class="kpi-label">Transferido</div>
-          <div class="kpi-value">{{ formatMoney(resumen.transferido, monedaActual) }}</div>
-        </div>
-
-        <div class="kpi-card">
-          <div class="kpi-label">Resta</div>
-          <div class="kpi-value">{{ formatMoney(resumen.resta, monedaActual) }}</div>
-        </div>
-
-        <div class="kpi-card kpi-card--accent">
-          <div class="kpi-label">Liquidar</div>
-          <div class="kpi-value">{{ formatMoney(resumen.liquidar, monedaActual) }}</div>
-        </div>
-      </div>
-
-      <div *ngIf="!resumen" class="empty-state">Selecciona una valorización para ver el resumen total.</div>
-    </section>
-  </div>
-
-  <div class="two-col">
-    <section class="panel">
-      <div class="panel-title">4. Detalle de emisión de factura</div>
-
-      <div class="reference-box" *ngIf="cabecera">
-        <div><strong>Empresa:</strong> {{ cabecera.empresa || '-' }}</div>
-        <div><strong>Servicio:</strong> {{ cabecera.servicio || '-' }}</div>
-        <div><strong>Moneda:</strong> {{ cabecera.moneda || '-' }}</div>
-        <div><strong>Cotización:</strong> {{ formatMoney(cabecera.cotizacion || cabecera.montoCotizacion, cabecera.moneda) }}</div>
-        <div><strong>Proyecto:</strong> {{ cabecera.proyecto || '-' }}</div>
-        <div><strong>Proveedor:</strong> {{ cabecera.proveedor || '-' }}</div>
-        <div><strong>Especialidad:</strong> {{ cabecera.especialidad || '-' }}</div>
-      </div>
+      <div class="panel-title">3. Emisión de factura</div>
+      <div class="helper-strip">La factura se registra sobre la configuración elegida. No se muestra empresa ni servicio.</div>
 
       <div class="form-grid detail-grid top-gap">
         <div class="field">
@@ -193,12 +148,12 @@
         </div>
 
         <div class="field">
-          <label>Nro factura (serie)</label>
+          <label>Nro factura</label>
           <input [(ngModel)]="formDetalle.numeroFactura" />
         </div>
 
         <div class="field">
-          <label>Monto total = monto factura</label>
+          <label>Monto factura</label>
           <input type="number" [(ngModel)]="formDetalle.montoFactura" (ngModelChange)="onDetalleMontoFacturaChange()" />
         </div>
 
@@ -207,14 +162,11 @@
           <textarea [(ngModel)]="formDetalle.descripcion"></textarea>
         </div>
 
-        <div class="option-card option-card--compact">
-          <label class="checkline">
-            <input type="checkbox" [(ngModel)]="formDetalle.aplicaDetraccion" (ngModelChange)="onDetalleReglasChange()" [disabled]="!detraccionHabilitadaPorMonto" />
-            <span class="checkline__copy">
-              <span class="checkline__title">Aplicar detracción</span>
-              <span class="hint">Automática desde S/ 700.00</span>
-            </span>
-          </label>
+        <div class="field">
+          <label>Tipo de detracción</label>
+          <select [(ngModel)]="formDetalle.tipoDetraccion" (ngModelChange)="onTipoDetraccionChange()">
+            <option *ngFor="let option of detraccionOptions" [ngValue]="option.value">{{ option.label }}</option>
+          </select>
         </div>
 
         <div class="option-card option-card--compact">
@@ -228,28 +180,34 @@
         </div>
 
         <div class="field">
+          <label>Otros descuentos</label>
+          <input type="number" [(ngModel)]="formDetalle.otrosDescuentos" (ngModelChange)="onDetalleReglasChange()" />
+        </div>
+
+        <div class="field">
           <label>Transferido</label>
           <input type="number" [(ngModel)]="formDetalle.montoTransferido" readonly />
         </div>
 
         <div class="field">
-          <label>Fecha de monto transferido</label>
+          <label>Fecha transferido</label>
           <input type="date" [(ngModel)]="formDetalle.fechaTransferencia" />
         </div>
       </div>
 
       <div class="toolbar top-gap">
-        <button class="btn btn-primary" (click)="guardarDetalle()">Guardar detalle</button>
+        <button class="btn btn-primary" (click)="guardarDetalle()">Guardar factura</button>
       </div>
     </section>
 
     <section class="panel">
-      <div class="panel-title">Cálculo de la línea</div>
+      <div class="panel-title">Cálculo de la factura</div>
 
       <div class="calc-cards">
         <div class="calc-card">
           <div class="calc-label">Detracción</div>
           <div class="calc-value">{{ formatMoney(montoDetraccionCalculado, monedaActual) }}</div>
+          <div class="hint">{{ detraccionLabel(formDetalle.tipoDetraccion) }}</div>
         </div>
 
         <div class="calc-card">
@@ -258,12 +216,51 @@
         </div>
 
         <div class="calc-card calc-card--accent">
-          <div class="calc-label">A abonar</div>
+          <div class="calc-label">Transferido</div>
           <div class="calc-value">{{ formatMoney(montoAAbonarCalculado, monedaActual) }}</div>
         </div>
       </div>
     </section>
   </div>
+
+  <section class="panel">
+    <div class="panel-title">4. Resumen total de valorización</div>
+
+    <div class="kpi-grid" *ngIf="resumen">
+      <div class="kpi-card kpi-card--accent">
+        <div class="kpi-label">Cotización</div>
+        <div class="kpi-value">{{ formatMoney(resumen.cotizacion, monedaActual) }}</div>
+      </div>
+    </div>
+
+    <div class="table-wrap top-gap" *ngIf="resumenFacturas.length">
+      <table>
+        <thead>
+          <tr>
+            <th>Factura</th>
+            <th>Descripción</th>
+            <th>Facturado</th>
+            <th>Transferido</th>
+            <th>Garantía</th>
+            <th>Resta</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of resumenFacturas">
+            <td>{{ row.numeroFactura || '-' }}</td>
+            <td>{{ row.descripcion || '-' }}</td>
+            <td>{{ formatMoney(row.facturado, monedaActual) }}</td>
+            <td>{{ formatMoney(row.transferido, monedaActual) }}</td>
+            <td>{{ formatMoney(row.garantia, monedaActual) }}</td>
+            <td>{{ formatMoney(row.resta, monedaActual) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="resumen && !resumenFacturas.length" class="empty-state">La configuración seleccionada todavía no tiene facturas registradas.</div>
+    <div *ngIf="!resumen" class="empty-state">Usa una configuración para ver su resumen total.</div>
+  </section>
 
   <section class="panel">
     <div class="panel-title">5. Facturas registradas</div>
@@ -274,41 +271,46 @@
           <tr>
             <th>Proveedor</th>
             <th>Fecha de factura</th>
-            <th>Nro factura (serie)</th>
+            <th>Nro factura</th>
             <th>Monto factura</th>
             <th>Descripción</th>
+            <th>Tipo detracción</th>
             <th>Detracción</th>
             <th>Garantía</th>
             <th>Transferido</th>
-            <th>Fecha de monto transferido</th>
-            <th>Adjuntar Facturas</th>
+            <th>Fecha transferido</th>
+            <th class="actions-col">Acciones</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let row of detalle">
-            <td>{{ row.proveedor || cabecera?.proveedor || '-' }}</td>
+            <td>{{ row.proveedor || cabecera?.proveedor || configuracionEnUso?.proveedor || '-' }}</td>
             <td>{{ row.fechaFactura | date:'dd/MM/yyyy' }}</td>
             <td>{{ row.numeroFactura || '-' }}</td>
             <td>{{ formatMoney(row.montoFactura, monedaActual) }}</td>
             <td>{{ row.descripcion || '-' }}</td>
+            <td>{{ detraccionLabel(row.tipoDetraccion) }}</td>
             <td>{{ formatMoney(row.detraccion, monedaActual) }}</td>
             <td>{{ formatMoney(row.garantia, monedaActual) }}</td>
             <td>{{ formatMoney(row.montoTransferido, monedaActual) }}</td>
             <td>{{ row.fechaTransferencia | date:'dd/MM/yyyy' }}</td>
             <td>
+              <div class="actions actions--stack-mobile actions--end">
+                <button class="btn btn-secondary small" (click)="abrirAdjuntarFacturas(row)">Adjuntar facturas</button>
+                <button class="btn btn-danger small" (click)="eliminarFactura(row)">Eliminar factura</button>
+              </div>
               <div class="attach-list" *ngIf="row.archivos?.length">
                 <button class="btn btn-ghost small" *ngFor="let a of row.archivos" (click)="downloadArchivo(row, a)">
                   {{ a.nombreArchivo || 'Descargar PDF' }}
                 </button>
               </div>
-              <button class="btn btn-secondary small" (click)="abrirAdjuntarFacturas(row)">Adjuntar Facturas</button>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <div *ngIf="!detalle.length" class="empty-state">No hay detalle registrado todavía.</div>
+    <div *ngIf="!detalle.length" class="empty-state">No hay facturas registradas para la configuración elegida.</div>
   </section>
 
   <div *ngIf="msg" class="success-box">{{ msg }}</div>
@@ -317,12 +319,12 @@
 <div class="modal-backdrop" *ngIf="modalAdjuntarOpen">
   <div class="modal-card">
     <div class="modal-header">
-      <div class="panel-title" style="margin:0;">Adjuntar Facturas</div>
+      <div class="panel-title" style="margin:0;">Adjuntar facturas</div>
       <button class="btn btn-ghost" (click)="cerrarAdjuntarFacturas()">Cerrar</button>
     </div>
 
     <div class="field">
-      <label>PDF's de factura</label>
+      <label>PDF de factura</label>
       <input type="file" multiple accept=".pdf,application/pdf" (change)="onModalArchivosSelected($event)" />
       <div class="hint" *ngIf="modalAdjuntarFiles.length">{{ modalAdjuntarFiles.length }} PDF(s) seleccionados.</div>
     </div>

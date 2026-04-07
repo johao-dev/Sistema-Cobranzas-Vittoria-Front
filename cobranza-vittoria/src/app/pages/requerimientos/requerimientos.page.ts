@@ -173,6 +173,7 @@ export class RequerimientosPage implements OnInit {
       idEspecialidad: Number(this.modalItem.idEspecialidad),
       especialidad: material?.especialidad ?? especialidad?.nombre ?? '',
       material: material?.descripcion ?? '',
+      unidadMedida: material?.unidadMedida ?? material?.unidad ?? '-',
       cantidad: Number(this.modalItem.cantidad),
       observacion: this.modalItem.observacion ?? ''
     };
@@ -236,6 +237,7 @@ export class RequerimientosPage implements OnInit {
         idEspecialidad: x.idEspecialidad ?? null,
         especialidad: x.especialidad ?? '',
         material: x.material,
+        unidadMedida: x.unidadMedida ?? x.unidad ?? '-',
         cantidad: Number(x.cantidad),
         observacion: x.observacion ?? ''
       }))

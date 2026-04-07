@@ -1,7 +1,7 @@
 <div class="page-header">
   <div>
     <div class="page-title">Compras</div>
-    <div class="page-subtitle">Pendientes desde O.C. y compras cerradas con documentos adjuntos.</div>
+    <div class="page-subtitle">Pendientes desde O.C. y compras cerradas con carga opcional de archivos.</div>
   </div>
 </div>
 
@@ -133,7 +133,7 @@
           <div class="field auto-field"><label>Número compra</label><input [(ngModel)]="form.numeroCompra" readonly></div>
           <div class="field auto-field"><label>Fecha compra</label><input type="date" [(ngModel)]="form.fechaCompra" readonly></div>
           <div class="field full-width">
-            <button class="btn btn-primary" (click)="registrarCompra()">Registrar compra y subir documentos</button>
+            <button class="btn btn-primary" (click)="registrarCompra()">Registrar compra</button>
             <button class="btn btn-ghost" (click)="resetForm()">Cancelar / Limpiar</button>
           </div>
         </div>
@@ -159,6 +159,19 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <div class="panel panel-embedded docs-panel" *ngIf="detalleCompra && !documentos.length">
+        <div class="panel-title docs-title">Subir archivos pendientes</div>
+        <div class="helper-strip">Como la compra se puede registrar sin adjuntos, aquí puedes subirlos después si no los cargaste al inicio.</div>
+        <div class="field full-width top-gap">
+          <label>Archivos</label>
+          <input type="file" multiple (change)="onCompraFilesSelected($event)">
+          <div class="hint" *ngIf="selectedCompraFiles.length">{{ selectedCompraFiles.length }} archivo(s) seleccionados.</div>
+        </div>
+        <div class="toolbar top-gap">
+          <button class="btn btn-primary" (click)="subirDocumentosPendientes()">Subir archivos</button>
+        </div>
       </div>
 
       <div class="panel panel-embedded docs-panel">
@@ -193,7 +206,7 @@
     <div class="modal-header purchase-modal__header">
       <div>
         <div class="panel-title purchase-modal__title">Precio para {{ modalItem.material }}</div>
-        <div class="modal-sub">Completa el cálculo de la línea y adjunta los PDFs de sustento.</div>
+        <div class="modal-sub">Completa el cálculo de la línea y adjunta archivos de sustento si los tienes a la mano.</div>
       </div>
       <button class="modal-close" type="button" (click)="cerrarModal()">×</button>
     </div>
@@ -251,9 +264,9 @@
         <input [(ngModel)]="modalItem.observacion">
       </div>
       <div class="field full-width">
-        <label>Adjuntar PDFs (cotización / sustento)</label>
-        <input type="file" multiple accept=".pdf,application/pdf" (change)="onModalFilesSelected($event)" #modalFilesInput>
-        <div class="file-chip-list" *ngIf="modalItem.files?.length">
+        <label>Adjuntar archivos (cotización / sustento)</label>
+        <input type="file" multiple (change)="onModalFilesSelected($event)" #modalFilesInput>
+        <div class="file-chip-list" *ngIf="modalItem.files.length">
           <div class="file-chip" *ngFor="let file of modalItem.files; index as i">
             <span>{{ file.name }}</span>
             <button type="button" class="file-chip__remove" (click)="removeModalFile(i)">Quitar</button>

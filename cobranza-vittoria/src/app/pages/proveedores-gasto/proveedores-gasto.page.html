@@ -37,8 +37,7 @@
             <th>Categoría</th>
             <th>Proveedor</th>
             <th>RUC</th>
-            <th>Contacto</th>
-            <th>Estado</th>
+                        <th>Estado</th>
             <th class="actions-col">Acciones</th>
           </tr>
         </thead>
@@ -47,7 +46,6 @@
             <td>{{ readValue(row, 'categoria', 'Categoria') || '-' }}</td>
             <td>{{ readValue(row, 'razonSocial', 'RazonSocial') }}</td>
             <td>{{ readValue(row, 'ruc', 'Ruc') || '-' }}</td>
-            <td>{{ readValue(row, 'contacto', 'Contacto') || '-' }}</td>
             <td>
               <span class="badge" [class.badge--ok]="readValue(row, 'activo', 'Activo')" [class.badge--neutral]="!readValue(row, 'activo', 'Activo')">
                 {{ readValue(row, 'activo', 'Activo') ? 'Activo' : 'Inactivo' }}
@@ -87,10 +85,6 @@
         <input [(ngModel)]="form.ruc" maxlength="20" />
       </div>
 
-      <div class="field">
-        <label>Contacto</label>
-        <input [(ngModel)]="form.contacto" />
-      </div>
 
       <div class="field">
         <label>Teléfono</label>

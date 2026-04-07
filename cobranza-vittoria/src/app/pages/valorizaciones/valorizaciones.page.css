@@ -1,3 +1,9 @@
+.flow-strip { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; margin-bottom: 20px; }
+.flow-step { display:flex; gap: 12px; padding: 16px; border:1px solid var(--border); border-radius:18px; background: linear-gradient(180deg, #ffffff 0%, #fafbff 100%); box-shadow: 0 10px 24px rgba(31,36,48,.05); }
+.flow-step__index { width: 34px; height: 34px; border-radius: 999px; display:grid; place-items:center; font-weight:800; color: var(--violet); background:#eef2ff; flex:0 0 auto; }
+.flow-step p { margin: 4px 0 0; color: var(--muted); font-size: .86rem; line-height: 1.35; }
+.two-col--detail { align-items: start; }
+.helper-strip { padding: 12px 14px; border-radius: 14px; border: 1px solid var(--border); background: #fafbff; color: var(--muted); font-size: .9rem; line-height: 1.4; }
 .layout-stack {
   display: grid;
   gap: 20px;
@@ -177,6 +183,7 @@
 }
 
 @media (max-width: 1280px) {
+  .flow-strip,
   .config-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -194,6 +201,7 @@
 }
 
 @media (max-width: 780px) {
+  .flow-strip,
   .config-grid,
   .head-grid,
   .kpi-grid,
@@ -211,3 +219,5 @@
 .checkline { gap: 10px; }
 .checkline__title { font-size: .92rem; }
 .checkline__copy .hint { font-size: .8rem; line-height: 1.25; }
+
+.full-config-row { grid-column: 1 / -1; }

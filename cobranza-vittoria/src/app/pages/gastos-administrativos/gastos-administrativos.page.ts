@@ -90,6 +90,10 @@ export class GastosAdministrativosPage implements OnInit {
     if (!ok) this.form.idProveedorGastoAdministrativo = null;
   }
 
+  get sumatoriaPagosVisibles(): number {
+    return (this.rows || []).reduce((acc: number, row: any) => acc + Number(this.readValue(row, 'total', 'Total', 'monto', 'Monto') || 0), 0);
+  }
+
   onCategoriaFiltroChange(): void {
     const categoriaId = Number(this.filtros.idCategoriaGasto) || null;
     const proveedorId = Number(this.filtros.idProveedorGastoAdministrativo) || null;

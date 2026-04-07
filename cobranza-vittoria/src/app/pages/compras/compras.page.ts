@@ -2,6 +2,7 @@ import { Component, ElementRef, OnInit, ViewChild, ChangeDetectorRef } from '@an
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ComprasService } from '../../core/services/compras.service';
+import { MaestraService } from '../../core/services/maestra.service';
 
 type PrecioItem = {
   idMaterial: number;
@@ -35,7 +36,9 @@ export class ComprasPage implements OnInit {
   detalleOc: any = null;
   detalleCompra: any = null;
   documentos: any[] = [];
+  selectedCompraFiles: File[] = [];
   msg = '';
+  materialesCatalogo: any[] = [];
 
   form = {
     numeroCompra: '',
@@ -54,10 +57,18 @@ export class ComprasPage implements OnInit {
   modalIndex = -1;
   modalItem: PrecioItem | null = null;
 
-  constructor(private compras: ComprasService, private cdr: ChangeDetectorRef) { }
+  constructor(private compras: ComprasService, private maestra: MaestraService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit() {
+    this.loadCatalogos();
     this.load();
+  }
+
+  loadCatalogos() {
+    this.maestra.materiales(true).subscribe({
+      next: (x: any) => { this.materialesCatalogo = x || []; this.cdr.detectChanges(); },
+      error: () => { this.materialesCatalogo = []; this.cdr.detectChanges(); }
+    });
   }
 
   load() {
@@ -87,34 +98,50 @@ export class ComprasPage implements OnInit {
           fechaCompra: this.todayIso()
         };
 
-        this.itemPrecios = ((x?.items || []) as any[]).map((it: any) => ({
-          idMaterial: Number(it.idMaterial || it.IdMaterial || 0),
-          especialidad:
+        this.itemPrecios = ((x?.items || []) as any[]).map((it: any) => {
+          const idMaterial = Number(it.idMaterial || it.IdMaterial || 0);
+          const meta = this.materialById(idMaterial);
+          const especialidad =
             it.especialidad ||
             it.Especialidad ||
+            meta?.especialidad ||
+            meta?.nombreEspecialidad ||
+            meta?.Especialidad ||
             oc?.especialidad ||
             row?.especialidad ||
             row?.Especialidad ||
-            '-',
-          material: it.material || it.Material || '-',
-          unidadMedida: it.unidadMedida || it.UnidadMedida || '-',
-          cantidad: Number(it.cantidad || it.Cantidad || 0),
-          idProveedor: Number(it.idProveedor || it.IdProveedor || oc?.idProveedor || 0) || null,
-          proveedor:
-            it.proveedor ||
-            it.Proveedor ||
-            oc?.proveedor ||
-            row?.proveedor ||
-            row?.Proveedor ||
-            '-',
-          precioUnitario: Number(it.precioUnitario || it.PrecioUnitario || 0),
-          incluyeIgv: true,
-          subtotalSinIgv: 0,
-          montoIgv: 0,
-          total: Number(it.subtotal || it.Subtotal || 0),
-          observacion: '',
-          files: []
-        }));
+            '-';
+          const unidadMedida =
+            it.unidadMedida ||
+            it.UnidadMedida ||
+            meta?.unidadMedida ||
+            meta?.UnidadMedida ||
+            meta?.unidad ||
+            '-';
+
+          return {
+            idMaterial,
+            especialidad: String(especialidad || '-').trim(),
+            material: it.material || it.Material || meta?.descripcion || '-',
+            unidadMedida: String(unidadMedida || '-').trim(),
+            cantidad: Number(it.cantidad || it.Cantidad || 0),
+            idProveedor: Number(it.idProveedor || it.IdProveedor || oc?.idProveedor || 0) || null,
+            proveedor:
+              it.proveedor ||
+              it.Proveedor ||
+              oc?.proveedor ||
+              row?.proveedor ||
+              row?.Proveedor ||
+              '-',
+            precioUnitario: Number(it.precioUnitario || it.PrecioUnitario || 0),
+            incluyeIgv: true,
+            subtotalSinIgv: 0,
+            montoIgv: 0,
+            total: Number(it.subtotal || it.Subtotal || 0),
+            observacion: '',
+            files: []
+          };
+        });
 
         this.itemPrecios.forEach(x => this.recalcularItem(x));
         this.filtrosTabla = { especialidad: 'TODAS', proveedor: 'TODOS' };
@@ -124,6 +151,7 @@ export class ComprasPage implements OnInit {
       error: () => {
         this.detalleOc = null;
         this.itemPrecios = [];
+    this.selectedCompraFiles = [];
         this.msg = 'No se pudo cargar la O.C. pendiente.';
         this.cdr.detectChanges();
       }
@@ -147,9 +175,13 @@ export class ComprasPage implements OnInit {
     });
   }
 
+  private materialById(idMaterial: number): any | null {
+    return this.materialesCatalogo.find((m: any) => Number(m.idMaterial) === Number(idMaterial)) || null;
+  }
+
   splitEspecialidades(value: string | null | undefined): string[] {
     return String(value || '')
-      .split(',')
+      .split(/[,|]/)
       .map(x => x.trim())
       .filter(Boolean);
   }
@@ -245,8 +277,7 @@ export class ComprasPage implements OnInit {
   onModalFilesSelected(event: any) {
     if (!this.modalItem) return;
     const files = Array.from(event?.target?.files || []) as File[];
-    const nuevos = files.filter((f: File) => f.name.toLowerCase().endsWith('.pdf'));
-    this.modalItem.files = [...(this.modalItem.files || []), ...nuevos];
+    this.modalItem.files = [...(this.modalItem.files || []), ...files];
   }
 
   removeModalFile(index: number) {
@@ -321,16 +352,19 @@ export class ComprasPage implements OnInit {
     };
 
     const allFiles = this.itemPrecios.flatMap(x => x.files || []);
-    if (!allFiles.length) {
-      this.msg = 'Debes adjuntar al menos un PDF en uno de los ítems.';
-      return;
-    }
 
     this.compras.registrarCompra(dto).subscribe({
       next: (res: any) => {
         const idCompra = res?.idCompra || res?.IdCompra;
         if (!idCompra) {
           this.msg = 'La compra se registró, pero no se obtuvo el identificador.';
+          this.load();
+          return;
+        }
+
+        if (!allFiles.length) {
+          this.msg = 'Compra registrada correctamente. Puedes subir los archivos después desde el detalle.';
+          this.resetForm();
           this.load();
           return;
         }
@@ -368,6 +402,7 @@ export class ComprasPage implements OnInit {
     this.detalleOc = null;
     this.detalleCompra = null;
     this.documentos = [];
+    this.selectedCompraFiles = [];
     this.itemPrecios = [];
     this.filtrosTabla = { especialidad: 'TODAS', proveedor: 'TODOS' };
     this.form = {
@@ -377,6 +412,34 @@ export class ComprasPage implements OnInit {
       fechaCompra: ''
     };
     this.cerrarModal();
+  }
+
+  onCompraFilesSelected(event: any) {
+    this.selectedCompraFiles = Array.from(event?.target?.files || []) as File[];
+  }
+
+  subirDocumentosPendientes() {
+    const idCompra = this.detalleCompra?.compra?.idCompra || this.detalleCompra?.compra?.IdCompra || this.detalleCompra?.idCompra || this.detalleCompra?.IdCompra;
+    if (!idCompra) {
+      this.msg = 'No se encontró la compra para subir archivos.';
+      return;
+    }
+    if (!this.selectedCompraFiles.length) {
+      this.msg = 'Debes seleccionar al menos un archivo.';
+      return;
+    }
+
+    this.compras.uploadDocumentosCompra(Number(idCompra), this.selectedCompraFiles).subscribe({
+      next: () => {
+        this.msg = 'Archivos subidos correctamente.';
+        this.selectedCompraFiles = [];
+        this.verCompra({ idCompra: Number(idCompra) });
+      },
+      error: (e: any) => {
+        this.msg = e?.error?.message || 'No se pudieron subir los archivos.';
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   private recalcularItem(item: PrecioItem) {

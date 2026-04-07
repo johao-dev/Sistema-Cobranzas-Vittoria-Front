@@ -6,31 +6,94 @@
   <button class="btn btn-secondary" type="button" (click)="load()">Actualizar</button>
 </div>
 
-<div *ngIf="loading" class="empty-state">Cargando dashboard...</div>
+<div class="dashboard-status" *ngIf="loading">{{ loadingMessage }}</div>
 
 <div *ngIf="!loading">
   <div class="dashboard-kpis">
     <article class="kpi-card" *ngFor="let card of cards">
       <div class="kpi-card__label">{{ card.label }}</div>
-      <div class="kpi-card__value">{{ card.value | currency:'PEN':'symbol':'1.2-2' }}</div>
+      <div class="kpi-card__value">{{ formatMoney(card.value) }}</div>
     </article>
   </div>
 
-  <section class="panel" *ngIf="chartRows.length; else noChart">
-    <div class="panel-title">Valorizaciones</div>
-    <div class="chart-list">
-      <div class="chart-row" *ngFor="let item of chartRows">
-        <div class="chart-row__label">{{ item.label }}</div>
-        <div class="chart-row__track">
-          <div class="chart-row__bar" [style.width.%]="item.width"></div>
-        </div>
-        <div class="chart-row__value">{{ item.value | currency:'PEN':'symbol':'1.2-2' }}</div>
+  <section class="panel" *ngIf="loadingMaterials || chartRowsMonto.length; else noMateriales">
+    <div class="panel-header panel-header--stack">
+      <div>
+        <div class="panel-title">Materiales que más se compran</div>
+        <div class="panel-subtitle">Vista completa por cantidad, monto y frecuencia de compra.</div>
       </div>
+      <div class="metric-chip-group">
+        <div class="metric-chip">
+          <span class="metric-chip__label">Materiales distintos</span>
+          <strong>{{ totalMateriales }}</strong>
+        </div>
+        <div class="metric-chip">
+          <span class="metric-chip__label">Top por cantidad</span>
+          <strong>{{ materialSummary.topCantidad }}</strong>
+        </div>
+        <div class="metric-chip">
+          <span class="metric-chip__label">Top por monto</span>
+          <strong>{{ materialSummary.topMonto }}</strong>
+        </div>
+        <div class="metric-chip">
+          <span class="metric-chip__label">Top por frecuencia</span>
+          <strong>{{ materialSummary.topFrecuencia }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-status" *ngIf="loadingMaterials">Cargando materiales...</div>
+
+    <div class="material-panels" *ngIf="!loadingMaterials">
+      <section class="material-panel">
+        <div class="material-panel__title">Por cantidad comprada</div>
+        <div class="chart-list">
+          <div class="chart-row" *ngFor="let item of chartRowsCantidad">
+            <div class="chart-row__label">{{ item.label }}</div>
+            <div class="chart-row__metric-line">
+              <div class="chart-row__track">
+                <div class="chart-row__bar" [style.width.%]="item.width"></div>
+              </div>
+              <div class="chart-row__value">{{ item.value | number:'1.0-2' }}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="material-panel">
+        <div class="material-panel__title">Por monto total comprado</div>
+        <div class="chart-list">
+          <div class="chart-row" *ngFor="let item of chartRowsMonto">
+            <div class="chart-row__label">{{ item.label }}</div>
+            <div class="chart-row__metric-line">
+              <div class="chart-row__track">
+                <div class="chart-row__bar chart-row__bar--accent" [style.width.%]="item.width"></div>
+              </div>
+              <div class="chart-row__value">{{ formatMoney(item.value) }}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="material-panel">
+        <div class="material-panel__title">Por número de veces comprado</div>
+        <div class="chart-list">
+          <div class="chart-row" *ngFor="let item of chartRowsFrecuencia">
+            <div class="chart-row__label">{{ item.label }}</div>
+            <div class="chart-row__metric-line">
+              <div class="chart-row__track">
+                <div class="chart-row__bar chart-row__bar--success" [style.width.%]="item.width"></div>
+              </div>
+              <div class="chart-row__value">{{ item.value | number:'1.0-0' }}</div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   </section>
 
-  <ng-template #noChart>
-    <div class="empty-state">No se encontraron valorizaciones para construir el gráfico.</div>
+  <ng-template #noMateriales>
+    <div class="empty-state">No se encontraron compras con materiales para construir el gráfico.</div>
   </ng-template>
 
   <div class="empty-state" *ngIf="!hasData">No se encontraron datos para construir el dashboard todavía.</div>

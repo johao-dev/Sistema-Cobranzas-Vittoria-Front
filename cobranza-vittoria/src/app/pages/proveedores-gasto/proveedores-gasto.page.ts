@@ -36,7 +36,6 @@ export class ProveedoresGastoPage implements OnInit {
       idCategoriaGasto: null,
       razonSocial: '',
       ruc: '',
-      contacto: '',
       telefono: '',
       correo: '',
       activo: true
@@ -87,7 +86,6 @@ export class ProveedoresGastoPage implements OnInit {
       idCategoriaGasto: Number(this.readValue(row, 'idCategoriaGasto', 'IdCategoriaGasto')) || null,
       razonSocial: this.readValue(row, 'razonSocial', 'RazonSocial') ?? '',
       ruc: this.readValue(row, 'ruc', 'Ruc') ?? '',
-      contacto: this.readValue(row, 'contacto', 'Contacto') ?? '',
       telefono: this.readValue(row, 'telefono', 'Telefono') ?? '',
       correo: this.readValue(row, 'correo', 'Correo') ?? '',
       activo: this.readValue(row, 'activo', 'Activo') ?? true
@@ -114,7 +112,6 @@ export class ProveedoresGastoPage implements OnInit {
       idCategoriaGasto: Number(this.form.idCategoriaGasto),
       razonSocial,
       ruc: String(this.form.ruc ?? '').trim(),
-      contacto: String(this.form.contacto ?? '').trim(),
       telefono: String(this.form.telefono ?? '').trim(),
       correo: String(this.form.correo ?? '').trim()
     }).subscribe({
