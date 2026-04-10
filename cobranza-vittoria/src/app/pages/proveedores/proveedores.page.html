@@ -32,7 +32,10 @@
             <td>{{ row.contacto || '-' }}</td>
             <td>{{ row.telefono || '-' }}</td>
             <td>{{ row.correo || '-' }}</td>
-            <td><div class="actions actions--end"><button class="btn btn-secondary" (click)="edit(row)">Editar</button></div></td>
+            <td>
+              <div class="actions actions--end"><button class="btn btn-secondary" (click)="edit(row)">Editar</button>
+              </div>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -50,7 +53,7 @@
 
       <div class="field">
         <label>RUC</label>
-        <input [(ngModel)]="form.ruc" />
+        <input [(ngModel)]="form.ruc" (keyup.enter)="buscarRuc()" />
       </div>
 
       <div class="field">
@@ -95,7 +98,10 @@
 
       <div class="field">
         <label>Trabaja con proveedor</label>
-        <select [(ngModel)]="form.trabajamosConProveedor"><option value="SI">Sí</option><option value="NO">No</option></select>
+        <select [(ngModel)]="form.trabajamosConProveedor">
+          <option value="SI">Sí</option>
+          <option value="NO">No</option>
+        </select>
       </div>
 
       <div class="field">

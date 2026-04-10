@@ -94,6 +94,34 @@ export class ProveedoresPage implements OnInit {
     this.msg = '';
   }
 
+  buscarRuc() {
+    if (!this.form.ruc || this.form.ruc.toString().trim().length !== 11) {
+      return;
+    }
+
+    this.maestra.consultaRuc(this.form.ruc).subscribe({
+      next: (res: any) => {
+        if (res && res.numero_documento) {
+          this.form.razonSocial = res.razon_social || '';
+          this.form.direccion = res.direccion !== '-' ? (res.direccion || '') : '';
+          this.form.activo = res.estado === 'ACTIVO';
+          
+          this.msg = 'Datos recuperados de SUNAT correctamente.';
+          this.notifyService.show(this.msg, 'success');
+        } else {
+          this.msg = 'No se encontraron datos para el RUC ingresado.';
+          this.notifyService.show(this.msg, 'info');
+        }
+        this.cdr.detectChanges();
+      },
+      error: (e) => {
+        this.msg = 'Error al consultar el RUC. Verifique el número ingresado.';
+        this.notifyService.show(this.msg, 'error');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   save() {
     this.maestra.guardarProveedor(this.form).subscribe({
       next: (resp: any) => {
