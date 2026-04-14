@@ -30,6 +30,8 @@ export class OrdenesCompraPage implements OnInit {
     fechaOrdenCompra: '',
     descripcion: '',
     idUsuarioCreacion: null,
+    usuarioCreacionNombre: '',
+    proyectoNombre: '',
     rutaPdf: '',
     items: []
   };
@@ -75,6 +77,9 @@ export class OrdenesCompraPage implements OnInit {
 
         this.form.idRequerimiento = req?.idRequerimiento ?? null;
         this.form.idProyecto = req?.idProyecto ?? null;
+        this.form.proyectoNombre = req?.nombreProyecto || row?.nombreProyecto || row?.NombreProyecto || '';
+        this.form.idUsuarioCreacion = req?.idUsuarioSolicitante ?? row?.idUsuarioSolicitante ?? null;
+        this.form.usuarioCreacionNombre = req?.solicitante || row?.solicitante || '';
         this.form.numeroOrdenCompra = this.getNextNumeroOrdenCompra();
         this.form.fechaOrdenCompra = this.todayIso();
         this.form.items = items.map((it: any) => ({
@@ -157,9 +162,42 @@ export class OrdenesCompraPage implements OnInit {
       fechaOrdenCompra: '',
       descripcion: '',
       idUsuarioCreacion: null,
+      usuarioCreacionNombre: '',
+      proyectoNombre: '',
       rutaPdf: '',
       items: []
     };
+  }
+
+
+  exportarPdfListado(): void {
+    const tabla = document.getElementById('tabla-ordenes-compra-generadas-export');
+    if (!tabla) return;
+
+    const win = window.open('', '_blank');
+    if (!win) return;
+
+    win.document.write(`
+      <html>
+      <head>
+        <title>Listado de órdenes de compra</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; color: #1f2430; }
+          h1 { font-size: 20px; margin-bottom: 16px; }
+          table { width: 100%; border-collapse: collapse; font-size: 12px; }
+          th, td { border: 1px solid #d6deea; padding: 8px; text-align: left; }
+          th { background: #f5f7fb; }
+        </style>
+      </head>
+      <body>
+        <h1>Listado de órdenes de compra</h1>
+        ${tabla.outerHTML}
+      </body>
+      </html>
+    `);
+    win.document.close();
+    win.focus();
+    setTimeout(() => win.print(), 400);
   }
 
   private getNextNumeroOrdenCompra(): string {

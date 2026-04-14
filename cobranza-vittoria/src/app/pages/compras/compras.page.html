@@ -132,6 +132,7 @@
         <div class="form-grid two purchase-register-grid">
           <div class="field auto-field"><label>Número compra</label><input [(ngModel)]="form.numeroCompra" readonly></div>
           <div class="field auto-field"><label>Fecha compra</label><input type="date" [(ngModel)]="form.fechaCompra" readonly></div>
+          <div class="field auto-field"><label>Total</label><input [value]="totalGeneral | number:'1.2-2'" readonly></div>
           <div class="field full-width">
             <button class="btn btn-primary" (click)="registrarCompra()">Registrar compra</button>
             <button class="btn btn-ghost" (click)="resetForm()">Cancelar / Limpiar</button>

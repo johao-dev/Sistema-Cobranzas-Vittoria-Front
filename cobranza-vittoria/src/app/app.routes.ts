@@ -17,6 +17,8 @@ import { ProveedoresGastoPage } from './pages/proveedores-gasto/proveedores-gast
 import { GastosAdministrativosPage } from './pages/gastos-administrativos/gastos-administrativos.page';
 import { ResumenTotalPage } from './pages/resumen-total/resumen-total.page';
 import { LoginPage } from './pages/login/login.page';
+import { PresupuestoPage } from './pages/presupuesto/presupuesto.page';
+import { TerrenoPage } from './pages/terreno/terreno.page';
 import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
@@ -24,6 +26,8 @@ export const routes: Routes = [
   { path: 'login', component: LoginPage },
   { path: 'dashboard', component: DashboardPage, canActivate: [authGuard] },
   { path: 'resumen-total', canActivate: [authGuard], component: ResumenTotalPage },
+  { path: 'presupuesto', canActivate: [authGuard], component: PresupuestoPage },
+  { path: 'terreno', canActivate: [authGuard], component: TerrenoPage },
   { path: 'especialidades', canActivate: [authGuard], component: EspecialidadesPage },
   { path: 'proveedores', canActivate: [authGuard], component: ProveedoresPage },
   { path: 'materiales', canActivate: [authGuard], component: MaterialesPage },

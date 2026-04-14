@@ -1,0 +1,133 @@
+<div class="page-header">
+  <div>
+    <div class="page-title">Presupuesto</div>
+    <div class="page-subtitle">Configura el presupuesto inicial por proyecto mediante líneas manuales y visualiza el saldo frente al total de compras.</div>
+  </div>
+</div>
+
+<section class="panel presupuesto-panel">
+  <div class="presupuesto-step">
+    <div class="presupuesto-step__badge">1</div>
+    <div>
+      <div class="panel-title">Configuración inicial</div>
+      <div class="page-subtitle presupuesto-subtitle">Primero selecciona el proyecto y registra manualmente cada columna/ítem del presupuesto.</div>
+    </div>
+  </div>
+
+  <div class="presupuesto-config-grid">
+    <div class="presupuesto-config-card presupuesto-config-card--full">
+      <div class="form-grid two">
+        <div class="field">
+          <label>Proyecto</label>
+          <select [(ngModel)]="form.idProyecto" (ngModelChange)="cargarVisualizacion()">
+            <option [ngValue]="null">Seleccionar</option>
+            <option *ngFor="let p of proyectos" [ngValue]="p.idProyecto">{{ p.nombreProyecto }}</option>
+          </select>
+        </div>
+        <div class="field auto-field">
+          <label>Total presupuesto</label>
+          <input [value]="(totalItemsFormulario() | number:'1.2-2')" readonly>
+        </div>
+      </div>
+
+      <div class="table-wrap presupuesto-items-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Concepto</th>
+              <th>Soles</th>
+              <th>Incidencia</th>
+              <th class="actions-col">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of form.items; let i = index">
+              <td><input [(ngModel)]="item.concepto" placeholder="Ingresar concepto"></td>
+              <td><input type="number" min="0" step="0.01" [(ngModel)]="item.soles" placeholder="0.00"></td>
+              <td><input type="number" min="0" step="0.01" [(ngModel)]="item.incidencia" placeholder="0.00"></td>
+              <td>
+                <div class="actions actions--end">
+                  <button class="btn btn-secondary" (click)="eliminarItem(i)">{{ form.items.length === 1 ? 'Limpiar' : 'Eliminar' }}</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="toolbar presupuesto-toolbar">
+        <button class="btn btn-secondary" (click)="agregarItem()">Agregar ítem</button>
+        <button class="btn btn-primary" (click)="guardarConfiguracion()">Guardar configuración</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="panel presupuesto-panel presupuesto-panel--visual">
+  <div class="presupuesto-step">
+    <div class="presupuesto-step__badge">2</div>
+    <div>
+      <div class="panel-title">Visualización</div>
+      <div class="page-subtitle presupuesto-subtitle">Se calcula al abrir o refrescar el módulo según las compras del proyecto configurado.</div>
+    </div>
+  </div>
+
+  <div class="presupuesto-kpis">
+    <div class="presupuesto-kpi">
+      <span>Proyecto</span>
+      <strong>{{ visualizacion.proyecto || proyectoNombre(form.idProyecto) }}</strong>
+    </div>
+    <div class="presupuesto-kpi">
+      <span>Total presupuesto</span>
+      <strong>S/ {{ visualizacion.totalPresupuesto | number:'1.2-2' }}</strong>
+    </div>
+    <div class="presupuesto-kpi">
+      <span>Total de compras</span>
+      <strong>S/ {{ visualizacion.totalCompras | number:'1.2-2' }}</strong>
+    </div>
+    <div class="presupuesto-kpi">
+      <span>Saldo restante</span>
+      <strong [class.presupuesto-kpi__danger]="visualizacion.saldo < 0">S/ {{ visualizacion.saldo | number:'1.2-2' }}</strong>
+    </div>
+  </div>
+
+  <div class="presupuesto-chart-card">
+    <div class="presupuesto-chart-head">
+      <div>
+        <div class="panel-title" style="margin-bottom:6px;">Gráfico de avance</div>
+        <div class="page-subtitle presupuesto-subtitle">Comparativo entre el presupuesto registrado y el avance de compras del proyecto.</div>
+      </div>
+      <button class="btn btn-secondary" (click)="cargarVisualizacion()">Actualizar</button>
+    </div>
+
+    <div class="presupuesto-bar-track">
+      <div class="presupuesto-bar-fill" [style.width.%]="visualizacion.porcentajeConsumido"></div>
+    </div>
+
+    <div class="presupuesto-legend">
+      <span class="presupuesto-tag presupuesto-tag--warning">Consumido: {{ visualizacion.porcentajeConsumido | number:'1.0-0' }}%</span>
+      <span class="presupuesto-tag presupuesto-tag--success">Disponible: {{ visualizacion.porcentajeDisponible | number:'1.0-0' }}%</span>
+    </div>
+
+    <div class="table-wrap presupuesto-items-wrap" *ngIf="visualizacion.items.length" style="margin-top: 18px;">
+      <table>
+        <thead>
+          <tr>
+            <th>Concepto</th>
+            <th>Soles</th>
+            <th>Incidencia</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of visualizacion.items">
+            <td>{{ item.concepto }}</td>
+            <td>S/ {{ item.soles | number:'1.2-2' }}</td>
+            <td>{{ item.incidencia | number:'1.2-2' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div *ngIf="msg" class="empty-state" style="margin-top:14px; padding:14px;">{{ msg }}</div>
+</section>

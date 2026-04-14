@@ -131,6 +131,36 @@ export class KardexPage implements OnInit {
       }
     });
   }
+  exportarExcel(): void {
+    const tabla = document.getElementById('tabla-kardex-export');
+    if (!tabla) return;
+
+    const html = `
+      <html>
+      <head>
+        <meta charset="UTF-8" />
+      </head>
+      <body>
+        ${tabla.outerHTML}
+      </body>
+      </html>`;
+
+    const blob = new Blob(['﻿' + html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'kardex-listado.xls';
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+
+
+  private formatDate(value: any): string {
+    if (!value) return '-';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value);
+    return date.toLocaleDateString('es-PE');
+  }
 
   exportarPdf(): void {
     const tabla = document.getElementById('tabla-kardex-export');

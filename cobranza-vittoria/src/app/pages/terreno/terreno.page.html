@@ -1,0 +1,84 @@
+<div class="page-header">
+  <div>
+    <div class="page-title">Terreno</div>
+    <div class="page-subtitle">Base inicial para el registro de terreno y alcabala por proyecto.</div>
+  </div>
+</div>
+
+<div class="split split--form">
+  <section class="panel">
+    <div class="panel-title">Listado</div>
+
+    <div *ngIf="!rows.length" class="empty-state">No hay terrenos registrados.</div>
+
+    <div *ngIf="rows.length" class="table-wrap table-wrap--sticky-actions">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Proyecto</th>
+            <th>Terreno</th>
+            <th>Alcabala</th>
+            <th>Estado</th>
+            <th class="actions-col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows">
+            <td>{{ row.fecha | date:'dd/MM/yyyy' }}</td>
+            <td>{{ row.nombreProyecto }}</td>
+            <td>{{ row.terreno }}</td>
+            <td>{{ row.alcabala }}</td>
+            <td><span class="badge" [class.badge--active]="row.estado === 'Activo'" [class.badge--danger]="row.estado !== 'Activo'">{{ row.estado }}</span></td>
+            <td>
+              <div class="actions actions--end">
+                <button class="btn btn-secondary" (click)="editar(row)">Editar</button>
+                <button class="btn" [class.btn-danger]="row.estado === 'Activo'" [class.btn-secondary]="row.estado !== 'Activo'" (click)="cambiarEstado(row)">{{ row.estado === 'Activo' ? 'Desactivar' : 'Activar' }}</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel panel--form">
+    <div class="panel-title">Formulario</div>
+
+    <div class="form-grid two">
+      <div class="field">
+        <label>Fecha</label>
+        <input type="date" [(ngModel)]="form.fecha" readonly>
+      </div>
+      <div class="field">
+        <label>Estado</label>
+        <select [(ngModel)]="form.estado">
+          <option value="Activo">Activo</option>
+          <option value="Inactivo">Inactivo</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Proyecto</label>
+        <select [(ngModel)]="form.idProyecto">
+          <option [ngValue]="null">Seleccionar</option>
+          <option *ngFor="let p of proyectos" [ngValue]="p.idProyecto">{{ p.nombreProyecto }}</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Alcabala</label>
+        <input [(ngModel)]="form.alcabala" placeholder="Ingresar alcabala" />
+      </div>
+      <div class="field" style="grid-column: 1 / -1;">
+        <label>Terreno</label>
+        <input [(ngModel)]="form.terreno" placeholder="Ingresar terreno" />
+      </div>
+    </div>
+
+    <div class="toolbar" style="margin-top: 14px;">
+      <button class="btn btn-primary" (click)="guardar()">{{ editandoId ? 'Actualizar terreno' : 'Guardar terreno' }}</button>
+      <button class="btn btn-ghost" (click)="limpiar()">Limpiar</button>
+    </div>
+
+    <div *ngIf="msg" class="empty-state" style="margin-top:14px; padding:14px;">{{ msg }}</div>
+  </section>
+</div>

@@ -39,8 +39,10 @@
         No hay órdenes de compra generadas.
       </div>
 
+      <div *ngIf="ordenesCreadas.length" class="toolbar" style="margin-bottom:12px;"><button class="btn btn-secondary" (click)="exportarPdfListado()">Exportar PDF</button></div>
+
       <div *ngIf="ordenesCreadas.length" class="table-wrap table-wrap--sticky-actions">
-        <table>
+        <table id="tabla-ordenes-compra-generadas-export">
           <thead>
             <tr><th>N° O.C.</th><th>Fecha</th><th>RQ</th><th>Proveedor</th><th>Proyecto</th><th>Estado</th><th class="actions-col">Acciones</th></tr>
           </thead>
@@ -78,8 +80,8 @@
       <div class="form-grid two oc-form-grid">
         <div class="field auto-field"><label>Número O.C.</label><input [(ngModel)]="form.numeroOrdenCompra" readonly></div>
         <div class="field auto-field"><label>Fecha</label><input type="date" [(ngModel)]="form.fechaOrdenCompra" readonly></div>
-        <div class="field"><label>Proyecto</label><select [(ngModel)]="form.idProyecto"><option [ngValue]="null">Seleccionar</option><option *ngFor="let p of proyectos" [ngValue]="p.idProyecto">{{ p.nombreProyecto }}</option></select></div>
-        <div class="field"><label>Usuario creación</label><select [(ngModel)]="form.idUsuarioCreacion"><option [ngValue]="null">Seleccionar</option><option *ngFor="let u of usuarios" [ngValue]="u.idUsuario">{{ u.nombres }} {{ u.apellidos || '' }}</option></select></div>
+        <div class="field auto-field"><label>Proyecto</label><input [value]="form.proyectoNombre || '-'" readonly></div>
+        <div class="field auto-field"><label>Usuario creación</label><input [value]="form.usuarioCreacionNombre || '-'" readonly></div>
       </div>
 
       <div class="panel panel-embedded panel-compact">
