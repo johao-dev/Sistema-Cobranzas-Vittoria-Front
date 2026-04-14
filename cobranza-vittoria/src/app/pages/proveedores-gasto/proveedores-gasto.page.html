@@ -1,7 +1,8 @@
 <div class="page-header">
   <div>
     <div class="page-title">Proveedores de gasto</div>
-    <div class="page-subtitle">Registra solo proveedores válidos para una categoría específica de gasto administrativo.</div>
+    <div class="page-subtitle">Registra solo proveedores válidos para una categoría específica de gasto administrativo.
+    </div>
   </div>
 </div>
 
@@ -28,7 +29,8 @@
     </div>
 
     <div *ngIf="loading" class="empty-state">Cargando proveedores...</div>
-    <div *ngIf="!loading && !rows.length" class="empty-state">No hay proveedores de gasto registrados. Crea uno y asígnalo a una categoría.</div>
+    <div *ngIf="!loading && !rows.length" class="empty-state">No hay proveedores de gasto registrados. Crea uno y
+      asígnalo a una categoría.</div>
 
     <div *ngIf="!loading && rows.length" class="table-wrap table-wrap--sticky-actions">
       <table>
@@ -37,7 +39,7 @@
             <th>Categoría</th>
             <th>Proveedor</th>
             <th>RUC</th>
-                        <th>Estado</th>
+            <th>Estado</th>
             <th class="actions-col">Acciones</th>
           </tr>
         </thead>
@@ -47,14 +49,16 @@
             <td>{{ readValue(row, 'razonSocial', 'RazonSocial') }}</td>
             <td>{{ readValue(row, 'ruc', 'Ruc') || '-' }}</td>
             <td>
-              <span class="badge" [class.badge--ok]="readValue(row, 'activo', 'Activo')" [class.badge--neutral]="!readValue(row, 'activo', 'Activo')">
+              <span class="badge" [class.badge--ok]="readValue(row, 'activo', 'Activo')"
+                [class.badge--neutral]="!readValue(row, 'activo', 'Activo')">
                 {{ readValue(row, 'activo', 'Activo') ? 'Activo' : 'Inactivo' }}
               </span>
             </td>
             <td>
               <div class="actions actions--end">
                 <button class="btn btn-secondary" (click)="edit(row)">Editar</button>
-                <button class="btn btn-danger" (click)="remove(row)" [disabled]="!readValue(row, 'activo', 'Activo')">Desactivar</button>
+                <button class="btn btn-danger" (click)="remove(row)"
+                  [disabled]="!readValue(row, 'activo', 'Activo')">Desactivar</button>
               </div>
             </td>
           </tr>
@@ -82,7 +86,7 @@
 
       <div class="field">
         <label>RUC</label>
-        <input [(ngModel)]="form.ruc" maxlength="20" />
+        <input [(ngModel)]="form.ruc" maxlength="20" (keyup.enter)="buscarRuc()" />
       </div>
 
 

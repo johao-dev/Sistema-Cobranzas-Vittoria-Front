@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GastosAdministrativosService } from '../../core/services/gastos-administrativos.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { MaestraService } from '../../core/services/maestra.service';
 
 @Component({
   standalone: true,
@@ -22,7 +23,8 @@ export class ProveedoresGastoPage implements OnInit {
   constructor(
     private gastosService: GastosAdministrativosService,
     private notifications: NotificationService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private maestra: MaestraService
   ) {}
 
   ngOnInit(): void {
@@ -94,6 +96,30 @@ export class ProveedoresGastoPage implements OnInit {
 
   reset(): void {
     this.form = this.createEmptyForm();
+  }
+
+  buscarRuc() {
+    if (!this.form.ruc || this.form.ruc.toString().trim().length !== 11) {
+      return;
+    }
+
+    this.maestra.consultaRuc(this.form.ruc).subscribe({
+      next: (res: any) => {
+        if (res && res.numero_documento) {
+          this.form.razonSocial = res.razon_social || '';
+          this.form.activo = res.estado === 'ACTIVO';
+          
+          this.notifications.show('Datos recuperados de SUNAT correctamente.', 'success');
+        } else {
+          this.notifications.show('No se encontraron datos para el RUC ingresado.', 'info');
+        }
+        this.cdr.detectChanges();
+      },
+      error: (e) => {
+        this.notifications.show('Error al consultar el RUC. Verifique el número ingresado.', 'error');
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   save(): void {
