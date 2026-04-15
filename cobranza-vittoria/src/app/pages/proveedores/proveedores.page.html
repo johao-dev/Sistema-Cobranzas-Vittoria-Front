@@ -53,7 +53,7 @@
 
       <div class="field">
         <label>RUC</label>
-        <input [(ngModel)]="form.ruc" (keyup.enter)="buscarRuc()" />
+        <input [(ngModel)]="form.ruc" (blur)="buscarRuc()" (keyup.enter)="buscarRuc()" />
       </div>
 
       <div class="field">
