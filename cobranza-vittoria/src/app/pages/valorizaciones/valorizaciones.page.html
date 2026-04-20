@@ -207,14 +207,40 @@
   <section class="panel">
     <div class="panel-title">3. Resumen total de valorización</div>
 
-    <div class="kpi-grid" *ngIf="resumen">
-      <div class="kpi-card kpi-card--accent">
-        <div class="kpi-label">Cotización de configuración</div>
-        <div class="kpi-value">{{ formatMoney(resumen.cotizacion, monedaActual) }}</div>
+    <div class="resumen-grid" *ngIf="resumen">
+      <div class="resumen-card">
+        <div class="resumen-card__head">RESUMEN</div>
+        <div class="resumen-card__body">
+          <div class="resumen-row">
+            <span>COTIZACION</span>
+            <strong>{{ formatMoney(resumenTotales.cotizacion, monedaActual) }}</strong>
+            <small>A</small>
+          </div>
+          <div class="resumen-row resumen-row--accent">
+            <span>GARANTIA 5%</span>
+            <strong>{{ formatMoney(resumenTotales.garantia, monedaActual) }}</strong>
+            <small></small>
+          </div>
+          <div class="resumen-row">
+            <span>FACTURADO</span>
+            <strong>{{ formatMoney(resumenTotales.facturado, monedaActual) }}</strong>
+            <small>B</small>
+          </div>
+          <div class="resumen-row">
+            <span>TRANSFERIDO</span>
+            <strong>{{ formatMoney(resumenTotales.transferido, monedaActual) }}</strong>
+            <small></small>
+          </div>
+          <div class="resumen-row resumen-row--danger">
+            <span>RESTA</span>
+            <strong>{{ formatMoney(resumenTotales.resta, monedaActual) }}</strong>
+            <small>A-B</small>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="table-wrap top-gap" *ngIf="resumenFacturas.length">
+    <div class="table-wrap table-wrap--spacious top-gap" *ngIf="resumenFacturas.length">
       <table>
         <thead>
           <tr>

@@ -1,7 +1,7 @@
 <div class="page-header">
   <div>
     <div class="page-title">Terreno</div>
-    <div class="page-subtitle">Base inicial para el registro de terreno y alcabala por proyecto.</div>
+    <div class="page-subtitle">Registro base del concepto y monto asociado al terreno por proyecto.</div>
   </div>
 </div>
 
@@ -9,26 +9,36 @@
   <section class="panel">
     <div class="panel-title">Listado</div>
 
-    <div *ngIf="!rows.length" class="empty-state">No hay terrenos registrados.</div>
+    <div *ngIf="!rows.length" class="empty-state">No hay registros de terreno.</div>
 
     <div *ngIf="rows.length" class="table-wrap table-wrap--sticky-actions">
       <table>
         <thead>
           <tr>
-            <th>Fecha</th>
+            <th>Fecha emisión</th>
             <th>Proyecto</th>
-            <th>Terreno</th>
-            <th>Alcabala</th>
+            <th>Proveedor</th>
+            <th>Actividad</th>
+            <th>Tipo de actividad</th>
+            <th>Concepto</th>
+            <th>Moneda</th>
+            <th>Monto</th>
+            <th>Descripción</th>
             <th>Estado</th>
             <th class="actions-col">Acciones</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let row of rows">
-            <td>{{ row.fecha | date:'dd/MM/yyyy' }}</td>
+            <td>{{ row.fechaEmision | date:'dd/MM/yyyy' }}</td>
             <td>{{ row.nombreProyecto }}</td>
-            <td>{{ row.terreno }}</td>
-            <td>{{ row.alcabala }}</td>
+            <td>{{ row.proveedor }}</td>
+            <td>{{ row.actividad }}</td>
+            <td>{{ row.tipoActividad }}</td>
+            <td>{{ row.concepto }}</td>
+            <td>{{ row.moneda }}</td>
+            <td>{{ row.monto | number:'1.2-2' }}</td>
+            <td>{{ row.descripcion || '-' }}</td>
             <td><span class="badge" [class.badge--active]="row.estado === 'Activo'" [class.badge--danger]="row.estado !== 'Activo'">{{ row.estado }}</span></td>
             <td>
               <div class="actions actions--end">
@@ -47,8 +57,8 @@
 
     <div class="form-grid two">
       <div class="field">
-        <label>Fecha</label>
-        <input type="date" [(ngModel)]="form.fecha" readonly>
+        <label>Fecha emisión</label>
+        <input type="date" [(ngModel)]="form.fechaEmision" readonly>
       </div>
       <div class="field">
         <label>Estado</label>
@@ -65,17 +75,39 @@
         </select>
       </div>
       <div class="field">
-        <label>Alcabala</label>
-        <input [(ngModel)]="form.alcabala" placeholder="Ingresar alcabala" />
+        <label>Proveedor</label>
+        <select [(ngModel)]="form.idProveedorGastoAdministrativo">
+          <option [ngValue]="null">Seleccionar</option>
+          <option *ngFor="let p of proveedoresGasto" [ngValue]="p.idProveedorGastoAdministrativo">{{ p.nombre || p.razonSocial || p.descripcion }}</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Actividad</label>
+        <input [(ngModel)]="form.actividad" placeholder="Ingresar actividad" />
+      </div>
+      <div class="field">
+        <label>Tipo de actividad</label>
+        <input [(ngModel)]="form.tipoActividad" placeholder="Ingresar tipo de actividad" />
+      </div>
+      <div class="field">
+        <label>Moneda</label>
+        <select [(ngModel)]="form.moneda">
+          <option value="PEN">PEN</option>
+          <option value="USD">USD</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Total</label>
+        <input type="number" min="0" step="0.01" [(ngModel)]="form.total" placeholder="0.00" />
       </div>
       <div class="field" style="grid-column: 1 / -1;">
-        <label>Terreno</label>
-        <input [(ngModel)]="form.terreno" placeholder="Ingresar terreno" />
+        <label>Descripción</label>
+        <textarea rows="4" [(ngModel)]="form.descripcion" placeholder="Ingresar descripción"></textarea>
       </div>
     </div>
 
     <div class="toolbar" style="margin-top: 14px;">
-      <button class="btn btn-primary" (click)="guardar()">{{ editandoId ? 'Actualizar terreno' : 'Guardar terreno' }}</button>
+      <button class="btn btn-primary" (click)="guardar()">{{ editandoId ? 'Actualizar registro' : 'Guardar registro' }}</button>
       <button class="btn btn-ghost" (click)="limpiar()">Limpiar</button>
     </div>
 

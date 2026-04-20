@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MaestraService } from '../../core/services/maestra.service';
 import { PresupuestoService } from '../../core/services/presupuesto.service';
+import { ComprasService } from '../../core/services/compras.service';
 
 type PresupuestoItem = {
   concepto: string;
@@ -21,9 +22,26 @@ export class PresupuestoPage implements OnInit {
   proyectos: any[] = [];
   msg = '';
 
+  readonly conceptosFijos: string[] = [
+    'TERRENO',
+    'ALCABALA',
+    'CONSTRUCCION (incluir GG e IGV)',
+    'UTILIDAD DEL CONSTRUCTOR (en caso de tercerizar la operación)',
+    'DEMOLICION',
+    'PROYECTO',
+    'LICENCIA DE CONSTRUCCION',
+    'GASTOS ADMINISTRATIVOS',
+    'PUBLICIDAD / COMISION POR VENTAS',
+    'INSTALACIONES (LUZ Y AGUA)',
+    'CONFORMIDAD DE OBRA',
+    'DECLARATORIA DE FABRICA',
+    'INDEPENDIZACION',
+    'OTROS GASTOS'
+  ];
+
   form = {
     idProyecto: null as number | null,
-    items: [this.nuevoItem()]
+    items: [] as PresupuestoItem[]
   };
 
   visualizacion = {
@@ -39,8 +57,11 @@ export class PresupuestoPage implements OnInit {
   constructor(
     private maestra: MaestraService,
     private presupuestoService: PresupuestoService,
+    private comprasService: ComprasService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) {
+    this.resetItems();
+  }
 
   ngOnInit(): void {
     this.maestra.proyectos(true).subscribe({
@@ -55,20 +76,12 @@ export class PresupuestoPage implements OnInit {
     });
   }
 
-  nuevoItem(): PresupuestoItem {
-    return { concepto: '', soles: null, incidencia: null };
-  }
-
-  agregarItem(): void {
-    this.form.items.push(this.nuevoItem());
-  }
-
-  eliminarItem(index: number): void {
-    if (this.form.items.length === 1) {
-      this.form.items[0] = this.nuevoItem();
-      return;
-    }
-    this.form.items.splice(index, 1);
+  private resetItems(): void {
+    this.form.items = this.conceptosFijos.map((concepto: string) => ({
+      concepto,
+      soles: null,
+      incidencia: null
+    }));
   }
 
   guardarConfiguracion(): void {
@@ -77,23 +90,11 @@ export class PresupuestoPage implements OnInit {
       return;
     }
 
-    const items = (this.form.items || [])
-      .map((x: PresupuestoItem) => ({
-        concepto: String(x.concepto || '').trim(),
-        soles: this.toNumber(x.soles),
-        incidencia: this.toNumber(x.incidencia)
-      }))
-      .filter(x => x.concepto || x.soles > 0 || x.incidencia > 0);
-
-    if (!items.length) {
-      this.msg = 'Debes registrar al menos un ítem de presupuesto.';
-      return;
-    }
-
-    if (items.some(x => !x.concepto)) {
-      this.msg = 'Todos los ítems deben tener concepto.';
-      return;
-    }
+    const items = (this.form.items || []).map((x: PresupuestoItem, index: number) => ({
+      concepto: this.conceptosFijos[index] || String(x.concepto || '').trim(),
+      soles: this.toNumber(x.soles),
+      incidencia: this.toNumber(x.incidencia)
+    }));
 
     this.presupuestoService.guardar({ idProyecto: Number(this.form.idProyecto), items }).subscribe({
       next: () => {
@@ -112,51 +113,67 @@ export class PresupuestoPage implements OnInit {
       this.visualizacion = {
         proyecto: '', totalPresupuesto: 0, totalCompras: 0, saldo: 0, porcentajeConsumido: 0, porcentajeDisponible: 100, items: []
       };
+      this.resetItems();
       this.cdr.detectChanges();
       return;
     }
 
     this.presupuestoService.getByProyecto(Number(this.form.idProyecto)).subscribe({
       next: (row: any) => {
-        if (!row) {
-          this.visualizacion = {
-            proyecto: this.proyectoNombre(this.form.idProyecto),
-            totalPresupuesto: 0,
-            totalCompras: 0,
-            saldo: 0,
-            porcentajeConsumido: 0,
-            porcentajeDisponible: 100,
-            items: []
+        const apiItems = Array.isArray(row?.items) ? row.items : [];
+        const items = this.conceptosFijos.map((concepto: string) => {
+          const found = apiItems.find((x: any) => String(x.concepto || '').trim().toUpperCase() === concepto.toUpperCase());
+          return {
+            concepto,
+            soles: found ? this.toNumber(found.soles) : null,
+            incidencia: found ? this.toNumber(found.incidencia) : null
           };
-          this.cdr.detectChanges();
-          return;
-        }
+        });
 
-        const items = Array.isArray(row.items) ? row.items.map((x: any) => ({
-          concepto: String(x.concepto || ''),
-          soles: this.toNumber(x.soles),
-          incidencia: this.toNumber(x.incidencia)
-        })) : [];
+        this.form.items = items.map((x: PresupuestoItem) => ({ ...x }));
 
-        this.form.idProyecto = Number(row.idProyecto || this.form.idProyecto);
-        this.form.items = items.length ? items.map((x: any) => ({ ...x })) : [this.nuevoItem()];
+        const totalPresupuesto = this.round(items.reduce((acc: number, item: PresupuestoItem) => acc + this.toNumber(item.soles), 0));
 
-        const totalPresupuesto = this.toNumber(row.totalPresupuesto);
-        const totalCompras = this.toNumber(row.totalCompras);
-        const saldo = this.toNumber(row.saldo);
-        const porcentajeConsumido = totalPresupuesto > 0 ? Math.min(100, this.round((totalCompras / totalPresupuesto) * 100)) : 0;
-        const porcentajeDisponible = Math.max(0, this.round(100 - porcentajeConsumido));
+        this.comprasService.compras().subscribe({
+          next: (compras: any[]) => {
+            const idProyecto = Number(this.form.idProyecto || 0);
+            const nombreProyecto = this.proyectoNombre(idProyecto);
+            const totalCompras = this.round((compras || []).reduce((acc: number, x: any) => {
+              const sameId = Number(x.idProyecto ?? x.IdProyecto ?? 0) === idProyecto;
+              const sameName = String(x.nombreProyecto ?? x.NombreProyecto ?? '').trim().toLowerCase() === String(nombreProyecto || '').trim().toLowerCase();
+              if (!sameId && !sameName) return acc;
+              return acc + this.toNumber(x.montoTotal ?? x.MontoTotal ?? x.total ?? x.Total);
+            }, 0));
 
-        this.visualizacion = {
-          proyecto: row.proyecto || this.proyectoNombre(this.form.idProyecto),
-          totalPresupuesto,
-          totalCompras,
-          saldo,
-          porcentajeConsumido,
-          porcentajeDisponible,
-          items
-        };
-        this.cdr.detectChanges();
+            const saldo = this.round(totalPresupuesto - totalCompras);
+            const porcentajeConsumido = totalPresupuesto > 0 ? Math.min(100, this.round((totalCompras / totalPresupuesto) * 100)) : 0;
+            const porcentajeDisponible = Math.max(0, this.round(100 - porcentajeConsumido));
+
+            this.visualizacion = {
+              proyecto: row?.proyecto || this.proyectoNombre(this.form.idProyecto),
+              totalPresupuesto,
+              totalCompras,
+              saldo,
+              porcentajeConsumido,
+              porcentajeDisponible,
+              items
+            };
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            const saldo = totalPresupuesto;
+            this.visualizacion = {
+              proyecto: row?.proyecto || this.proyectoNombre(this.form.idProyecto),
+              totalPresupuesto,
+              totalCompras: 0,
+              saldo,
+              porcentajeConsumido: 0,
+              porcentajeDisponible: totalPresupuesto > 0 ? 100 : 0,
+              items
+            };
+            this.cdr.detectChanges();
+          }
+        });
       },
       error: () => {
         this.msg = 'No se pudo cargar la visualización del presupuesto.';
@@ -166,7 +183,7 @@ export class PresupuestoPage implements OnInit {
   }
 
   totalItemsFormulario(): number {
-    return this.round((this.form.items || []).reduce((acc: number, item: any) => acc + this.toNumber(item.soles), 0));
+    return this.round((this.form.items || []).reduce((acc: number, item: PresupuestoItem) => acc + this.toNumber(item.soles), 0));
   }
 
   proyectoNombre(idProyecto: number | null): string {

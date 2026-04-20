@@ -1,7 +1,7 @@
 <div class="page-header">
   <div>
     <div class="page-title">Presupuesto</div>
-    <div class="page-subtitle">Configura el presupuesto inicial por proyecto mediante líneas manuales y visualiza el saldo frente al total de compras.</div>
+    <div class="page-subtitle">Configura el presupuesto inicial por proyecto con conceptos fijos y visualiza el saldo frente al total de compras.</div>
   </div>
 </div>
 
@@ -10,55 +10,46 @@
     <div class="presupuesto-step__badge">1</div>
     <div>
       <div class="panel-title">Configuración inicial</div>
-      <div class="page-subtitle presupuesto-subtitle">Primero selecciona el proyecto y registra manualmente cada columna/ítem del presupuesto.</div>
+      <div class="page-subtitle presupuesto-subtitle">Selecciona el proyecto y registra únicamente los montos e incidencia manual de cada concepto fijo.</div>
     </div>
   </div>
 
-  <div class="presupuesto-config-grid">
-    <div class="presupuesto-config-card presupuesto-config-card--full">
-      <div class="form-grid two">
-        <div class="field">
-          <label>Proyecto</label>
-          <select [(ngModel)]="form.idProyecto" (ngModelChange)="cargarVisualizacion()">
-            <option [ngValue]="null">Seleccionar</option>
-            <option *ngFor="let p of proyectos" [ngValue]="p.idProyecto">{{ p.nombreProyecto }}</option>
-          </select>
-        </div>
-        <div class="field auto-field">
-          <label>Total presupuesto</label>
-          <input [value]="(totalItemsFormulario() | number:'1.2-2')" readonly>
-        </div>
+  <div class="presupuesto-config-card presupuesto-config-card--full">
+    <div class="form-grid two">
+      <div class="field">
+        <label>Proyecto</label>
+        <select [(ngModel)]="form.idProyecto" (ngModelChange)="cargarVisualizacion()">
+          <option [ngValue]="null">Seleccionar</option>
+          <option *ngFor="let p of proyectos" [ngValue]="p.idProyecto">{{ p.nombreProyecto }}</option>
+        </select>
       </div>
+      <div class="field auto-field">
+        <label>Total presupuesto</label>
+        <input [value]="(totalItemsFormulario() | number:'1.2-2')" readonly>
+      </div>
+    </div>
 
-      <div class="table-wrap presupuesto-items-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Concepto</th>
-              <th>Soles</th>
-              <th>Incidencia</th>
-              <th class="actions-col">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let item of form.items; let i = index">
-              <td><input [(ngModel)]="item.concepto" placeholder="Ingresar concepto"></td>
-              <td><input type="number" min="0" step="0.01" [(ngModel)]="item.soles" placeholder="0.00"></td>
-              <td><input type="number" min="0" step="0.01" [(ngModel)]="item.incidencia" placeholder="0.00"></td>
-              <td>
-                <div class="actions actions--end">
-                  <button class="btn btn-secondary" (click)="eliminarItem(i)">{{ form.items.length === 1 ? 'Limpiar' : 'Eliminar' }}</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <div class="table-wrap presupuesto-items-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Concepto</th>
+            <th>Soles</th>
+            <th>Incidencia</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of form.items">
+            <td class="presupuesto-concepto">{{ item.concepto }}</td>
+            <td><input type="number" min="0" step="0.01" [(ngModel)]="item.soles" placeholder="0.00"></td>
+            <td><input type="number" min="0" step="0.01" [(ngModel)]="item.incidencia" placeholder="0.00"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-      <div class="toolbar presupuesto-toolbar">
-        <button class="btn btn-secondary" (click)="agregarItem()">Agregar ítem</button>
-        <button class="btn btn-primary" (click)="guardarConfiguracion()">Guardar configuración</button>
-      </div>
+    <div class="toolbar presupuesto-toolbar">
+      <button class="btn btn-primary" (click)="guardarConfiguracion()">Guardar configuración</button>
     </div>
   </div>
 </section>
@@ -68,7 +59,7 @@
     <div class="presupuesto-step__badge">2</div>
     <div>
       <div class="panel-title">Visualización</div>
-      <div class="page-subtitle presupuesto-subtitle">Se calcula al abrir o refrescar el módulo según las compras del proyecto configurado.</div>
+      <div class="page-subtitle presupuesto-subtitle">Se recalcula al abrir o refrescar el módulo usando las compras registradas del proyecto configurado.</div>
     </div>
   </div>
 
@@ -120,7 +111,7 @@
         </thead>
         <tbody>
           <tr *ngFor="let item of visualizacion.items">
-            <td>{{ item.concepto }}</td>
+            <td class="presupuesto-concepto">{{ item.concepto }}</td>
             <td>S/ {{ item.soles | number:'1.2-2' }}</td>
             <td>{{ item.incidencia | number:'1.2-2' }}</td>
           </tr>

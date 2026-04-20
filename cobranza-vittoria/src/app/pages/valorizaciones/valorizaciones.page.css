@@ -221,3 +221,17 @@
 .checkline__copy .hint { font-size: .8rem; line-height: 1.25; }
 
 .full-config-row { grid-column: 1 / -1; }
+
+
+.resumen-grid { display:grid; grid-template-columns:minmax(320px, 520px); gap:16px; }
+.resumen-card { border:1px solid var(--border); border-radius:18px; overflow:hidden; background:#fffdf1; box-shadow:0 10px 24px rgba(31,36,48,.05); }
+.resumen-card__head { padding:12px 16px; text-align:center; font-weight:900; letter-spacing:.03em; background:#f3eb92; color:#3f3a1a; }
+.resumen-card__body { display:grid; }
+.resumen-row { display:grid; grid-template-columns:1.6fr 1fr 60px; gap:16px; align-items:center; padding:12px 16px; border-top:1px solid #e5e7eb; }
+.resumen-row span { font-weight:800; }
+.resumen-row strong { text-align:right; color:#111827; }
+.resumen-row small { text-align:center; color:#6b7280; font-weight:800; }
+.resumen-row--accent { background:#fff9bf; }
+.resumen-row--danger span, .resumen-row--danger strong { color:#b91c1c; }
+.table-wrap--spacious table th, .table-wrap--spacious table td { padding: 14px 18px !important; white-space: nowrap; }
+@media (max-width: 780px) { .resumen-row { grid-template-columns:1fr; } .resumen-row strong, .resumen-row small { text-align:left; } }

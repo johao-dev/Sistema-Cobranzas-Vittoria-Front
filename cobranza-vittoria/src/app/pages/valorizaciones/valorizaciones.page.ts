@@ -105,6 +105,16 @@ export class ValorizacionesPage implements OnInit {
     return Array.isArray(this.resumen?.facturas) ? this.resumen.facturas : [];
   }
 
+  get resumenTotales(): any {
+    const cotizacion = Number(this.resumen?.cotizacion ?? this.cabecera?.cotizacion ?? 0);
+    const garantia = this.redondear(cotizacion * 0.05);
+    const facturado = this.redondear((this.detalle || []).reduce((acc: number, row: any) => acc + Number(row?.montoFactura || 0), 0));
+    const transferido = this.redondear((this.detalle || []).reduce((acc: number, row: any) => acc + Number(row?.montoTransferido || 0), 0));
+    const resta = this.redondear(cotizacion - facturado);
+    return { cotizacion, garantia, facturado, transferido, resta };
+  }
+
+
   cargarCatalogos(): void {
     this.maestra.proyectos(true).subscribe(x => { this.proyectos = x || []; this.cdr.detectChanges(); });
     this.maestra.proveedores(true).subscribe(x => { this.proveedores = x || []; this.cdr.detectChanges(); });

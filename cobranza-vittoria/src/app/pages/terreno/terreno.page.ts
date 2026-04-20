@@ -2,15 +2,23 @@ import { Component, ChangeDetectorRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MaestraService } from '../../core/services/maestra.service';
+import { GastosAdministrativosService } from '../../core/services/gastos-administrativos.service';
 
 type TerrenoItem = {
   idTerreno: number;
-  fecha: string;
+  fechaEmision: string;
   idProyecto: number | null;
   nombreProyecto: string;
-  terreno: string;
-  alcabala: string;
+  idProveedorGastoAdministrativo: number | null;
+  proveedor: string;
+  actividad: string;
+  tipoActividad: string;
+  moneda: string;
+  total: number;
+  descripcion: string;
   estado: string;
+  concepto: string;
+  monto: number;
 };
 
 @Component({
@@ -21,61 +29,71 @@ type TerrenoItem = {
   styleUrl: './terreno.page.css'
 })
 export class TerrenoPage implements OnInit {
-  private readonly storageKey = 'vittoria-terrenos';
+  private readonly storageKey = 'vittoria-terrenos-v2';
 
   proyectos: any[] = [];
+  proveedoresGasto: any[] = [];
   rows: TerrenoItem[] = [];
   msg = '';
   editandoId: number | null = null;
 
   form = {
-    fecha: this.todayIso(),
+    fechaEmision: this.todayIso(),
     idProyecto: null as number | null,
-    terreno: '',
-    alcabala: '',
+    idProveedorGastoAdministrativo: null as number | null,
+    actividad: '',
+    tipoActividad: '',
+    moneda: 'PEN',
+    total: null as number | null,
+    descripcion: '',
     estado: 'Activo'
   };
 
-  constructor(private maestra: MaestraService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private maestra: MaestraService,
+    private gastosAdmin: GastosAdministrativosService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.maestra.proyectos(true).subscribe({
-      next: (rows: any[]) => {
-        this.proyectos = rows || [];
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.proyectos = [];
-        this.cdr.detectChanges();
-      }
+      next: (rows: any[]) => { this.proyectos = rows || []; this.cdr.detectChanges(); },
+      error: () => { this.proyectos = []; this.cdr.detectChanges(); }
+    });
+
+    this.gastosAdmin.proveedores(true).subscribe({
+      next: (rows: any[]) => { this.proveedoresGasto = rows || []; this.cdr.detectChanges(); },
+      error: () => { this.proveedoresGasto = []; this.cdr.detectChanges(); }
     });
 
     this.cargarRows();
   }
 
   guardar(): void {
-    if (!this.form.idProyecto) {
-      this.msg = 'Debes seleccionar un proyecto.';
-      return;
-    }
-    if (!(this.form.terreno || '').trim()) {
-      this.msg = 'Debes ingresar el terreno.';
-      return;
-    }
-    if (!(this.form.alcabala || '').trim()) {
-      this.msg = 'Debes ingresar la alcabala.';
-      return;
-    }
+    if (!this.form.idProyecto) { this.msg = 'Debes seleccionar un proyecto.'; return; }
+    if (!this.form.idProveedorGastoAdministrativo) { this.msg = 'Debes seleccionar un proveedor.'; return; }
+    if (!(this.form.actividad || '').trim()) { this.msg = 'Debes ingresar la actividad.'; return; }
+    if (!(this.form.tipoActividad || '').trim()) { this.msg = 'Debes ingresar el tipo de actividad.'; return; }
+    if (!this.form.moneda) { this.msg = 'Debes seleccionar la moneda.'; return; }
+    if (!Number(this.form.total || 0)) { this.msg = 'Debes ingresar el total.'; return; }
 
     const proyecto = this.proyectos.find((p: any) => Number(p.idProyecto) === Number(this.form.idProyecto));
+    const proveedor = this.proveedoresGasto.find((p: any) => Number(p.idProveedorGastoAdministrativo) === Number(this.form.idProveedorGastoAdministrativo));
     const payload: TerrenoItem = {
       idTerreno: this.editandoId || this.nextId(),
-      fecha: this.form.fecha || this.todayIso(),
+      fechaEmision: this.form.fechaEmision || this.todayIso(),
       idProyecto: Number(this.form.idProyecto),
       nombreProyecto: proyecto?.nombreProyecto || '-',
-      terreno: String(this.form.terreno || '').trim(),
-      alcabala: String(this.form.alcabala || '').trim(),
-      estado: this.form.estado || 'Activo'
+      idProveedorGastoAdministrativo: Number(this.form.idProveedorGastoAdministrativo),
+      proveedor: proveedor?.nombre || proveedor?.razonSocial || proveedor?.descripcion || '-',
+      actividad: String(this.form.actividad || '').trim(),
+      tipoActividad: String(this.form.tipoActividad || '').trim(),
+      moneda: String(this.form.moneda || 'PEN').trim(),
+      total: Number(this.form.total || 0),
+      descripcion: String(this.form.descripcion || '').trim(),
+      estado: this.form.estado || 'Activo',
+      concepto: `${String(this.form.actividad || '').trim()} - ${String(this.form.tipoActividad || '').trim()}`,
+      monto: Number(this.form.total || 0)
     };
 
     const rows = [...this.rows];
@@ -84,18 +102,22 @@ export class TerrenoPage implements OnInit {
     else rows.unshift(payload);
 
     this.rows = rows;
-    localStorage.setItem(this.storageKey, JSON.stringify(this.rows));
-    this.msg = this.editandoId ? 'Terreno actualizado correctamente.' : 'Terreno registrado correctamente.';
+    this.persistir();
+    this.msg = this.editandoId ? 'Registro de terreno actualizado correctamente.' : 'Registro de terreno guardado correctamente.';
     this.limpiar();
   }
 
   editar(row: TerrenoItem): void {
     this.editandoId = row.idTerreno;
     this.form = {
-      fecha: row.fecha || this.todayIso(),
+      fechaEmision: row.fechaEmision || this.todayIso(),
       idProyecto: row.idProyecto,
-      terreno: row.terreno,
-      alcabala: row.alcabala,
+      idProveedorGastoAdministrativo: row.idProveedorGastoAdministrativo,
+      actividad: row.actividad,
+      tipoActividad: row.tipoActividad,
+      moneda: row.moneda || 'PEN',
+      total: row.total,
+      descripcion: row.descripcion,
       estado: row.estado || 'Activo'
     };
   }
@@ -103,16 +125,20 @@ export class TerrenoPage implements OnInit {
   cambiarEstado(row: TerrenoItem): void {
     row.estado = row.estado === 'Activo' ? 'Inactivo' : 'Activo';
     this.persistir();
-    this.msg = `Terreno ${row.estado === 'Activo' ? 'activado' : 'desactivado'} correctamente.`;
+    this.msg = `Registro ${row.estado === 'Activo' ? 'activado' : 'desactivado'} correctamente.`;
   }
 
   limpiar(): void {
     this.editandoId = null;
     this.form = {
-      fecha: this.todayIso(),
+      fechaEmision: this.todayIso(),
       idProyecto: null,
-      terreno: '',
-      alcabala: '',
+      idProveedorGastoAdministrativo: null,
+      actividad: '',
+      tipoActividad: '',
+      moneda: 'PEN',
+      total: null,
+      descripcion: '',
       estado: 'Activo'
     };
     this.cdr.detectChanges();
