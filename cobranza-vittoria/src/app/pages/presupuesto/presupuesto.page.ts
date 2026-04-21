@@ -8,6 +8,7 @@ import { ComprasService } from '../../core/services/compras.service';
 type PresupuestoItem = {
   concepto: string;
   soles: number | null;
+  dolares: number | null;
   incidencia: number | null;
 };
 
@@ -21,6 +22,7 @@ type PresupuestoItem = {
 export class PresupuestoPage implements OnInit {
   proyectos: any[] = [];
   msg = '';
+  readonly tipoCambio = 3.41;
 
   readonly conceptosFijos: string[] = [
     'TERRENO',
@@ -80,8 +82,22 @@ export class PresupuestoPage implements OnInit {
     this.form.items = this.conceptosFijos.map((concepto: string) => ({
       concepto,
       soles: null,
+      dolares: null,
       incidencia: null
     }));
+  }
+
+  esTerreno(item: PresupuestoItem): boolean {
+    return String(item?.concepto || '').trim().toUpperCase() === 'TERRENO';
+  }
+
+  onDolaresChange(item: PresupuestoItem): void {
+    if (!this.esTerreno(item)) {
+      item.dolares = null;
+      return;
+    }
+    const dolares = this.toNumber(item.dolares);
+    item.soles = this.round(dolares * this.tipoCambio);
   }
 
   guardarConfiguracion(): void {
@@ -90,11 +106,20 @@ export class PresupuestoPage implements OnInit {
       return;
     }
 
-    const items = (this.form.items || []).map((x: PresupuestoItem, index: number) => ({
-      concepto: this.conceptosFijos[index] || String(x.concepto || '').trim(),
-      soles: this.toNumber(x.soles),
-      incidencia: this.toNumber(x.incidencia)
-    }));
+    const items = (this.form.items || []).map((x: PresupuestoItem, index: number) => {
+      const concepto = this.conceptosFijos[index] || String(x.concepto || '').trim();
+      const dolares = this.esTerreno(x) ? this.toNumber(x.dolares) : 0;
+      const soles = this.esTerreno(x) && dolares > 0
+        ? this.round(dolares * this.tipoCambio)
+        : this.toNumber(x.soles);
+
+      return {
+        concepto,
+        soles,
+        dolares,
+        incidencia: this.toNumber(x.incidencia)
+      };
+    });
 
     this.presupuestoService.guardar({ idProyecto: Number(this.form.idProyecto), items }).subscribe({
       next: () => {
@@ -126,8 +151,9 @@ export class PresupuestoPage implements OnInit {
           return {
             concepto,
             soles: found ? this.toNumber(found.soles) : null,
+            dolares: found ? this.toNumber(found.dolares) : null,
             incidencia: found ? this.toNumber(found.incidencia) : null
-          };
+          } as PresupuestoItem;
         });
 
         this.form.items = items.map((x: PresupuestoItem) => ({ ...x }));

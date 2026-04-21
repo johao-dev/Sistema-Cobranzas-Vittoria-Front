@@ -10,7 +10,7 @@
     <div class="presupuesto-step__badge">1</div>
     <div>
       <div class="panel-title">Configuración inicial</div>
-      <div class="page-subtitle presupuesto-subtitle">Selecciona el proyecto y registra únicamente los montos e incidencia manual de cada concepto fijo.</div>
+      <div class="page-subtitle presupuesto-subtitle">Selecciona el proyecto y registra los montos. Solo TERRENO maneja dólares y convierte a soles con TC 3.41.</div>
     </div>
   </div>
 
@@ -35,13 +35,15 @@
           <tr>
             <th>Concepto</th>
             <th>Soles</th>
+            <th>Dólares</th>
             <th>Incidencia</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let item of form.items">
             <td class="presupuesto-concepto">{{ item.concepto }}</td>
-            <td><input type="number" min="0" step="0.01" [(ngModel)]="item.soles" placeholder="0.00"></td>
+            <td><input type="number" min="0" step="0.01" [(ngModel)]="item.soles" [readonly]="esTerreno(item) && (item.dolares || 0) > 0" placeholder="0.00"></td>
+            <td><input type="number" min="0" step="0.01" [(ngModel)]="item.dolares" (ngModelChange)="onDolaresChange(item)" [disabled]="!esTerreno(item)" placeholder="0.00"></td>
             <td><input type="number" min="0" step="0.01" [(ngModel)]="item.incidencia" placeholder="0.00"></td>
           </tr>
         </tbody>
@@ -106,6 +108,7 @@
           <tr>
             <th>Concepto</th>
             <th>Soles</th>
+            <th>Dólares</th>
             <th>Incidencia</th>
           </tr>
         </thead>
@@ -113,6 +116,7 @@
           <tr *ngFor="let item of visualizacion.items">
             <td class="presupuesto-concepto">{{ item.concepto }}</td>
             <td>S/ {{ item.soles | number:'1.2-2' }}</td>
+            <td>$ {{ item.dolares | number:'1.2-2' }}</td>
             <td>{{ item.incidencia | number:'1.2-2' }}</td>
           </tr>
         </tbody>
