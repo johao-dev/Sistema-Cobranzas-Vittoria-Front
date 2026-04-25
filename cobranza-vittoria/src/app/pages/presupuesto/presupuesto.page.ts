@@ -1,9 +1,11 @@
-import { Component, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, ChangeDetectorRef, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MaestraService } from '../../core/services/maestra.service';
 import { PresupuestoService } from '../../core/services/presupuesto.service';
 import { ComprasService } from '../../core/services/compras.service';
+import { SunatService } from '../../core/services/sunat.service';
 
 type PresupuestoItem = {
   concepto: string;
@@ -19,9 +21,10 @@ type PresupuestoItem = {
   styleUrl: './presupuesto.page.css'
 })
 export class PresupuestoPage implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
   proyectos: any[] = [];
   msg = '';
-  readonly tipoCambio = 3.41;
+  tipoCambioActual = 3.41;
 
   readonly conceptosFijos: string[] = [
     'TERRENO',
@@ -59,12 +62,30 @@ export class PresupuestoPage implements OnInit {
     private maestra: MaestraService,
     private presupuestoService: PresupuestoService,
     private comprasService: ComprasService,
+    private sunatService: SunatService,
     private cdr: ChangeDetectorRef
   ) {
     this.resetItems();
   }
 
   ngOnInit(): void {
+    this.sunatService.tipoCambio$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((data) => {
+        const sell_price = this.toNumber(data?.sell_price);
+        if (sell_price <= 0) return;
+
+        this.tipoCambioActual = sell_price;
+
+        const terreno = this.form.items.find((x: PresupuestoItem) => this.esTerreno(x));
+        if (terreno && this.toNumber(terreno.dolares) > 0) {
+          terreno.soles = this.round(this.toNumber(terreno.dolares) * this.tipoCambioActual);
+          this.recalcularDependientes();
+        }
+        this.cdr.detectChanges();
+      });
+    this.sunatService.loadTipoCambio();
+
     this.maestra.proyectos(true).subscribe({
       next: (rows: any[]) => {
         this.proyectos = rows || [];
@@ -100,13 +121,13 @@ export class PresupuestoPage implements OnInit {
       return;
     }
     const dolares = this.toNumber(item.dolares);
-    item.soles = this.round(dolares * this.tipoCambio);
+    item.soles = this.round(dolares * this.tipoCambioActual);
     this.recalcularDependientes();
   }
 
   onSolesChange(item: PresupuestoItem): void {
     if (this.esTerreno(item) && this.toNumber(item.dolares) > 0) {
-      item.soles = this.round(this.toNumber(item.dolares) * this.tipoCambio);
+      item.soles = this.round(this.toNumber(item.dolares) * this.tipoCambioActual);
     }
     this.recalcularDependientes();
   }
@@ -138,7 +159,7 @@ export class PresupuestoPage implements OnInit {
       let soles = this.toNumber(x.soles);
 
       if (esTerreno && dolares > 0) {
-        soles = this.round(dolares * this.tipoCambio);
+        soles = this.round(dolares * this.tipoCambioActual);
       }
 
       if (esAlcabala) {

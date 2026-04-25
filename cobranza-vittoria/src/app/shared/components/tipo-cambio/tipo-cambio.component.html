@@ -1,0 +1,9 @@
+<div class="tipo-cambio-pill" *ngIf="tipoCambio$ | async as tipoCambio; else tipoCambioLoading">
+  {{ formatFecha(tipoCambio.date) }} - 1 USD = {{ tipoCambio.sell_price | number:'1.2-2' }} PEN
+</div>
+
+<ng-template #tipoCambioLoading>
+  <div class="tipo-cambio-pill tipo-cambio-pill--loading">
+    --/--/---- - 1 USD = --.-- PEN
+  </div>
+</ng-template>

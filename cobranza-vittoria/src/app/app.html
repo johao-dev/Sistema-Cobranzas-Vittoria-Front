@@ -61,6 +61,7 @@
       </div>
 
       <div class="topbar__actions" *ngIf="isAuthenticated">
+        <app-tipo-cambio *ngIf="isPresupuestoRoute"></app-tipo-cambio>
         <div class="profile-pill">
           <div class="profile-pill__avatar">{{ profileInitials }}</div>
           <div class="profile-pill__content">
