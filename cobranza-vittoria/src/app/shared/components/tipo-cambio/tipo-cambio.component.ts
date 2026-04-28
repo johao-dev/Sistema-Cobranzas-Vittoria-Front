@@ -19,11 +19,11 @@ export class TipoCambioComponent implements OnInit {
 
   formatFecha(fecha: string | null | undefined): string {
     if (!fecha) return '--/--/----';
-    const date = new Date(fecha);
-    if (Number.isNaN(date.getTime())) return fecha;
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
+    
+    const partes = fecha.split('-');
+    if (partes.length !== 3) return fecha;
+
+    const [year, month, day] = partes;
     return `${day}/${month}/${year}`;
   }
 }
