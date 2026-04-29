@@ -18,6 +18,7 @@ export class ProyectosPage implements OnInit {
     idProyecto: null,
     nombreProyecto: '',
     descripcion: '',
+    cotizacionGeneral: null,
     activo: true
   };
 
@@ -37,7 +38,10 @@ export class ProyectosPage implements OnInit {
   async load(): Promise<void> {
     try {
       const data = await firstValueFrom(this.maestra.proyectos());
-      this.rows = data ?? [];
+      this.rows = (data ?? []).map((row: any) => ({
+        ...row,
+        cotizacionGeneral: this.toNumber(row?.cotizacionGeneral ?? row?.CotizacionGeneral)
+      }));
     } catch {
       this.rows = [];
     } finally {
@@ -50,6 +54,7 @@ export class ProyectosPage implements OnInit {
       idProyecto: row.idProyecto,
       nombreProyecto: row.nombreProyecto ?? '',
       descripcion: row.descripcion ?? '',
+      cotizacionGeneral: this.toNumber(row?.cotizacionGeneral ?? row?.CotizacionGeneral),
       activo: row.activo ?? true
     };
     this.msg = '';
@@ -71,28 +76,24 @@ export class ProyectosPage implements OnInit {
       idProyecto: this.form.idProyecto,
       nombreProyecto: this.form.nombreProyecto.trim(),
       descripcion: this.form.descripcion ?? '',
+      cotizacionGeneral: this.toNumber(this.form.cotizacionGeneral),
       activo: !!this.form.activo
     };
-
-    console.log('DTO proyecto =>', dto);
 
     this.saving = true;
     this.cdr.detectChanges();
 
     try {
       const res = await firstValueFrom(this.maestra.guardarProyecto(dto));
-      console.log('Respuesta proyecto =>', res);
 
       this.msg = isEdit
         ? `Proyecto editado correctamente. ID: ${res?.idProyecto ?? this.form.idProyecto ?? ''}`
         : `Proyecto guardado correctamente. ID: ${res?.idProyecto ?? ''}`;
 
       this.notifyService.show(this.msg, 'success');
-
       this.reset(false);
       await this.load();
     } catch (e: any) {
-      console.error('Error guardando proyecto =>', e);
       this.msg = e?.error?.message || 'No se pudo guardar el proyecto.';
       this.notifyService.show(this.msg, 'error');
     } finally {
@@ -106,6 +107,7 @@ export class ProyectosPage implements OnInit {
       idProyecto: null,
       nombreProyecto: '',
       descripcion: '',
+      cotizacionGeneral: null,
       activo: true
     };
 
@@ -114,5 +116,19 @@ export class ProyectosPage implements OnInit {
     }
 
     this.cdr.detectChanges();
+  }
+
+  formatMoney(value: any): string {
+    return new Intl.NumberFormat('es-PE', {
+      style: 'currency',
+      currency: 'PEN',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(this.toNumber(value));
+  }
+
+  private toNumber(value: any): number {
+    const number = Number(value ?? 0);
+    return Number.isFinite(number) ? Math.round((number + Number.EPSILON) * 100) / 100 : 0;
   }
 }

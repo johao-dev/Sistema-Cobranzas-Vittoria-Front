@@ -1,26 +1,46 @@
-<div class="page-header">
+<div class="page-header terreno-header">
   <div>
     <div class="page-title">Terreno - Anteproyecto - Proyecto</div>
-    <div class="page-subtitle">Registro base por concepto y monto asociado al proyecto.</div>
+    <div class="page-subtitle">Registra montos por proyecto. Si ingresas dólares, el sistema completa automáticamente los soles; si escribes soles manualmente, el campo de dólares queda vacío.</div>
   </div>
 </div>
 
-<div class="split split--form">
-  <section class="panel">
+<div class="terreno-summary-grid">
+  <div class="terreno-summary-card">
+    <span>Total registrado</span>
+    <strong>{{ formatMoney(totalRegistrado()) }}</strong>
+  </div>
+  <div class="terreno-summary-card">
+    <span>Total TERRENO</span>
+    <strong>{{ formatMoney(totalPorConcepto('TERRENO')) }}</strong>
+  </div>
+  <div class="terreno-summary-card">
+    <span>Total ALCABALA</span>
+    <strong>{{ formatMoney(totalPorConcepto('ALCABALA')) }}</strong>
+  </div>
+  <div class="terreno-summary-card terreno-summary-card--accent">
+    <span>Registros activos</span>
+    <strong>{{ registrosActivos() }}</strong>
+    <small>TC referencial: {{ tipoCambioActual | number:'1.2-2' }}</small>
+  </div>
+</div>
+
+<div class="split split--form terreno-layout">
+  <section class="panel terreno-list-panel">
     <div class="panel-title">Listado</div>
 
     <div *ngIf="!rows.length" class="empty-state">No hay registros.</div>
 
-    <div *ngIf="rows.length" class="table-wrap table-wrap--sticky-actions">
-      <table>
+    <div *ngIf="rows.length" class="table-wrap table-wrap--sticky-actions terreno-table-wrap">
+      <table class="terreno-table">
         <thead>
           <tr>
-            <th>Fecha emisión</th>
+            <th>Fecha</th>
             <th>Proyecto</th>
             <th>Concepto</th>
-            <th>Moneda</th>
-            <th>Monto</th>
-            <th>Descripción</th>
+            <th class="table-number">Dólares</th>
+            <th class="table-number">TC</th>
+            <th class="table-number">Soles</th>
             <th>Estado</th>
             <th class="actions-col">Acciones</th>
           </tr>
@@ -28,12 +48,14 @@
         <tbody>
           <tr *ngFor="let row of rows">
             <td>{{ row.fechaEmision | date:'dd/MM/yyyy' }}</td>
-            <td>{{ row.nombreProyecto }}</td>
+            <td class="terreno-table__project">{{ row.nombreProyecto }}</td>
             <td>{{ row.concepto }}</td>
-            <td>{{ row.moneda }}</td>
-            <td>{{ row.monto | number:'1.2-2' }}</td>
-            <td>{{ row.descripcion || '-' }}</td>
-            <td><span class="badge" [class.badge--active]="row.estado === 'Activo'" [class.badge--danger]="row.estado !== 'Activo'">{{ row.estado }}</span></td>
+            <td class="table-number">{{ formatMoney(row.montoDolares, 'USD') }}</td>
+            <td class="table-number">{{ row.tipoCambio | number:'1.2-2' }}</td>
+            <td class="table-number terreno-table__money">{{ formatMoney(row.montoSoles) }}</td>
+            <td>
+              <span class="badge" [class.badge--active]="row.estado === 'Activo'" [class.badge--danger]="row.estado !== 'Activo'">{{ row.estado }}</span>
+            </td>
             <td>
               <div class="actions actions--end">
                 <button class="btn btn-secondary" (click)="editar(row)">Editar</button>
@@ -46,10 +68,10 @@
     </div>
   </section>
 
-  <section class="panel panel--form">
-    <div class="panel-title">Formulario</div>
+  <section class="panel panel--form terreno-form-panel">
+    <div class="panel-title">{{ editandoId ? 'Editar registro' : 'Nuevo registro' }}</div>
 
-    <div class="form-grid two">
+    <div class="form-grid two terreno-form-grid">
       <div class="field">
         <label>Fecha emisión</label>
         <input type="date" [(ngModel)]="form.fechaEmision">
@@ -61,35 +83,46 @@
           <option value="Inactivo">Inactivo</option>
         </select>
       </div>
-      <div class="field">
+
+      <div class="field" style="grid-column: 1 / -1;">
         <label>Proyecto</label>
         <select [(ngModel)]="form.idProyecto">
           <option [ngValue]="null">Seleccionar</option>
           <option *ngFor="let p of proyectos" [ngValue]="p.idProyecto">{{ p.nombreProyecto }}</option>
         </select>
       </div>
-      <div class="field">
-        <label>Moneda</label>
-        <select [(ngModel)]="form.moneda">
-          <option value="PEN">PEN</option>
-          <option value="USD">USD</option>
-        </select>
-      </div>
+
       <div class="field" style="grid-column: 1 / -1;">
         <label>Concepto</label>
-        <input [(ngModel)]="form.concepto" placeholder="Ingresar concepto" />
+        <input [(ngModel)]="form.concepto" list="conceptosTerreno" placeholder="Ej. TERRENO, ALCABALA, ANTEPROYECTO, PROYECTO" />
+        <datalist id="conceptosTerreno">
+          <option value="TERRENO"></option>
+          <option value="ALCABALA"></option>
+          <option value="ANTEPROYECTO"></option>
+          <option value="PROYECTO"></option>
+        </datalist>
+      </div>
+
+      <div class="field">
+        <label>Monto en dólares</label>
+        <input type="number" min="0" step="0.01" [(ngModel)]="form.montoDolares" (ngModelChange)="onDolaresInput()" placeholder="0.00" />
       </div>
       <div class="field">
-        <label>Monto</label>
-        <input type="number" min="0" step="0.01" [(ngModel)]="form.monto" placeholder="0.00" />
+        <label>Tipo de cambio</label>
+        <input type="number" min="0" step="0.01" [(ngModel)]="form.tipoCambio" (ngModelChange)="onDolaresInput()" placeholder="0.00" />
       </div>
+      <div class="field" style="grid-column: 1 / -1;">
+        <label>Monto en soles</label>
+        <input type="number" min="0" step="0.01" [(ngModel)]="form.montoSoles" (ngModelChange)="onSolesInput()" placeholder="0.00" />
+      </div>
+
       <div class="field" style="grid-column: 1 / -1;">
         <label>Descripción</label>
         <textarea rows="4" [(ngModel)]="form.descripcion" placeholder="Ingresar descripción"></textarea>
       </div>
     </div>
 
-    <div class="toolbar top-gap">
+    <div class="toolbar top-gap terreno-toolbar">
       <button class="btn btn-primary" (click)="guardar()">{{ editandoId ? 'Actualizar' : 'Guardar' }}</button>
       <button class="btn btn-ghost" (click)="limpiar()">Limpiar</button>
     </div>

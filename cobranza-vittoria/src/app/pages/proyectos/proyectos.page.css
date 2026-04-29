@@ -1,13 +1,50 @@
-
 :host {
   display: block;
 }
-.page-grid-2 .panel--form {
-  max-width: 470px;
+
+.proyectos-layout {
+  align-items: start;
+}
+
+.proyectos-panel-list {
+  min-width: 0;
+}
+
+.proyectos-panel-form {
+  max-width: 520px;
   justify-self: end;
 }
+
+.proyectos-table-wrap {
+  margin-top: 8px;
+}
+
+.proyectos-table {
+  width: 100%;
+  min-width: 860px;
+}
+
+.proyectos-table__project {
+  min-width: 220px;
+  font-weight: 800;
+}
+
+.proyectos-table__money {
+  font-weight: 800;
+  color: var(--violet);
+}
+
+.proyectos-toolbar {
+  margin-top: 16px;
+  margin-bottom: 0;
+}
+
+textarea {
+  min-height: 120px;
+}
+
 @media (max-width: 1320px) {
-  .page-grid-2 .panel--form {
+  .proyectos-panel-form {
     max-width: none;
     justify-self: stretch;
   }

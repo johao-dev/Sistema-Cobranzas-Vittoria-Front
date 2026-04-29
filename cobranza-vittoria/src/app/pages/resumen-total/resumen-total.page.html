@@ -1,9 +1,9 @@
 <div class="page-header">
   <div>
     <div class="page-title">Resumen Total</div>
-    <div class="page-subtitle">Resumen consolidado por tablas de materiales, valorizaciones, gastos y totales generales.</div>
+    <div class="page-subtitle">Resumen consolidado de cotización general, materiales, valorizaciones, gastos y montos registrados en Terreno / Alcabala.</div>
   </div>
-  <div class="toolbar">
+  <div class="toolbar resumen-toolbar">
     <button class="btn btn-secondary" (click)="load()">Actualizar</button>
   </div>
 </div>
@@ -11,14 +11,61 @@
 <div class="dashboard-status" *ngIf="loading">Cargando resumen total...</div>
 <div class="empty-state" *ngIf="!loading && msg">{{ msg }}</div>
 
+<section class="hero-resumen" *ngIf="!loading">
+  <div class="hero-resumen__main">
+    <span class="hero-resumen__eyebrow">Consolidado general</span>
+    <h2>{{ formatMoney(cotizacionGeneral) }}</h2>
+    <p>La cotización general se toma desde el módulo de proyectos. El saldo ahora se calcula como cotización general menos el total ejecutado.</p>
+  </div>
+  <div class="hero-resumen__stats">
+    <div>
+      <strong>{{ formatMoney(totalGeneral) }}</strong>
+      <span>Total general</span>
+    </div>
+    <div>
+      <strong [class.negative]="saldo < 0">{{ formatMoney(saldo) }}</strong>
+      <span>Saldo</span>
+    </div>
+    <div>
+      <strong>{{ totalEjecutadoVsCotizacion() | number:'1.0-2' }}%</strong>
+      <span>% ejecutado</span>
+    </div>
+  </div>
+</section>
+
 <div class="kpi-grid" *ngIf="!loading">
+  <div class="kpi-card kpi-card--accent"><div class="kpi-label">Cotización general</div><div class="kpi-value">{{ formatMoney(cotizacionGeneral) }}</div></div>
   <div class="kpi-card"><div class="kpi-label">Materiales</div><div class="kpi-value">{{ formatMoney(totalMateriales) }}</div></div>
   <div class="kpi-card"><div class="kpi-label">Valorizaciones</div><div class="kpi-value">{{ formatMoney(totalValorizaciones) }}</div></div>
   <div class="kpi-card"><div class="kpi-label">Gastos</div><div class="kpi-value">{{ formatMoney(totalGastos) }}</div></div>
   <div class="kpi-card"><div class="kpi-label">Terreno</div><div class="kpi-value">{{ formatMoney(totalTerreno) }}</div></div>
   <div class="kpi-card"><div class="kpi-label">Alcabala</div><div class="kpi-value">{{ formatMoney(totalAlcabala) }}</div></div>
-  <div class="kpi-card kpi-card--dark"><div class="kpi-label">Total general</div><div class="kpi-value">{{ formatMoney(totalGeneral) }}</div></div>
+  <div class="kpi-card"><div class="kpi-label">Total general</div><div class="kpi-value">{{ formatMoney(totalGeneral) }}</div></div>
+  <div class="kpi-card kpi-card--dark"><div class="kpi-label">Saldo</div><div class="kpi-value">{{ formatMoney(saldo) }}</div></div>
 </div>
+
+<section class="panel top-gap" *ngIf="!loading">
+  <div class="panel-title">Cotización general por proyecto</div>
+  <div class="table-wrap top-gap" *ngIf="proyectosRows.length; else emptyProyectos">
+    <table>
+      <thead>
+        <tr>
+          <th>Proyecto</th>
+          <th class="table-number">Cotización general</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of proyectosRows">
+          <td>{{ row.proyecto }}</td>
+          <td class="table-number">{{ formatMoney(row.cotizacionGeneral) }}</td>
+          <td>{{ row.estado }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <ng-template #emptyProyectos><div class="empty-state">No hay cotizaciones de proyectos para mostrar.</div></ng-template>
+</section>
 
 <section class="panel top-gap" *ngIf="!loading">
   <div class="panel-title">Tabla 1. Compras / Materiales</div>

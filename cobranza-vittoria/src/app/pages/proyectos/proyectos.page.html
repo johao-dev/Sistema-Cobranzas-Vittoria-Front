@@ -1,47 +1,51 @@
 <div class="page-header">
   <div>
     <div class="page-title">Proyectos</div>
-    <div class="page-subtitle">Listado y mantenimiento de proyectos disponibles en el sistema.</div>
+    <div class="page-subtitle">Configura el nombre del proyecto, su cotización general y su estado. Desde aquí se toma la cotización que alimenta el módulo de resumen total.</div>
   </div>
 </div>
 
-<div class="page-grid-2 split--form">
-  <section class="panel">
+<div class="page-grid-2 split--form proyectos-layout">
+  <section class="panel proyectos-panel-list">
     <div class="panel-title">Listado</div>
 
     <div *ngIf="!rows.length" class="empty-state">
       No hay proyectos configurados.
     </div>
 
-    <div *ngIf="rows.length" class="table-wrap table-wrap--sticky-actions">
-      <table>
+    <div *ngIf="rows.length" class="table-wrap table-wrap--sticky-actions proyectos-table-wrap">
+      <table class="proyectos-table">
         <thead>
           <tr>
             <th>Proyecto</th>
             <th>Descripción</th>
-            <th>Fecha</th>
+            <th class="table-number">Cotización general</th>
             <th>Estado</th>
             <th class="actions-col">Acciones</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let row of rows">
-            <td>{{ row.nombreProyecto }}</td>
+            <td class="proyectos-table__project">{{ row.nombreProyecto }}</td>
             <td>{{ row.descripcion || '-' }}</td>
-            <td>{{ row.fechaCreacion | date:'yyyy-MM-dd' }}</td>
+            <td class="table-number proyectos-table__money">{{ formatMoney(row.cotizacionGeneral) }}</td>
             <td>
               <span class="badge" [class.badge--ok]="row.activo" [class.badge--neutral]="!row.activo">
                 {{ row.activo ? 'Activo' : 'Inactivo' }}
               </span>
             </td>
-            <td><div class="actions actions--end"><button class="btn btn-secondary" (click)="edit(row)">Editar</button></div></td>
+            <td>
+              <div class="actions actions--end">
+                <button class="btn btn-secondary" (click)="edit(row)">Editar</button>
+              </div>
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
   </section>
 
-  <section class="panel panel--form">
+  <section class="panel panel--form proyectos-panel-form">
     <div class="panel-title">
       {{ form.idProyecto ? 'Editar proyecto' : 'Nuevo proyecto' }}
     </div>
@@ -49,7 +53,7 @@
     <div class="form-grid two">
       <div class="field">
         <label>Nombre del proyecto</label>
-        <input [(ngModel)]="form.nombreProyecto" />
+        <input [(ngModel)]="form.nombreProyecto" placeholder="Ej. Mayta capac 1247" />
       </div>
 
       <div class="field">
@@ -61,12 +65,17 @@
       </div>
 
       <div class="field" style="grid-column:1/-1;">
+        <label>Cotización general</label>
+        <input type="number" min="0" step="0.01" [(ngModel)]="form.cotizacionGeneral" placeholder="0.00" />
+      </div>
+
+      <div class="field" style="grid-column:1/-1;">
         <label>Descripción</label>
-        <textarea [(ngModel)]="form.descripcion"></textarea>
+        <textarea [(ngModel)]="form.descripcion" placeholder="Descripción breve del proyecto"></textarea>
       </div>
     </div>
 
-    <div class="toolbar" style="margin-top:14px;">
+    <div class="toolbar proyectos-toolbar">
       <button class="btn btn-primary" (click)="save()" [disabled]="saving">
         {{ saving ? 'Guardando...' : 'Guardar proyecto' }}
       </button>

@@ -4,10 +4,12 @@ import { forkJoin } from 'rxjs';
 import { ComprasService } from '../../core/services/compras.service';
 import { GastosAdministrativosService } from '../../core/services/gastos-administrativos.service';
 import { ValorizacionesService } from '../../core/services/valorizaciones.service';
+import { MaestraService } from '../../core/services/maestra.service';
 
 type CompraResumenRow = { especialidad: string; cotizacion: number; facturado: number; saldo: number; };
 type ValResumenRow = { especialidad: string; cotizacion: number; garantia: number; transferido: number; facturado: number; saldo: number; };
 type GastoResumenRow = { categoria: string; facturado: number; };
+type ProyectoCotizacionRow = { proyecto: string; cotizacionGeneral: number; estado: string; };
 
 @Component({
   standalone: true,
@@ -23,18 +25,22 @@ export class ResumenTotalPage implements OnInit {
   comprasRows: CompraResumenRow[] = [];
   valorizacionesRows: ValResumenRow[] = [];
   gastosRows: GastoResumenRow[] = [];
+  proyectosRows: ProyectoCotizacionRow[] = [];
 
+  cotizacionGeneral = 0;
   totalMateriales = 0;
   totalValorizaciones = 0;
   totalGastos = 0;
   totalTerreno = 0;
   totalAlcabala = 0;
   totalGeneral = 0;
+  saldo = 0;
 
   constructor(
     private comprasService: ComprasService,
     private gastosService: GastosAdministrativosService,
     private valorizacionesService: ValorizacionesService,
+    private maestraService: MaestraService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -46,14 +52,17 @@ export class ResumenTotalPage implements OnInit {
     forkJoin({
       compras: this.comprasService.compras(),
       gastos: this.gastosService.gastos(),
-      valorizaciones: this.valorizacionesService.valorizaciones()
+      valorizaciones: this.valorizacionesService.valorizaciones(),
+      proyectos: this.maestraService.proyectos()
     }).subscribe({
-      next: ({ compras, gastos, valorizaciones }) => {
+      next: ({ compras, gastos, valorizaciones, proyectos }) => {
         this.buildCompras(Array.isArray(compras) ? compras : []);
         this.buildValorizaciones(Array.isArray(valorizaciones) ? valorizaciones : []);
         this.buildGastos(Array.isArray(gastos) ? gastos : []);
+        this.buildProyectos(Array.isArray(proyectos) ? proyectos : []);
         this.buildTerrenoTotals();
-        this.totalGeneral = this.totalMateriales + this.totalValorizaciones + this.totalGastos + this.totalTerreno + this.totalAlcabala;
+        this.totalGeneral = this.round(this.totalMateriales + this.totalValorizaciones + this.totalGastos + this.totalTerreno + this.totalAlcabala);
+        this.saldo = this.round(this.cotizacionGeneral - this.totalGeneral);
         this.loading = false;
         this.cdr.detectChanges();
       },
@@ -72,6 +81,24 @@ export class ResumenTotalPage implements OnInit {
     }).format(number);
   }
 
+  totalEjecutadoVsCotizacion(): number {
+    if (this.cotizacionGeneral <= 0) return 0;
+    return Math.min(100, this.round((this.totalGeneral / this.cotizacionGeneral) * 100));
+  }
+
+  totalDisponibleVsCotizacion(): number {
+    return Math.max(0, this.round(100 - this.totalEjecutadoVsCotizacion()));
+  }
+
+  private buildProyectos(rows: any[]): void {
+    this.proyectosRows = rows.map((row: any) => ({
+      proyecto: String(this.readValue(row, 'nombreProyecto', 'NombreProyecto') || 'Sin proyecto'),
+      cotizacionGeneral: Number(this.readValue(row, 'cotizacionGeneral', 'CotizacionGeneral') || 0),
+      estado: this.readValue(row, 'activo', 'Activo') ? 'Activo' : 'Inactivo'
+    }));
+    this.cotizacionGeneral = this.round(this.proyectosRows.reduce((acc, row) => acc + row.cotizacionGeneral, 0));
+  }
+
   private buildCompras(rows: any[]): void {
     const map = new Map<string, CompraResumenRow>();
     for (const row of rows) {
@@ -85,7 +112,7 @@ export class ResumenTotalPage implements OnInit {
       map.set(especialidad, item);
     }
     this.comprasRows = Array.from(map.values());
-    this.totalMateriales = this.comprasRows.reduce((a, x) => a + x.facturado, 0);
+    this.totalMateriales = this.round(this.comprasRows.reduce((a, x) => a + x.facturado, 0));
   }
 
   private buildValorizaciones(rows: any[]): void {
@@ -106,7 +133,7 @@ export class ResumenTotalPage implements OnInit {
       map.set(especialidad, item);
     }
     this.valorizacionesRows = Array.from(map.values());
-    this.totalValorizaciones = this.valorizacionesRows.reduce((a, x) => a + x.facturado, 0);
+    this.totalValorizaciones = this.round(this.valorizacionesRows.reduce((a, x) => a + x.facturado, 0));
   }
 
   private buildGastos(rows: any[]): void {
@@ -119,19 +146,35 @@ export class ResumenTotalPage implements OnInit {
       map.set(categoria, item);
     }
     this.gastosRows = Array.from(map.values());
-    this.totalGastos = this.gastosRows.reduce((a, x) => a + x.facturado, 0);
+    this.totalGastos = this.round(this.gastosRows.reduce((a, x) => a + x.facturado, 0));
   }
 
   private buildTerrenoTotals(): void {
     try {
-      const raw = localStorage.getItem('vittoria-terrenos-v3') || localStorage.getItem('vittoria-terrenos-v2') || '[]';
+      const raw = localStorage.getItem('vittoria-terrenos-v4') || localStorage.getItem('vittoria-terrenos-v3') || localStorage.getItem('vittoria-terrenos-v2') || '[]';
       const rows = JSON.parse(raw) as any[];
-      this.totalTerreno = rows.filter(x => String(x.concepto || '').trim().toUpperCase() === 'TERRENO').reduce((a, x) => a + Number(x.monto || 0), 0);
-      this.totalAlcabala = rows.filter(x => String(x.concepto || '').trim().toUpperCase() === 'ALCABALA').reduce((a, x) => a + Number(x.monto || 0), 0);
+      this.totalTerreno = this.round(rows
+        .filter(x => String(x.concepto || '').trim().toUpperCase() === 'TERRENO')
+        .reduce((a, x) => a + this.readTerrenoMontoSoles(x), 0));
+      this.totalAlcabala = this.round(rows
+        .filter(x => String(x.concepto || '').trim().toUpperCase() === 'ALCABALA')
+        .reduce((a, x) => a + this.readTerrenoMontoSoles(x), 0));
     } catch {
       this.totalTerreno = 0;
       this.totalAlcabala = 0;
     }
+  }
+
+  private readTerrenoMontoSoles(row: any): number {
+    const montoSoles = Number(row?.montoSoles ?? 0);
+    if (montoSoles > 0) return montoSoles;
+
+    const monto = Number(row?.monto ?? 0);
+    const moneda = String(row?.moneda || '').trim().toUpperCase();
+    if (moneda === 'USD') {
+      return this.round(monto * Number(row?.tipoCambio || 3.41));
+    }
+    return monto;
   }
 
   private readValue<T = any>(row: any, ...keys: string[]): T | null {
@@ -139,5 +182,9 @@ export class ResumenTotalPage implements OnInit {
       if (row && row[key] !== undefined && row[key] !== null) return row[key] as T;
     }
     return null;
+  }
+
+  private round(value: number): number {
+    return Math.round((Number(value || 0) + Number.EPSILON) * 100) / 100;
   }
 }

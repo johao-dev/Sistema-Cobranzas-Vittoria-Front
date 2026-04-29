@@ -32,6 +32,7 @@ export class PresupuestoPage implements OnInit {
     'CONSTRUCCION (incluir GG e IGV)',
     'UTILIDAD DEL CONSTRUCTOR (en caso de tercerizar la operación)',
     'DEMOLICION',
+    'ANTEPROYECTO',
     'PROYECTO',
     'LICENCIA DE CONSTRUCCION',
     'GASTOS ADMINISTRATIVOS',
@@ -80,12 +81,14 @@ export class PresupuestoPage implements OnInit {
         const terreno = this.form.items.find((x: PresupuestoItem) => this.esTerreno(x));
         if (terreno && this.toNumber(terreno.dolares) > 0) {
           terreno.soles = this.round(this.toNumber(terreno.dolares) * this.tipoCambioActual);
-          this.recalcularDependientes();
+          this.cargarMontosDesdeTerreno();
+    this.recalcularDependientes();
         }
         this.cdr.detectChanges();
       });
     this.sunatService.loadTipoCambio();
 
+    this.cargarMontosDesdeTerreno();
     this.maestra.proyectos(true).subscribe({
       next: (rows: any[]) => {
         this.proyectos = rows || [];
@@ -141,6 +144,29 @@ export class PresupuestoPage implements OnInit {
       alcabala.soles = this.round(terrenoSoles * 0.03);
       alcabala.dolares = 0;
     }
+  }
+
+
+  esSoloLectura(item: PresupuestoItem): boolean {
+    const c = String(item?.concepto || '').trim().toUpperCase();
+    return ['TERRENO', 'ALCABALA', 'PROYECTO', 'ANTEPROYECTO'].includes(c);
+  }
+
+  private cargarMontosDesdeTerreno(): void {
+    try {
+      const raw = localStorage.getItem('vittoria-terrenos-v4') || '[]';
+      const rows = JSON.parse(raw) as any[];
+      const sumByConcept = (concepto: string) => rows
+        .filter((x: any) => String(x.concepto || '').trim().toUpperCase() === concepto)
+        .reduce((acc: number, x: any) => acc + this.toNumber(x.montoSoles ?? x.monto ?? 0), 0);
+      for (const item of this.form.items) {
+        const c = String(item.concepto || '').trim().toUpperCase();
+        if (['TERRENO','ALCABALA','PROYECTO','ANTEPROYECTO'].includes(c)) {
+          item.soles = this.round(sumByConcept(c));
+          item.dolares = c === 'TERRENO' ? this.round(this.toNumber(item.soles) / this.tipoCambioActual) : 0;
+        }
+      }
+    } catch {}
   }
 
   guardarConfiguracion(): void {
@@ -209,6 +235,7 @@ export class PresupuestoPage implements OnInit {
         });
 
         this.form.items = items.map((x: PresupuestoItem) => ({ ...x }));
+        this.cargarMontosDesdeTerreno();
         this.recalcularDependientes();
 
         const totalPresupuesto = this.round(this.form.items.reduce((acc: number, item: PresupuestoItem) => acc + this.toNumber(item.soles), 0));

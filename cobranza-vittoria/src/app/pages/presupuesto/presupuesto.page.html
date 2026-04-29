@@ -43,11 +43,11 @@
             <td class="presupuesto-concepto">{{ item.concepto }}</td>
             <td>
               <input type="number" min="0" step="0.01" [(ngModel)]="item.soles" (ngModelChange)="onSolesChange(item)"
-                     [readonly]="esAlcabala(item) || (esTerreno(item) && (item.dolares || 0) > 0)" placeholder="0.00">
+                     [readonly]="esSoloLectura(item) || (esTerreno(item) && (item.dolares || 0) > 0)" placeholder="0.00">
             </td>
             <td>
               <input type="number" min="0" step="0.01" [(ngModel)]="item.dolares" (ngModelChange)="onDolaresChange(item)"
-                     [disabled]="!esTerreno(item)" placeholder="0.00">
+                     [disabled]="!esTerreno(item) || esSoloLectura(item)" placeholder="0.00">
             </td>
           </tr>
         </tbody>

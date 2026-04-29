@@ -1,3 +1,84 @@
 .badge--active { background: rgba(16, 185, 129, .12); color: #047857; }
 .badge--danger { background: rgba(239, 68, 68, .12); color: #b91c1c; }
 textarea { width: 100%; min-height: 108px; resize: vertical; }
+
+.terreno-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.terreno-summary-card {
+  background: linear-gradient(180deg, #ffffff 0%, #fafbff 100%);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: var(--shadow-soft);
+  display: grid;
+  gap: 8px;
+}
+
+.terreno-summary-card span,
+.terreno-summary-card small {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.terreno-summary-card strong {
+  font-size: 1.35rem;
+  line-height: 1.2;
+}
+
+.terreno-summary-card--accent {
+  background: linear-gradient(135deg, rgba(82, 85, 152, .1) 0%, #ffffff 100%);
+}
+
+.terreno-layout {
+  align-items: start;
+}
+
+.terreno-list-panel {
+  min-width: 0;
+}
+
+.terreno-form-panel {
+  max-width: 520px;
+  justify-self: end;
+}
+
+.terreno-table {
+  min-width: 980px;
+  width: 100%;
+}
+
+.terreno-table__project {
+  min-width: 220px;
+  font-weight: 800;
+}
+
+.terreno-table__money {
+  font-weight: 800;
+  color: var(--violet);
+}
+
+.terreno-toolbar {
+  margin-bottom: 0;
+}
+
+@media (max-width: 1320px) {
+  .terreno-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .terreno-form-panel {
+    max-width: none;
+    justify-self: stretch;
+  }
+}
+
+@media (max-width: 760px) {
+  .terreno-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
