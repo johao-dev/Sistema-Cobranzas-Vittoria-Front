@@ -84,11 +84,12 @@
             <td>{{ readValue(row, 'totalFacturas', 'TotalFacturas') || 0 }}</td>
             <td>{{ readValue(row, 'totalPagos', 'TotalPagos') || 0 }}</td>
             <td>
-              <div class="actions actions--stack-mobile actions--end">
-                <button class="btn btn-secondary" (click)="edit(row)">Editar</button>
-                <button class="btn btn-ghost" (click)="abrirArchivos(row)">Archivos</button>
-                <button class="btn btn-danger" (click)="remove(row)" [disabled]="!readValue(row, 'activo', 'Activo')">Desactivar</button>
-              </div>
+              <select class="actions-select" (change)="onAccion($event, row)">
+                <option value="">Acciones</option>
+                <option value="edit">Editar</option>
+                <option value="archivos">Archivos</option>
+                <option value="estado" [disabled]="!readValue(row, 'activo', 'Activo')">Desactivar</option>
+              </select>
             </td>
           </tr>
         </tbody>

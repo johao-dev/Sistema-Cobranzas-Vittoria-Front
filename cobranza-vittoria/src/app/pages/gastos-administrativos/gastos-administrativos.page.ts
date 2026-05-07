@@ -294,6 +294,14 @@ export class GastosAdministrativosPage implements OnInit {
     });
   }
 
+  onAccion(event: Event, row: any): void {
+    const value = (event.target as HTMLSelectElement).value;
+    (event.target as HTMLSelectElement).value = '';
+    if (value === 'edit') this.edit(row);
+    if (value === 'archivos') this.abrirArchivos(row);
+    if (value === 'estado') this.remove(row);
+  }
+
   onFilesSelected(event: Event, tipo: 'Factura' | 'Pago'): void {
     const input = event.target as HTMLInputElement;
     const files = Array.from(input.files || []).filter(file => file.name.toLowerCase().endsWith('.pdf'));

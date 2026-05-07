@@ -78,10 +78,6 @@ export class PresupuestoPage implements OnInit {
         if (sellPrice <= 0) return;
         this.tipoCambioActual = sellPrice;
 
-        const terreno = this.form.items.find((x: PresupuestoItem) => this.esTerreno(x));
-        if (terreno && this.toNumber(terreno.dolares) > 0) {
-          terreno.soles = this.round(this.toNumber(terreno.dolares) * this.tipoCambioActual);
-        }
         this.recalcularDependientes();
         this.cdr.detectChanges();
       });
@@ -130,99 +126,35 @@ export class PresupuestoPage implements OnInit {
 
   esSoloLectura(item: PresupuestoItem): boolean {
     const c = String(item?.concepto || '').trim().toUpperCase();
-    return ['TERRENO', 'ALCABALA', 'PROYECTO', 'ANTEPROYECTO'].includes(c);
+    return ['TERRENO', 'ALCABALA', 'PROYECTO', 'ANTEPROYECTO', 'LICENCIA DE CONSTRUCCION', 'GASTOS ADMINISTRATIVOS', 'PUBLICIDAD / COMISION POR VENTAS', 'INSTALACIONES (LUZ Y AGUA)', 'CONFORMIDAD DE OBRA', 'DECLARATORIA DE FABRICA', 'INDEPENDIZACION', 'OTROS GASTOS'].includes(c);
   }
 
   onDolaresChange(item: PresupuestoItem): void {
-    if (!this.esTerreno(item)) {
-      item.dolares = null;
-      return;
-    }
+    if (this.esSoloLectura(item)) return;
     const dolares = this.toNumber(item.dolares);
-    item.soles = this.round(dolares * this.tipoCambioActual);
+    item.soles = dolares > 0 ? this.round(dolares * this.tipoCambioActual) : null;
     this.recalcularDependientes();
   }
 
   onSolesChange(item: PresupuestoItem): void {
     if (this.esSoloLectura(item)) return;
+    const soles = this.toNumber(item.soles);
+    item.dolares = soles > 0 ? this.round(soles / this.tipoCambioActual) : null;
     this.recalcularDependientes();
   }
 
   private recalcularDependientes(): void {
-    const terreno = this.form.items.find((x: PresupuestoItem) => this.esTerreno(x));
-    const alcabala = this.form.items.find((x: PresupuestoItem) => this.esAlcabala(x));
-    const terrenoSoles = terreno ? this.toNumber(terreno.soles) : 0;
-
-    if (alcabala) {
-      alcabala.soles = this.round(terrenoSoles * 0.03);
-      alcabala.dolares = 0;
+    const proyecto = this.form.items.find((x: PresupuestoItem) => this.esProyecto(x));
+    const anteproyecto = this.form.items.find((x: PresupuestoItem) => this.esAnteproyecto(x));
+    const licencia = this.form.items.find((x: PresupuestoItem) => String(x?.concepto || '').trim().toUpperCase() === 'LICENCIA DE CONSTRUCCION');
+    if (licencia) {
+      licencia.soles = this.round(this.toNumber(proyecto?.soles) + this.toNumber(anteproyecto?.soles));
+      licencia.dolares = this.round(this.toNumber(proyecto?.dolares) + this.toNumber(anteproyecto?.dolares));
     }
   }
 
   private cargarMontosDesdeTerreno(idProyecto: number): void {
-    try {
-      const raw =
-        localStorage.getItem('vittoria-terrenos-v4') ||
-        localStorage.getItem('vittoria-terrenos-v3') ||
-        localStorage.getItem('vittoria-terrenos-v2') ||
-        '[]';
-
-      const rows = JSON.parse(raw) as any[];
-      const filtrados = rows.filter((x: any) => Number(x.idProyecto || 0) === idProyecto);
-
-      const sumarSoles = (concepto: string): number =>
-        this.round(
-          filtrados
-            .filter((x: any) => String(x.concepto || '').trim().toUpperCase() === concepto)
-            .reduce((acc: number, x: any) => {
-              const montoSoles = this.toNumber(x.montoSoles ?? 0);
-              if (montoSoles > 0) return acc + montoSoles;
-
-              const monto = this.toNumber(x.monto ?? 0);
-              const moneda = String(x.moneda || '').trim().toUpperCase();
-              if (moneda === 'USD') {
-                return acc + this.round(monto * this.toNumber(x.tipoCambio || this.tipoCambioActual));
-              }
-              return acc + monto;
-            }, 0)
-        );
-
-      const sumarDolares = (concepto: string): number =>
-        this.round(
-          filtrados
-            .filter((x: any) => String(x.concepto || '').trim().toUpperCase() === concepto)
-            .reduce((acc: number, x: any) => {
-              const montoDolares = this.toNumber(x.montoDolares ?? 0);
-              if (montoDolares > 0) return acc + montoDolares;
-
-              const monto = this.toNumber(x.monto ?? 0);
-              const moneda = String(x.moneda || '').trim().toUpperCase();
-              return moneda === 'USD' ? acc + monto : acc;
-            }, 0)
-        );
-
-      const terreno = this.form.items.find((x: PresupuestoItem) => this.esTerreno(x));
-      const alcabala = this.form.items.find((x: PresupuestoItem) => this.esAlcabala(x));
-      const proyecto = this.form.items.find((x: PresupuestoItem) => this.esProyecto(x));
-      const anteproyecto = this.form.items.find((x: PresupuestoItem) => this.esAnteproyecto(x));
-
-      if (terreno) {
-        terreno.soles = sumarSoles('TERRENO');
-        terreno.dolares = sumarDolares('TERRENO');
-      }
-      if (proyecto) {
-        proyecto.soles = sumarSoles('PROYECTO');
-        proyecto.dolares = 0;
-      }
-      if (anteproyecto) {
-        anteproyecto.soles = sumarSoles('ANTEPROYECTO');
-        anteproyecto.dolares = 0;
-      }
-      if (alcabala) {
-        alcabala.soles = this.round(this.toNumber(terreno?.soles) * 0.03);
-        alcabala.dolares = 0;
-      }
-    } catch {}
+    // Los montos automáticos ahora vienen desde la API de presupuesto.
   }
 
   guardarConfiguracion(): void {
@@ -231,23 +163,13 @@ export class PresupuestoPage implements OnInit {
       return;
     }
 
+    this.completarDolaresManual();
     this.recalcularDependientes();
 
     const items = (this.form.items || []).map((x: PresupuestoItem, index: number) => {
       const concepto = this.conceptosFijos[index] || String(x.concepto || '').trim();
-      const esTerreno = this.esTerreno(x);
-      const esAlcabala = this.esAlcabala(x);
-      const dolares = esTerreno ? this.toNumber(x.dolares) : 0;
-      let soles = this.toNumber(x.soles);
-
-      if (esTerreno && dolares > 0) {
-        soles = this.round(dolares * this.tipoCambioActual);
-      }
-      if (esAlcabala) {
-        const terreno = this.form.items.find((it: PresupuestoItem) => this.esTerreno(it));
-        soles = this.round(this.toNumber(terreno?.soles) * 0.03);
-      }
-
+      const dolares = this.toNumber(x.dolares);
+      const soles = this.toNumber(x.soles);
       return { concepto, soles, dolares };
     });
 
@@ -293,56 +215,46 @@ export class PresupuestoPage implements OnInit {
 
         this.form.items = items.map((x: PresupuestoItem) => ({ ...x }));
         this.cargarMontosDesdeTerreno(Number(this.form.idProyecto));
+        this.completarDolaresManual();
         this.recalcularDependientes();
 
         const totalPresupuesto = this.round(this.form.items.reduce((acc: number, item: PresupuestoItem) => acc + this.toNumber(item.soles), 0));
+        const totalCompras = this.toNumber(row?.totalCompras ?? row?.TotalCompras);
+        const saldo = this.round(totalPresupuesto - totalCompras);
+        const porcentajeConsumido = totalPresupuesto > 0 ? Math.min(100, this.round((totalCompras / totalPresupuesto) * 100)) : 0;
+        const porcentajeDisponible = Math.max(0, this.round(100 - porcentajeConsumido));
 
-        this.comprasService.compras().subscribe({
-          next: (compras: any[]) => {
-            const idProyecto = Number(this.form.idProyecto || 0);
-            const nombreProyecto = this.proyectoNombre(idProyecto);
-            const totalCompras = this.round((compras || []).reduce((acc: number, x: any) => {
-              const sameId = Number(x.idProyecto ?? x.IdProyecto ?? 0) === idProyecto;
-              const sameName = String(x.nombreProyecto ?? x.NombreProyecto ?? '').trim().toLowerCase() === String(nombreProyecto || '').trim().toLowerCase();
-              if (!sameId && !sameName) return acc;
-              return acc + this.toNumber(x.montoTotal ?? x.MontoTotal ?? x.total ?? x.Total);
-            }, 0));
-
-            const saldo = this.round(totalPresupuesto - totalCompras);
-            const porcentajeConsumido = totalPresupuesto > 0 ? Math.min(100, this.round((totalCompras / totalPresupuesto) * 100)) : 0;
-            const porcentajeDisponible = Math.max(0, this.round(100 - porcentajeConsumido));
-
-            this.visualizacion = {
-              proyecto: row?.proyecto || this.proyectoNombre(this.form.idProyecto),
-              totalPresupuesto,
-              totalCompras,
-              saldo,
-              porcentajeConsumido,
-              porcentajeDisponible,
-              items: this.form.items.map((x: PresupuestoItem) => ({ ...x }))
-            };
-            this.cdr.detectChanges();
-          },
-          error: () => {
-            const saldo = totalPresupuesto;
-            this.visualizacion = {
-              proyecto: row?.proyecto || this.proyectoNombre(this.form.idProyecto),
-              totalPresupuesto,
-              totalCompras: 0,
-              saldo,
-              porcentajeConsumido: 0,
-              porcentajeDisponible: totalPresupuesto > 0 ? 100 : 0,
-              items: this.form.items.map((x: PresupuestoItem) => ({ ...x }))
-            };
-            this.cdr.detectChanges();
-          }
-        });
+        this.visualizacion = {
+          proyecto: row?.proyecto || this.proyectoNombre(this.form.idProyecto),
+          totalPresupuesto,
+          totalCompras,
+          saldo,
+          porcentajeConsumido,
+          porcentajeDisponible,
+          items: this.form.items.map((x: PresupuestoItem) => ({ ...x }))
+        };
+        this.cdr.detectChanges();
       },
       error: () => {
         this.msg = 'No se pudo cargar la visualización del presupuesto.';
         this.cdr.detectChanges();
       }
     });
+  }
+
+
+  private completarDolaresManual(): void {
+    for (const item of this.form.items || []) {
+      if (this.esSoloLectura(item)) continue;
+      const soles = this.toNumber(item.soles);
+      const dolares = this.toNumber(item.dolares);
+      if (soles > 0 && dolares <= 0 && this.tipoCambioActual > 0) {
+        item.dolares = this.round(soles / this.tipoCambioActual);
+      }
+      if (dolares > 0 && soles <= 0 && this.tipoCambioActual > 0) {
+        item.soles = this.round(dolares * this.tipoCambioActual);
+      }
+    }
   }
 
   totalItemsFormulario(): number {

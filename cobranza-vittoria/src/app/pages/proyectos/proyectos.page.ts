@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { NotificationService } from '../../core/services/notification.service';
 import { MaestraService } from '../../core/services/maestra.service';
+import { CotizacionMaterialesService } from '../../core/services/cotizacion-materiales.service';
 
 @Component({
   standalone: true,
@@ -14,6 +15,9 @@ import { MaestraService } from '../../core/services/maestra.service';
 })
 export class ProyectosPage implements OnInit {
   rows: any[] = [];
+  especialidades: any[] = [];
+  cotizacionItems: any[] = [];
+  savingCotizaciones = false;
   form: any = {
     idProyecto: null,
     nombreProyecto: '',
@@ -27,6 +31,7 @@ export class ProyectosPage implements OnInit {
 
   constructor(
     private maestra: MaestraService,
+    private cotizacionMaterialesService: CotizacionMaterialesService,
     private notifyService: NotificationService,
     private cdr: ChangeDetectorRef
   ) {}
@@ -37,10 +42,31 @@ export class ProyectosPage implements OnInit {
 
   async load(): Promise<void> {
     try {
-      const data = await firstValueFrom(this.maestra.proyectos());
-      this.rows = (data ?? []).map((row: any) => ({
+      const [data, especialidades] = await Promise.all([
+        firstValueFrom(this.maestra.proyectos()),
+        firstValueFrom(this.maestra.especialidades(true))
+      ]);
+      this.especialidades = especialidades ?? [];
+      this.sincronizarCotizacionesConEspecialidades();
+      const baseRows = (data ?? []).map((row: any) => ({
         ...row,
-        cotizacionGeneral: this.toNumber(row?.cotizacionGeneral ?? row?.CotizacionGeneral)
+        cotizacionGeneral: this.toNumber(row?.cotizacionGeneral ?? row?.CotizacionGeneral),
+        cotizacionMateriales: this.toNumber(row?.cotizacionMateriales ?? row?.CotizacionMateriales)
+      }));
+
+      this.rows = await Promise.all(baseRows.map(async (row: any) => {
+        const idProyecto = Number(row.idProyecto ?? row.IdProyecto ?? 0);
+        if (!idProyecto) return row;
+
+        try {
+          const cotizacion = await firstValueFrom(this.cotizacionMaterialesService.getByProyecto(idProyecto));
+          return {
+            ...row,
+            cotizacionMateriales: this.toNumber(cotizacion?.totalCotizacionMateriales ?? cotizacion?.TotalCotizacionMateriales)
+          };
+        } catch {
+          return row;
+        }
       }));
     } catch {
       this.rows = [];
@@ -58,6 +84,7 @@ export class ProyectosPage implements OnInit {
       activo: row.activo ?? true
     };
     this.msg = '';
+    this.cargarCotizacionesMateriales(Number(row.idProyecto));
     this.cdr.detectChanges();
   }
 
@@ -85,6 +112,10 @@ export class ProyectosPage implements OnInit {
 
     try {
       const res = await firstValueFrom(this.maestra.guardarProyecto(dto));
+      const idProyectoGuardado = Number(res?.idProyecto ?? res?.IdProyecto ?? this.form.idProyecto ?? 0);
+      if (idProyectoGuardado > 0) {
+        await this.guardarCotizacionesMateriales(idProyectoGuardado);
+      }
 
       this.msg = isEdit
         ? `Proyecto editado correctamente. ID: ${res?.idProyecto ?? this.form.idProyecto ?? ''}`
@@ -110,12 +141,71 @@ export class ProyectosPage implements OnInit {
       cotizacionGeneral: null,
       activo: true
     };
+    this.sincronizarCotizacionesConEspecialidades();
 
     if (clearMessage) {
       this.msg = '';
     }
 
     this.cdr.detectChanges();
+  }
+
+
+  private sincronizarCotizacionesConEspecialidades(): void {
+    const prev = new Map<number, number>();
+    for (const item of this.cotizacionItems || []) {
+      prev.set(Number(item.idEspecialidad), this.toNumber(item.cotizacion));
+    }
+    this.cotizacionItems = (this.especialidades || []).map((esp: any) => ({
+      idEspecialidad: Number(esp.idEspecialidad ?? esp.IdEspecialidad),
+      especialidad: String(esp.nombre ?? esp.Nombre ?? ''),
+      cotizacion: prev.get(Number(esp.idEspecialidad ?? esp.IdEspecialidad)) ?? 0
+    }));
+  }
+
+  totalCotizacionMateriales(): number {
+    return this.cotizacionItems.reduce((acc, item) => acc + this.toNumber(item.cotizacion), 0);
+  }
+
+  cargarCotizacionesMateriales(idProyecto: number): void {
+    this.sincronizarCotizacionesConEspecialidades();
+    if (!idProyecto) return;
+    this.cotizacionMaterialesService.getByProyecto(idProyecto).subscribe({
+      next: (res: any) => {
+        const apiItems = Array.isArray(res?.items) ? res.items : [];
+        const map = new Map<number, number>();
+        for (const item of apiItems) {
+          map.set(Number(item.idEspecialidad ?? item.IdEspecialidad), this.toNumber(item.cotizacion ?? item.Cotizacion));
+        }
+        this.cotizacionItems = (this.especialidades || []).map((esp: any) => {
+          const idEspecialidad = Number(esp.idEspecialidad ?? esp.IdEspecialidad);
+          return {
+            idEspecialidad,
+            especialidad: String(esp.nombre ?? esp.Nombre ?? ''),
+            cotizacion: map.get(idEspecialidad) ?? 0
+          };
+        });
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.sincronizarCotizacionesConEspecialidades();
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  async guardarCotizacionesMateriales(idProyecto: number): Promise<void> {
+    const items = (this.cotizacionItems || []).map(item => ({
+      idEspecialidad: Number(item.idEspecialidad),
+      cotizacion: this.toNumber(item.cotizacion)
+    }));
+    await firstValueFrom(this.cotizacionMaterialesService.guardar({ idProyecto, items }));
+  }
+
+  onAccion(event: Event, row: any): void {
+    const value = (event.target as HTMLSelectElement).value;
+    (event.target as HTMLSelectElement).value = '';
+    if (value === 'edit') this.edit(row);
   }
 
   formatMoney(value: any): string {

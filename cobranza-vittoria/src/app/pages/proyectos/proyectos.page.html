@@ -20,6 +20,7 @@
             <th>Proyecto</th>
             <th>Descripción</th>
             <th class="table-number">Cotización general</th>
+            <th class="table-number">Cotización materiales</th>
             <th>Estado</th>
             <th class="actions-col">Acciones</th>
           </tr>
@@ -29,15 +30,17 @@
             <td class="proyectos-table__project">{{ row.nombreProyecto }}</td>
             <td>{{ row.descripcion || '-' }}</td>
             <td class="table-number proyectos-table__money">{{ formatMoney(row.cotizacionGeneral) }}</td>
+            <td class="table-number proyectos-table__money proyectos-table__money--materials">{{ formatMoney(row.cotizacionMateriales) }}</td>
             <td>
               <span class="badge" [class.badge--ok]="row.activo" [class.badge--neutral]="!row.activo">
                 {{ row.activo ? 'Activo' : 'Inactivo' }}
               </span>
             </td>
             <td>
-              <div class="actions actions--end">
-                <button class="btn btn-secondary" (click)="edit(row)">Editar</button>
-              </div>
+              <select class="actions-select" (change)="onAccion($event, row)">
+                <option value="">Acciones</option>
+                <option value="edit">Editar</option>
+              </select>
             </td>
           </tr>
         </tbody>
@@ -74,6 +77,34 @@
         <textarea [(ngModel)]="form.descripcion" placeholder="Descripción breve del proyecto"></textarea>
       </div>
     </div>
+
+    <div class="cotizacion-materiales-card" *ngIf="especialidades.length">
+      <div class="panel-title panel-title--small">Subcotizaciones de materiales por especialidad</div>
+      <div class="helper-text">La suma de estas subcotizaciones se mostrará como <strong>Cotización de materiales</strong> en Resumen Total.</div>
+      <div class="table-wrap cotizacion-materiales-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Especialidad</th>
+              <th class="table-number">Cotización materiales</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of cotizacionItems">
+              <td>{{ item.especialidad }}</td>
+              <td><input type="number" min="0" step="0.01" [(ngModel)]="item.cotizacion" placeholder="0.00" /></td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <th>Total cotización de materiales</th>
+              <th class="table-number">{{ formatMoney(totalCotizacionMateriales()) }}</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
 
     <div class="toolbar proyectos-toolbar">
       <button class="btn btn-primary" (click)="save()" [disabled]="saving">

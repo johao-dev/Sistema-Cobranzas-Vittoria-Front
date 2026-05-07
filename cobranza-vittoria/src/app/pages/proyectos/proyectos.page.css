@@ -21,7 +21,7 @@
 
 .proyectos-table {
   width: 100%;
-  min-width: 860px;
+  min-width: 980px;
 }
 
 .proyectos-table__project {
@@ -49,3 +49,17 @@ textarea {
     justify-self: stretch;
   }
 }
+
+.cotizacion-materiales-card {
+  margin-top: 18px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px;
+  background: #fbfcff;
+}
+.panel-title--small { font-size: 1rem; margin-bottom: 6px; }
+.cotizacion-materiales-wrap { margin-top: 12px; }
+.cotizacion-materiales-wrap input { width: 100%; min-width: 180px; }
+.cotizacion-materiales-wrap tfoot th { background: #f3f5fb; }
+
+.proyectos-table__money--materials { color: #1f2937; }

@@ -1,14 +1,15 @@
-import { Component, ChangeDetectorRef, DestroyRef, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { MaestraService } from '../../core/services/maestra.service';
 import { SunatService } from '../../core/services/sunat.service';
 import { GastoProyectoService, TipoGastoProyecto } from '../../core/services/gasto-proyecto.service';
 import { ProveedoresTerrenoService } from '../../core/services/proveedores-terreno.service';
 import { NotificationService } from '../../core/services/notification.service';
 
-type GastoProyectoRow = {
+type Row = {
   idGastoProyecto: number;
   fecha: string;
   fechaTipoCambio: string | null;
@@ -29,38 +30,35 @@ type GastoProyectoRow = {
 
 @Component({
   standalone: true,
-  selector: 'app-terreno-page',
+  selector: 'app-gastos-proyecto-page',
   imports: [CommonModule, FormsModule],
-  templateUrl: './terreno.page.html',
-  styleUrl: './terreno.page.css'
+  templateUrl: './gastos-proyecto.page.html',
+  styleUrl: './gastos-proyecto.page.css'
 })
-export class TerrenoPage implements OnInit {
+export class GastosProyectoPage implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
-  private readonly tipoModulo: TipoGastoProyecto = 'terreno';
   private syncingFromDolares = false;
+
+  tipoModulo: TipoGastoProyecto = 'marketing-publicidad';
+  titulo = 'Gastos de proyecto';
+  subtitulo = 'Registro de gastos por proyecto.';
+  conceptos: string[] = [];
 
   proyectos: any[] = [];
   proveedores: any[] = [];
-  rows: GastoProyectoRow[] = [];
+  rows: Row[] = [];
   documentos: any[] = [];
   selectedFacturaFiles: File[] = [];
-  archivosTargetRow: GastoProyectoRow | null = null;
+  archivosTargetRow: Row | null = null;
   loading = false;
-  msg = '';
   editandoId: number | null = null;
   tipoCambioActual = 3.41;
 
-  readonly conceptos = ['TERRENO', 'ALCABALA', 'ANTEPROYECTO', 'PROYECTO'];
-
-  filtros = {
-    idProyecto: '',
-    concepto: '',
-    estado: ''
-  };
-
+  filtros = { idProyecto: '', concepto: '', estado: '' };
   form = this.createEmptyForm();
 
   constructor(
+    private route: ActivatedRoute,
     private maestra: MaestraService,
     private sunatService: SunatService,
     private gastoProyectoService: GastoProyectoService,
@@ -70,6 +68,7 @@ export class TerrenoPage implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.applyRouteData();
     this.sunatService.tipoCambio$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((data) => {
@@ -86,6 +85,15 @@ export class TerrenoPage implements OnInit {
     this.sunatService.consultarTipoCambio();
     this.loadCatalogos();
     this.load();
+  }
+
+  private applyRouteData(): void {
+    const data = this.route.snapshot.data || {};
+    this.tipoModulo = (data['tipoModulo'] || 'marketing-publicidad') as TipoGastoProyecto;
+    this.titulo = String(data['titulo'] || 'Gastos de proyecto');
+    this.subtitulo = String(data['subtitulo'] || 'Registro de gastos por proyecto.');
+    this.conceptos = (data['conceptos'] as string[]) || [];
+    this.form.concepto = this.conceptos.length === 1 ? this.conceptos[0] : '';
   }
 
   createEmptyForm() {
@@ -107,12 +115,12 @@ export class TerrenoPage implements OnInit {
 
   loadCatalogos(): void {
     this.maestra.proyectos(true).subscribe({
-      next: (rows: any[]) => { this.proyectos = rows || []; this.cdr.detectChanges(); },
+      next: rows => { this.proyectos = rows || []; this.cdr.detectChanges(); },
       error: () => { this.proyectos = []; this.cdr.detectChanges(); }
     });
 
     this.proveedoresService.proveedores(true).subscribe({
-      next: (rows: any[]) => { this.proveedores = rows || []; this.cdr.detectChanges(); },
+      next: rows => { this.proveedores = rows || []; this.cdr.detectChanges(); },
       error: () => { this.proveedores = []; this.cdr.detectChanges(); }
     });
   }
@@ -124,15 +132,15 @@ export class TerrenoPage implements OnInit {
       concepto: this.filtros.concepto || null,
       estado: this.filtros.estado || null
     }).subscribe({
-      next: (rows: any[]) => {
-        this.rows = (rows || []).map((row: any) => this.normalizarRow(row));
+      next: rows => {
+        this.rows = (rows || []).map(row => this.normalizarRow(row));
         this.loading = false;
         this.cdr.detectChanges();
       },
       error: err => {
         this.rows = [];
         this.loading = false;
-        this.notifications.show(err?.error?.message || 'No se pudo cargar Terreno.', 'error');
+        this.notifications.show(err?.error?.message || 'No se pudieron cargar los registros.', 'error');
         this.cdr.detectChanges();
       }
     });
@@ -140,8 +148,8 @@ export class TerrenoPage implements OnInit {
 
   guardar(): void {
     if (!this.form.idProyecto) { this.notifications.show('Debes seleccionar un proyecto.', 'info'); return; }
-    if (!this.form.concepto) { this.notifications.show('Debes seleccionar el concepto.', 'info'); return; }
-    if (!(this.toNumber(this.form.montoSoles) > 0 || this.toNumber(this.form.montoDolares) > 0)) { this.notifications.show('Debes ingresar el monto en soles o dólares.', 'info'); return; }
+    if (!this.form.concepto) { this.notifications.show('Debes seleccionar un concepto.', 'info'); return; }
+    if (!(this.toNumber(this.form.montoSoles) > 0 || this.toNumber(this.form.montoDolares) > 0)) { this.notifications.show('Debes ingresar un monto en soles o dólares.', 'info'); return; }
 
     const payload = {
       idGastoProyecto: this.form.idGastoProyecto,
@@ -172,13 +180,12 @@ export class TerrenoPage implements OnInit {
     });
   }
 
-  editar(row: GastoProyectoRow): void {
+  editar(row: Row): void {
     const id = Number(row.idGastoProyecto || 0);
     if (!id) return;
     this.gastoProyectoService.obtener(this.tipoModulo, id).subscribe({
       next: (res: any) => {
-        const gasto = res?.gasto ?? res ?? row;
-        const normalized = this.normalizarRow(gasto);
+        const normalized = this.normalizarRow(res?.gasto ?? res ?? row);
         this.editandoId = normalized.idGastoProyecto;
         this.form = {
           idGastoProyecto: normalized.idGastoProyecto,
@@ -202,22 +209,15 @@ export class TerrenoPage implements OnInit {
     });
   }
 
-  cambiarEstado(row: GastoProyectoRow): void {
+  cambiarEstado(row: Row): void {
     const nuevoEstado = row.estado === 'Activo' ? 'Inactivo' : 'Activo';
-    this.gastoProyectoService.guardar(this.tipoModulo, {
-      ...row,
-      estado: nuevoEstado,
-      activo: nuevoEstado === 'Activo'
-    }).subscribe({
-      next: () => {
-        this.notifications.show(`Registro ${nuevoEstado === 'Activo' ? 'activado' : 'desactivado'} correctamente.`, 'success');
-        this.load();
-      },
+    this.gastoProyectoService.guardar(this.tipoModulo, { ...row, estado: nuevoEstado, activo: nuevoEstado === 'Activo' }).subscribe({
+      next: () => { this.notifications.show('Estado actualizado correctamente.', 'success'); this.load(); },
       error: err => this.notifications.show(err?.error?.message || 'No se pudo cambiar el estado.', 'error')
     });
   }
 
-  abrirArchivos(row: GastoProyectoRow): void {
+  abrirArchivos(row: Row): void {
     this.archivosTargetRow = row;
     this.editar(row);
     this.loadDocumentos(row.idGastoProyecto);
@@ -240,12 +240,7 @@ export class TerrenoPage implements OnInit {
     if (!this.selectedFacturaFiles.length) { this.notifications.show('Selecciona una o más facturas PDF.', 'info'); return; }
 
     this.gastoProyectoService.uploadDocumentos(this.tipoModulo, id, this.selectedFacturaFiles).subscribe({
-      next: () => {
-        this.notifications.show('Facturas subidas correctamente.', 'success');
-        this.selectedFacturaFiles = [];
-        this.loadDocumentos(id);
-        this.load();
-      },
+      next: () => { this.notifications.show('Facturas subidas correctamente.', 'success'); this.selectedFacturaFiles = []; this.loadDocumentos(id); this.load(); },
       error: err => this.notifications.show(err?.error?.message || 'No se pudieron subir las facturas.', 'error')
     });
   }
@@ -263,9 +258,10 @@ export class TerrenoPage implements OnInit {
     return this.gastoProyectoService.documentoDownloadUrl(this.tipoModulo, id, docId);
   }
 
-  onAccion(event: Event, row: GastoProyectoRow): void {
-    const value = (event.target as HTMLSelectElement).value;
-    (event.target as HTMLSelectElement).value = '';
+  onAccion(event: Event, row: Row): void {
+    const select = event.target as HTMLSelectElement;
+    const value = select.value;
+    select.value = '';
     if (value === 'edit') this.editar(row);
     if (value === 'archivos') this.abrirArchivos(row);
     if (value === 'estado') this.cambiarEstado(row);
@@ -300,6 +296,7 @@ export class TerrenoPage implements OnInit {
   limpiar(): void {
     this.editandoId = null;
     this.form = this.createEmptyForm();
+    this.form.concepto = this.conceptos.length === 1 ? this.conceptos[0] : '';
     this.cerrarArchivos();
     this.cdr.detectChanges();
   }
@@ -329,7 +326,7 @@ export class TerrenoPage implements OnInit {
     return null;
   }
 
-  private normalizarRow(row: any): GastoProyectoRow {
+  private normalizarRow(row: any): Row {
     return {
       idGastoProyecto: Number(this.readValue(row, 'idGastoProyecto', 'IdGastoProyecto') || 0),
       fecha: String(this.readValue(row, 'fecha', 'Fecha') || this.todayIso()),

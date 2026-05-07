@@ -453,3 +453,25 @@ tbody tr:last-child td {
 .table-wrap td:last-child {
   white-space: nowrap;
 }
+
+/* Combo compacto para acciones en tablas */
+.actions-select {
+  width: 78px;
+  min-height: 28px;
+  height: 28px;
+  border-radius: 8px;
+  padding: 3px 4px;
+  font-size: .72rem;
+  font-weight: 800;
+  color: var(--violet);
+  background: #eef2fb;
+  border: 1px solid #dbe2f1;
+}
+.table-wrap--sticky-actions table th:last-child,
+.table-wrap--sticky-actions table td:last-child {
+  min-width: 84px;
+  width: 84px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+.actions-col { width: 84px !important; min-width: 84px !important; }

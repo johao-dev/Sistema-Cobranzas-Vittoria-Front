@@ -1,0 +1,7 @@
+.admin-split { align-items: start; }
+.admin-split .panel--form { max-width: 500px; justify-self: end; }
+.compact-filters { margin-bottom: 14px; }
+.compact-filters--one { grid-template-columns: minmax(220px, 320px); }
+.toolbar--compact { margin-top: 16px; }
+@media (max-width: 1320px) { .admin-split .panel--form { max-width: none; justify-self: stretch; } }
+@media (max-width: 760px) { .compact-filters--one { grid-template-columns: 1fr; } }

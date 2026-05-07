@@ -1,0 +1,145 @@
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { NotificationService } from '../../core/services/notification.service';
+import { MaestraService } from '../../core/services/maestra.service';
+import { ProveedoresTerrenoService } from '../../core/services/proveedores-terreno.service';
+
+@Component({
+  standalone: true,
+  selector: 'app-proveedores-terreno-page',
+  imports: [CommonModule, FormsModule],
+  templateUrl: './proveedores-terreno.page.html',
+  styleUrl: './proveedores-terreno.page.css'
+})
+export class ProveedoresTerrenoPage implements OnInit {
+  rows: any[] = [];
+  loading = false;
+  filtroActivo: string = 'true';
+  form: any = this.createEmptyForm();
+
+  constructor(
+    private proveedoresService: ProveedoresTerrenoService,
+    private notifications: NotificationService,
+    private cdr: ChangeDetectorRef,
+    private maestra: MaestraService
+  ) {}
+
+  ngOnInit(): void { this.load(); }
+
+  createEmptyForm() {
+    return {
+      idProveedorTerreno: null,
+      razonSocial: '',
+      ruc: '',
+      contacto: '',
+      telefono: '',
+      correo: '',
+      activo: true
+    };
+  }
+
+  readValue<T = any>(row: any, ...keys: string[]): T | null {
+    for (const key of keys) {
+      if (row && row[key] !== undefined && row[key] !== null) return row[key] as T;
+    }
+    return null;
+  }
+
+  load(): void {
+    this.loading = true;
+    const activo = this.filtroActivo === '' ? null : this.filtroActivo === 'true';
+    this.proveedoresService.proveedores(activo).subscribe({
+      next: rows => {
+        this.rows = rows ?? [];
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: err => {
+        this.loading = false;
+        this.notifications.show(err?.error?.message || 'No se pudieron cargar los proveedores de terreno.', 'error');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  edit(row: any): void {
+    this.form = {
+      idProveedorTerreno: this.readValue(row, 'idProveedorTerreno', 'IdProveedorTerreno'),
+      razonSocial: this.readValue(row, 'razonSocial', 'RazonSocial') ?? '',
+      ruc: this.readValue(row, 'ruc', 'Ruc') ?? '',
+      contacto: this.readValue(row, 'contacto', 'Contacto') ?? '',
+      telefono: this.readValue(row, 'telefono', 'Telefono') ?? '',
+      correo: this.readValue(row, 'correo', 'Correo') ?? '',
+      activo: this.readValue(row, 'activo', 'Activo') ?? true
+    };
+  }
+
+  reset(): void { this.form = this.createEmptyForm(); }
+
+  buscarRuc(): void {
+    if (!this.form.ruc || this.form.ruc.toString().trim().length !== 11) return;
+    this.maestra.consultaRuc(this.form.ruc).subscribe({
+      next: (res: any) => {
+        if (res && res.numero_documento) {
+          this.form.razonSocial = res.razon_social || '';
+          this.form.activo = res.estado === 'ACTIVO';
+          this.notifications.show('Datos recuperados de SUNAT correctamente.', 'success');
+        } else {
+          this.notifications.show('No se encontraron datos para el RUC ingresado.', 'info');
+        }
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.notifications.show('Error al consultar el RUC. Verifique el número ingresado.', 'error');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  save(): void {
+    const razonSocial = String(this.form.razonSocial ?? '').trim();
+    if (!razonSocial) {
+      this.notifications.show('Ingresa la razón social del proveedor.', 'info');
+      return;
+    }
+
+    this.proveedoresService.guardar({
+      ...this.form,
+      razonSocial,
+      ruc: String(this.form.ruc ?? '').trim(),
+      contacto: String(this.form.contacto ?? '').trim(),
+      telefono: String(this.form.telefono ?? '').trim(),
+      correo: String(this.form.correo ?? '').trim()
+    }).subscribe({
+      next: () => {
+        this.notifications.show('Proveedor de terreno guardado correctamente.', 'success');
+        this.reset();
+        this.load();
+      },
+      error: err => this.notifications.show(err?.error?.message || 'No se pudo guardar el proveedor de terreno.', 'error')
+    });
+  }
+
+  remove(row: any): void {
+    const nombre = this.readValue(row, 'razonSocial', 'RazonSocial') ?? 'seleccionado';
+    const id = this.readValue<number>(row, 'idProveedorTerreno', 'IdProveedorTerreno');
+    if (!id) return;
+    if (!confirm(`¿Desactivar el proveedor ${nombre}?`)) return;
+    this.proveedoresService.desactivar(id).subscribe({
+      next: () => {
+        this.notifications.show('Proveedor desactivado correctamente.', 'success');
+        if (this.form.idProveedorTerreno === id) this.reset();
+        this.load();
+      },
+      error: err => this.notifications.show(err?.error?.message || 'No se pudo desactivar el proveedor.', 'error')
+    });
+  }
+
+  onAccion(event: Event, row: any): void {
+    const value = (event.target as HTMLSelectElement).value;
+    (event.target as HTMLSelectElement).value = '';
+    if (value === 'edit') this.edit(row);
+    if (value === 'estado') this.remove(row);
+  }
+}

@@ -1,0 +1,60 @@
+.badge--active { background: rgba(16, 185, 129, .12); color: #047857; }
+.badge--danger { background: rgba(239, 68, 68, .12); color: #b91c1c; }
+textarea { width: 100%; min-height: 108px; resize: vertical; }
+
+.gasto-proyecto-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.gasto-proyecto-summary-card {
+  background: linear-gradient(180deg, #ffffff 0%, #fafbff 100%);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: var(--shadow-soft);
+  display: grid;
+  gap: 8px;
+}
+
+.gasto-proyecto-summary-card span,
+.gasto-proyecto-summary-card small {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.gasto-proyecto-summary-card strong {
+  font-size: 1.35rem;
+  line-height: 1.2;
+}
+
+.gasto-proyecto-summary-card--accent {
+  background: linear-gradient(135deg, rgba(82, 85, 152, .1) 0%, #ffffff 100%);
+}
+
+.gasto-proyecto-layout { align-items: start; }
+.gasto-proyecto-list-panel { min-width: 0; }
+.gasto-proyecto-form-panel { max-width: 520px; justify-self: end; }
+.gasto-proyecto-table { min-width: 1080px; width: 100%; }
+.gasto-proyecto-table__project { min-width: 220px; font-weight: 800; }
+.gasto-proyecto-table__money { font-weight: 800; color: var(--violet); }
+.gasto-proyecto-toolbar { margin-bottom: 0; }
+.gasto-proyecto-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 14px; }
+
+.documents-card { border: 1px solid var(--border); border-radius: 16px; padding: 14px; background: #fbfcff; }
+.documents-card__title { font-weight: 800; margin-bottom: 12px; }
+.docs-list { display: flex; flex-direction: column; gap: 8px; }
+.doc-item { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 12px; background: white; border: 1px solid var(--border); text-decoration: none; }
+.doc-item__meta { color: var(--muted); font-size: .8rem; white-space: nowrap; }
+.empty-inline { border: 1px dashed var(--border); border-radius: 12px; padding: 12px; color: var(--muted); background: white; text-align: center; }
+.form-tip { margin-top: 14px; padding: 12px 14px; border: 1px dashed var(--border); border-radius: 14px; background: #fafbff; color: var(--muted); }
+.toolbar--compact { margin-top: 14px; }
+
+@media (max-width: 1320px) {
+  .gasto-proyecto-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gasto-proyecto-form-panel { max-width: none; justify-self: stretch; }
+}
+@media (max-width: 980px) { .gasto-proyecto-filters { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .gasto-proyecto-summary-grid { grid-template-columns: 1fr; } .doc-item { flex-direction: column; align-items: flex-start; } }

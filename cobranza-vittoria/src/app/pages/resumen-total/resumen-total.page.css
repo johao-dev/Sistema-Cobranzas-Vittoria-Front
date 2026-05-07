@@ -161,3 +161,48 @@
     text-overflow: initial;
   }
 }
+
+
+/* Ajuste final de legibilidad: montos más sobrios y sin cards deformadas */
+.hero-resumen {
+  align-items: stretch;
+}
+
+.hero-resumen__main h2 {
+  font-size: clamp(1.35rem, 2vw, 2rem);
+  letter-spacing: -0.02em;
+}
+
+.hero-resumen__stats strong {
+  font-size: clamp(1.15rem, 1.65vw, 1.45rem);
+  letter-spacing: -0.01em;
+}
+
+.kpi-grid {
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  align-items: stretch;
+}
+
+.kpi-card {
+  min-height: 104px;
+  padding: 14px 16px;
+}
+
+.kpi-label {
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.kpi-value,
+.kpi-value--saldo {
+  font-size: clamp(1.1rem, 1.45vw, 1.45rem);
+  letter-spacing: -0.015em;
+  line-height: 1.18;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+@media (min-width: 1400px) {
+  .kpi-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}

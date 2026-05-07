@@ -2,7 +2,7 @@
 <div class="page-header">
   <div>
     <div class="page-title">Resumen Total</div>
-    <div class="page-subtitle">Consulta el consolidado por proyecto. La cotización general, materiales, valorizaciones, gastos y montos de Terreno / Alcabala se recalculan según el proyecto seleccionado.</div>
+    <div class="page-subtitle">Consulta el consolidado por proyecto. La cotización general, la cotización de materiales, valorizaciones, gastos y nuevos conceptos se recalculan según el proyecto seleccionado.</div>
   </div>
   <div class="toolbar resumen-toolbar">
     <button class="btn btn-secondary" (click)="load()">Actualizar</button>
@@ -48,17 +48,20 @@
 
 <div class="kpi-grid" *ngIf="!loading">
   <div class="kpi-card kpi-card--accent"><div class="kpi-label">Cotización general</div><div class="kpi-value">{{ formatMoney(cotizacionGeneral) }}</div></div>
-  <div class="kpi-card"><div class="kpi-label">Materiales</div><div class="kpi-value">{{ formatMoney(totalMateriales) }}</div></div>
+  <div class="kpi-card"><div class="kpi-label">Cotización de materiales</div><div class="kpi-value">{{ formatMoney(totalCotizacionMateriales) }}</div></div>
   <div class="kpi-card"><div class="kpi-label">Valorizaciones</div><div class="kpi-value">{{ formatMoney(totalValorizaciones) }}</div></div>
   <div class="kpi-card"><div class="kpi-label">Gastos</div><div class="kpi-value">{{ formatMoney(totalGastos) }}</div></div>
   <div class="kpi-card"><div class="kpi-label">Terreno</div><div class="kpi-value">{{ formatMoney(totalTerreno) }}</div></div>
   <div class="kpi-card"><div class="kpi-label">Alcabala</div><div class="kpi-value">{{ formatMoney(totalAlcabala) }}</div></div>
+  <div class="kpi-card"><div class="kpi-label">Marketing / Publicidad</div><div class="kpi-value">{{ formatMoney(totalMarketing) }}</div></div>
+  <div class="kpi-card"><div class="kpi-label">Otros gastos</div><div class="kpi-value">{{ formatMoney(totalOtrosGastos) }}</div></div>
+  <div class="kpi-card"><div class="kpi-label">Municipales / Distritales</div><div class="kpi-value">{{ formatMoney(totalMunicipales) }}</div></div>
   <div class="kpi-card"><div class="kpi-label">Total general</div><div class="kpi-value">{{ formatMoney(totalGeneral) }}</div></div>
   <div class="kpi-card kpi-card--dark"><div class="kpi-label">Saldo</div><div class="kpi-value">{{ formatMoney(saldo) }}</div></div>
 </div>
 
 <section class="panel top-gap" *ngIf="!loading">
-  <div class="panel-title">Compras / Materiales</div>
+  <div class="panel-title">Cotización de materiales por especialidad</div>
   <div class="table-wrap top-gap" *ngIf="comprasRows.length; else emptyCompras">
     <table>
       <thead><tr><th>Especialidad</th><th class="table-number">Cotización</th><th class="table-number">Facturado</th><th class="table-number">Saldo</th></tr></thead>
@@ -70,9 +73,17 @@
           <td class="table-number">{{ formatMoney(row.saldo) }}</td>
         </tr>
       </tbody>
+      <tfoot>
+        <tr>
+          <th>Total</th>
+          <th class="table-number">{{ formatMoney(totalCotizacionMateriales) }}</th>
+          <th class="table-number">{{ formatMoney(totalMateriales) }}</th>
+          <th class="table-number">{{ formatMoney(totalCotizacionMateriales - totalMateriales) }}</th>
+        </tr>
+      </tfoot>
     </table>
   </div>
-  <ng-template #emptyCompras><div class="empty-state">No hay compras registradas para el proyecto seleccionado.</div></ng-template>
+  <ng-template #emptyCompras><div class="empty-state">No hay cotizaciones de materiales ni compras registradas para el proyecto seleccionado.</div></ng-template>
 </section>
 
 <section class="panel top-gap" *ngIf="!loading">
