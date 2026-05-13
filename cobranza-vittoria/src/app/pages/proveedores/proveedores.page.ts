@@ -13,6 +13,19 @@ import { MaestraService } from '../../core/services/maestra.service';
   styleUrl: './proveedores.page.css'
 })
 export class ProveedoresPage implements OnInit {
+  modalOpen = false;
+
+  abrirModalNuevo(): void {
+    this.reset();
+    this.modalOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarModal(): void {
+    this.modalOpen = false;
+    this.cdr.detectChanges();
+  }
+
   rows: any[] = [];
   msg = '';
 
@@ -48,6 +61,7 @@ export class ProveedoresPage implements OnInit {
   }
 
   edit(row: any) {
+    this.modalOpen = true;
     this.maestra.proveedor(row.idProveedor).subscribe(res => {
       this.form = {
         idProveedor: res?.proveedor?.idProveedor ?? row.idProveedor ?? null,
@@ -133,6 +147,8 @@ export class ProveedoresPage implements OnInit {
 
         this.msg = 'Proveedor guardado correctamente.';
         this.notifyService.show(this.msg, 'success');
+        this.reset();
+        this.cerrarModal();
 
         this.load();
       },

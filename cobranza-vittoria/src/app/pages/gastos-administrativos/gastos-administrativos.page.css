@@ -86,3 +86,25 @@
 }
 
 .actions-col { width: 210px; }
+
+
+/* HOTFIX DISEÑO V8 */
+.actions-col { width: 82px !important; min-width: 82px !important; max-width: 82px !important; }
+.table-wrap table { min-width: max(100%, 1180px); }
+
+
+/* HOTFIX DISEÑO V9 */
+.admin-split { grid-template-columns: 1fr !important; }
+.design-modal-card { width: min(900px, calc(100vw - 42px)) !important; }
+.design-modal-card .panel-title::before {
+  content: '';
+  display: inline-block;
+  width: 9px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--violet);
+  margin-right: 10px;
+  vertical-align: -5px;
+}
+.form-tip { margin-top: 16px; }
+.table-wrap table { min-width: max(100%, 1080px) !important; }

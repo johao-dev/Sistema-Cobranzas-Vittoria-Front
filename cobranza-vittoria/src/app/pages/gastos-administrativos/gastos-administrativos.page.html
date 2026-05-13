@@ -26,7 +26,7 @@
 
 <div class="admin-split">
   <section class="panel">
-    <div class="panel-title">Listado</div>
+    <div class="panel-title-row"><div class="panel-title">Listado</div><button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button></div>
 
     <div class="filters compact-filters">
       <div class="field">
@@ -100,7 +100,9 @@
     </div>
   </section>
 
-  <section class="panel panel--form panel--sticky">
+  <div class="design-modal-backdrop" *ngIf="modalOpen" (click)="cerrarModal()"></div>
+  <section class="panel panel--form panel--sticky design-modal-card" *ngIf="modalOpen" (click)="$event.stopPropagation()">
+    <button type="button" class="modal-close" (click)="cerrarModal()" aria-label="Cerrar">×</button>
     <div class="panel-title">Formulario</div>
 
     <div class="form-grid two two--admin">

@@ -12,3 +12,11 @@
   .provider-column,.provider-cell{min-width:220px;}
   .provider-select{min-width:220px;}
 }
+
+
+/* HOTFIX DISEÑO V9 */
+.oc-list-panel { margin-top: 0; }
+.oc-list-panel .panel-embedded { margin-top: 22px; }
+.provider-column { min-width: 220px; }
+.provider-cell { min-width: 240px; }
+.provider-select { min-width: 220px; }

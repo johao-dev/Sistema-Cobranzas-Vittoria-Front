@@ -475,3 +475,273 @@ tbody tr:last-child td {
   padding-right: 8px;
 }
 .actions-col { width: 84px !important; min-width: 84px !important; }
+
+
+/* HOTFIX DISEÑO V8 - Tablas más largas + formularios en pop up */
+.panel-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.panel-title-row .panel-title { margin-bottom: 0; }
+.btn-sm {
+  min-height: 34px;
+  padding: 7px 11px;
+  border-radius: 10px;
+  font-size: .82rem;
+  white-space: nowrap;
+}
+.design-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, .45);
+  backdrop-filter: blur(2px);
+  z-index: 90;
+}
+.design-modal-card {
+  position: fixed !important;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 91;
+  width: min(980px, calc(100vw - 36px)) !important;
+  max-width: min(980px, calc(100vw - 36px)) !important;
+  max-height: calc(100vh - 44px);
+  overflow: auto;
+  margin: 0 !important;
+  box-shadow: 0 26px 70px rgba(15, 23, 42, .24);
+}
+.modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--muted);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-close:hover { color: var(--violet); background: #f8f9ff; }
+.split,
+.page-grid-2,
+.admin-split,
+.providers-layout,
+.proyectos-layout,
+.terreno-layout,
+.gasto-proyecto-layout {
+  grid-template-columns: 1fr !important;
+}
+.table-wrap {
+  width: 100%;
+  max-width: 100%;
+}
+.table-wrap table {
+  min-width: max(100%, 1180px);
+}
+.table-wrap--sticky-actions table th:last-child,
+.table-wrap--sticky-actions table td:last-child,
+.actions-col {
+  min-width: 82px !important;
+  width: 82px !important;
+  max-width: 82px !important;
+  padding-left: 6px !important;
+  padding-right: 6px !important;
+}
+.actions-select {
+  width: 74px !important;
+  min-width: 74px !important;
+  max-width: 74px !important;
+  min-height: 28px !important;
+  height: 28px !important;
+  padding: 3px 4px !important;
+  font-size: .7rem !important;
+  border-radius: 8px !important;
+}
+.actions .btn {
+  min-height: 30px;
+  padding: 6px 9px;
+  border-radius: 9px;
+  font-size: .78rem;
+  white-space: nowrap;
+}
+@media (max-width: 760px) {
+  .panel-title-row { flex-direction: column; align-items: stretch; }
+  .design-modal-card { width: calc(100vw - 22px) !important; max-width: calc(100vw - 22px) !important; }
+}
+
+
+/* HOTFIX DISEÑO V9 - Ajustes finales de modales, tablas y acciones */
+.design-modal-card {
+  top: 28px !important;
+  transform: translateX(-50%) !important;
+  width: min(920px, calc(100vw - 42px)) !important;
+  max-width: min(920px, calc(100vw - 42px)) !important;
+  max-height: calc(100vh - 56px) !important;
+  padding: 24px !important;
+  border-radius: 22px !important;
+  box-shadow: 0 26px 80px rgba(15, 23, 42, .28) !important;
+}
+.design-modal-card--xl {
+  width: min(1180px, calc(100vw - 42px)) !important;
+  max-width: min(1180px, calc(100vw - 42px)) !important;
+}
+.design-modal-card .panel-title {
+  padding-right: 46px;
+  font-size: 1.22rem;
+}
+.design-modal-card .toolbar:last-child,
+.design-modal-card .form-actions {
+  position: sticky;
+  bottom: -24px;
+  z-index: 3;
+  background: linear-gradient(180deg, rgba(255,255,255,.86), #fff 35%);
+  padding-top: 14px;
+  padding-bottom: 2px;
+}
+.modal-close {
+  z-index: 5;
+}
+.actions,
+.actions.actions--end {
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.actions .btn {
+  min-height: 30px !important;
+  padding: 6px 9px !important;
+  border-radius: 9px !important;
+  font-size: .76rem !important;
+}
+.table-wrap--sticky-actions table th:last-child,
+.table-wrap--sticky-actions table td:last-child {
+  text-align: center;
+}
+.actions-col.actions-col--select,
+.table-wrap--sticky-actions table th.actions-col--select,
+.table-wrap--sticky-actions table td.actions-col--select {
+  width: 104px !important;
+  min-width: 104px !important;
+  max-width: 104px !important;
+}
+.actions-select {
+  width: 92px !important;
+  min-width: 92px !important;
+  max-width: 92px !important;
+}
+.table-wrap.table-wrap--compact table {
+  min-width: max(100%, 920px) !important;
+}
+.table-wrap.table-wrap--medium table {
+  min-width: max(100%, 1040px) !important;
+}
+.table-wrap.table-wrap--wide table {
+  min-width: max(100%, 1180px) !important;
+}
+@media (max-width: 760px) {
+  .design-modal-card,
+  .design-modal-card--xl {
+    top: 14px !important;
+    width: calc(100vw - 20px) !important;
+    max-width: calc(100vw - 20px) !important;
+    max-height: calc(100vh - 28px) !important;
+    padding: 18px !important;
+  }
+}
+
+
+/* HOTFIX DISEÑO V10 - acciones compactas, popups y tablas corregidas */
+.actions,
+.actions--center,
+.actions.actions--center,
+.actions.actions--end {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  width: 100%;
+}
+.table-wrap--sticky-actions table th:last-child,
+.table-wrap--sticky-actions table td:last-child,
+th.actions-col,
+th.actions-col--select,
+th.actions-col--button,
+td.actions-col--select,
+td.actions-col--button,
+.actions-col {
+  width: 108px !important;
+  min-width: 108px !important;
+  max-width: 108px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+.actions-col--button .btn,
+.action-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 32px !important;
+  padding: 7px 10px !important;
+  border-radius: 10px !important;
+  font-size: .78rem !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+.action-btn--small { min-width: 48px !important; }
+.actions-select {
+  display: block !important;
+  margin: 0 auto !important;
+  width: 96px !important;
+  min-width: 96px !important;
+  max-width: 96px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  padding: 4px 8px !important;
+  font-size: .76rem !important;
+  text-align: center !important;
+}
+.design-modal-card {
+  top: 26px !important;
+  border-radius: 24px !important;
+  padding: 28px !important;
+}
+.design-modal-card .form-grid,
+.design-modal-card .form-grid.two {
+  gap: 14px 16px !important;
+}
+.design-modal-card .toolbar--compact,
+.design-modal-card .form-actions,
+.design-modal-card .toolbar:last-child {
+  justify-content: flex-end !important;
+  gap: 10px !important;
+}
+.attach-list--compact {
+  display: flex !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  margin-top: 6px !important;
+}
+.attach-list--compact .btn {
+  min-height: 24px !important;
+  padding: 4px 7px !important;
+  font-size: .68rem !important;
+}
+.table-wrap--sticky-actions table th.purchase-action-col,
+.table-wrap--sticky-actions table td.purchase-action-col,
+th.purchase-action-col,
+td.purchase-action-col {
+  width: 132px !important;
+  min-width: 132px !important;
+  max-width: 132px !important;
+}

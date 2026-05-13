@@ -54,10 +54,28 @@ export class ComprasPage implements OnInit {
 
   itemPrecios: PrecioItem[] = [];
   modalOpen = false;
+  compraFlowModalOpen = false;
+  compraDetalleModalOpen = false;
   modalIndex = -1;
   modalItem: PrecioItem | null = null;
 
   constructor(private compras: ComprasService, private maestra: MaestraService, private cdr: ChangeDetectorRef) { }
+
+  onAccionPendiente(event: Event, row: any): void {
+    const value = (event.target as HTMLSelectElement).value;
+    (event.target as HTMLSelectElement).value = '';
+    if (value === 'procesar') this.procesarPendiente(row);
+  }
+
+  cerrarFlowModal(): void {
+    this.compraFlowModalOpen = false;
+    this.cdr.detectChanges();
+  }
+
+  cerrarDetalleModal(): void {
+    this.compraDetalleModalOpen = false;
+    this.cdr.detectChanges();
+  }
 
   ngOnInit() {
     this.loadCatalogos();
@@ -89,6 +107,8 @@ export class ComprasPage implements OnInit {
       next: (x: any) => {
         this.detalleCompra = null;
         this.detalleOc = x;
+        this.compraFlowModalOpen = true;
+        this.compraDetalleModalOpen = false;
         const oc = x?.ordenCompra || x?.head || {};
 
         this.form = {
@@ -164,6 +184,8 @@ export class ComprasPage implements OnInit {
       next: (x: any) => {
         this.detalleOc = null;
         this.detalleCompra = x;
+        this.compraDetalleModalOpen = true;
+        this.compraFlowModalOpen = false;
         this.documentos = x?.documentos || [];
         this.cdr.detectChanges();
       },
@@ -412,6 +434,8 @@ export class ComprasPage implements OnInit {
       fechaCompra: ''
     };
     this.cerrarModal();
+    this.compraFlowModalOpen = false;
+    this.compraDetalleModalOpen = false;
   }
 
   onCompraFilesSelected(event: any) {

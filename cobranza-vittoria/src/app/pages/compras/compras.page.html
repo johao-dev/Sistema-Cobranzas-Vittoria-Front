@@ -5,202 +5,208 @@
   </div>
 </div>
 
-<div class="split split--form">
-  <section class="panel">
-    <div class="panel-title">Ordenes de Compra pendientes de compra</div>
+<section class="panel compras-list-panel">
+  <div class="panel-title">Órdenes de Compra pendientes de compra</div>
 
-    <div *ngIf="!pendientes.length" class="empty-state">
-      No hay Ordenes de Compra pendientes de compra.
+  <div *ngIf="!pendientes.length" class="empty-state">
+    No hay Órdenes de Compra pendientes de compra.
+  </div>
+
+  <div *ngIf="pendientes.length" class="table-wrap table-wrap--sticky-actions table-wrap--medium">
+    <table>
+      <thead>
+        <tr>
+          <th>N° O.C.</th><th>Fecha</th><th>Proveedor</th><th>Proyecto</th><th>Estado</th><th class="actions-col actions-col--select">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of pendientes">
+          <td>{{ row.numeroOrdenCompra || row.NumeroOrdenCompra || '-' }}</td>
+          <td>{{ (row.fechaOrdenCompra || row.FechaOrdenCompra) ? ((row.fechaOrdenCompra || row.FechaOrdenCompra) | date:'dd/MM/yyyy') : '-' }}</td>
+          <td>{{ row.proveedor || row.Proveedor || '-' }}</td>
+          <td>{{ row.nombreProyecto || row.NombreProyecto || '-' }}</td>
+          <td><span class="badge badge--pending">{{ row.estado || row.Estado || '-' }}</span></td>
+          <td class="actions-col--select">
+            <select class="actions-select" (change)="onAccionPendiente($event, row)">
+              <option value="">Acciones</option>
+              <option value="procesar">Procesar</option>
+            </select>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel panel-embedded compras-cerradas-panel">
+    <div class="panel-title">Compras cerradas</div>
+
+    <div *ngIf="!comprasCerradas.length" class="empty-state">
+      No hay compras cerradas.
     </div>
 
-    <div *ngIf="pendientes.length" class="table-wrap table-wrap--sticky-actions">
+    <div *ngIf="comprasCerradas.length" class="table-wrap table-wrap--sticky-actions table-wrap--compact compras-cerradas-table">
       <table>
         <thead>
           <tr>
-            <th>N° O.C.</th><th>Fecha</th><th>RQ</th><th>Proveedor</th><th>Especialidad</th><th>Proyecto</th><th>Estado</th><th class="actions-col">Acciones</th>
+            <th>N° Compra</th><th>Fecha</th><th>Proveedor</th><th>Proyecto</th><th>Estado</th><th>Total</th><th class="actions-col actions-col--button">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let row of pendientes">
-            <td>{{ row.numeroOrdenCompra || row.NumeroOrdenCompra || '-' }}</td>
-            <td>{{ (row.fechaOrdenCompra || row.FechaOrdenCompra) ? ((row.fechaOrdenCompra || row.FechaOrdenCompra) | date:'dd/MM/yyyy') : '-' }}</td>
-            <td>{{ row.numeroRequerimiento || row.NumeroRequerimiento || '-' }}</td>
+          <tr *ngFor="let row of comprasCerradas">
+            <td>{{ row.numeroCompra || row.NumeroCompra || '-' }}</td>
+            <td>{{ (row.fechaCompra || row.FechaCompra) ? ((row.fechaCompra || row.FechaCompra) | date:'dd/MM/yyyy') : '-' }}</td>
             <td>{{ row.proveedor || row.Proveedor || '-' }}</td>
-            <td>{{ row.especialidad || row.Especialidad || '-' }}</td>
             <td>{{ row.nombreProyecto || row.NombreProyecto || '-' }}</td>
             <td><span class="badge badge--pending">{{ row.estado || row.Estado || '-' }}</span></td>
-            <td><div class="actions actions--end"><button class="btn btn-secondary" (click)="procesarPendiente(row)">Procesar</button></div></td>
+            <td class="table-number">{{ (row.montoTotal || row.MontoTotal || row.total || row.Total || 0) | number:'1.2-2' }}</td>
+            <td class="actions-col--button">
+              <div class="actions actions--center"><button class="btn btn-secondary btn-sm action-btn action-btn--small" (click)="verCompra(row)">Ver</button></div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<div class="design-modal-backdrop" *ngIf="compraFlowModalOpen" (click)="cerrarFlowModal()"></div>
+<section class="panel panel--form design-modal-card design-modal-card--xl" *ngIf="compraFlowModalOpen" (click)="$event.stopPropagation()">
+  <button type="button" class="modal-close" (click)="cerrarFlowModal()" aria-label="Cerrar">×</button>
+  <div class="panel-title">Detalle / cierre de compra</div>
+
+  <div *ngIf="detalleOc">
+    <div class="toolbar" style="margin-bottom:14px;">
+      <span class="list-chip">{{ detalleOc.ordenCompra?.numeroOrdenCompra || detalleOc.ordenCompra?.NumeroOrdenCompra }}</span>
+      <span class="list-chip">{{ detalleOc.ordenCompra?.estado || detalleOc.ordenCompra?.Estado }}</span>
+    </div>
+
+    <div class="toolbar filters-inline" style="margin-bottom:14px;">
+      <div class="field inline-field">
+        <label>Especialidad</label>
+        <select [(ngModel)]="filtrosTabla.especialidad">
+          <option value="TODAS">TODAS</option>
+          <option *ngFor="let e of especialidadesDisponibles" [value]="e">{{ e }}</option>
+        </select>
+      </div>
+      <div class="field inline-field">
+        <label>Proveedor</label>
+        <select [(ngModel)]="filtrosTabla.proveedor">
+          <option value="TODOS">TODOS</option>
+          <option *ngFor="let p of proveedoresDisponibles" [value]="p">{{ p }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-wrap table-wrap--sticky-actions table-wrap--medium purchase-table" *ngIf="itemPrecios.length">
+      <table>
+        <thead>
+          <tr>
+            <th>Especialidad</th>
+            <th>Material</th>
+            <th>Unidad</th>
+            <th>Cantidad</th>
+            <th>Proveedor</th>
+            <th class="actions-col purchase-action-col">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let x of itemsFiltrados">
+            <td>{{ mostrarEspecialidad(x) }}</td>
+            <td>{{ x.material }}</td>
+            <td>{{ x.unidadMedida }}</td>
+            <td>{{ x.cantidad }}</td>
+            <td>{{ x.proveedor }}</td>
+            <td class="purchase-action-col"><div class="actions actions--center"><button class="btn btn-secondary btn-sm action-btn action-btn--price" (click)="abrirPrecioPorItem(x)">{{ x.total > 0 ? 'Editar precio' : 'Colocar precio' }}</button></div></td>
+          </tr>
+          <tr *ngIf="!itemsFiltrados.length">
+            <td colspan="6" class="empty-row">No hay ítems con el filtro seleccionado.</td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <div class="panel panel-embedded">
-      <div class="panel-title">Compras cerradas</div>
+    <div class="panel panel-embedded purchase-register" *ngIf="itemPrecios.length">
+      <div class="panel-title purchase-register__title">Totales y Registro de la Compra</div>
+      <div class="helper-strip">El número de compra y la fecha se generan automáticamente. Los montos se calculan dentro de cada ítem.</div>
+      <div class="form-grid two purchase-register-grid">
+        <div class="field auto-field"><label>Número compra</label><input [(ngModel)]="form.numeroCompra" readonly></div>
+        <div class="field auto-field"><label>Fecha compra</label><input type="date" [(ngModel)]="form.fechaCompra" readonly></div>
+        <div class="field auto-field"><label>Total</label><input [value]="totalGeneral | number:'1.2-2'" readonly></div>
+        <div class="field full-width">
+          <button class="btn btn-primary" (click)="registrarCompra()">Registrar compra</button>
+          <button class="btn btn-ghost" (click)="resetForm()">Cancelar / Limpiar</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-      <div *ngIf="!comprasCerradas.length" class="empty-state">
-        No hay compras cerradas.
+  <div *ngIf="msg" class="empty-state" style="margin-top:14px; padding:14px;">{{ msg }}</div>
+</section>
+
+<div class="design-modal-backdrop" *ngIf="compraDetalleModalOpen" (click)="cerrarDetalleModal()"></div>
+<section class="panel design-modal-card design-modal-card--xl" *ngIf="compraDetalleModalOpen" (click)="$event.stopPropagation()">
+  <button type="button" class="modal-close" (click)="cerrarDetalleModal()" aria-label="Cerrar">×</button>
+  <div class="panel-title">Detalle de compra</div>
+
+  <div *ngIf="detalleCompra">
+    <div class="toolbar" style="margin-bottom:14px;">
+      <span class="list-chip">{{ detalleCompra.compra?.numeroCompra || detalleCompra.compra?.NumeroCompra || detalleCompra.numeroCompra || detalleCompra.NumeroCompra }}</span>
+      <span class="list-chip">{{ detalleCompra.compra?.estado || detalleCompra.compra?.Estado || detalleCompra.estado || detalleCompra.Estado }}</span>
+    </div>
+
+    <div class="table-wrap table-wrap--medium" *ngIf="detalleCompra.items?.length">
+      <table>
+        <thead><tr><th>Material</th><th>Unidad</th><th>Cantidad</th><th>Precio Unitario</th><th>Subtotal</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let item of detalleCompra.items">
+            <td>{{ item.material || item.Material }}</td>
+            <td>{{ item.unidadMedida || item.UnidadMedida }}</td>
+            <td>{{ item.cantidad || item.Cantidad }}</td>
+            <td class="table-number">{{ (item.precioUnitario || item.PrecioUnitario || 0) | number:'1.2-2' }}</td>
+            <td class="table-number">{{ (item.subtotal || item.Subtotal || (item.cantidad * item.precioUnitario) || 0) | number:'1.2-2' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel panel-embedded docs-panel" *ngIf="detalleCompra && !documentos.length">
+      <div class="panel-title docs-title">Subir archivos pendientes</div>
+      <div class="helper-strip">Como la compra se puede registrar sin adjuntos, aquí puedes subirlos después si no los cargaste al inicio.</div>
+      <div class="field full-width top-gap">
+        <label>Archivos</label>
+        <input type="file" multiple (change)="onCompraFilesSelected($event)">
+        <div class="hint" *ngIf="selectedCompraFiles.length">{{ selectedCompraFiles.length }} archivo(s) seleccionados.</div>
+      </div>
+      <div class="toolbar top-gap">
+        <button class="btn btn-primary" (click)="subirDocumentosPendientes()">Subir archivos</button>
+      </div>
+    </div>
+
+    <div class="panel panel-embedded docs-panel">
+      <div class="panel-title docs-title">Documentos subidos</div>
+
+      <div *ngIf="!documentos.length" class="empty-state">
+        No hay documentos adjuntos.
       </div>
 
-      <div *ngIf="comprasCerradas.length" class="table-wrap table-wrap--sticky-actions">
+      <div *ngIf="documentos.length" class="table-wrap table-wrap--sticky-actions table-wrap--compact docs-table">
         <table>
-          <thead>
-            <tr>
-              <th>N° Compra</th><th>Fecha</th><th>O.C.</th><th>RQ</th><th>Proveedor</th><th>Especialidad</th><th>Proyecto</th><th>Estado</th><th>Total</th><th class="actions-col">Acciones</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Archivo</th><th>Extensión</th><th>Fecha</th><th class="actions-col actions-col--select">Acción</th></tr></thead>
           <tbody>
-            <tr *ngFor="let row of comprasCerradas">
-              <td>{{ row.numeroCompra || row.NumeroCompra || '-' }}</td>
-              <td>{{ (row.fechaCompra || row.FechaCompra) ? ((row.fechaCompra || row.FechaCompra) | date:'dd/MM/yyyy') : '-' }}</td>
-              <td>{{ row.numeroOrdenCompra || row.NumeroOrdenCompra || '-' }}</td>
-              <td>{{ row.numeroRequerimiento || row.NumeroRequerimiento || '-' }}</td>
-              <td>{{ row.proveedor || row.Proveedor || '-' }}</td>
-              <td>{{ row.especialidad || row.Especialidad || '-' }}</td>
-              <td>{{ row.nombreProyecto || row.NombreProyecto || '-' }}</td>
-              <td><span class="badge badge--pending">{{ row.estado || row.Estado || '-' }}</span></td>
-              <td class="table-number">{{ (row.montoTotal || row.MontoTotal || row.total || row.Total || 0) | number:'1.2-2' }}</td>
-              <td><div class="actions actions--end"><button class="btn btn-secondary" (click)="verCompra(row)">Ver</button></div></td>
+            <tr *ngFor="let d of documentos">
+              <td>{{ d.nombreArchivo || d.NombreArchivo }}</td>
+              <td>{{ d.extension || d.Extension }}</td>
+              <td>{{ (d.fechaCreacion || d.FechaCreacion) ? ((d.fechaCreacion || d.FechaCreacion) | date:'dd/MM/yyyy') : '-' }}</td>
+              <td class="actions-col--button"><div class="actions actions--center"><button class="btn btn-secondary btn-sm action-btn" (click)="downloadDocumento(d, detalleCompra)">Descargar</button></div></td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
-  </section>
+  </div>
 
-  <section class="panel panel--form">
-    <div class="panel-title">Detalle / cierre de compra</div>
-
-    <div *ngIf="!detalleOc && !detalleCompra" class="empty-state">
-      Selecciona una O.C. pendiente o una compra cerrada.
-    </div>
-
-    <div *ngIf="detalleOc">
-      <div class="toolbar" style="margin-bottom:14px;">
-        <span class="list-chip">{{ detalleOc.ordenCompra?.numeroOrdenCompra || detalleOc.ordenCompra?.NumeroOrdenCompra }}</span>
-        <span class="list-chip">{{ detalleOc.ordenCompra?.estado || detalleOc.ordenCompra?.Estado }}</span>
-      </div>
-
-      <div class="toolbar filters-inline" style="margin-bottom:14px;">
-        <div class="field inline-field">
-          <label>Especialidad</label>
-          <select [(ngModel)]="filtrosTabla.especialidad">
-            <option value="TODAS">TODAS</option>
-            <option *ngFor="let e of especialidadesDisponibles" [value]="e">{{ e }}</option>
-          </select>
-        </div>
-        <div class="field inline-field">
-          <label>Proveedor</label>
-          <select [(ngModel)]="filtrosTabla.proveedor">
-            <option value="TODOS">TODOS</option>
-            <option *ngFor="let p of proveedoresDisponibles" [value]="p">{{ p }}</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="table-wrap table-wrap--sticky-actions purchase-table" *ngIf="itemPrecios.length">
-        <table>
-          <thead>
-            <tr>
-              <th>Especialidad</th>
-              <th>Material</th>
-              <th>Unidad</th>
-              <th>Cantidad</th>
-              <th>Proveedor</th>
-              <th>Acción</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let x of itemsFiltrados">
-              <td>{{ mostrarEspecialidad(x) }}</td>
-              <td>{{ x.material }}</td>
-              <td>{{ x.unidadMedida }}</td>
-              <td>{{ x.cantidad }}</td>
-              <td>{{ x.proveedor }}</td>
-              <td><div class="actions actions--end"><button class="btn btn-secondary" (click)="abrirPrecioPorItem(x)">{{ x.total > 0 ? 'Editar precio' : 'Colocar precio' }}</button></div></td>
-            </tr>
-            <tr *ngIf="!itemsFiltrados.length">
-              <td colspan="6" class="empty-row">No hay ítems con el filtro seleccionado.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="panel panel-embedded purchase-register" *ngIf="itemPrecios.length">
-        <div class="panel-title purchase-register__title">Totales y Registro de la Compra</div>
-        <div class="helper-strip">El número de compra y la fecha se generan automáticamente. Los montos se calculan dentro de cada ítem.</div>
-        <div class="form-grid two purchase-register-grid">
-          <div class="field auto-field"><label>Número compra</label><input [(ngModel)]="form.numeroCompra" readonly></div>
-          <div class="field auto-field"><label>Fecha compra</label><input type="date" [(ngModel)]="form.fechaCompra" readonly></div>
-          <div class="field auto-field"><label>Total</label><input [value]="totalGeneral | number:'1.2-2'" readonly></div>
-          <div class="field full-width">
-            <button class="btn btn-primary" (click)="registrarCompra()">Registrar compra</button>
-            <button class="btn btn-ghost" (click)="resetForm()">Cancelar / Limpiar</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div *ngIf="detalleCompra">
-      <div class="toolbar" style="margin-bottom:14px;">
-        <span class="list-chip">{{ detalleCompra.compra?.numeroCompra || detalleCompra.compra?.NumeroCompra || detalleCompra.numeroCompra || detalleCompra.NumeroCompra }}</span>
-        <span class="list-chip">{{ detalleCompra.compra?.estado || detalleCompra.compra?.Estado || detalleCompra.estado || detalleCompra.Estado }}</span>
-      </div>
-
-      <div class="table-wrap" *ngIf="detalleCompra.items?.length">
-        <table>
-          <thead><tr><th>Material</th><th>Unidad</th><th>Cantidad</th><th>Precio Unitario</th><th>Subtotal</th></tr></thead>
-          <tbody>
-            <tr *ngFor="let item of detalleCompra.items">
-              <td>{{ item.material || item.Material }}</td>
-              <td>{{ item.unidadMedida || item.UnidadMedida }}</td>
-              <td>{{ item.cantidad || item.Cantidad }}</td>
-              <td class="table-number">{{ (item.precioUnitario || item.PrecioUnitario || 0) | number:'1.2-2' }}</td>
-              <td class="table-number">{{ (item.subtotal || item.Subtotal || (item.cantidad * item.precioUnitario) || 0) | number:'1.2-2' }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="panel panel-embedded docs-panel" *ngIf="detalleCompra && !documentos.length">
-        <div class="panel-title docs-title">Subir archivos pendientes</div>
-        <div class="helper-strip">Como la compra se puede registrar sin adjuntos, aquí puedes subirlos después si no los cargaste al inicio.</div>
-        <div class="field full-width top-gap">
-          <label>Archivos</label>
-          <input type="file" multiple (change)="onCompraFilesSelected($event)">
-          <div class="hint" *ngIf="selectedCompraFiles.length">{{ selectedCompraFiles.length }} archivo(s) seleccionados.</div>
-        </div>
-        <div class="toolbar top-gap">
-          <button class="btn btn-primary" (click)="subirDocumentosPendientes()">Subir archivos</button>
-        </div>
-      </div>
-
-      <div class="panel panel-embedded docs-panel">
-        <div class="panel-title docs-title">Documentos subidos</div>
-
-        <div *ngIf="!documentos.length" class="empty-state">
-          No hay documentos adjuntos.
-        </div>
-
-        <div *ngIf="documentos.length" class="table-wrap table-wrap--sticky-actions">
-          <table>
-            <thead><tr><th>Archivo</th><th>Extensión</th><th>Fecha</th><th>Acción</th></tr></thead>
-            <tbody>
-              <tr *ngFor="let d of documentos">
-                <td>{{ d.nombreArchivo || d.NombreArchivo }}</td>
-                <td>{{ d.extension || d.Extension }}</td>
-                <td>{{ (d.fechaCreacion || d.FechaCreacion) ? ((d.fechaCreacion || d.FechaCreacion) | date:'dd/MM/yyyy') : '-' }}</td>
-                <td><div class="actions actions--end"><button class="btn btn-secondary" (click)="downloadDocumento(d, detalleCompra)">Descargar</button></div></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <div *ngIf="msg" class="empty-state" style="margin-top:14px; padding:14px;">{{ msg }}</div>
-  </section>
-</div>
+  <div *ngIf="msg" class="empty-state" style="margin-top:14px; padding:14px;">{{ msg }}</div>
+</section>
 
 <div class="modal-backdrop" *ngIf="modalOpen && modalItem">
   <div class="modal-card purchase-modal">

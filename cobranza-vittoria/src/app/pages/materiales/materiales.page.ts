@@ -13,6 +13,19 @@ import { MaestraService } from '../../core/services/maestra.service';
   styleUrl: './materiales.page.css'
 })
 export class MaterialesPage implements OnInit {
+  modalOpen = false;
+
+  abrirModalNuevo(): void {
+    this.reset();
+    this.modalOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarModal(): void {
+    this.modalOpen = false;
+    this.cdr.detectChanges();
+  }
+
   rows: any[] = [];
   especialidades: any[] = [];
   unidadesMedida: any[] = [];
@@ -57,6 +70,7 @@ export class MaterialesPage implements OnInit {
   }
 
   edit(row: any) {
+    this.modalOpen = true;
     this.form = {
       idMaterial: row.idMaterial ?? null,
       idEspecialidad: row.idEspecialidad != null ? Number(row.idEspecialidad) : null,
@@ -121,6 +135,7 @@ export class MaterialesPage implements OnInit {
         this.notifyService.show(this.msg, 'success');
 
         this.reset();
+        this.cerrarModal();
         this.load();
         this.cdr.detectChanges();
       },

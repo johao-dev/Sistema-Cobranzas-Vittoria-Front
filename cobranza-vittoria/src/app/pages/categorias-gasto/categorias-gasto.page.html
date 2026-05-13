@@ -7,7 +7,7 @@
 
 <div class="split split--form admin-split">
   <section class="panel">
-    <div class="panel-title">Listado</div>
+    <div class="panel-title-row"><div class="panel-title">Listado</div><button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button></div>
 
     <div class="filters filters--two compact-filters">
       <div class="field">
@@ -29,7 +29,7 @@
           <tr>
             <th>Categoría</th>
             <th>Estado</th>
-            <th class="actions-col">Acciones</th>
+            <th class="actions-col actions-col--select">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -40,11 +40,12 @@
                 {{ row.activo ? 'Activo' : 'Inactivo' }}
               </span>
             </td>
-            <td>
-              <div class="actions actions--stack-mobile actions--end">
-                <button class="btn btn-secondary" (click)="edit(row)">Editar</button>
-                <button class="btn btn-danger" (click)="remove(row)" [disabled]="!row.activo">Desactivar</button>
-              </div>
+            <td class="actions-col--select">
+              <select class="actions-select" (change)="onAccion($event, row)">
+                <option value="">Acciones</option>
+                <option value="edit">Editar</option>
+                <option value="estado" [disabled]="!row.activo">Desactivar</option>
+              </select>
             </td>
           </tr>
         </tbody>
@@ -52,7 +53,9 @@
     </div>
   </section>
 
-  <section class="panel panel--form">
+  <div class="design-modal-backdrop" *ngIf="modalOpen" (click)="cerrarModal()"></div>
+  <section class="panel panel--form design-modal-card" *ngIf="modalOpen" (click)="$event.stopPropagation()">
+    <button type="button" class="modal-close" (click)="cerrarModal()" aria-label="Cerrar">×</button>
     <div class="panel-title">Formulario</div>
 
     <div class="form-grid one">

@@ -216,6 +216,20 @@ export class ValorizacionesPage implements OnInit {
     this.syncDetalleCalculados();
   }
 
+  onAccionConfiguracion(event: Event, row: any): void {
+    const value = (event.target as HTMLSelectElement).value;
+    (event.target as HTMLSelectElement).value = '';
+    if (value === 'edit') this.editarConfiguracion(row);
+    if (value === 'usar') this.crearDesdeConfiguracion(row);
+  }
+
+  onAccionFactura(event: Event, row: any): void {
+    const value = (event.target as HTMLSelectElement).value;
+    (event.target as HTMLSelectElement).value = '';
+    if (value === 'adjuntar') this.abrirAdjuntarFacturas(row);
+    if (value === 'eliminar') this.eliminarFactura(row);
+  }
+
   guardarValorizacion(): void {
     const payload = {
       idValorizacion: this.toNullableNumber(this.formValorizacion.idValorizacion),

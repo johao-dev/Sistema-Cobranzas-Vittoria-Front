@@ -5,3 +5,16 @@
 .toolbar--compact { margin-top: 16px; }
 @media (max-width: 1320px) { .admin-split .panel--form { max-width: none; justify-self: stretch; } }
 @media (max-width: 760px) { .compact-filters--one { grid-template-columns: 1fr; } }
+
+
+/* HOTFIX V10 - tabla de proveedores de terreno */
+.proveedores-terreno-table table {
+  min-width: max(100%, 900px) !important;
+}
+.proveedores-terreno-table th:last-child,
+.proveedores-terreno-table td:last-child {
+  width: 108px !important;
+  min-width: 108px !important;
+  max-width: 108px !important;
+  text-align: center !important;
+}

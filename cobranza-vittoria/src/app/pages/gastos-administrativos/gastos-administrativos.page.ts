@@ -13,6 +13,19 @@ import { MaestraService } from '../../core/services/maestra.service';
   styleUrl: './gastos-administrativos.page.css'
 })
 export class GastosAdministrativosPage implements OnInit {
+  modalOpen = false;
+
+  abrirModalNuevo(): void {
+    this.reset();
+    this.modalOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarModal(): void {
+    this.modalOpen = false;
+    this.cdr.detectChanges();
+  }
+
   rows: any[] = [];
   categorias: any[] = [];
   proveedores: any[] = [];
@@ -179,6 +192,7 @@ export class GastosAdministrativosPage implements OnInit {
   }
 
   edit(row: any): void {
+    this.modalOpen = true;
     const id = this.readValue<number>(row, 'idGastoAdministrativo', 'IdGastoAdministrativo');
     if (!id) return;
 
@@ -257,12 +271,11 @@ export class GastosAdministrativosPage implements OnInit {
     };
 
     this.gastosService.guardarGasto(payload).subscribe({
-      next: res => {
-        const id = res?.idGastoAdministrativo ?? res?.IdGastoAdministrativo ?? this.form.idGastoAdministrativo;
-        this.form.idGastoAdministrativo = id;
+      next: () => {
         this.notifications.show('Gasto administrativo guardado correctamente.', 'success');
+        this.reset();
+        this.cerrarModal();
         this.load();
-        if (id) this.loadDocumentos(id);
       },
       error: err => this.notifications.show(err?.error?.message || 'No se pudo guardar el gasto administrativo.', 'error')
     });

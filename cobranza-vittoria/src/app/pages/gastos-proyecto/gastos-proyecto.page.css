@@ -58,3 +58,8 @@ textarea { width: 100%; min-height: 108px; resize: vertical; }
 }
 @media (max-width: 980px) { .gasto-proyecto-filters { grid-template-columns: 1fr; } }
 @media (max-width: 760px) { .gasto-proyecto-summary-grid { grid-template-columns: 1fr; } .doc-item { flex-direction: column; align-items: flex-start; } }
+
+
+/* HOTFIX DISEÑO V8 */
+.actions-col { width: 82px !important; min-width: 82px !important; max-width: 82px !important; }
+.table-wrap table { min-width: max(100%, 1180px); }

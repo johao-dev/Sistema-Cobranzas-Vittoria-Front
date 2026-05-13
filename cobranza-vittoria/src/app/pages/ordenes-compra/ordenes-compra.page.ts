@@ -21,6 +21,8 @@ export class OrdenesCompraPage implements OnInit {
   detalleRq: any = null;
   detalleOc: any = null;
   msg = '';
+  flujoModalOpen = false;
+  detalleModalOpen = false;
 
   form: any = {
     numeroOrdenCompra: '',
@@ -42,6 +44,22 @@ export class OrdenesCompraPage implements OnInit {
     private seguridad: SeguridadService,
     private cdr: ChangeDetectorRef
   ) {}
+
+  onAccionRq(event: Event, row: any): void {
+    const value = (event.target as HTMLSelectElement).value;
+    (event.target as HTMLSelectElement).value = '';
+    if (value === 'procesar') this.procesarRq(row);
+  }
+
+  cerrarFlujoModal(): void {
+    this.flujoModalOpen = false;
+    this.cdr.detectChanges();
+  }
+
+  cerrarDetalleModal(): void {
+    this.detalleModalOpen = false;
+    this.cdr.detectChanges();
+  }
 
   ngOnInit() {
     this.load();
@@ -71,6 +89,8 @@ export class OrdenesCompraPage implements OnInit {
       next: (x: any) => {
         this.detalleRq = x;
         this.detalleOc = null;
+        this.flujoModalOpen = true;
+        this.detalleModalOpen = false;
 
         const req = x?.requerimiento;
         const items = x?.items || [];
@@ -108,6 +128,8 @@ export class OrdenesCompraPage implements OnInit {
       next: (x: any) => {
         this.detalleOc = x;
         this.detalleRq = null;
+        this.detalleModalOpen = true;
+        this.flujoModalOpen = false;
         this.cdr.detectChanges();
       },
       error: () => {
@@ -146,6 +168,7 @@ export class OrdenesCompraPage implements OnInit {
       next: () => {
         this.msg = 'Orden creada correctamente.';
         this.resetFormulario();
+        this.flujoModalOpen = false;
         this.load();
       },
       error: (e: any) => { this.msg = e?.error?.message || 'No se pudo guardar la orden.'; this.cdr.detectChanges(); }
@@ -154,6 +177,7 @@ export class OrdenesCompraPage implements OnInit {
 
   resetFormulario() {
     this.detalleRq = null;
+    this.flujoModalOpen = false;
     this.form = {
       numeroOrdenCompra: '',
       idRequerimiento: null,

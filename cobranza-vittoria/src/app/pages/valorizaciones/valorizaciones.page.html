@@ -95,7 +95,7 @@
             <th>Especialidad</th>
             <th>Moneda</th>
             <th>Cotización</th>
-            <th class="actions-col">Acciones</th>
+            <th class="actions-col actions-col--select">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -105,9 +105,13 @@
             <td>{{ row.especialidad || '-' }}</td>
             <td>{{ row.moneda || '-' }}</td>
             <td>{{ formatMoney(row.montoCotizacion, row.moneda) }}</td>
-            <td><div class="actions actions--end">
-              <button class="btn btn-secondary" (click)="editarConfiguracion(row)">Editar</button>
-              <button class="btn btn-primary" (click)="crearDesdeConfiguracion(row)">Usar</button></div></td>
+            <td class="actions-col--select">
+              <select class="actions-select" (change)="onAccionConfiguracion($event, row)">
+                <option value="">Acciones</option>
+                <option value="edit">Editar</option>
+                <option value="usar">Usar</option>
+              </select>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -292,7 +296,7 @@
             <th>Garantía</th>
             <th>Transferido</th>
             <th>Fecha transferido</th>
-            <th class="actions-col">Acciones</th>
+            <th class="actions-col actions-col--select">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -307,14 +311,15 @@
             <td>{{ formatMoney(row.garantia, monedaActual) }}</td>
             <td>{{ formatMoney(row.montoTransferido, monedaActual) }}</td>
             <td>{{ row.fechaTransferencia | date:'dd/MM/yyyy' }}</td>
-            <td>
-              <div class="actions actions--stack-mobile actions--end">
-                <button class="btn btn-secondary small" (click)="abrirAdjuntarFacturas(row)">Adjuntar Facturas</button>
-                <button class="btn btn-danger small" (click)="eliminarFactura(row)">Eliminar factura</button>
-              </div>
-              <div class="attach-list" *ngIf="row.archivos?.length">
+            <td class="actions-col--select">
+              <select class="actions-select" (change)="onAccionFactura($event, row)">
+                <option value="">Acciones</option>
+                <option value="adjuntar">Adjuntar</option>
+                <option value="eliminar">Eliminar</option>
+              </select>
+              <div class="attach-list attach-list--compact" *ngIf="row.archivos?.length">
                 <button class="btn btn-ghost small" *ngFor="let a of row.archivos" (click)="downloadArchivo(row, a)">
-                  {{ a.nombreArchivo || 'Descargar PDF' }}
+                  PDF
                 </button>
               </div>
             </td>

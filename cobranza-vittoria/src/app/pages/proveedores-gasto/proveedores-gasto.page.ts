@@ -13,6 +13,19 @@ import { MaestraService } from '../../core/services/maestra.service';
   styleUrl: './proveedores-gasto.page.css'
 })
 export class ProveedoresGastoPage implements OnInit {
+  modalOpen = false;
+
+  abrirModalNuevo(): void {
+    this.reset();
+    this.modalOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarModal(): void {
+    this.modalOpen = false;
+    this.cdr.detectChanges();
+  }
+
   rows: any[] = [];
   categorias: any[] = [];
   loading = false;
@@ -83,6 +96,7 @@ export class ProveedoresGastoPage implements OnInit {
   }
 
   edit(row: any): void {
+    this.modalOpen = true;
     this.form = {
       idProveedorGastoAdministrativo: this.readValue(row, 'idProveedorGastoAdministrativo', 'IdProveedorGastoAdministrativo'),
       idCategoriaGasto: Number(this.readValue(row, 'idCategoriaGasto', 'IdCategoriaGasto')) || null,
@@ -144,10 +158,18 @@ export class ProveedoresGastoPage implements OnInit {
       next: () => {
         this.notifications.show('Proveedor de gasto guardado correctamente.', 'success');
         this.reset();
+        this.cerrarModal();
         this.load();
       },
       error: err => this.notifications.show(err?.error?.message || 'No se pudo guardar el proveedor de gasto.', 'error')
     });
+  }
+
+  onAccion(event: Event, row: any): void {
+    const value = (event.target as HTMLSelectElement).value;
+    (event.target as HTMLSelectElement).value = '';
+    if (value === 'edit') this.edit(row);
+    if (value === 'estado') this.remove(row);
   }
 
   remove(row: any): void {
@@ -159,6 +181,7 @@ export class ProveedoresGastoPage implements OnInit {
       next: () => {
         this.notifications.show('Proveedor desactivado correctamente.', 'success');
         if (this.form.idProveedorGastoAdministrativo === id) this.reset();
+        this.cerrarModal();
         this.load();
       },
       error: err => this.notifications.show(err?.error?.message || 'No se pudo desactivar el proveedor.', 'error')

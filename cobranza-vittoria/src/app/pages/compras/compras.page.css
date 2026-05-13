@@ -310,3 +310,37 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* HOTFIX DISEÑO V9 */
+.compras-list-panel { margin-top: 0; }
+.compras-cerradas-panel { margin-top: 22px; }
+.compras-cerradas-table table { min-width: max(100%, 920px) !important; }
+.docs-table table { min-width: max(100%, 820px) !important; }
+.docs-table th:last-child,
+.docs-table td:last-child { text-align: center; }
+.purchase-table table { min-width: max(100%, 1000px) !important; }
+
+
+/* HOTFIX V10 - compras compactas */
+.compras-cerradas-table table {
+  min-width: max(100%, 960px) !important;
+}
+.purchase-table table {
+  min-width: max(100%, 980px) !important;
+}
+.purchase-action-col {
+  width: 132px !important;
+  min-width: 132px !important;
+  max-width: 132px !important;
+  text-align: center !important;
+}
+.action-btn--price {
+  min-width: 112px !important;
+  max-width: 118px !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+.docs-table table {
+  min-width: max(100%, 760px) !important;
+}

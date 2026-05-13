@@ -7,7 +7,7 @@
 
 <div class="split split--form admin-split">
   <section class="panel">
-    <div class="panel-title">Listado</div>
+    <div class="panel-title-row"><div class="panel-title">Listado</div><button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button></div>
 
     <div class="filters compact-filters compact-filters--one">
       <div class="field">
@@ -23,7 +23,7 @@
     <div *ngIf="loading" class="empty-state">Cargando proveedores...</div>
     <div *ngIf="!loading && !rows.length" class="empty-state">No hay proveedores de terreno registrados.</div>
 
-    <div *ngIf="!loading && rows.length" class="table-wrap table-wrap--sticky-actions">
+    <div *ngIf="!loading && rows.length" class="table-wrap table-wrap--sticky-actions table-wrap--compact proveedores-terreno-table">
       <table>
         <thead>
           <tr>
@@ -32,7 +32,7 @@
             <th>Teléfono</th>
             <th>Correo</th>
             <th>Estado</th>
-            <th class="actions-col">Acciones</th>
+            <th class="actions-col actions-col--select">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -42,7 +42,7 @@
             <td>{{ readValue(row, 'telefono', 'Telefono') || '-' }}</td>
             <td>{{ readValue(row, 'correo', 'Correo') || '-' }}</td>
             <td><span class="badge" [class.badge--ok]="readValue(row, 'activo', 'Activo')" [class.badge--neutral]="!readValue(row, 'activo', 'Activo')">{{ readValue(row, 'activo', 'Activo') ? 'Activo' : 'Inactivo' }}</span></td>
-            <td>
+            <td class="actions-col--select">
               <select class="actions-select" (change)="onAccion($event, row)">
                 <option value="">Acciones</option>
                 <option value="edit">Editar</option>
@@ -55,7 +55,9 @@
     </div>
   </section>
 
-  <section class="panel panel--form">
+  <div class="design-modal-backdrop" *ngIf="modalOpen" (click)="cerrarModal()"></div>
+  <section class="panel panel--form design-modal-card" *ngIf="modalOpen" (click)="$event.stopPropagation()">
+    <button type="button" class="modal-close" (click)="cerrarModal()" aria-label="Cerrar">×</button>
     <div class="panel-title">Formulario</div>
 
     <div class="form-grid two">

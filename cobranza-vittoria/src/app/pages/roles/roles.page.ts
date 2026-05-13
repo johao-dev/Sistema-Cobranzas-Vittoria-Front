@@ -12,6 +12,19 @@ import { NotificationService } from '../../core/services/notification.service';
   styleUrl: './roles.page.css'
 })
 export class RolesPage implements OnInit {
+  modalOpen = false;
+
+  abrirModalNuevo(): void {
+    this.reset();
+    this.modalOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarModal(): void {
+    this.modalOpen = false;
+    this.cdr.detectChanges();
+  }
+
   rows: any[] = [];
   filtroActivo: boolean | null = null;
   msg = '';
@@ -33,6 +46,7 @@ export class RolesPage implements OnInit {
   }
 
   edit(row: any) {
+    this.modalOpen = true;
     this.form = {
       idRol: row.idRol ?? null,
       nombreRol: row.nombreRol ?? row.nombre ?? '',
@@ -65,6 +79,7 @@ export class RolesPage implements OnInit {
         this.msg = payload.idRol ? 'Rol actualizado correctamente.' : 'Rol guardado correctamente.';
         this.notifyService.show(this.msg, 'success');
         this.reset();
+        this.cerrarModal();
         this.load();
         this.cdr.detectChanges();
       },

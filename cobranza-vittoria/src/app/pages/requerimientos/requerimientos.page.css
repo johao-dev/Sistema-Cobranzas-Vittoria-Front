@@ -82,3 +82,10 @@
   .detail-card__head{flex-direction:column;align-items:stretch;}
   .compact-field{max-width:none;}
 }
+
+
+/* HOTFIX DISEÑO V9 */
+.requer-list-panel { margin-top: 0; }
+.requer-table table { min-width: max(100%, 1040px) !important; }
+.requer-form-panel { position: fixed !important; }
+.detail-toolbar { gap: 8px; flex-wrap: wrap; }

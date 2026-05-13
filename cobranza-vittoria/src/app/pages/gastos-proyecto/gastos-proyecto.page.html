@@ -14,7 +14,7 @@
 
 <div class="split split--form gasto-proyecto-layout">
   <section class="panel gasto-proyecto-list-panel">
-    <div class="panel-title">Listado</div>
+    <div class="panel-title-row"><div class="panel-title">Listado</div><button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button></div>
 
     <div class="filters gasto-proyecto-filters">
       <div class="field">
@@ -87,7 +87,9 @@
     </div>
   </section>
 
-  <section class="panel panel--form gasto-proyecto-form-panel">
+  <div class="design-modal-backdrop" *ngIf="modalOpen" (click)="cerrarModal()"></div>
+  <section class="panel panel--form gasto-proyecto-form-panel design-modal-card" *ngIf="modalOpen" (click)="$event.stopPropagation()">
+    <button type="button" class="modal-close" (click)="cerrarModal()" aria-label="Cerrar">×</button>
     <div class="panel-title">{{ editandoId ? 'Editar registro' : 'Nuevo registro' }}</div>
 
     <div class="form-grid two gasto-proyecto-form-grid">

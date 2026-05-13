@@ -13,6 +13,19 @@ import { ProveedoresTerrenoService } from '../../core/services/proveedores-terre
   styleUrl: './proveedores-terreno.page.css'
 })
 export class ProveedoresTerrenoPage implements OnInit {
+  modalOpen = false;
+
+  abrirModalNuevo(): void {
+    this.reset();
+    this.modalOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarModal(): void {
+    this.modalOpen = false;
+    this.cdr.detectChanges();
+  }
+
   rows: any[] = [];
   loading = false;
   filtroActivo: string = 'true';
@@ -64,6 +77,7 @@ export class ProveedoresTerrenoPage implements OnInit {
   }
 
   edit(row: any): void {
+    this.modalOpen = true;
     this.form = {
       idProveedorTerreno: this.readValue(row, 'idProveedorTerreno', 'IdProveedorTerreno'),
       razonSocial: this.readValue(row, 'razonSocial', 'RazonSocial') ?? '',
@@ -115,6 +129,7 @@ export class ProveedoresTerrenoPage implements OnInit {
       next: () => {
         this.notifications.show('Proveedor de terreno guardado correctamente.', 'success');
         this.reset();
+        this.cerrarModal();
         this.load();
       },
       error: err => this.notifications.show(err?.error?.message || 'No se pudo guardar el proveedor de terreno.', 'error')

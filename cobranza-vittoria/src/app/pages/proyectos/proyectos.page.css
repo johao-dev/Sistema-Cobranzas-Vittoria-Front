@@ -63,3 +63,8 @@ textarea {
 .cotizacion-materiales-wrap tfoot th { background: #f3f5fb; }
 
 .proyectos-table__money--materials { color: #1f2937; }
+
+
+/* HOTFIX DISEÑO V8 */
+.actions-col { width: 82px !important; min-width: 82px !important; max-width: 82px !important; }
+.table-wrap table { min-width: max(100%, 1180px); }

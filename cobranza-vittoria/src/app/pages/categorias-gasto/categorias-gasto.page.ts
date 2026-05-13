@@ -12,6 +12,19 @@ import { NotificationService } from '../../core/services/notification.service';
   styleUrl: './categorias-gasto.page.css'
 })
 export class CategoriasGastoPage implements OnInit {
+  modalOpen = false;
+
+  abrirModalNuevo(): void {
+    this.reset();
+    this.modalOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarModal(): void {
+    this.modalOpen = false;
+    this.cdr.detectChanges();
+  }
+
   rows: any[] = [];
   loading = false;
   filtroActivo: string = 'true';
@@ -49,6 +62,7 @@ export class CategoriasGastoPage implements OnInit {
   }
 
   edit(row: any): void {
+    this.modalOpen = true;
     this.form = {
       idCategoriaGasto: row.idCategoriaGasto,
       nombre: row.nombre ?? '',
@@ -74,10 +88,18 @@ export class CategoriasGastoPage implements OnInit {
       next: () => {
         this.notifications.show('Categoría guardada correctamente.', 'success');
         this.reset();
+        this.cerrarModal();
         this.load();
       },
       error: err => this.notifications.show(err?.error?.message || 'No se pudo guardar la categoría.', 'error')
     });
+  }
+
+  onAccion(event: Event, row: any): void {
+    const value = (event.target as HTMLSelectElement).value;
+    (event.target as HTMLSelectElement).value = '';
+    if (value === 'edit') this.edit(row);
+    if (value === 'estado') this.remove(row);
   }
 
   remove(row: any): void {
@@ -86,6 +108,7 @@ export class CategoriasGastoPage implements OnInit {
       next: () => {
         this.notifications.show('Categoría desactivada correctamente.', 'success');
         if (this.form.idCategoriaGasto === row.idCategoriaGasto) this.reset();
+        this.cerrarModal();
         this.load();
       },
       error: err => this.notifications.show(err?.error?.message || 'No se pudo desactivar la categoría.', 'error')

@@ -20,6 +20,8 @@ export class RequerimientosPage implements OnInit {
   materiales: any[] = [];
   usuarios: any[] = [];
   detalle: any = null;
+  formModalOpen = false;
+  detalleModalOpen = false;
 
   filtros: any = {
     estado: '',
@@ -74,6 +76,36 @@ export class RequerimientosPage implements OnInit {
     private notifyService: NotificationService,
     private cdr: ChangeDetectorRef
   ) {}
+
+  abrirModalNuevo(): void {
+    this.reset();
+    this.formModalOpen = true;
+    this.detalleModalOpen = false;
+    this.cdr.detectChanges();
+  }
+
+  cerrarFormModal(): void {
+    this.formModalOpen = false;
+    this.cdr.detectChanges();
+  }
+
+  cerrarDetalleModal(): void {
+    this.detalleModalOpen = false;
+    this.cdr.detectChanges();
+  }
+
+  onAccionListado(event: Event, row: any): void {
+    const value = (event.target as HTMLSelectElement).value;
+    (event.target as HTMLSelectElement).value = '';
+    if (value === 'ver') this.view(row);
+  }
+
+  onAccionItem(event: Event, index: number): void {
+    const value = (event.target as HTMLSelectElement).value;
+    (event.target as HTMLSelectElement).value = '';
+    if (value === 'edit') this.abrirModalEspecialidades(index);
+    if (value === 'remove') this.removeItem(index);
+  }
 
   ngOnInit(): void {
     this.setFormDefaults(true);
@@ -200,6 +232,8 @@ export class RequerimientosPage implements OnInit {
         this.puedeEditarDetalle = !!x?.puedeEditar;
         const estado = (x?.requerimiento?.estado || '').toUpperCase();
         this.puedeEnviarOC = estado === 'REGISTRADO';
+        this.detalleModalOpen = true;
+        this.formModalOpen = false;
         this.cdr.detectChanges();
       },
       error: () => {
@@ -244,6 +278,9 @@ export class RequerimientosPage implements OnInit {
     };
 
     this.msg = 'Editando requerimiento.';
+    this.formModalOpen = true;
+    this.detalleModalOpen = false;
+    this.cdr.detectChanges();
   }
 
   enviarAOC(): void {
@@ -330,6 +367,7 @@ export class RequerimientosPage implements OnInit {
         this.notifyService.show(this.msg, 'success');
 
         this.reset();
+        this.formModalOpen = false;
         this.load();
 
         if (estabaEditando && idActual) {

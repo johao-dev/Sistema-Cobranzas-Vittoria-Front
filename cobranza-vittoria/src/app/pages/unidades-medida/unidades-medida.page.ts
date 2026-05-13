@@ -12,6 +12,19 @@ import { NotificationService } from '../../core/services/notification.service';
   styleUrl: './unidades-medida.page.css'
 })
 export class UnidadesMedidaPage implements OnInit {
+  modalOpen = false;
+
+  abrirModalNuevo(): void {
+    this.reset();
+    this.modalOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarModal(): void {
+    this.modalOpen = false;
+    this.cdr.detectChanges();
+  }
+
   rows: any[] = [];
   filtroActivo: boolean | null = null;
   msg = '';
@@ -33,6 +46,7 @@ export class UnidadesMedidaPage implements OnInit {
   }
 
   edit(row: any) {
+    this.modalOpen = true;
     this.form = {
       idUnidadMedida: row.idUnidadMedida ?? null,
       codigo: row.codigo ?? '',
@@ -71,6 +85,7 @@ export class UnidadesMedidaPage implements OnInit {
         this.msg = payload.idUnidadMedida ? 'Unidad de medida actualizada correctamente.' : 'Unidad de medida guardada correctamente.';
         this.notifyService.show(this.msg, 'success');
         this.reset();
+        this.cerrarModal();
         this.load();
         this.cdr.detectChanges();
       },

@@ -36,6 +36,19 @@ type Row = {
   styleUrl: './gastos-proyecto.page.css'
 })
 export class GastosProyectoPage implements OnInit {
+  modalOpen = false;
+
+  abrirModalNuevo(): void {
+    this.limpiar();
+    this.modalOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarModal(): void {
+    this.modalOpen = false;
+    this.cdr.detectChanges();
+  }
+
   private readonly destroyRef = inject(DestroyRef);
   private syncingFromDolares = false;
 
@@ -168,19 +181,18 @@ export class GastosProyectoPage implements OnInit {
     };
 
     this.gastoProyectoService.guardar(this.tipoModulo, payload).subscribe({
-      next: (res: any) => {
-        const id = res?.idGastoProyecto ?? res?.IdGastoProyecto ?? this.form.idGastoProyecto;
-        this.form.idGastoProyecto = id;
-        this.editandoId = id;
+      next: () => {
         this.notifications.show('Registro guardado correctamente.', 'success');
+        this.limpiar();
+        this.cerrarModal();
         this.load();
-        if (id) this.loadDocumentos(id);
       },
       error: err => this.notifications.show(err?.error?.message || 'No se pudo guardar el registro.', 'error')
     });
   }
 
   editar(row: Row): void {
+    this.modalOpen = true;
     const id = Number(row.idGastoProyecto || 0);
     if (!id) return;
     this.gastoProyectoService.obtener(this.tipoModulo, id).subscribe({

@@ -235,3 +235,13 @@
 .resumen-row--danger span, .resumen-row--danger strong { color:#b91c1c; }
 .table-wrap--spacious table th, .table-wrap--spacious table td { padding: 14px 18px !important; white-space: nowrap; }
 @media (max-width: 780px) { .resumen-row { grid-template-columns:1fr; } .resumen-row strong, .resumen-row small { text-align:left; } }
+
+
+/* HOTFIX V10 - acciones valorizaciones */
+.layout-stack .table-wrap.table-wrap--sticky-actions td:last-child,
+.layout-stack .table-wrap.table-wrap--sticky-actions th:last-child {
+  width: 108px !important;
+  min-width: 108px !important;
+  max-width: 108px !important;
+  text-align: center !important;
+}

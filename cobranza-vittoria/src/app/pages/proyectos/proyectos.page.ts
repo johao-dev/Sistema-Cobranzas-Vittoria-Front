@@ -14,6 +14,19 @@ import { CotizacionMaterialesService } from '../../core/services/cotizacion-mate
   styleUrls: ['./proyectos.page.css']
 })
 export class ProyectosPage implements OnInit {
+  modalOpen = false;
+
+  abrirModalNuevo(): void {
+    this.reset(false);
+    this.modalOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarModal(): void {
+    this.modalOpen = false;
+    this.cdr.detectChanges();
+  }
+
   rows: any[] = [];
   especialidades: any[] = [];
   cotizacionItems: any[] = [];
@@ -76,6 +89,7 @@ export class ProyectosPage implements OnInit {
   }
 
   edit(row: any): void {
+    this.modalOpen = true;
     this.form = {
       idProyecto: row.idProyecto,
       nombreProyecto: row.nombreProyecto ?? '',
@@ -123,6 +137,7 @@ export class ProyectosPage implements OnInit {
 
       this.notifyService.show(this.msg, 'success');
       this.reset(false);
+      this.cerrarModal();
       await this.load();
     } catch (e: any) {
       this.msg = e?.error?.message || 'No se pudo guardar el proyecto.';
