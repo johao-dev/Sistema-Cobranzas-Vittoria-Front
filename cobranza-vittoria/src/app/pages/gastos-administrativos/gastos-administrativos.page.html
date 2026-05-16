@@ -1,7 +1,7 @@
 <div class="page-header">
   <div>
     <div class="page-title">Gastos administrativos</div>
-    <div class="page-subtitle">Registro de gastos, filtros rápidos y control de factura y pago.</div>
+    <div class="page-subtitle">Registro de gastos, filtros rápidos y carga de archivos.</div>
   </div>
 </div>
 
@@ -19,7 +19,7 @@
     <div class="hero-stat__value">{{ rows.length }}</div>
   </article>
   <article class="hero-stat">
-    <div class="hero-stat__label">Sumatoria de pagos</div>
+    <div class="hero-stat__label">Total registrado</div>
     <div class="hero-stat__value">{{ sumatoriaPagosVisibles | number:'1.2-2' }}</div>
   </article>
 </div>
@@ -69,7 +69,6 @@
             <th>Monto</th>
             <th>Moneda</th>
             <th>Facturas</th>
-            <th>Pagos</th>
                         <th class="actions-col">Acciones</th>
           </tr>
         </thead>
@@ -82,12 +81,11 @@
             <td class="table-number">{{ (readValue(row, 'monto', 'Monto') || 0) | number:'1.2-2' }}</td>
             <td>{{ readValue(row, 'moneda', 'Moneda') || 'PEN' }}</td>
             <td>{{ readValue(row, 'totalFacturas', 'TotalFacturas') || 0 }}</td>
-            <td>{{ readValue(row, 'totalPagos', 'TotalPagos') || 0 }}</td>
             <td>
               <select class="actions-select" (change)="onAccion($event, row)">
                 <option value="">Acciones</option>
                 <option value="edit">Editar</option>
-                <option value="archivos">Archivos</option>
+                <option value="archivos">Subir archivos</option>
                 <option value="estado" [disabled]="!readValue(row, 'activo', 'Activo')">Desactivar</option>
               </select>
             </td>
@@ -159,14 +157,14 @@
       <button class="btn btn-ghost" (click)="reset()">Limpiar</button>
     </div>
 
-    <div class="form-tip" *ngIf="!form.idGastoAdministrativo">Los archivos se gestionan desde el botón <strong>Archivos</strong> de la lista, después de guardar el gasto.</div>
+    <div class="form-tip" *ngIf="!form.idGastoAdministrativo">Guarda el gasto y luego usa <strong>Acciones &gt; Archivos</strong> para subir facturas o sustentos.</div>
 
     <div class="documents-grid" *ngIf="form.idGastoAdministrativo && archivosTargetRow">
       <section class="documents-card">
-        <div class="documents-card__title">Facturas</div>
+        <div class="documents-card__title">Facturas / sustentos</div>
         <input type="file" accept=".pdf,application/pdf" multiple (change)="onFilesSelected($event, 'Factura')" />
         <div class="toolbar toolbar--compact">
-          <button class="btn btn-secondary" (click)="upload('Factura')">Subir factura</button>
+          <button class="btn btn-secondary" (click)="upload('Factura')">Subir archivo</button>
         </div>
         <div class="docs-list" *ngIf="documentosPorTipo('Factura').length; else noFacturaDocs">
           <a class="doc-item" *ngFor="let doc of documentosPorTipo('Factura')" [href]="downloadUrl(doc)" target="_blank">
@@ -175,26 +173,10 @@
           </a>
         </div>
         <ng-template #noFacturaDocs>
-          <div class="empty-inline">Aún no hay facturas subidas.</div>
+          <div class="empty-inline">Aún no hay archivos subidos.</div>
         </ng-template>
       </section>
 
-      <section class="documents-card">
-        <div class="documents-card__title">Pagos</div>
-        <input type="file" accept=".pdf,application/pdf" multiple (change)="onFilesSelected($event, 'Pago')" />
-        <div class="toolbar toolbar--compact">
-          <button class="btn btn-secondary" (click)="upload('Pago')">Subir pago</button>
-        </div>
-        <div class="docs-list" *ngIf="documentosPorTipo('Pago').length; else noPagoDocs">
-          <a class="doc-item" *ngFor="let doc of documentosPorTipo('Pago')" [href]="downloadUrl(doc)" target="_blank">
-            <span>{{ readValue(doc, 'nombreArchivo', 'NombreArchivo') }}</span>
-            <span class="doc-item__meta">{{ readValue(doc, 'fechaCreacion', 'FechaCreacion') | date:'dd/MM/yyyy' }}</span>
-          </a>
-        </div>
-        <ng-template #noPagoDocs>
-          <div class="empty-inline">Aún no hay pagos subidos.</div>
-        </ng-template>
-      </section>
     </div>
     <div class="toolbar toolbar--compact" *ngIf="form.idGastoAdministrativo && archivosTargetRow">
       <button class="btn btn-ghost" (click)="cerrarArchivos()">Cerrar archivos</button>

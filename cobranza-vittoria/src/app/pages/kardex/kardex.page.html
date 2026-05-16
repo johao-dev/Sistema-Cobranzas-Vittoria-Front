@@ -10,6 +10,14 @@
 
   <div class="form-grid four">
     <div class="field">
+      <label>Compra</label>
+      <select [(ngModel)]="filtros.idCompra">
+        <option [ngValue]="null">Todas</option>
+        <option *ngFor="let c of comprasRealizadas" [ngValue]="c.idCompra">{{ c.numeroCompra }}</option>
+      </select>
+    </div>
+
+    <div class="field">
       <label>Material</label>
       <select [(ngModel)]="filtros.idMaterial">
         <option [ngValue]="null">Todos</option>
@@ -56,16 +64,7 @@
       <select [(ngModel)]="salida.idCompra" (ngModelChange)="compraSalidaChange()">
         <option [ngValue]="null">Seleccionar</option>
         <option *ngFor="let c of comprasRealizadas" [ngValue]="c.idCompra">
-          {{ c.numeroCompra }} - {{ c.especialidad }}
-        </option>
-      </select>
-    </div>
-    <div class="field">
-      <label>Material</label>
-      <select [(ngModel)]="salida.idMaterial" (ngModelChange)="materialSalidaChange()">
-        <option [ngValue]="null">Seleccionar</option>
-        <option *ngFor="let m of materialesCompraSeleccionada" [ngValue]="m.idMaterial">
-          {{ m.material }}
+          {{ c.numeroCompra }} - RQ {{ c.numeroRequerimiento || '-' }}
         </option>
       </select>
     </div>
@@ -75,6 +74,15 @@
         <option [ngValue]="null">Seleccionar</option>
         <option *ngFor="let e of especialidades" [ngValue]="e.idEspecialidad">
           {{ e.nombre }}
+        </option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Material</label>
+      <select [(ngModel)]="salida.idMaterial" (ngModelChange)="materialSalidaChange()">
+        <option [ngValue]="null">Seleccionar</option>
+        <option *ngFor="let m of materialesCompraSeleccionada" [ngValue]="m.idMaterial">
+          {{ m.material }}
         </option>
       </select>
     </div>
@@ -109,6 +117,7 @@
       <thead>
         <tr>
           <th>Compra</th>
+          <th>RQ</th>
           <th>Especialidad</th>
           <th>Fecha</th>
           <th>Material</th>
@@ -121,6 +130,7 @@
       <tbody>
         <tr *ngFor="let row of rowsAgrupadas; let i = index">
           <td>{{ row.numeroCompra || row.NumeroCompra || '-' }}</td>
+          <td>{{ row.numeroRequerimiento || row.NumeroRequerimiento || '-' }}</td>
           <td><strong *ngIf="esNuevoGrupo(i)">{{ row.especialidad || row.Especialidad || '-' }}</strong></td>
           <td>{{ row.fechaMovimiento || row.FechaMovimiento ? ((row.fechaMovimiento || row.FechaMovimiento) | date:'dd/MM/yyyy') : '-' }}</td>
           <td>{{ row.material || row.Material || '-' }}</td>

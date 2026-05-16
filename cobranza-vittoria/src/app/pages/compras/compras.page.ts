@@ -280,19 +280,8 @@ export class ComprasPage implements OnInit {
     this.recalcularItem(this.modalItem);
   }
 
-  onModalPrecioChange() {
-    if (!this.modalItem) return;
-    const cantidad = Number(this.modalItem.cantidad || 0);
-    const precio = Number(this.modalItem.precioUnitario || 0);
-    this.modalItem.total = this.round(cantidad * precio);
-    this.recalcularItem(this.modalItem);
-  }
-
   onModalTotalChange() {
     if (!this.modalItem) return;
-    const cantidad = Number(this.modalItem.cantidad || 0);
-    const total = Number(this.modalItem.total || 0);
-    this.modalItem.precioUnitario = cantidad > 0 ? this.round(total / cantidad) : 0;
     this.recalcularItem(this.modalItem);
   }
 
@@ -348,8 +337,8 @@ export class ComprasPage implements OnInit {
       this.msg = 'No hay ítems para registrar.';
       return;
     }
-    if (this.itemPrecios.some(x => !Number(x.total || 0) || !Number(x.precioUnitario || 0))) {
-      this.msg = 'Debes colocar precio a todos los ítems.';
+    if (this.itemPrecios.some(x => !Number(x.total || 0))) {
+      this.msg = 'Debes colocar el monto total a todos los ítems.';
       return;
     }
 
@@ -369,7 +358,7 @@ export class ComprasPage implements OnInit {
       items: this.itemPrecios.map(x => ({
         idMaterial: Number(x.idMaterial),
         cantidad: Number(x.cantidad),
-        precioUnitario: Number(x.precioUnitario || 0)
+        precioUnitario: Number(x.cantidad || 0) > 0 ? this.round(Number(x.total || 0) / Number(x.cantidad || 0)) : 0
       }))
     };
 

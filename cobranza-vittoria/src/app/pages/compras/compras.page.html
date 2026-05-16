@@ -131,7 +131,9 @@
       <div class="form-grid two purchase-register-grid">
         <div class="field auto-field"><label>Número compra</label><input [(ngModel)]="form.numeroCompra" readonly></div>
         <div class="field auto-field"><label>Fecha compra</label><input type="date" [(ngModel)]="form.fechaCompra" readonly></div>
-        <div class="field auto-field"><label>Total</label><input [value]="totalGeneral | number:'1.2-2'" readonly></div>
+        <div class="field auto-field"><label>Subtotal sin IGV</label><input [value]="subtotalGeneral | number:'1.2-2'" readonly></div>
+        <div class="field auto-field"><label>Monto IGV</label><input [value]="igvGeneral | number:'1.2-2'" readonly></div>
+        <div class="field auto-field"><label>Monto total</label><input [value]="totalGeneral | number:'1.2-2'" readonly></div>
         <div class="field full-width">
           <button class="btn btn-primary" (click)="registrarCompra()">Registrar compra</button>
           <button class="btn btn-ghost" (click)="resetForm()">Cancelar / Limpiar</button>
@@ -156,13 +158,12 @@
 
     <div class="table-wrap table-wrap--medium" *ngIf="detalleCompra.items?.length">
       <table>
-        <thead><tr><th>Material</th><th>Unidad</th><th>Cantidad</th><th>Precio Unitario</th><th>Subtotal</th></tr></thead>
+        <thead><tr><th>Material</th><th>Unidad</th><th>Cantidad</th><th>Subtotal</th></tr></thead>
         <tbody>
           <tr *ngFor="let item of detalleCompra.items">
             <td>{{ item.material || item.Material }}</td>
             <td>{{ item.unidadMedida || item.UnidadMedida }}</td>
             <td>{{ item.cantidad || item.Cantidad }}</td>
-            <td class="table-number">{{ (item.precioUnitario || item.PrecioUnitario || 0) | number:'1.2-2' }}</td>
             <td class="table-number">{{ (item.subtotal || item.Subtotal || (item.cantidad * item.precioUnitario) || 0) | number:'1.2-2' }}</td>
           </tr>
         </tbody>
@@ -212,8 +213,8 @@
   <div class="modal-card purchase-modal">
     <div class="modal-header purchase-modal__header">
       <div>
-        <div class="panel-title purchase-modal__title">Precio para {{ modalItem.material }}</div>
-        <div class="modal-sub">Completa el cálculo de la línea y adjunta archivos de sustento si los tienes a la mano.</div>
+        <div class="panel-title purchase-modal__title">Monto total para {{ modalItem.material }}</div>
+        <div class="modal-sub">Ingresa el monto total. El subtotal sin IGV y el IGV se calculan automáticamente.</div>
       </div>
       <button class="modal-close" type="button" (click)="cerrarModal()">×</button>
     </div>
@@ -247,24 +248,17 @@
 
     <div class="form-grid two purchase-modal__grid">
       <div class="field">
-        <label>Precio unitario</label>
-        <input type="number" [(ngModel)]="modalItem.precioUnitario" (ngModelChange)="onModalPrecioChange()">
+        <label>Subtotal sin IGV</label>
+        <input type="number" [ngModel]="modalItem.subtotalSinIgv" readonly>
+      </div>
+      <div class="field">
+        <label>Monto IGV</label>
+        <input type="number" [ngModel]="modalItem.montoIgv" readonly>
       </div>
       <div class="field">
         <label>Monto total</label>
         <input type="number" [(ngModel)]="modalItem.total" (ngModelChange)="onModalTotalChange()">
       </div>
-
-      <ng-container *ngIf="modalItem.incluyeIgv">
-        <div class="field">
-          <label>Subtotal sin IGV</label>
-          <input type="number" [ngModel]="modalItem.subtotalSinIgv" readonly>
-        </div>
-        <div class="field">
-          <label>Monto IGV</label>
-          <input type="number" [ngModel]="modalItem.montoIgv" readonly>
-        </div>
-      </ng-container>
 
       <div class="field full-width">
         <label>Observación del ítem</label>
@@ -283,7 +277,7 @@
     </div>
 
     <div class="modal-footer">
-      <button class="btn btn-primary" (click)="guardarPrecioItem()">Guardar precio</button>
+      <button class="btn btn-primary" (click)="guardarPrecioItem()">Guardar monto</button>
       <button class="btn btn-ghost" (click)="cerrarModal()">Cancelar</button>
     </div>
   </div>

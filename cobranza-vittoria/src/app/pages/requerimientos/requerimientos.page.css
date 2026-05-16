@@ -89,3 +89,92 @@
 .requer-table table { min-width: max(100%, 1040px) !important; }
 .requer-form-panel { position: fixed !important; }
 .detail-toolbar { gap: 8px; flex-wrap: wrap; }
+
+/* HOTFIX V12 - Requerimientos: agregar material solo en nuevo requerimiento y detalle ordenado */
+.form-modal-head,
+.detail-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+  padding-right: 46px;
+}
+.form-modal-head .panel-title { margin-bottom: 6px; }
+.form-modal-head .helper-text { margin-bottom: 0; }
+.form-modal-head .btn,
+.detail-actions .btn { white-space: nowrap; }
+.detail-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.detail-chips .list-chip { margin: 0; }
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+@media (max-width: 760px) {
+  .form-modal-head,
+  .detail-modal-head {
+    flex-direction: column;
+    padding-right: 42px;
+  }
+  .form-modal-head .btn,
+  .detail-actions .btn {
+    width: 100%;
+  }
+}
+
+
+/* HOTFIX V13 - Requerimientos: formulario como estaba + agregar ítem/material */
+.field-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.field-label-row label { margin: 0; }
+.btn-xs {
+  min-height: 32px;
+  padding: 7px 12px;
+  border-radius: 11px;
+  font-size: .82rem;
+  font-weight: 800;
+}
+.inline-material-card {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #f8f9ff;
+}
+.inline-material-card__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.inline-material-card__title {
+  font-weight: 900;
+  color: var(--ink);
+  font-size: 1rem;
+}
+.inline-material-actions {
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+.success-box--compact {
+  margin-top: 10px;
+  padding: 10px 12px;
+}
+@media (max-width: 760px) {
+  .field-label-row { align-items: flex-start; flex-direction: column; }
+  .field-label-row .btn { width: 100%; }
+  .inline-material-card__head { flex-direction: column; }
+}

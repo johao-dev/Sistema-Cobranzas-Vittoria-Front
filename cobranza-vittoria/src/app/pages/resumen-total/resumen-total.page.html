@@ -2,7 +2,7 @@
 <div class="page-header">
   <div>
     <div class="page-title">Resumen Total</div>
-    <div class="page-subtitle">Consulta el consolidado por proyecto. La cotización general, la cotización de materiales, valorizaciones, gastos y nuevos conceptos se recalculan según el proyecto seleccionado.</div>
+    <div class="page-subtitle">Consulta el consolidado por proyecto. La cotización general, la cotización de materiales, valorizaciones, gastos administrativos y nuevos conceptos se recalculan según el proyecto seleccionado.</div>
   </div>
   <div class="toolbar resumen-toolbar">
     <button class="btn btn-secondary" (click)="load()">Actualizar</button>
@@ -50,7 +50,7 @@
   <div class="kpi-card kpi-card--accent"><div class="kpi-label">Cotización general</div><div class="kpi-value">{{ formatMoney(cotizacionGeneral) }}</div></div>
   <div class="kpi-card"><div class="kpi-label">Cotización de materiales</div><div class="kpi-value">{{ formatMoney(totalCotizacionMateriales) }}</div></div>
   <div class="kpi-card"><div class="kpi-label">Valorizaciones</div><div class="kpi-value">{{ formatMoney(totalValorizaciones) }}</div></div>
-  <div class="kpi-card"><div class="kpi-label">Gastos</div><div class="kpi-value">{{ formatMoney(totalGastos) }}</div></div>
+  <div class="kpi-card"><div class="kpi-label">Gastos administrativos</div><div class="kpi-value">{{ formatMoney(totalGastos) }}</div></div>
   <div class="kpi-card"><div class="kpi-label">Terreno</div><div class="kpi-value">{{ formatMoney(totalTerreno) }}</div></div>
   <div class="kpi-card"><div class="kpi-label">Alcabala</div><div class="kpi-value">{{ formatMoney(totalAlcabala) }}</div></div>
   <div class="kpi-card"><div class="kpi-label">Marketing / Ventas</div><div class="kpi-value">{{ formatMoney(totalMarketing) }}</div></div>

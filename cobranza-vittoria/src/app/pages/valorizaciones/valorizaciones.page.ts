@@ -84,7 +84,7 @@ export class ValorizacionesPage implements OnInit {
   }
 
   get montoDetraccionCalculado(): number {
-    return this.redondear(Number(this.formDetalle.montoFactura || 0) * this.porcentajeDetraccionActual);
+    return Math.round(Number(this.formDetalle.montoFactura || 0) * this.porcentajeDetraccionActual);
   }
 
   get montoGarantiaCalculado(): number {

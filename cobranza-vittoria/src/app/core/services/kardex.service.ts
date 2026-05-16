@@ -9,6 +9,10 @@ export class KardexService {
   movimientos(filters?: any) {
     const params = new URLSearchParams();
 
+    if (filters?.idCompra !== undefined && filters?.idCompra !== null) {
+      params.append('idCompra', String(filters.idCompra));
+    }
+
     if (filters?.idMaterial !== undefined && filters?.idMaterial !== null) {
       params.append('idMaterial', String(filters.idMaterial));
     }

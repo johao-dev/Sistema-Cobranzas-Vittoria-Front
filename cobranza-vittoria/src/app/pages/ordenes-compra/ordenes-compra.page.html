@@ -15,13 +15,13 @@
   <div *ngIf="rqPendientesOc.length" class="table-wrap table-wrap--sticky-actions table-wrap--medium">
     <table>
       <thead>
-        <tr><th>RQ</th><th>Fecha</th><th>Especialidad</th><th>Proyecto</th><th>Solicitante</th><th>Estado</th><th class="actions-col actions-col--select">Acciones</th></tr>
+        <tr><th>RQ</th><th>Fecha</th><th>Especialidades</th><th>Proyecto</th><th>Solicitante</th><th>Estado</th><th class="actions-col actions-col--select">Acciones</th></tr>
       </thead>
       <tbody>
         <tr *ngFor="let row of rqPendientesOc">
           <td>{{ row.numeroRequerimiento }}</td>
           <td>{{ row.fechaRequerimiento | date:'dd/MM/yyyy' }}</td>
-          <td>{{ row.especialidad }}</td>
+          <td>{{ row.especialidades || row.especialidad || '-' }}</td>
           <td>{{ row.nombreProyecto }}</td>
           <td>{{ row.solicitante }}</td>
           <td><span class="badge badge--pending">{{ row.estado }}</span></td>
@@ -39,7 +39,7 @@
   <div class="panel panel-embedded">
     <div class="panel-title-row">
       <div class="panel-title">Órdenes de compra generadas</div>
-      <button *ngIf="ordenesCreadas.length" class="btn btn-secondary btn-sm" (click)="exportarPdfListado()">Exportar PDF</button>
+      
     </div>
 
     <div *ngIf="!ordenesCreadas.length" class="empty-state">
@@ -49,18 +49,23 @@
     <div *ngIf="ordenesCreadas.length" class="table-wrap table-wrap--sticky-actions table-wrap--medium">
       <table id="tabla-ordenes-compra-generadas-export">
         <thead>
-          <tr><th>N° O.C.</th><th>Fecha</th><th>RQ</th><th>Proveedor</th><th>Proyecto</th><th>Estado</th><th class="actions-col actions-col--select">Acciones</th></tr>
+          <tr><th>N° O.C.</th><th>Fecha</th><th>RQ</th><th>Especialidades</th><th>Proveedor</th><th>Proyecto</th><th>Estado</th><th class="actions-col actions-col--select">Acciones</th></tr>
         </thead>
         <tbody>
           <tr *ngFor="let row of ordenesCreadas">
             <td>{{ row.numeroOrdenCompra }}</td>
             <td>{{ row.fechaOrdenCompra | date:'dd/MM/yyyy' }}</td>
             <td>{{ row.numeroRequerimiento || '-' }}</td>
+            <td>{{ row.especialidades || row.especialidad || '-' }}</td>
             <td>{{ row.proveedor || '-' }}</td>
             <td>{{ row.nombreProyecto || '-' }}</td>
             <td><span class="badge badge--pending">{{ row.estado }}</span></td>
             <td class="actions-col--select">
-              <button class="btn btn-secondary btn-sm" (click)="verOc(row)">Generar Compra</button>
+              <select class="actions-select" (change)="onAccionOrdenGenerada($event, row)">
+                <option value="">Acciones</option>
+                <option value="detalle">Detalle</option>
+                <option value="pdf">Exportar PDF</option>
+              </select>
             </td>
           </tr>
         </tbody>
@@ -90,7 +95,7 @@
     </div>
 
     <div class="panel panel-embedded panel-compact">
-      <div class="panel-title panel-subtitle">Detalle jalado del requerimiento</div>
+      <div class="panel-title-row"><div class="panel-title panel-subtitle">Detalle jalado del requerimiento</div><button type="button" class="btn btn-secondary btn-sm" (click)="abrirNuevoProveedor()">+ Nuevo proveedor</button></div>
       <div class="table-wrap table-wrap--medium" *ngIf="form.items.length">
         <table>
           <thead><tr><th>Especialidad</th><th>Material</th><th>Unidad</th><th>Cantidad</th><th class="provider-column">Proveedor</th></tr></thead>
@@ -134,15 +139,14 @@
 
     <div class="table-wrap table-wrap--medium" *ngIf="detalleOc.items?.length">
       <table>
-        <thead><tr><th>Especialidad</th><th>Material</th><th>Unidad</th><th>Cantidad</th><th>Proveedor</th><th>Subtotal</th></tr></thead>
+        <thead><tr><th>Especialidad</th><th>Material</th><th>Unidad</th><th>Cantidad</th><th>Proveedor</th></tr></thead>
         <tbody>
           <tr *ngFor="let item of detalleOc.items">
-            <td>{{ item.especialidad || detalleOc.ordenCompra?.especialidad || '-' }}</td>
+            <td>{{ item.especialidad || detalleOc.ordenCompra?.especialidades || detalleOc.ordenCompra?.especialidad || '-' }}</td>
             <td>{{ item.material }}</td>
             <td>{{ item.unidadMedida }}</td>
             <td>{{ item.cantidad }}</td>
             <td>{{ item.proveedor || '-' }}</td>
-            <td>{{ item.subtotal | number:'1.2-2' }}</td>
           </tr>
         </tbody>
       </table>
@@ -151,4 +155,24 @@
 
   <div class="helper-strip">Para registrar la compra, usa el módulo <strong>Compras</strong> con la O.C. correspondiente.</div>
   <div *ngIf="msg" class="empty-state" style="margin-top:14px; padding:14px;">{{ msg }}</div>
+</section>
+
+
+<div class="design-modal-backdrop" *ngIf="proveedorModalOpen" (click)="cerrarProveedorModal()"></div>
+<section class="panel design-modal-card" *ngIf="proveedorModalOpen" (click)="$event.stopPropagation()">
+  <button type="button" class="modal-close" (click)="cerrarProveedorModal()" aria-label="Cerrar">×</button>
+  <div class="panel-title">Nuevo proveedor</div>
+  <div class="form-grid two">
+    <div class="field full-width"><label>Razón social / Nombre comercial</label><input [(ngModel)]="proveedorForm.razonSocial"></div>
+    <div class="field"><label>RUC</label><input [(ngModel)]="proveedorForm.ruc"></div>
+    <div class="field"><label>Contacto</label><input [(ngModel)]="proveedorForm.contacto"></div>
+    <div class="field"><label>Teléfono</label><input [(ngModel)]="proveedorForm.telefono"></div>
+    <div class="field"><label>Correo</label><input [(ngModel)]="proveedorForm.correo"></div>
+    <div class="field full-width"><label>Dirección</label><input [(ngModel)]="proveedorForm.direccion"></div>
+    <div class="field"><label>Estado</label><select [(ngModel)]="proveedorForm.activo"><option [ngValue]="true">Activo</option><option [ngValue]="false">Inactivo</option></select></div>
+  </div>
+  <div class="toolbar toolbar--compact">
+    <button class="btn btn-primary" (click)="guardarNuevoProveedor()">Guardar proveedor</button>
+    <button class="btn btn-ghost" (click)="cerrarProveedorModal()">Cancelar</button>
+  </div>
 </section>

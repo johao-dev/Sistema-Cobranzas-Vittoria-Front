@@ -23,6 +23,8 @@ export class OrdenesCompraPage implements OnInit {
   msg = '';
   flujoModalOpen = false;
   detalleModalOpen = false;
+  proveedorModalOpen = false;
+  proveedorForm: any = this.createEmptyProveedorForm();
 
   form: any = {
     numeroOrdenCompra: '',
@@ -49,6 +51,45 @@ export class OrdenesCompraPage implements OnInit {
     const value = (event.target as HTMLSelectElement).value;
     (event.target as HTMLSelectElement).value = '';
     if (value === 'procesar') this.procesarRq(row);
+  }
+
+
+
+  onAccionOrdenGenerada(event: Event, row: any): void {
+    const value = (event.target as HTMLSelectElement).value;
+    (event.target as HTMLSelectElement).value = '';
+    if (value === 'detalle') this.verOc(row);
+    if (value === 'pdf') this.exportarPdfOrden(row);
+  }
+
+  abrirNuevoProveedor(): void {
+    this.proveedorForm = this.createEmptyProveedorForm();
+    this.proveedorModalOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarProveedorModal(): void {
+    this.proveedorModalOpen = false;
+    this.cdr.detectChanges();
+  }
+
+  guardarNuevoProveedor(): void {
+    if (!String(this.proveedorForm.razonSocial || '').trim()) {
+      this.msg = 'Ingresa la razón social del proveedor.';
+      return;
+    }
+
+    this.maestra.guardarProveedor(this.proveedorForm).subscribe({
+      next: () => {
+        this.msg = 'Proveedor creado correctamente.';
+        this.cerrarProveedorModal();
+        this.loadCatalogos();
+      },
+      error: (e: any) => {
+        this.msg = e?.error?.message || 'No se pudo crear el proveedor.';
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   cerrarFlujoModal(): void {
@@ -126,7 +167,22 @@ export class OrdenesCompraPage implements OnInit {
   verOc(row: any) {
     this.compras.orden(row.idOrdenCompra).subscribe({
       next: (x: any) => {
-        this.detalleOc = x;
+        const ordenCompra = x?.ordenCompra ?? {};
+        const especialidades = ordenCompra.especialidades || ordenCompra.especialidad || row?.especialidades || row?.especialidad || '-';
+        const numeroRequerimiento = ordenCompra.numeroRequerimiento || row?.numeroRequerimiento || '-';
+        this.detalleOc = {
+          ...x,
+          ordenCompra: {
+            ...ordenCompra,
+            especialidades,
+            especialidad: ordenCompra.especialidad || especialidades,
+            numeroRequerimiento
+          },
+          items: (x?.items || []).map((item: any) => ({
+            ...item,
+            especialidad: item.especialidad || especialidades
+          }))
+        };
         this.detalleRq = null;
         this.detalleModalOpen = true;
         this.flujoModalOpen = false;
@@ -222,6 +278,105 @@ export class OrdenesCompraPage implements OnInit {
     win.document.close();
     win.focus();
     setTimeout(() => win.print(), 400);
+  }
+
+
+  exportarPdfOrden(row: any): void {
+    const id = Number(row?.idOrdenCompra || 0);
+    if (!id) { this.msg = 'No se encontró la O.C. para exportar.'; return; }
+
+    this.compras.orden(id).subscribe({
+      next: (data: any) => this.imprimirOrden(data, row),
+      error: () => {
+        this.msg = 'No se pudo cargar la O.C. para exportar.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private imprimirOrden(data: any, fallbackRow?: any): void {
+    const oc = data?.ordenCompra || {};
+    const numeroRequerimiento = oc.numeroRequerimiento || fallbackRow?.numeroRequerimiento || '-';
+    const especialidades = oc.especialidades || oc.especialidad || fallbackRow?.especialidades || fallbackRow?.especialidad || '-';
+    const items = (data?.items || []).map((item: any) => ({
+      ...item,
+      especialidad: item.especialidad || especialidades
+    }));
+    const win = window.open('', '_blank');
+    if (!win) return;
+
+    const rows = items.map((item: any) => `
+      <tr>
+        <td>${this.escapeHtml(item.especialidad || '-')}</td>
+        <td>${this.escapeHtml(item.material || '-')}</td>
+        <td>${this.escapeHtml(item.unidadMedida || '-')}</td>
+        <td>${Number(item.cantidad || 0).toLocaleString('es-PE')}</td>
+        <td>${this.escapeHtml(item.proveedor || '-')}</td>
+      </tr>`).join('');
+
+    win.document.write(`
+      <html>
+      <head>
+        <title>Orden de compra ${this.escapeHtml(oc.numeroOrdenCompra || '')}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 24px; color: #111827; }
+          h1 { font-size: 22px; margin: 0 0 16px; }
+          .meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px 24px; margin-bottom: 18px; font-size: 13px; }
+          .meta div { border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; }
+          table { width: 100%; border-collapse: collapse; font-size: 12px; }
+          th, td { border: 1px solid #d6deea; padding: 8px; text-align: left; }
+          th { background: #f5f7fb; }
+        </style>
+      </head>
+      <body>
+        <h1>Orden de compra ${this.escapeHtml(oc.numeroOrdenCompra || '')}</h1>
+        <div class="meta">
+          <div><strong>Fecha:</strong> ${this.escapeHtml(oc.fechaOrdenCompra ? new Date(oc.fechaOrdenCompra).toLocaleDateString('es-PE') : '-')}</div>
+          <div><strong>RQ:</strong> ${this.escapeHtml(numeroRequerimiento)}</div>
+          <div><strong>Proyecto:</strong> ${this.escapeHtml(oc.nombreProyecto || '-')}</div>
+          <div><strong>Proveedor:</strong> ${this.escapeHtml(oc.proveedor || '-')}</div>
+          <div><strong>Especialidades:</strong> ${this.escapeHtml(especialidades)}</div>
+          <div><strong>Estado:</strong> ${this.escapeHtml(oc.estado || '-')}</div>
+        </div>
+        <table>
+          <thead><tr><th>Especialidad</th><th>Material</th><th>Unidad</th><th>Cantidad</th><th>Proveedor</th></tr></thead>
+          <tbody>${rows || '<tr><td colspan="5">Sin detalle</td></tr>'}</tbody>
+        </table>
+      </body>
+      </html>
+    `);
+    win.document.close();
+    win.focus();
+    setTimeout(() => win.print(), 400);
+  }
+
+  private createEmptyProveedorForm(): any {
+    return {
+      idProveedor: null,
+      razonSocial: '',
+      ruc: '',
+      contacto: '',
+      telefono: '',
+      correo: '',
+      direccion: '',
+      banco: '',
+      cuentaCorriente: '',
+      cci: '',
+      cuentaDetraccion: '',
+      descripcionServicio: '',
+      observacion: '',
+      trabajamosConProveedor: 'SI',
+      activo: true
+    };
+  }
+
+  private escapeHtml(value: any): string {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 
   private getNextNumeroOrdenCompra(): string {

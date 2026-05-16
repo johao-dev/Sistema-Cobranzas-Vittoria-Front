@@ -83,13 +83,18 @@
   <div *ngIf="!detalle" class="empty-state">No se pudo cargar el detalle del requerimiento.</div>
 
   <div *ngIf="detalle">
-    <div class="toolbar detail-toolbar">
-      <span class="list-chip">N° {{ detalle.requerimiento?.numeroRequerimiento }}</span>
-      <span class="list-chip">{{ detalle.requerimiento?.estado }}</span>
-      <span class="list-chip">{{ detalle.requerimiento?.especialidades || '-' }}</span>
-      <button class="btn btn-primary" *ngIf="puedeEditarDetalle" (click)="editarDesdeDetalle()">Editar</button>
-      <button class="btn btn-success" *ngIf="puedeEnviarOC" (click)="enviarAOC()">Enviar a O.C.</button>
-      <span class="list-chip blocked-chip" *ngIf="!puedeEditarDetalle && !puedeEnviarOC">Bloqueado</span>
+    <div class="detail-modal-head">
+      <div class="detail-chips">
+        <span class="list-chip">N° {{ detalle.requerimiento?.numeroRequerimiento }}</span>
+        <span class="list-chip">{{ detalle.requerimiento?.estado }}</span>
+        <span class="list-chip">{{ detalle.requerimiento?.especialidades || '-' }}</span>
+        <span class="list-chip blocked-chip" *ngIf="!puedeEditarDetalle && !puedeEnviarOC">Bloqueado</span>
+      </div>
+      <div class="detail-actions">
+        <button class="btn btn-primary" *ngIf="puedeEditarDetalle" (click)="editarDesdeDetalle()">Editar</button>
+        <button class="btn btn-secondary" (click)="descargarPdfRequerimiento()">Descargar PDF</button>
+        <button class="btn btn-success" *ngIf="puedeEnviarOC" (click)="enviarAOC()">Enviar a O.C.</button>
+      </div>
     </div>
 
     <div class="table-wrap table-wrap--medium" *ngIf="detalle.items?.length">
@@ -148,9 +153,9 @@
     <div class="detail-card__head">
       <div>
         <div class="panel-title detail-card__title">Detalle</div>
-        <div class="helper-text detail-card__text">Agrega materiales por especialidad y ajusta cantidades.</div>
+        <div class="helper-text detail-card__text">Agrega ítems por especialidad y ajusta cantidades.</div>
       </div>
-      <button class="btn btn-secondary" (click)="abrirModalEspecialidades()">Agregar material por especialidad</button>
+      <button class="btn btn-secondary" type="button" (click)="abrirModalEspecialidades()">+ Agregar ítem</button>
     </div>
 
     <div *ngIf="form.items.length" class="resumen-especialidades">
@@ -210,15 +215,18 @@
         <label>Especialidad</label>
         <select [(ngModel)]="modalItem.idEspecialidad" (change)="onModalEspecialidadChange()">
           <option [ngValue]="null">Seleccionar</option>
-          <option *ngFor="let e of especialidades" [ngValue]="e.idEspecialidad">{{ e.nombre }}</option>
+          <option *ngFor="let e of especialidades" [ngValue]="getIdEspecialidad(e)">{{ getNombreEspecialidad(e) }}</option>
         </select>
       </div>
 
       <div class="field">
-        <label>Material</label>
-        <select [(ngModel)]="modalItem.idMaterial">
-          <option [ngValue]="null">Seleccionar</option>
-          <option *ngFor="let m of materialesFiltradosModal" [ngValue]="m.idMaterial">{{ m.descripcion }} — {{ m.unidadMedida || m.unidad || '-' }}</option>
+        <div class="field-label-row">
+          <label>Material</label>
+          <button class="btn btn-secondary btn-xs" type="button" (click)="abrirFormNuevoMaterial()">+ Agregar material</button>
+        </div>
+        <select [(ngModel)]="modalItem.idMaterial" [disabled]="!modalItem.idEspecialidad">
+          <option [ngValue]="null">{{ modalItem.idEspecialidad ? 'Seleccionar' : 'Selecciona una especialidad primero' }}</option>
+          <option *ngFor="let m of materialesFiltradosModal" [ngValue]="getIdMaterial(m)">{{ getDescripcionMaterial(m) }} — {{ getUnidadMaterial(m) }}</option>
         </select>
       </div>
 
@@ -230,6 +238,53 @@
       <div class="field">
         <label>Observación ítem</label>
         <input [(ngModel)]="modalItem.observacion" />
+      </div>
+    </div>
+
+    <div class="inline-material-card" *ngIf="materialFormOpen">
+      <div class="inline-material-card__head">
+        <div>
+          <div class="inline-material-card__title">Nuevo material</div>
+          <div class="helper-text">Registra el material y quedará seleccionado automáticamente en el ítem.</div>
+        </div>
+        <button class="btn btn-ghost btn-xs" type="button" (click)="cerrarFormNuevoMaterial()">Cerrar</button>
+      </div>
+
+      <div class="form-grid two">
+        <div class="field">
+          <label>Especialidad</label>
+          <select [(ngModel)]="nuevoMaterial.idEspecialidad">
+            <option [ngValue]="null">Seleccionar</option>
+            <option *ngFor="let e of especialidades" [ngValue]="getIdEspecialidad(e)">{{ getNombreEspecialidad(e) }}</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Unidad</label>
+          <select [(ngModel)]="nuevoMaterial.unidadMedida">
+            <option value="">Seleccionar</option>
+            <option *ngFor="let u of unidadesMedida" [ngValue]="u.codigo || u.nombre || u.unidadMedida">{{ u.codigo || u.nombre || u.unidadMedida }}</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Material</label>
+          <input [(ngModel)]="nuevoMaterial.descripcion" placeholder="Nombre del material" />
+        </div>
+
+        <div class="field">
+          <label>Código</label>
+          <input [(ngModel)]="nuevoMaterial.codigo" placeholder="Opcional" />
+        </div>
+      </div>
+
+      <div *ngIf="msgMaterial" class="success-box success-box--compact">{{ msgMaterial }}</div>
+
+      <div class="toolbar inline-material-actions">
+        <button class="btn btn-ghost" type="button" (click)="cerrarFormNuevoMaterial()">Cancelar</button>
+        <button class="btn btn-primary" type="button" (click)="guardarMaterialDesdeItem()" [disabled]="savingMaterial">
+          {{ savingMaterial ? 'Guardando...' : 'Guardar material' }}
+        </button>
       </div>
     </div>
 

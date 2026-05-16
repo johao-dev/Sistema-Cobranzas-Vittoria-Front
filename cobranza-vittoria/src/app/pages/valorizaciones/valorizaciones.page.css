@@ -245,3 +245,20 @@
   max-width: 108px !important;
   text-align: center !important;
 }
+
+
+/* HOTFIX V11 - campos de texto más compactos y acciones alineadas */
+.textarea-compact {
+  min-height: 58px !important;
+  max-height: 84px !important;
+}
+.layout-stack .actions-select {
+  width: 92px !important;
+  margin: 0 auto !important;
+}
+.layout-stack .table-wrap--sticky-actions table th:last-child,
+.layout-stack .table-wrap--sticky-actions table td:last-child {
+  width: 104px !important;
+  min-width: 104px !important;
+  max-width: 104px !important;
+}

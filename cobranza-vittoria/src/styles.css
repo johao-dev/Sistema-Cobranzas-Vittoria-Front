@@ -745,3 +745,44 @@ td.purchase-action-col {
   min-width: 132px !important;
   max-width: 132px !important;
 }
+
+/* HOTFIX V11 - compactación general de tablas y mantenimientos */
+.table-wrap table th,
+.table-wrap table td {
+  padding: 10px 12px;
+  font-size: .88rem;
+}
+.table-wrap--sticky-actions table th:last-child,
+.table-wrap--sticky-actions table td:last-child,
+th.actions-col,
+th.actions-col--select,
+th.actions-col--button,
+td.actions-col--select,
+td.actions-col--button,
+.actions-col {
+  width: 104px !important;
+  min-width: 104px !important;
+  max-width: 104px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+.actions-select {
+  width: 92px !important;
+  min-width: 92px !important;
+  max-width: 92px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  font-size: .74rem !important;
+}
+.btn-sm,
+.action-btn,
+.actions .btn {
+  min-height: 30px !important;
+  padding: 6px 9px !important;
+  font-size: .76rem !important;
+  line-height: 1 !important;
+}
+.design-modal-card textarea,
+.modal-card textarea {
+  min-height: 64px;
+}
