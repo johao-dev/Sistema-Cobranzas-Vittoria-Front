@@ -68,3 +68,47 @@ textarea {
 /* HOTFIX DISEÑO V8 */
 .actions-col { width: 82px !important; min-width: 82px !important; max-width: 82px !important; }
 .table-wrap table { min-width: max(100%, 1180px); }
+
+
+/* HOTFIX V14 - Proyectos y cotización de materiales compactos */
+.proyectos-table-wrap table.proyectos-table {
+  width: 100% !important;
+  min-width: 860px !important;
+  table-layout: fixed !important;
+}
+.proyectos-table th,
+.proyectos-table td {
+  padding: 8px 10px !important;
+  font-size: .8rem !important;
+  line-height: 1.18 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+.proyectos-table th:nth-child(1), .proyectos-table td:nth-child(1) { width: 170px !important; }
+.proyectos-table th:nth-child(2), .proyectos-table td:nth-child(2) { width: 210px !important; }
+.proyectos-table th:nth-child(3), .proyectos-table td:nth-child(3) { width: 140px !important; }
+.proyectos-table th:nth-child(4), .proyectos-table td:nth-child(4) { width: 150px !important; }
+.proyectos-table th:nth-child(5), .proyectos-table td:nth-child(5) { width: 86px !important; }
+.proyectos-table th:nth-child(6), .proyectos-table td:nth-child(6) { width: 86px !important; min-width:86px !important; max-width:86px !important; }
+.proyectos-table__project { min-width: 0 !important; }
+.proyectos-table__money { overflow: visible !important; white-space: nowrap !important; font-variant-numeric: tabular-nums !important; }
+.proyectos-table .actions-select { width: 78px !important; min-width:78px !important; max-width:78px !important; height:28px !important; min-height:28px !important; font-size:.68rem !important; }
+.cotizacion-materiales-card { padding: 12px !important; border-radius: 14px !important; }
+.cotizacion-materiales-wrap table {
+  width: 100% !important;
+  min-width: 100% !important;
+  table-layout: fixed !important;
+}
+.cotizacion-materiales-wrap table th,
+.cotizacion-materiales-wrap table td {
+  padding: 7px 9px !important;
+  font-size: .78rem !important;
+}
+.cotizacion-materiales-wrap input {
+  min-height: 30px !important;
+  height: 30px !important;
+  padding: 4px 8px !important;
+  font-size: .78rem !important;
+  min-width: 0 !important;
+}

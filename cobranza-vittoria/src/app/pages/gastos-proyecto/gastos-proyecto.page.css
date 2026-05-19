@@ -63,3 +63,49 @@ textarea { width: 100%; min-height: 108px; resize: vertical; }
 /* HOTFIX DISEÑO V8 */
 .actions-col { width: 82px !important; min-width: 82px !important; max-width: 82px !important; }
 .table-wrap table { min-width: max(100%, 1180px); }
+
+
+/* HOTFIX V14 - Nuevos módulos tipo terreno: tabla más chica y montos visibles */
+.gasto-proyecto-table-wrap table.gasto-proyecto-table {
+  width: 100% !important;
+  min-width: 1030px !important;
+  table-layout: fixed !important;
+}
+.gasto-proyecto-table th,
+.gasto-proyecto-table td {
+  padding: 7px 8px !important;
+  font-size: .78rem !important;
+  line-height: 1.18 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+.gasto-proyecto-table th:nth-child(1), .gasto-proyecto-table td:nth-child(1) { width: 78px !important; }
+.gasto-proyecto-table th:nth-child(2), .gasto-proyecto-table td:nth-child(2) { width: 126px !important; }
+.gasto-proyecto-table th:nth-child(3), .gasto-proyecto-table td:nth-child(3) { width: 142px !important; }
+.gasto-proyecto-table th:nth-child(4), .gasto-proyecto-table td:nth-child(4) { width: 112px !important; }
+.gasto-proyecto-table th:nth-child(5), .gasto-proyecto-table td:nth-child(5) { width: 112px !important; }
+.gasto-proyecto-table th:nth-child(6), .gasto-proyecto-table td:nth-child(6) { width: 80px !important; }
+.gasto-proyecto-table th:nth-child(7), .gasto-proyecto-table td:nth-child(7) { width: 50px !important; }
+.gasto-proyecto-table th:nth-child(8), .gasto-proyecto-table td:nth-child(8) { width: 122px !important; min-width:122px !important; }
+.gasto-proyecto-table th:nth-child(9), .gasto-proyecto-table td:nth-child(9) { width: 58px !important; }
+.gasto-proyecto-table th:nth-child(10), .gasto-proyecto-table td:nth-child(10) { width: 74px !important; }
+.gasto-proyecto-table th:nth-child(11), .gasto-proyecto-table td:nth-child(11) { width: 86px !important; min-width:86px !important; max-width:86px !important; }
+.gasto-proyecto-table__project { min-width: 0 !important; }
+.gasto-proyecto-table .table-number,
+.gasto-proyecto-table__money {
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
+  font-variant-numeric: tabular-nums !important;
+}
+.gasto-proyecto-table .actions-select {
+  width: 78px !important;
+  min-width: 78px !important;
+  max-width: 78px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  font-size: .68rem !important;
+}
+.gasto-proyecto-summary-card { padding: 12px 14px !important; border-radius: 14px !important; }
+.gasto-proyecto-summary-card strong { font-size: 1rem !important; }

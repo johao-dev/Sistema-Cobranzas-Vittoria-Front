@@ -786,3 +786,64 @@ td.actions-col--button,
 .modal-card textarea {
   min-height: 64px;
 }
+
+
+/* HOTFIX V14 - Ajuste visual compacto para tablas y montos visibles */
+.table-wrap table th,
+.table-wrap table td {
+  padding: 8px 10px !important;
+  font-size: .82rem !important;
+  line-height: 1.22 !important;
+}
+
+.table-number {
+  white-space: nowrap !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.table-wrap--sticky-actions table th:last-child,
+.table-wrap--sticky-actions table td:last-child,
+th.actions-col,
+th.actions-col--select,
+th.actions-col--button,
+td.actions-col,
+td.actions-col--select,
+td.actions-col--button,
+.actions-col {
+  width: 92px !important;
+  min-width: 92px !important;
+  max-width: 92px !important;
+  padding-left: 6px !important;
+  padding-right: 6px !important;
+  text-align: center !important;
+}
+
+.actions-select {
+  width: 82px !important;
+  min-width: 82px !important;
+  max-width: 82px !important;
+  height: 30px !important;
+  min-height: 30px !important;
+  padding: 3px 5px !important;
+  font-size: .7rem !important;
+  border-radius: 8px !important;
+}
+
+.btn-sm,
+.action-btn,
+.actions .btn {
+  min-height: 28px !important;
+  padding: 5px 8px !important;
+  font-size: .72rem !important;
+  border-radius: 8px !important;
+}
+
+.panel {
+  padding: 16px !important;
+}
+
+.table-wrap--fit table {
+  width: 100% !important;
+  min-width: 100% !important;
+  table-layout: fixed !important;
+}
