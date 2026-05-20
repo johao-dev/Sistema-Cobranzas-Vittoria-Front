@@ -23,7 +23,7 @@
           <td>{{ row.fechaRequerimiento | date:'dd/MM/yyyy' }}</td>
           <td>{{ row.especialidades || row.especialidad || '-' }}</td>
           <td>{{ row.nombreProyecto }}</td>
-          <td>{{ row.solicitante }}</td>
+          <td>{{ normalizarNombreSolicitante(row.solicitante) }}</td>
           <td><span class="badge badge--pending">{{ row.estado }}</span></td>
           <td class="actions-col--select">
             <select class="actions-select" (change)="onAccionRq($event, row)">

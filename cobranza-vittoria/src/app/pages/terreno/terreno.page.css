@@ -164,3 +164,24 @@ textarea { width: 100%; min-height: 108px; resize: vertical; }
 }
 .terreno-summary-card { padding: 12px 14px !important; border-radius: 14px !important; }
 .terreno-summary-card strong { font-size: 1rem !important; }
+
+
+/* HOTFIX V15 - Terreno: descripción compacta y columna descripción */
+.descripcion-compacta {
+  min-height: 54px !important;
+  max-height: 74px !important;
+  resize: vertical;
+}
+.terreno-table__descripcion {
+  max-width: 150px;
+  color: #4b5563;
+}
+.terreno-table th:nth-child(10), .terreno-table td:nth-child(10) {
+  width: 150px !important;
+  min-width: 150px !important;
+}
+.terreno-table th:nth-child(11), .terreno-table td:nth-child(11) {
+  width: 86px !important;
+  min-width:86px !important;
+  max-width:86px !important;
+}

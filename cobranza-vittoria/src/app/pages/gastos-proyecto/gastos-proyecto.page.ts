@@ -56,6 +56,7 @@ export class GastosProyectoPage implements OnInit {
   titulo = 'Gastos de proyecto';
   subtitulo = 'Registro de gastos por proyecto.';
   conceptos: string[] = [];
+  conceptoLabel = 'Concepto';
 
   proyectos: any[] = [];
   proveedores: any[] = [];
@@ -106,6 +107,7 @@ export class GastosProyectoPage implements OnInit {
     this.titulo = String(data['titulo'] || 'Gastos de proyecto');
     this.subtitulo = String(data['subtitulo'] || 'Registro de gastos por proyecto.');
     this.conceptos = (data['conceptos'] as string[]) || [];
+    this.conceptoLabel = String(data['conceptoLabel'] || 'Concepto');
     this.form.concepto = this.conceptos.length === 1 ? this.conceptos[0] : '';
   }
 
@@ -276,7 +278,25 @@ export class GastosProyectoPage implements OnInit {
     select.value = '';
     if (value === 'edit') this.editar(row);
     if (value === 'archivos') this.abrirArchivos(row);
+    if (value === 'descargar') this.descargarFactura(row);
     if (value === 'estado') this.cambiarEstado(row);
+  }
+
+
+  descargarFactura(row: Row): void {
+    const id = Number(row.idGastoProyecto || 0);
+    if (!id) return;
+    this.gastoProyectoService.documentos(this.tipoModulo, id).subscribe({
+      next: docs => {
+        const first = (docs || [])[0];
+        if (!first) {
+          this.notifications.show('Este registro no tiene facturas para descargar.', 'info');
+          return;
+        }
+        window.open(this.gastoProyectoService.documentoDownloadUrl(this.tipoModulo, id, Number(this.readValue(first, 'idGastoProyectoDocumento', 'IdGastoProyectoDocumento'))), '_blank');
+      },
+      error: err => this.notifications.show(err?.error?.message || 'No se pudieron cargar las facturas.', 'error')
+    });
   }
 
   onFechaTipoCambioChange(fecha: string): void {

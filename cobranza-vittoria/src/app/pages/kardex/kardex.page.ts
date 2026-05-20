@@ -29,6 +29,7 @@ export class KardexPage implements OnInit {
   };
 
   salida = {
+    compraKey: '',
     idCompra: null as number | null,
     idMaterial: null as number | null,
     idEspecialidad: null as number | null,
@@ -59,32 +60,55 @@ export class KardexPage implements OnInit {
       fechaHasta: this.filtros.fechaHasta || null
     }).subscribe({
       next: (x: any) => {
-        this.rows = x || [];
-        this.rowsAgrupadas = this.rows;
-        const map = new Map<number, any>();
+        const rawRows = x || [];
+        const correlativos = new Map<string, number>();
+        let correlativo = 1;
 
+        const getCompraKey = (row: any): string => {
+          const idCompra = Number(row.idCompra ?? row.IdCompra ?? 0);
+          const idMaterial = Number(row.idMaterial ?? row.IdMaterial ?? 0);
+          const idEspecialidad = Number(row.idEspecialidad ?? row.IdEspecialidad ?? 0);
+          return `${idCompra}|${idMaterial}|${idEspecialidad}`;
+        };
+
+        this.rows = rawRows.map((row: any) => {
+          const key = getCompraKey(row);
+          if (!correlativos.has(key)) correlativos.set(key, correlativo++);
+          return { ...row, compraKey: key, numeroCompraCorrelativo: correlativos.get(key) };
+        });
+        this.rowsAgrupadas = this.rows;
+
+        const map = new Map<string, any>();
         for (const row of this.rows) {
           const idCompra = Number(row.idCompra ?? row.IdCompra ?? 0);
           if (!idCompra) continue;
 
-          const numeroCompra = row.numeroCompra || row.NumeroCompra || `Compra ${idCompra}`;
+          const compraKey = row.compraKey || getCompraKey(row);
+          const numeroCompra = row.numeroCompraCorrelativo || correlativos.get(compraKey) || map.size + 1;
+          const numeroCompraBase = row.numeroCompra || row.NumeroCompra || idCompra;
           const numeroRequerimiento = row.numeroRequerimiento || row.NumeroRequerimiento || '-';
           const especialidad = row.especialidad || row.Especialidad || '-';
           const idMaterial = Number(row.idMaterial ?? row.IdMaterial ?? 0);
           const material = row.material || row.Material || '-';
           const idEspecialidad = row.idEspecialidad ?? row.IdEspecialidad ?? null;
 
-          if (!map.has(idCompra)) {
-            map.set(idCompra, { idCompra, numeroCompra, numeroRequerimiento, especialidad, items: [] });
-          }
-
-          const compra = map.get(idCompra);
-          if (!compra.items.some((m: any) => m.idMaterial === idMaterial)) {
-            compra.items.push({ idMaterial, material, idEspecialidad });
+          if (!map.has(compraKey)) {
+            map.set(compraKey, {
+              compraKey,
+              idCompra,
+              numeroCompra,
+              numeroCompraBase,
+              numeroRequerimiento,
+              especialidad,
+              idMaterial,
+              material,
+              idEspecialidad,
+              items: [{ idMaterial, material, idEspecialidad }]
+            });
           }
         }
 
-        this.comprasRealizadas = Array.from(map.values()).sort((a: any, b: any) => b.idCompra - a.idCompra);
+        this.comprasRealizadas = Array.from(map.values()).sort((a: any, b: any) => Number(a.numeroCompra) - Number(b.numeroCompra));
         this.cdr.detectChanges();
       },
       error: () => {
@@ -97,10 +121,11 @@ export class KardexPage implements OnInit {
   }
 
   compraSalidaChange(): void {
-    const compra = this.comprasRealizadas.find((c: any) => c.idCompra === this.salida.idCompra);
+    const compra = this.comprasRealizadas.find((c: any) => c.compraKey === this.salida.compraKey);
     this.materialesCompraSeleccionada = compra?.items || [];
-    this.salida.idMaterial = null;
-    this.salida.idEspecialidad = null;
+    this.salida.idCompra = compra?.idCompra ?? null;
+    this.salida.idMaterial = compra?.idMaterial ?? null;
+    this.salida.idEspecialidad = compra?.idEspecialidad ?? null;
     this.salida.observacion = compra?.numeroRequerimiento && compra.numeroRequerimiento !== '-' ? `Ingresado por Requerimiento ${compra.numeroRequerimiento}` : '';
   }
 
@@ -118,6 +143,7 @@ export class KardexPage implements OnInit {
       next: (x: any) => {
         this.msg = x?.mensaje || 'Salida registrada correctamente.';
         this.salida = {
+          compraKey: '',
           idCompra: null,
           idMaterial: null,
           idEspecialidad: null,

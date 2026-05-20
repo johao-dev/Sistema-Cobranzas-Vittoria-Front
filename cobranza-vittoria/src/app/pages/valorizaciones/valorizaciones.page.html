@@ -45,12 +45,12 @@
       <div class="field">
         <label>Proveedor</label>
         <select [(ngModel)]="formConfiguracion.idProveedor">
-          <option [ngValue]="null">Seleccione</option>
+          <option [ngValue]="null">🔍 Buscar / seleccionar proveedor</option>
           <option *ngFor="let p of proveedores" [ngValue]="p.idProveedor">{{ p.razonSocial }}</option>
         </select>
       </div>
 
-      <div class="field">
+      <div class="field field-especialidad-compacta">
         <label>Especialidad</label>
         <select [(ngModel)]="formConfiguracion.idEspecialidad">
           <option [ngValue]="null">Seleccione</option>
@@ -208,7 +208,7 @@
     </section>
   </div>
 
-  <section class="panel">
+  <section class="panel valorizacion-resumen-panel">
     <div class="panel-title">3. Resumen total de valorización</div>
 
     <div class="resumen-grid" *ngIf="resumen">
@@ -221,8 +221,13 @@
             <small>A</small>
           </div>
           <div class="resumen-row resumen-row--accent">
-            <span>GARANTIA 5%</span>
+            <span>GARANTÍA RETENIDA</span>
             <strong>{{ formatMoney(resumenTotales.garantia, monedaActual) }}</strong>
+            <small></small>
+          </div>
+          <div class="resumen-row">
+            <span>DETRACCIÓN</span>
+            <strong>{{ formatMoney(resumenTotales.detraccion, monedaActual) }}</strong>
             <small></small>
           </div>
           <div class="resumen-row">
@@ -244,7 +249,7 @@
       </div>
     </div>
 
-    <div class="table-wrap table-wrap--spacious top-gap" *ngIf="resumenFacturas.length">
+    <div class="table-wrap table-wrap--spacious valorizacion-resumen-table top-gap" *ngIf="resumenFacturas.length">
       <table>
         <thead>
           <tr>
@@ -275,7 +280,7 @@
     <div *ngIf="!resumen" class="empty-state">Selecciona una valorización para ver el resumen.</div>
   </section>
 
-  <section class="panel">
+  <section class="panel valorizacion-facturas-panel">
     <div class="panel-title">4. Facturas registradas</div>
 
     <div class="toolbar top-gap" *ngIf="detalle.length">

@@ -102,16 +102,31 @@ export class ValorizacionesPage implements OnInit {
   }
 
   get resumenFacturas(): any[] {
+    const detalle = Array.isArray(this.detalle) ? this.detalle : [];
+    if (detalle.length) {
+      const cotizacion = Number(this.resumen?.cotizacion ?? this.cabecera?.cotizacion ?? this.configuracionActiva?.montoCotizacion ?? 0);
+      return detalle.map((row: any) => ({
+        numeroFactura: row.numeroFactura,
+        descripcion: row.descripcion,
+        facturado: Number(row.montoFactura || row.facturado || 0),
+        transferido: Number(row.montoTransferido || row.transferido || 0),
+        garantia: Number(row.garantia || 0),
+        detraccion: Number(row.detraccion || 0),
+        resta: this.redondear(cotizacion - Number(row.montoFactura || row.facturado || 0))
+      }));
+    }
     return Array.isArray(this.resumen?.facturas) ? this.resumen.facturas : [];
   }
 
   get resumenTotales(): any {
-    const cotizacion = Number(this.resumen?.cotizacion ?? this.cabecera?.cotizacion ?? 0);
-    const garantia = this.redondear(cotizacion * 0.05);
-    const facturado = this.redondear((this.detalle || []).reduce((acc: number, row: any) => acc + Number(row?.montoFactura || 0), 0));
-    const transferido = this.redondear((this.detalle || []).reduce((acc: number, row: any) => acc + Number(row?.montoTransferido || 0), 0));
+    const detalle = Array.isArray(this.detalle) ? this.detalle : [];
+    const cotizacion = Number(this.resumen?.cotizacion ?? this.cabecera?.cotizacion ?? this.configuracionActiva?.montoCotizacion ?? 0);
+    const facturado = this.redondear(detalle.reduce((acc: number, row: any) => acc + Number(row?.montoFactura || row?.facturado || 0), 0));
+    const garantia = this.redondear(detalle.reduce((acc: number, row: any) => acc + Number(row?.garantia || 0), 0));
+    const detraccion = this.redondear(detalle.reduce((acc: number, row: any) => acc + Number(row?.detraccion || 0), 0));
+    const transferido = this.redondear(detalle.reduce((acc: number, row: any) => acc + Number(row?.montoTransferido || row?.transferido || 0), 0));
     const resta = this.redondear(cotizacion - facturado);
-    return { cotizacion, garantia, facturado, transferido, resta };
+    return { cotizacion, garantia, detraccion, facturado, transferido, resta };
   }
 
 

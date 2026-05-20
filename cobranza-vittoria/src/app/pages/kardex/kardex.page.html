@@ -13,7 +13,7 @@
       <label>Compra</label>
       <select [(ngModel)]="filtros.idCompra">
         <option [ngValue]="null">Todas</option>
-        <option *ngFor="let c of comprasRealizadas" [ngValue]="c.idCompra">{{ c.numeroCompra }}</option>
+        <option *ngFor="let c of comprasRealizadas" [ngValue]="c.idCompra">Compra {{ c.numeroCompra }} - RQ {{ c.numeroRequerimiento || '-' }}</option>
       </select>
     </div>
 
@@ -61,10 +61,10 @@
   <div class="form-grid four">
     <div class="field">
       <label>Compra realizada</label>
-      <select [(ngModel)]="salida.idCompra" (ngModelChange)="compraSalidaChange()">
-        <option [ngValue]="null">Seleccionar</option>
-        <option *ngFor="let c of comprasRealizadas" [ngValue]="c.idCompra">
-          {{ c.numeroCompra }} - RQ {{ c.numeroRequerimiento || '-' }}
+      <select [(ngModel)]="salida.compraKey" (ngModelChange)="compraSalidaChange()">
+        <option value="">Seleccionar</option>
+        <option *ngFor="let c of comprasRealizadas" [ngValue]="c.compraKey">
+          Compra {{ c.numeroCompra }} - RQ {{ c.numeroRequerimiento || '-' }} - {{ c.material || '-' }}
         </option>
       </select>
     </div>
@@ -129,7 +129,7 @@
       </thead>
       <tbody>
         <tr *ngFor="let row of rowsAgrupadas; let i = index">
-          <td>{{ row.numeroCompra || row.NumeroCompra || '-' }}</td>
+          <td>Compra {{ row.numeroCompraCorrelativo || row.NumeroCompraCorrelativo || row.numeroCompra || row.NumeroCompra || '-' }}</td>
           <td>{{ row.numeroRequerimiento || row.NumeroRequerimiento || '-' }}</td>
           <td><strong *ngIf="esNuevoGrupo(i)">{{ row.especialidad || row.Especialidad || '-' }}</strong></td>
           <td>{{ row.fechaMovimiento || row.FechaMovimiento ? ((row.fechaMovimiento || row.FechaMovimiento) | date:'dd/MM/yyyy') : '-' }}</td>

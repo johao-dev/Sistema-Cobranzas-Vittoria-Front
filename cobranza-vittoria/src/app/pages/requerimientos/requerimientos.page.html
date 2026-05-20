@@ -61,7 +61,7 @@
           <td>{{ row.fechaRequerimiento | date:'dd/MM/yyyy' }}</td>
           <td>{{ row.especialidades || '-' }}</td>
           <td>{{ row.nombreProyecto }}</td>
-          <td>{{ row.solicitante }}</td>
+          <td>{{ normalizarNombreSolicitante(row.solicitante) }}</td>
           <td><span class="badge badge--pending">{{ row.estado }}</span></td>
           <td class="actions-col--select">
             <select class="actions-select" (change)="onAccionListado($event, row)">
@@ -140,7 +140,7 @@
       <label>Solicitante</label>
       <select [(ngModel)]="form.idUsuarioSolicitante">
         <option [ngValue]="null">Seleccionar</option>
-        <option *ngFor="let u of usuarios" [ngValue]="u.idUsuario">{{ u.nombres }} {{ u.apellidos || '' }}</option>
+        <option *ngFor="let u of usuarios" [ngValue]="u.idUsuario">{{ nombreUsuarioSolicitante(u) }}</option>
       </select>
     </div>
     <div class="field compact-field">

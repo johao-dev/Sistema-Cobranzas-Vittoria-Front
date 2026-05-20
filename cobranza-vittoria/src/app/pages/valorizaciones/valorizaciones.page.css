@@ -303,3 +303,76 @@
   height: 29px !important;
   min-height: 29px !important;
 }
+
+
+/* HOTFIX V15 - Valorizaciones: proveedor, especialidad y tablas compactas */
+.field-especialidad-compacta select {
+  min-height: 42px !important;
+  padding: 8px 10px !important;
+  font-size: .82rem !important;
+}
+.config-grid {
+  grid-template-columns: minmax(150px, 1fr) minmax(180px, 1.15fr) minmax(140px, .85fr) minmax(110px, .7fr) minmax(120px, .8fr) minmax(150px, .85fr) !important;
+}
+.resumen-grid {
+  grid-template-columns: minmax(300px, 460px) !important;
+}
+.resumen-card {
+  border-radius: 14px !important;
+}
+.resumen-card__head {
+  padding: 9px 12px !important;
+  font-size: .86rem !important;
+}
+.resumen-row {
+  grid-template-columns: 1.45fr 1fr 44px !important;
+  gap: 10px !important;
+  padding: 8px 12px !important;
+  font-size: .78rem !important;
+}
+.resumen-row strong {
+  font-size: .78rem !important;
+  white-space: nowrap !important;
+}
+.table-wrap--spacious table {
+  min-width: 760px !important;
+  table-layout: fixed !important;
+}
+.table-wrap--spacious table th,
+.table-wrap--spacious table td {
+  padding: 7px 9px !important;
+  font-size: .78rem !important;
+  line-height: 1.18 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+.valorizacion-facturas-panel .table-wrap table {
+  min-width: 960px !important;
+  table-layout: fixed !important;
+}
+.valorizacion-facturas-panel .table-wrap table th,
+.valorizacion-facturas-panel .table-wrap table td {
+  padding: 7px 8px !important;
+  font-size: .76rem !important;
+  line-height: 1.18 !important;
+}
+.valorizacion-facturas-panel .table-wrap table th:nth-child(5),
+.valorizacion-facturas-panel .table-wrap table td:nth-child(5) {
+  width: 130px !important;
+  max-width: 130px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+.valorizacion-facturas-panel .actions-select {
+  width: 78px !important;
+  min-width: 78px !important;
+  max-width: 78px !important;
+}
+@media (max-width: 1280px) {
+  .config-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+@media (max-width: 780px) {
+  .config-grid { grid-template-columns: 1fr !important; }
+  .resumen-row { grid-template-columns: 1fr !important; }
+}

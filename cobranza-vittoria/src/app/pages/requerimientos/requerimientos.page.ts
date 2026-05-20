@@ -397,6 +397,28 @@ export class RequerimientosPage implements OnInit {
 
 
 
+
+  nombreUsuarioSolicitante(usuario: any): string {
+    const nombres = String(usuario?.nombres ?? usuario?.Nombres ?? '').trim();
+    const apellidos = String(usuario?.apellidos ?? usuario?.Apellidos ?? '').trim();
+    return this.normalizarNombreSolicitante(`${nombres} ${apellidos}`);
+  }
+
+  normalizarNombreSolicitante(value: any): string {
+    const raw = String(value ?? '').replace(/\s+/g, ' ').trim();
+    if (!raw) return '-';
+    const parts = raw.split(' ').filter(Boolean);
+    const normalized: string[] = [];
+    for (const part of parts) {
+      const key = part.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      if (!normalized.some(x => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() === key)) {
+        normalized.push(part);
+      }
+    }
+    const result = normalized.join(' ').trim();
+    return result || raw;
+  }
+
   descargarPdfRequerimiento(): void {
     if (!this.detalle?.requerimiento) return;
 
@@ -435,7 +457,7 @@ export class RequerimientosPage implements OnInit {
         <div>Detalle del requerimiento</div>
         <div class="meta">
           <div><strong>Proyecto</strong>${this.escapeHtml(req.nombreProyecto || '-')}</div>
-          <div><strong>Solicitante</strong>${this.escapeHtml(req.solicitante || '-')}</div>
+          <div><strong>Solicitante</strong>${this.escapeHtml(this.normalizarNombreSolicitante(req.solicitante || '-'))}</div>
           <div><strong>Fecha</strong>${req.fechaRequerimiento ? new Date(req.fechaRequerimiento).toLocaleDateString('es-PE') : '-'}</div>
           <div><strong>Estado</strong>${this.escapeHtml(req.estado || '-')}</div>
           <div><strong>Especialidades</strong>${this.escapeHtml(req.especialidades || req.especialidad || '-')}</div>

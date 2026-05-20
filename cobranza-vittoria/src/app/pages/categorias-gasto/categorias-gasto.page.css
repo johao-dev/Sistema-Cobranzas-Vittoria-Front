@@ -19,3 +19,29 @@
 @media (max-width: 760px) {
   .actions--stack-mobile { flex-direction: column; }
 }
+
+/* HOTFIX V15 - Categorías de gasto: tabla compacta */
+.table-wrap table {
+  width: 100% !important;
+  min-width: 520px !important;
+  table-layout: fixed !important;
+}
+.table-wrap table th,
+.table-wrap table td {
+  padding: 7px 9px !important;
+  font-size: .78rem !important;
+  line-height: 1.18 !important;
+}
+.table-wrap table th:nth-child(1),
+.table-wrap table td:nth-child(1) { width: auto !important; }
+.table-wrap table th:nth-child(2),
+.table-wrap table td:nth-child(2) { width: 96px !important; }
+.table-wrap table th:nth-child(3),
+.table-wrap table td:nth-child(3) { width: 86px !important; min-width: 86px !important; max-width: 86px !important; }
+.table-wrap .actions-select {
+  width: 78px !important;
+  min-width: 78px !important;
+  max-width: 78px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+}

@@ -20,6 +20,13 @@ export class App {
   sidebarCollapsed = false;
   mobileMenuOpen = false;
   currentUrl = this.router.url;
+  openMenus: Record<string, boolean> = {
+    general: true,
+    operaciones: true,
+    gestionObra: true,
+    gastosProyecto: false,
+    mantenimiento: false
+  };
 
   constructor() {
     this.router.events.pipe(filter(evt => evt instanceof NavigationEnd)).subscribe((evt: any) => {
@@ -78,6 +85,17 @@ export class App {
       this.sidebarCollapsed = !this.sidebarCollapsed;
     }
     this.cdr.detectChanges();
+  }
+
+
+  toggleMenu(key: string): void {
+    if (this.sidebarCollapsed) return;
+    this.openMenus[key] = !this.openMenus[key];
+    this.cdr.detectChanges();
+  }
+
+  isMenuOpen(key: string): boolean {
+    return !!this.openMenus[key] && !this.sidebarCollapsed;
   }
 
   closeMobileMenu(): void {

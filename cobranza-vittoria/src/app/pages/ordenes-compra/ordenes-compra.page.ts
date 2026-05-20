@@ -74,16 +74,42 @@ export class OrdenesCompraPage implements OnInit {
   }
 
   guardarNuevoProveedor(): void {
-    if (!String(this.proveedorForm.razonSocial || '').trim()) {
+    const razonSocial = String(this.proveedorForm.razonSocial || '').trim();
+    const ruc = String(this.proveedorForm.ruc || '').trim();
+    if (!razonSocial) {
       this.msg = 'Ingresa la razón social del proveedor.';
       return;
     }
 
     this.maestra.guardarProveedor(this.proveedorForm).subscribe({
-      next: () => {
-        this.msg = 'Proveedor creado correctamente.';
-        this.cerrarProveedorModal();
-        this.loadCatalogos();
+      next: (resp: any) => {
+        const idCreado = Number(resp?.idProveedor ?? resp?.IdProveedor ?? 0);
+        this.maestra.proveedores(true).subscribe({
+          next: (proveedores: any) => {
+            this.proveedores = proveedores || [];
+            const proveedorCreado = this.proveedores.find((p: any) =>
+              (idCreado && Number(p.idProveedor ?? p.IdProveedor) === idCreado) ||
+              (ruc && String(p.ruc ?? p.Ruc ?? '').trim() === ruc) ||
+              String(p.razonSocial ?? p.RazonSocial ?? '').trim().toUpperCase() === razonSocial.toUpperCase()
+            );
+            const idProveedor = Number(proveedorCreado?.idProveedor ?? proveedorCreado?.IdProveedor ?? idCreado ?? 0);
+            if (idProveedor) {
+              this.form.idProveedor = idProveedor;
+              this.form.items = (this.form.items || []).map((item: any) => ({
+                ...item,
+                idProveedor: item.idProveedor || idProveedor
+              }));
+            }
+            this.msg = 'Proveedor creado correctamente.';
+            this.cerrarProveedorModal();
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            this.msg = 'Proveedor creado correctamente. Actualiza el listado si no aparece en el combo.';
+            this.cerrarProveedorModal();
+            this.cdr.detectChanges();
+          }
+        });
       },
       error: (e: any) => {
         this.msg = e?.error?.message || 'No se pudo crear el proveedor.';
@@ -348,6 +374,21 @@ export class OrdenesCompraPage implements OnInit {
     win.document.close();
     win.focus();
     setTimeout(() => win.print(), 400);
+  }
+
+
+  normalizarNombreSolicitante(value: any): string {
+    const raw = String(value ?? '').replace(/\s+/g, ' ').trim();
+    if (!raw) return '-';
+    const parts = raw.split(' ').filter(Boolean);
+    const normalized: string[] = [];
+    for (const part of parts) {
+      const key = part.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      if (!normalized.some(x => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() === key)) {
+        normalized.push(part);
+      }
+    }
+    return normalized.join(' ') || raw;
   }
 
   private createEmptyProveedorForm(): any {

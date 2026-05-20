@@ -25,7 +25,7 @@
         </select>
       </div>
       <div class="field">
-        <label>Concepto</label>
+        <label>{{ conceptoLabel }}</label>
         <select [(ngModel)]="filtros.concepto" (change)="load()">
           <option value="">Todos</option>
           <option *ngFor="let c of conceptos" [value]="c">{{ c }}</option>
@@ -51,7 +51,7 @@
             <th>Fecha</th>
             <th>Proyecto</th>
             <th>Proveedor</th>
-            <th>Concepto</th>
+            <th>{{ conceptoLabel }}</th>
             <th class="table-number">Dólares</th>
             <th>Fecha TC</th>
             <th class="table-number">TC</th>
@@ -78,6 +78,7 @@
                 <option value="">Acciones</option>
                 <option value="edit">Editar</option>
                 <option value="archivos">Archivos</option>
+                <option value="descargar" *ngIf="row.totalFacturas">Descargar</option>
                 <option value="estado">{{ row.estado === 'Activo' ? 'Desactivar' : 'Activar' }}</option>
               </select>
             </td>
@@ -98,7 +99,7 @@
 
       <div class="field" style="grid-column: 1 / -1;"><label>Proyecto</label><select [(ngModel)]="form.idProyecto"><option [ngValue]="null">Seleccionar</option><option *ngFor="let p of proyectos" [ngValue]="p.idProyecto">{{ p.nombreProyecto }}</option></select></div>
       <div class="field" style="grid-column: 1 / -1;"><label>Proveedor</label><select [(ngModel)]="form.idProveedorTerreno"><option [ngValue]="null">Seleccionar</option><option *ngFor="let p of proveedores" [ngValue]="p.idProveedorTerreno">{{ p.razonSocial }}</option></select></div>
-      <div class="field" style="grid-column: 1 / -1;"><label>Concepto</label><select [(ngModel)]="form.concepto"><option value="">Seleccionar</option><option *ngFor="let c of conceptos" [value]="c">{{ c }}</option></select></div>
+      <div class="field" style="grid-column: 1 / -1;"><label>{{ conceptoLabel }}</label><select [(ngModel)]="form.concepto"><option value="">Seleccionar</option><option *ngFor="let c of conceptos" [value]="c">{{ c }}</option></select></div>
 
       <div class="field"><label>Monto en dólares</label><input type="number" min="0" step="0.01" [(ngModel)]="form.montoDolares" (ngModelChange)="onDolaresInput()" placeholder="0.00" /></div>
       <div class="field"><label>Fecha Tipo Cambio</label><input type="date" [(ngModel)]="form.fechaTipoCambio" (ngModelChange)="onFechaTipoCambioChange($event)" /></div>

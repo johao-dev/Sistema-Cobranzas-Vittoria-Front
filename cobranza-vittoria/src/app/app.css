@@ -237,3 +237,46 @@
   .topbar__subtitle { display: none; }
   .btn-logout { padding: 9px 12px; }
 }
+
+
+/* HOTFIX V15 - Menú lateral desplegable */
+.nav-section--collapsible { margin-top: 12px; }
+.nav-toggle,
+.nav-subtoggle {
+  width: 100%;
+  border: 0;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  text-align: left;
+  font-family: inherit;
+}
+.nav-toggle {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.12);
+  font-size: .74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.nav-subtoggle {
+  margin: 6px 0 4px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.08);
+  font-size: .78rem;
+  font-weight: 900;
+}
+.nav-toggle:hover, .nav-subtoggle:hover { background: rgba(255,255,255,.18); }
+.nav-toggle__chev { transition: transform .16s ease; font-size: .9rem; }
+.nav-toggle.open .nav-toggle__chev, .nav-subtoggle.open .nav-toggle__chev { transform: rotate(180deg); }
+.nav-panel { padding-top: 6px; }
+.nav-subpanel { padding-left: 8px; border-left: 1px solid rgba(255,255,255,.18); margin-left: 6px; }
+.nav-subpanel a { padding: 9px 10px; font-size: .86rem; margin-bottom: 3px; }
+.app-shell--sidebar-collapsed .nav-toggle,
+.app-shell--sidebar-collapsed .nav-subtoggle,
+.app-shell--sidebar-collapsed .nav-panel { display: none; }
