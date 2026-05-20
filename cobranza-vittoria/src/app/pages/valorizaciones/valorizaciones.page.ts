@@ -63,6 +63,10 @@ export class ValorizacionesPage implements OnInit {
   msg = '';
   cargando = false;
 
+  proveedorConfiguracionTexto = '';
+  proveedorConfiguracionDropdownOpen = false;
+  private proveedorConfiguracionBlurTimer: any = null;
+
   constructor(private maestra: MaestraService, private valorizaciones: ValorizacionesService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
@@ -129,10 +133,23 @@ export class ValorizacionesPage implements OnInit {
     return { cotizacion, garantia, detraccion, facturado, transferido, resta };
   }
 
+  get proveedoresConfiguracionFiltrados(): any[] {
+    const texto = this.normalizarTexto(this.proveedorConfiguracionTexto);
+    if (!texto) return [];
+
+    return (this.proveedores || [])
+      .filter(p => this.normalizarTexto(p?.razonSocial).includes(texto))
+      .slice(0, 6);
+  }
+
 
   cargarCatalogos(): void {
     this.maestra.proyectos(true).subscribe(x => { this.proyectos = x || []; this.cdr.detectChanges(); });
-    this.maestra.proveedores(true).subscribe(x => { this.proveedores = x || []; this.cdr.detectChanges(); });
+    this.maestra.proveedores(true).subscribe(x => {
+      this.proveedores = x || [];
+      this.sincronizarTextoProveedorSeleccionado();
+      this.cdr.detectChanges();
+    });
     this.maestra.especialidades(true).subscribe(x => { this.especialidades = x || []; this.cdr.detectChanges(); });
   }
 
@@ -155,6 +172,59 @@ export class ValorizacionesPage implements OnInit {
     this.cargarValorizaciones();
   }
 
+  abrirProveedorConfiguracion(): void {
+    if (this.proveedorConfiguracionBlurTimer) clearTimeout(this.proveedorConfiguracionBlurTimer);
+    this.proveedorConfiguracionDropdownOpen = true;
+  }
+
+  cerrarProveedorConfiguracion(): void {
+    if (this.proveedorConfiguracionBlurTimer) clearTimeout(this.proveedorConfiguracionBlurTimer);
+    this.proveedorConfiguracionDropdownOpen = false;
+  }
+
+  cerrarProveedorConfiguracionConDelay(): void {
+    if (this.proveedorConfiguracionBlurTimer) clearTimeout(this.proveedorConfiguracionBlurTimer);
+    this.proveedorConfiguracionBlurTimer = setTimeout(() => {
+      this.normalizarProveedorConfiguracion();
+      this.proveedorConfiguracionDropdownOpen = false;
+      this.cdr.detectChanges();
+    }, 120);
+  }
+
+  onProveedorConfiguracionTextoChange(value: string): void {
+    this.proveedorConfiguracionTexto = value || '';
+    this.proveedorConfiguracionDropdownOpen = true;
+
+    const proveedor = this.buscarProveedorPorNombreExacto(this.proveedorConfiguracionTexto);
+    this.formConfiguracion.idProveedor = proveedor ? proveedor.idProveedor : null;
+  }
+
+  seleccionarProveedorConfiguracion(proveedor: any): void {
+    if (!proveedor) return;
+    this.formConfiguracion.idProveedor = proveedor.idProveedor;
+    this.proveedorConfiguracionTexto = proveedor.razonSocial || '';
+    this.cerrarProveedorConfiguracion();
+  }
+
+  limpiarProveedorConfiguracion(): void {
+    this.formConfiguracion.idProveedor = null;
+    this.proveedorConfiguracionTexto = '';
+    this.proveedorConfiguracionDropdownOpen = false;
+  }
+
+  normalizarProveedorConfiguracion(): void {
+    const proveedor = this.buscarProveedorPorNombreExacto(this.proveedorConfiguracionTexto);
+    if (proveedor) {
+      this.formConfiguracion.idProveedor = proveedor.idProveedor;
+      this.proveedorConfiguracionTexto = proveedor.razonSocial || '';
+      return;
+    }
+
+    if (!String(this.proveedorConfiguracionTexto || '').trim()) {
+      this.formConfiguracion.idProveedor = null;
+    }
+  }
+
   editarConfiguracion(row: any): void {
     this.formConfiguracion = {
       idConfiguracion: row.idConfiguracion,
@@ -167,6 +237,7 @@ export class ValorizacionesPage implements OnInit {
       observacion: this.formConfiguracion.observacion || '',
       usuario: 'system'
     };
+    this.proveedorConfiguracionTexto = row.proveedor || this.obtenerNombreProveedor(row.idProveedor);
   }
 
   guardarConfiguracion(): void {
@@ -187,6 +258,8 @@ export class ValorizacionesPage implements OnInit {
       next: () => {
         this.msg = 'Configuración guardada correctamente.';
         this.formConfiguracion = { idConfiguracion: null, idProyecto: null, idProveedor: null, idEspecialidad: null, moneda: 'PEN', montoCotizacion: null, periodo: '', observacion: '', usuario: 'system' };
+        this.proveedorConfiguracionTexto = '';
+        this.proveedorConfiguracionDropdownOpen = false;
         this.formValorizacion = { idValorizacion: null, idConfiguracion: null, periodo: this.defaultPeriodo(), observacion: '', usuario: 'system' };
         this.cargarConfiguraciones();
         this.cdr.detectChanges();
@@ -483,6 +556,30 @@ export class ValorizacionesPage implements OnInit {
 
   detraccionLabel(tipo: string | null | undefined): string {
     return this.detraccionOptions.find(x => x.value === tipo)?.label || 'Sin detracción';
+  }
+
+  private sincronizarTextoProveedorSeleccionado(): void {
+    if (!this.formConfiguracion.idProveedor) return;
+    this.proveedorConfiguracionTexto = this.obtenerNombreProveedor(this.formConfiguracion.idProveedor);
+  }
+
+  private obtenerNombreProveedor(idProveedor: any): string {
+    const proveedor = this.proveedores.find(p => Number(p.idProveedor) === Number(idProveedor));
+    return proveedor?.razonSocial || '';
+  }
+
+  private buscarProveedorPorNombreExacto(nombre: string): any | null {
+    const normalizado = this.normalizarTexto(nombre);
+    if (!normalizado) return null;
+    return this.proveedores.find(p => this.normalizarTexto(p?.razonSocial) === normalizado) || null;
+  }
+
+  private normalizarTexto(value: any): string {
+    return String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toUpperCase();
   }
 
   private defaultPeriodo(): string {

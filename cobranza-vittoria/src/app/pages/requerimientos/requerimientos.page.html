@@ -140,7 +140,7 @@
       <label>Solicitante</label>
       <select [(ngModel)]="form.idUsuarioSolicitante">
         <option [ngValue]="null">Seleccionar</option>
-        <option *ngFor="let u of usuarios" [ngValue]="u.idUsuario">{{ nombreUsuarioSolicitante(u) }}</option>
+        <option *ngFor="let s of solicitantesCombo" [ngValue]="s.idUsuario" [disabled]="!s.idUsuario">{{ s.nombre }}</option>
       </select>
     </div>
     <div class="field compact-field">

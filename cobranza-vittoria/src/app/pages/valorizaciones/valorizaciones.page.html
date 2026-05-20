@@ -42,12 +42,48 @@
         </select>
       </div>
 
-      <div class="field">
+      <div class="field field-autocomplete">
         <label>Proveedor</label>
-        <select [(ngModel)]="formConfiguracion.idProveedor">
-          <option [ngValue]="null">🔍 Buscar / seleccionar proveedor</option>
-          <option *ngFor="let p of proveedores" [ngValue]="p.idProveedor">{{ p.razonSocial }}</option>
-        </select>
+        <div class="proveedor-autocomplete" [class.is-open]="proveedorConfiguracionDropdownOpen">
+          <input
+            type="text"
+            [(ngModel)]="proveedorConfiguracionTexto"
+            (input)="onProveedorConfiguracionTextoChange(proveedorConfiguracionTexto)"
+            (focus)="abrirProveedorConfiguracion()"
+            (blur)="cerrarProveedorConfiguracionConDelay()"
+            (keydown.escape)="cerrarProveedorConfiguracion()"
+            placeholder="Escribe para buscar proveedor"
+            autocomplete="off"
+          />
+          <button
+            type="button"
+            class="proveedor-autocomplete__clear"
+            *ngIf="proveedorConfiguracionTexto"
+            (mousedown)="$event.preventDefault()"
+            (click)="limpiarProveedorConfiguracion()"
+            aria-label="Limpiar proveedor"
+          >×</button>
+
+          <div class="proveedor-autocomplete__panel" *ngIf="proveedorConfiguracionDropdownOpen">
+            <div class="proveedor-autocomplete__empty" *ngIf="!proveedorConfiguracionTexto">
+              Escribe para buscar proveedor.
+            </div>
+
+            <button
+              type="button"
+              class="proveedor-autocomplete__option"
+              *ngFor="let p of proveedoresConfiguracionFiltrados"
+              (mousedown)="$event.preventDefault()"
+              (click)="seleccionarProveedorConfiguracion(p)"
+            >
+              {{ p.razonSocial }}
+            </button>
+
+            <div class="proveedor-autocomplete__empty" *ngIf="proveedorConfiguracionTexto && !proveedoresConfiguracionFiltrados.length">
+              No se encontraron proveedores.
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="field field-especialidad-compacta">

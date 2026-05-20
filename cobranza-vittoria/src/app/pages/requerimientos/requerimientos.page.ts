@@ -6,6 +6,12 @@ import { MaestraService } from '../../core/services/maestra.service';
 import { SeguridadService } from '../../core/services/seguridad.service';
 import { NotificationService } from '../../core/services/notification.service';
 
+type SolicitanteCombo = {
+  nombre: string;
+  idUsuario: number | null;
+  claves: string[];
+};
+
 @Component({
   standalone: true,
   selector: 'app-requerimientos-page',
@@ -20,6 +26,12 @@ export class RequerimientosPage implements OnInit {
   materiales: any[] = [];
   unidadesMedida: any[] = [];
   usuarios: any[] = [];
+  private readonly solicitantesBase: SolicitanteCombo[] = [
+    { nombre: 'Administrador', idUsuario: null, claves: ['administrador'] },
+    { nombre: 'Contable', idUsuario: null, claves: ['contable'] },
+    { nombre: 'Ingeniero', idUsuario: null, claves: ['ingeniero'] },
+    { nombre: 'Jefe de Almacen', idUsuario: null, claves: ['jefe de almacen', 'jefe almacen', 'almacen'] }
+  ];
   detalle: any = null;
   formModalOpen = false;
   detalleModalOpen = false;
@@ -69,6 +81,13 @@ export class RequerimientosPage implements OnInit {
 
   msg = '';
   saving = false;
+
+  get solicitantesCombo(): SolicitanteCombo[] {
+    return this.solicitantesBase.map((item) => ({
+      ...item,
+      idUsuario: this.buscarIdUsuarioPorSolicitante(item.claves)
+    }));
+  }
 
   get especialidadesSeleccionadas(): string[] {
     const values = (this.form.items || [])
@@ -404,19 +423,33 @@ export class RequerimientosPage implements OnInit {
     return this.normalizarNombreSolicitante(`${nombres} ${apellidos}`);
   }
 
+  private buscarIdUsuarioPorSolicitante(claves: string[]): number | null {
+    const usuario = (this.usuarios || []).find((u: any) => {
+      const nombre = this.normalizarTexto(`${u?.nombres ?? u?.Nombres ?? ''} ${u?.apellidos ?? u?.Apellidos ?? ''}`);
+      return claves.some((clave) => nombre.includes(this.normalizarTexto(clave)));
+    });
+
+    const id = Number(usuario?.idUsuario ?? usuario?.IdUsuario ?? 0);
+    return id > 0 ? id : null;
+  }
+
+  private normalizarTexto(value: any): string {
+    return String(value ?? '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+  }
+
   normalizarNombreSolicitante(value: any): string {
-    const raw = String(value ?? '').replace(/\s+/g, ' ').trim();
-    if (!raw) return '-';
-    const parts = raw.split(' ').filter(Boolean);
-    const normalized: string[] = [];
-    for (const part of parts) {
-      const key = part.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-      if (!normalized.some(x => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() === key)) {
-        normalized.push(part);
-      }
-    }
-    const result = normalized.join(' ').trim();
-    return result || raw;
+    const normalized = this.normalizarTexto(value);
+    if (!normalized) return '-';
+    if (normalized.includes('administrador')) return 'Administrador';
+    if (normalized.includes('contable')) return 'Contable';
+    if (normalized.includes('ingeniero')) return 'Ingeniero';
+    if (normalized.includes('jefe') && normalized.includes('almacen')) return 'Jefe de Almacen';
+    return String(value ?? '').replace(/\s+/g, ' ').trim() || '-';
   }
 
   descargarPdfRequerimiento(): void {
