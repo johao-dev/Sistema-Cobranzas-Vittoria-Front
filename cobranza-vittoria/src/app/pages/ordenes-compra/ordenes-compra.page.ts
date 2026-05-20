@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ComprasService } from '../../core/services/compras.service';
 import { MaestraService } from '../../core/services/maestra.service';
 import { SeguridadService } from '../../core/services/seguridad.service';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   standalone: true,
@@ -44,6 +45,7 @@ export class OrdenesCompraPage implements OnInit {
     private compras: ComprasService,
     private maestra: MaestraService,
     private seguridad: SeguridadService,
+    private notifyService: NotificationService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -87,6 +89,34 @@ export class OrdenesCompraPage implements OnInit {
       },
       error: (e: any) => {
         this.msg = e?.error?.message || 'No se pudo crear el proveedor.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  buscarRucProveedor(): void {
+    if (!this.proveedorForm.ruc || this.proveedorForm.ruc.toString().trim().length !== 11) {
+      return;
+    }
+
+    this.maestra.consultaRuc(this.proveedorForm.ruc).subscribe({
+      next: (res: any) => {
+        if (res && res.numero_documento) {
+          this.proveedorForm.razonSocial = res.razon_social || '';
+          this.proveedorForm.direccion = res.direccion !== '-' ? (res.direccion || '') : '';
+          this.proveedorForm.activo = res.estado === 'ACTIVO';
+          
+          this.msg = 'Datos recuperados de SUNAT correctamente.';
+          this.notifyService.show(this.msg, 'success');
+        } else {
+          this.msg = 'No se encontraron datos para el RUC ingresado.';
+          this.notifyService.show(this.msg, 'info');
+        }
+        this.cdr.detectChanges();
+      },
+      error: (e) => {
+        this.msg = 'Error al consultar el RUC. Verifique el número ingresado.';
+        this.notifyService.show(this.msg, 'error');
         this.cdr.detectChanges();
       }
     });

@@ -164,7 +164,7 @@
   <div class="panel-title">Nuevo proveedor</div>
   <div class="form-grid two">
     <div class="field full-width"><label>Razón social / Nombre comercial</label><input [(ngModel)]="proveedorForm.razonSocial"></div>
-    <div class="field"><label>RUC</label><input [(ngModel)]="proveedorForm.ruc"></div>
+    <div class="field"><label>RUC</label><input [(ngModel)]="proveedorForm.ruc" (blur)="buscarRucProveedor()" (keyup.enter)="buscarRucProveedor()"></div>
     <div class="field"><label>Contacto</label><input [(ngModel)]="proveedorForm.contacto"></div>
     <div class="field"><label>Teléfono</label><input [(ngModel)]="proveedorForm.telefono"></div>
     <div class="field"><label>Correo</label><input [(ngModel)]="proveedorForm.correo"></div>
