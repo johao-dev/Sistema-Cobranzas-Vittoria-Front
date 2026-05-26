@@ -94,9 +94,9 @@
       <label>Cantidad salida</label>
       <input type="number" min="0.01" step="0.01" [(ngModel)]="salida.cantidadSalida" />
     </div>
-    <div class="field" style="grid-column:1/-1;">
+    <div class="field observacion-salida-field">
       <label>Observación</label>
-      <input [(ngModel)]="salida.observacion" />
+      <input [(ngModel)]="salida.observacion" placeholder="Observación" />
     </div>
   </div>
 
@@ -122,8 +122,8 @@
           <th>Fecha</th>
           <th>Material</th>
           <th>Entrada</th>
-          <th>Salida</th>
-          <th>Stock</th>
+          <th>Disponible</th>
+          <th class="kardex-faltante-col">Faltante</th>
           <th>Observaciones</th>
         </tr>
       </thead>
@@ -134,9 +134,9 @@
           <td><strong *ngIf="esNuevoGrupo(i)">{{ row.especialidad || row.Especialidad || '-' }}</strong></td>
           <td>{{ row.fechaMovimiento || row.FechaMovimiento ? ((row.fechaMovimiento || row.FechaMovimiento) | date:'dd/MM/yyyy') : '-' }}</td>
           <td>{{ row.material || row.Material || '-' }}</td>
-          <td>{{ row.entrada || row.Entrada || 0 }}</td>
-          <td>{{ row.salida || row.Salida || 0 }}</td>
-          <td>{{ row.stock || row.Stock || 0 }}</td>
+          <td>{{ formatCantidad(row.entrada || row.Entrada || 0) }}</td>
+          <td>{{ formatCantidad(row.salida || row.Salida || 0) }}</td>
+          <td class="kardex-faltante">{{ formatCantidad(faltanteComprar(row)) }}</td>
           <td>{{ row.observacion || row.Observacion || '-' }}</td>
         </tr>
       </tbody>

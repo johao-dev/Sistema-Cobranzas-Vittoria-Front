@@ -70,8 +70,8 @@
 </section>
 
 <div class="design-modal-backdrop" *ngIf="compraFlowModalOpen" (click)="cerrarFlowModal()"></div>
-<section class="panel panel--form design-modal-card design-modal-card--xl" *ngIf="compraFlowModalOpen" (click)="$event.stopPropagation()">
-  <button type="button" class="modal-close" (click)="cerrarFlowModal()" aria-label="Cerrar">×</button>
+<section class="panel panel--form design-modal-card design-modal-card--xl compra-flow-card" [class.price-modal-visible]="modalOpen" *ngIf="compraFlowModalOpen" (click)="$event.stopPropagation()">
+  <button type="button" class="modal-close" *ngIf="!modalOpen" (click)="cerrarFlowModal()" aria-label="Cerrar">×</button>
   <div class="panel-title">Detalle / cierre de compra</div>
 
   <div *ngIf="detalleOc">
@@ -216,7 +216,7 @@
         <div class="panel-title purchase-modal__title">Monto total para {{ modalItem.material }}</div>
         <div class="modal-sub">Ingresa el monto total. El subtotal sin IGV y el IGV se calculan automáticamente.</div>
       </div>
-      <button class="modal-close" type="button" (click)="cerrarModal()">×</button>
+      <button class="modal-close purchase-modal__close" type="button" (click)="cerrarModal()" aria-label="Cerrar">×</button>
     </div>
 
     <div class="purchase-modal__meta">

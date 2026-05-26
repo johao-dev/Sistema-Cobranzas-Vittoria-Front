@@ -344,3 +344,181 @@
 .docs-table table {
   min-width: max(100%, 760px) !important;
 }
+
+/* HOTFIX V22 - tabla de compras más compacta */
+.purchase-table table {
+  min-width: 760px !important;
+  table-layout: fixed !important;
+}
+.purchase-table th,
+.purchase-table td {
+  padding: 7px 8px !important;
+  font-size: .78rem !important;
+  line-height: 1.18 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+.purchase-table th:nth-child(1),
+.purchase-table td:nth-child(1) { width: 150px !important; }
+.purchase-table th:nth-child(2),
+.purchase-table td:nth-child(2) { width: 170px !important; }
+.purchase-table th:nth-child(3),
+.purchase-table td:nth-child(3) { width: 88px !important; text-align: center !important; }
+.purchase-table th:nth-child(4),
+.purchase-table td:nth-child(4) { width: 88px !important; text-align: center !important; }
+.purchase-table th:nth-child(5),
+.purchase-table td:nth-child(5) { width: 180px !important; }
+.purchase-action-col {
+  width: 118px !important;
+  min-width: 118px !important;
+  max-width: 118px !important;
+  text-align: center !important;
+}
+.action-btn--price {
+  min-width: 98px !important;
+  max-width: 108px !important;
+  padding: 7px 8px !important;
+  font-size: .76rem !important;
+  white-space: nowrap !important;
+}
+
+
+/* HOTFIX V23 - Compras: tabla y modal de monto más limpios */
+.compra-flow-card.price-modal-visible > .modal-close {
+  display: none !important;
+}
+.purchase-table table {
+  min-width: 820px !important;
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+.purchase-table th,
+.purchase-table td {
+  padding: 8px 10px !important;
+  font-size: .82rem !important;
+  line-height: 1.2 !important;
+  vertical-align: middle !important;
+}
+.purchase-table th:nth-child(1),
+.purchase-table td:nth-child(1) { width: 15% !important; }
+.purchase-table th:nth-child(2),
+.purchase-table td:nth-child(2) { width: 24% !important; }
+.purchase-table th:nth-child(3),
+.purchase-table td:nth-child(3) { width: 11% !important; text-align: center !important; }
+.purchase-table th:nth-child(4),
+.purchase-table td:nth-child(4) { width: 10% !important; text-align: center !important; }
+.purchase-table th:nth-child(5),
+.purchase-table td:nth-child(5) { width: 25% !important; }
+.purchase-table th:nth-child(6),
+.purchase-table td:nth-child(6),
+.purchase-action-col {
+  width: 138px !important;
+  min-width: 138px !important;
+  max-width: 138px !important;
+  text-align: center !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+.purchase-table td:nth-child(6) .actions {
+  justify-content: center !important;
+}
+.action-btn--price {
+  width: 116px !important;
+  min-width: 116px !important;
+  max-width: 116px !important;
+  padding: 7px 8px !important;
+  font-size: .76rem !important;
+}
+.purchase-modal {
+  width: min(760px, calc(100vw - 44px)) !important;
+  padding: 20px !important;
+  border-radius: 22px !important;
+}
+.purchase-modal__header {
+  margin-bottom: 12px !important;
+}
+.purchase-modal__title {
+  font-size: 1.05rem !important;
+}
+.modal-sub {
+  font-size: .86rem !important;
+}
+.purchase-modal__meta {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  margin-bottom: 12px !important;
+}
+.meta-card {
+  padding: 10px 12px !important;
+  border-radius: 14px !important;
+}
+.meta-card strong {
+  font-size: .9rem !important;
+  line-height: 1.25 !important;
+  overflow-wrap: anywhere !important;
+}
+.meta-label {
+  font-size: .74rem !important;
+  margin-bottom: 4px !important;
+}
+.field-segmented {
+  margin-bottom: 12px !important;
+}
+.segmented-control {
+  padding: 4px !important;
+  border-radius: 14px !important;
+}
+.segmented-option {
+  min-width: 54px !important;
+  padding: 8px 12px !important;
+  border-radius: 10px !important;
+}
+.purchase-modal__grid {
+  gap: 10px 14px !important;
+}
+.purchase-modal__grid input,
+.purchase-modal__grid select {
+  min-height: 42px !important;
+  height: 42px !important;
+}
+.purchase-modal__grid label {
+  margin-bottom: 5px !important;
+}
+.purchase-modal .modal-footer {
+  margin-top: 14px !important;
+}
+@media (max-width: 900px) {
+  .purchase-modal__meta { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .purchase-modal { width: min(720px, calc(100vw - 24px)) !important; }
+}
+@media (max-width: 560px) {
+  .purchase-modal__meta { grid-template-columns: 1fr !important; }
+}
+
+
+/* HOTFIX V24 - Compras: alinear X dentro del modal de Colocar precio */
+.purchase-modal {
+  position: relative !important;
+}
+.purchase-modal__header {
+  align-items: flex-start !important;
+}
+.purchase-modal__close {
+  position: static !important;
+  top: auto !important;
+  right: auto !important;
+  flex: 0 0 38px !important;
+  width: 38px !important;
+  height: 38px !important;
+  margin-left: 14px !important;
+  align-self: flex-start !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  z-index: 1 !important;
+}
+.compra-flow-card.price-modal-visible > .modal-close {
+  display: none !important;
+}

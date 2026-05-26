@@ -185,6 +185,19 @@ export class KardexPage implements OnInit {
   }
 
 
+
+  formatCantidad(value: any): string {
+    const num = Number(value || 0);
+    if (Number.isNaN(num)) return '0';
+    return num.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  }
+
+  faltanteComprar(row: any): number {
+    const entrada = Number(row?.entrada ?? row?.Entrada ?? 0) || 0;
+    const salida = Number(row?.salida ?? row?.Salida ?? 0) || 0;
+    return Math.max(entrada - salida, 0);
+  }
+
   private formatDate(value: any): string {
     if (!value) return '-';
     const date = new Date(value);

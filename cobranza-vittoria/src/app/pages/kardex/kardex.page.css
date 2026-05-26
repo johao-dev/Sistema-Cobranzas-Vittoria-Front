@@ -1,0 +1,18 @@
+.kardex-faltante-col {
+  color: #b91c1c;
+}
+
+.kardex-faltante {
+  color: #b91c1c;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* HOTFIX V22 - observación más chica */
+.observacion-salida-field {
+  max-width: 420px;
+}
+.observacion-salida-field input {
+  height: 42px !important;
+}

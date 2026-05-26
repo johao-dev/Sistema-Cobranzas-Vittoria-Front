@@ -107,14 +107,14 @@
         <input [(ngModel)]="formConfiguracion.periodo" placeholder="Ej. 2026-03" />
       </div>
 
-      <div class="field span-2">
+      <div class="field field-cotizacion-config">
         <label>Cotización</label>
         <input type="number" [(ngModel)]="formConfiguracion.montoCotizacion" />
       </div>
 
-      <div class="field full-config-row">
+      <div class="field field-observacion-config">
         <label>Observación</label>
-        <textarea class="textarea-compact" [(ngModel)]="formConfiguracion.observacion"></textarea>
+        <input [(ngModel)]="formConfiguracion.observacion" placeholder="Observación" />
       </div>
     </div>
 
@@ -177,9 +177,9 @@
           <input type="number" [(ngModel)]="formDetalle.montoFactura" (ngModelChange)="onDetalleMontoFacturaChange()" />
         </div>
 
-        <div class="field span-3">
+        <div class="field field-descripcion-detalle">
           <label>Descripción</label>
-          <textarea class="textarea-compact" [(ngModel)]="formDetalle.descripcion"></textarea>
+          <input [(ngModel)]="formDetalle.descripcion" placeholder="Descripción" />
         </div>
 
         <div class="field">

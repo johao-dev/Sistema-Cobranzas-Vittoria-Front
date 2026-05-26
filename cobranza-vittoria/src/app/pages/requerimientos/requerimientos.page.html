@@ -201,7 +201,7 @@
 </section>
 
 <div class="modal-backdrop" *ngIf="modalEspecialidades">
-  <div class="modal-card">
+  <div class="modal-card item-modal-card">
     <div class="modal-header">
       <div>
         <div class="panel-title" style="margin:0;">{{ editingItemIndex !== null ? 'Editar ítem' : 'Agregar ítem' }}</div>
@@ -210,7 +210,7 @@
       <button class="btn btn-ghost" (click)="cerrarModalEspecialidades()">Cerrar</button>
     </div>
 
-    <div class="form-grid two" style="margin-top:12px;">
+    <div class="form-grid two item-modal-grid" style="margin-top:12px;">
       <div class="field">
         <label>Especialidad</label>
         <select [(ngModel)]="modalItem.idEspecialidad" (change)="onModalEspecialidadChange()">
@@ -219,7 +219,7 @@
         </select>
       </div>
 
-      <div class="field">
+      <div class="field material-picker-field">
         <div class="field-label-row">
           <label>Material</label>
           <button class="btn btn-secondary btn-xs" type="button" (click)="abrirFormNuevoMaterial()">+ Agregar material</button>
@@ -241,56 +241,61 @@
       </div>
     </div>
 
-    <div class="inline-material-card" *ngIf="materialFormOpen">
-      <div class="inline-material-card__head">
-        <div>
-          <div class="inline-material-card__title">Nuevo material</div>
-          <div class="helper-text">Registra el material y quedará seleccionado automáticamente en el ítem.</div>
-        </div>
-        <button class="btn btn-ghost btn-xs" type="button" (click)="cerrarFormNuevoMaterial()">Cerrar</button>
-      </div>
 
-      <div class="form-grid two">
-        <div class="field">
-          <label>Especialidad</label>
-          <select [(ngModel)]="nuevoMaterial.idEspecialidad">
-            <option [ngValue]="null">Seleccionar</option>
-            <option *ngFor="let e of especialidades" [ngValue]="getIdEspecialidad(e)">{{ getNombreEspecialidad(e) }}</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Unidad</label>
-          <select [(ngModel)]="nuevoMaterial.unidadMedida">
-            <option value="">Seleccionar</option>
-            <option *ngFor="let u of unidadesMedida" [ngValue]="u.codigo || u.nombre || u.unidadMedida">{{ u.codigo || u.nombre || u.unidadMedida }}</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Material</label>
-          <input [(ngModel)]="nuevoMaterial.descripcion" placeholder="Nombre del material" />
-        </div>
-
-        <div class="field">
-          <label>Código</label>
-          <input [(ngModel)]="nuevoMaterial.codigo" placeholder="Opcional" />
-        </div>
-      </div>
-
-      <div *ngIf="msgMaterial" class="success-box success-box--compact">{{ msgMaterial }}</div>
-
-      <div class="toolbar inline-material-actions">
-        <button class="btn btn-ghost" type="button" (click)="cerrarFormNuevoMaterial()">Cancelar</button>
-        <button class="btn btn-primary" type="button" (click)="guardarMaterialDesdeItem()" [disabled]="savingMaterial">
-          {{ savingMaterial ? 'Guardando...' : 'Guardar material' }}
-        </button>
-      </div>
-    </div>
 
     <div class="toolbar" style="margin-top:14px; justify-content:flex-end;">
       <button class="btn btn-ghost" (click)="cerrarModalEspecialidades()">Cancelar</button>
       <button class="btn btn-primary" (click)="agregarItemDesdeModal()">{{ editingItemIndex !== null ? 'Guardar cambios' : 'Agregar ítem' }}</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-backdrop modal-backdrop--nested" *ngIf="materialFormOpen">
+  <div class="modal-card material-modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <div class="panel-title" style="margin:0;">Nuevo material</div>
+        <div class="helper-text" style="margin:6px 0 0 0;">Registra el material y quedará seleccionado automáticamente en el ítem.</div>
+      </div>
+      <button class="btn btn-ghost" type="button" (click)="cerrarFormNuevoMaterial()">Cerrar</button>
+    </div>
+
+    <div class="form-grid two material-modal-grid">
+      <div class="field">
+        <label>Especialidad</label>
+        <select [(ngModel)]="nuevoMaterial.idEspecialidad">
+          <option [ngValue]="null">Seleccionar</option>
+          <option *ngFor="let e of especialidades" [ngValue]="getIdEspecialidad(e)">{{ getNombreEspecialidad(e) }}</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Unidad</label>
+        <select [(ngModel)]="nuevoMaterial.unidadMedida">
+          <option value="">Seleccionar</option>
+          <option *ngFor="let u of unidadesMedida" [ngValue]="u.codigo || u.nombre || u.unidadMedida">{{ u.codigo || u.nombre || u.unidadMedida }}</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Material</label>
+        <input [(ngModel)]="nuevoMaterial.descripcion" placeholder="Nombre del material" />
+      </div>
+
+      <div class="field">
+        <label>Código</label>
+        <input [(ngModel)]="nuevoMaterial.codigo" placeholder="Opcional" />
+      </div>
+    </div>
+
+    <div *ngIf="msgMaterial" class="success-box success-box--compact">{{ msgMaterial }}</div>
+
+    <div class="toolbar inline-material-actions">
+      <button class="btn btn-ghost" type="button" (click)="cerrarFormNuevoMaterial()">Cancelar</button>
+      <button class="btn btn-primary" type="button" (click)="guardarMaterialDesdeItem()" [disabled]="savingMaterial">
+        {{ savingMaterial ? 'Guardando...' : 'Guardar material' }}
+      </button>
     </div>
   </div>
 </div>

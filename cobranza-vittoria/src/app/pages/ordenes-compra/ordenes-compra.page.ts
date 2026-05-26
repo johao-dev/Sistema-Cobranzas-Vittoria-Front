@@ -196,7 +196,7 @@ export class OrdenesCompraPage implements OnInit {
         this.form.idProyecto = req?.idProyecto ?? null;
         this.form.proyectoNombre = req?.nombreProyecto || row?.nombreProyecto || row?.NombreProyecto || '';
         this.form.idUsuarioCreacion = req?.idUsuarioSolicitante ?? row?.idUsuarioSolicitante ?? null;
-        this.form.usuarioCreacionNombre = req?.solicitante || row?.solicitante || '';
+        this.form.usuarioCreacionNombre = this.normalizarNombreSolicitante(req?.solicitante || row?.solicitante || '');
         this.form.numeroOrdenCompra = this.getNextNumeroOrdenCompra();
         this.form.fechaOrdenCompra = this.todayIso();
         this.form.items = items.map((it: any) => ({
@@ -409,16 +409,13 @@ export class OrdenesCompraPage implements OnInit {
 
   normalizarNombreSolicitante(value: any): string {
     const raw = String(value ?? '').replace(/\s+/g, ' ').trim();
-    if (!raw) return '-';
-    const parts = raw.split(' ').filter(Boolean);
-    const normalized: string[] = [];
-    for (const part of parts) {
-      const key = part.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-      if (!normalized.some(x => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() === key)) {
-        normalized.push(part);
-      }
-    }
-    return normalized.join(' ') || raw;
+    const normalized = raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    if (!normalized) return '-';
+    if (normalized.includes('administrador')) return 'Administrador';
+    if (normalized.includes('contable')) return 'Contable';
+    if (normalized.includes('ingeniero')) return 'Ingeniero';
+    if (normalized.includes('jefe') && normalized.includes('almacen')) return 'Jefe de Almacen';
+    return raw || '-';
   }
 
   private createEmptyProveedorForm(): any {

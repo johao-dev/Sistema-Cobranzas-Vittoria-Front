@@ -14,7 +14,7 @@
     <div class="form-grid two">
       <div class="field"><label>Nombre</label><input [(ngModel)]="form.nombre"></div>
       <div class="field"><label>Estado</label><select [(ngModel)]="form.activo"><option [ngValue]="true">Activo</option><option [ngValue]="false">Inactivo</option></select></div>
-      <div class="field" style="grid-column:1/-1;"><label>Descripción</label><textarea [(ngModel)]="form.descripcion"></textarea></div>
+      <div class="field" style="grid-column:1/-1;"><label>Descripción</label><input [(ngModel)]="form.descripcion" /></div>
     </div>
     <div class="toolbar" style="margin-top:14px;"><button class="btn btn-primary" (click)="save()" [disabled]="!form.nombre">Guardar</button><button class="btn btn-ghost" (click)="reset()">Limpiar</button></div>
     <div *ngIf="msg" class="empty-state" style="margin-top:14px; padding:14px;">{{ msg }}</div>
