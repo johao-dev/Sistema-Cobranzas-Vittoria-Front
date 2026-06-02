@@ -26,6 +26,7 @@ export class OrdenesCompraPage implements OnInit {
   detalleModalOpen = false;
   proveedorModalOpen = false;
   proveedorForm: any = this.createEmptyProveedorForm();
+  filtroProveedorDetalle = 'TODOS';
 
   form: any = {
     numeroOrdenCompra: '',
@@ -62,6 +63,7 @@ export class OrdenesCompraPage implements OnInit {
     (event.target as HTMLSelectElement).value = '';
     if (value === 'detalle') this.verOc(row);
     if (value === 'pdf') this.exportarPdfOrden(row);
+    if (value === 'excel') this.exportarExcelOrden(row);
   }
 
   abrirNuevoProveedor(): void {
@@ -236,10 +238,12 @@ export class OrdenesCompraPage implements OnInit {
           },
           items: (x?.items || []).map((item: any) => ({
             ...item,
-            especialidad: item.especialidad || especialidades
+            especialidad: item.especialidad || especialidades,
+            proveedor: item.proveedor || ordenCompra.proveedor || '-'
           }))
         };
         this.detalleRq = null;
+        this.filtroProveedorDetalle = 'TODOS';
         this.detalleModalOpen = true;
         this.flujoModalOpen = false;
         this.cdr.detectChanges();
@@ -250,6 +254,47 @@ export class OrdenesCompraPage implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+
+  get proveedoresDetalleOc(): string[] {
+    const proveedores = (this.detalleOc?.items || [])
+      .map((item: any) => String(item.proveedor || this.detalleOc?.ordenCompra?.proveedor || '').trim())
+      .filter((value: string) => !!value && value !== '-');
+    return Array.from(new Set<string>(proveedores)).sort((a: string, b: string) => a.localeCompare(b));
+  }
+
+  get itemsDetalleOcFiltrados(): any[] {
+    const items = this.detalleOc?.items || [];
+    if (!items.length) return [];
+    if (!this.filtroProveedorDetalle || this.filtroProveedorDetalle === 'TODOS') {
+      return items.map((item: any) => ({
+        ...item,
+        proveedor: item.proveedor || this.detalleOc?.ordenCompra?.proveedor || '-'
+      }));
+    }
+    return items
+      .map((item: any) => ({
+        ...item,
+        proveedor: item.proveedor || this.detalleOc?.ordenCompra?.proveedor || '-'
+      }))
+      .filter((item: any) => String(item.proveedor || '').trim() === this.filtroProveedorDetalle);
+  }
+
+  exportarPdfDetalleOc(): void {
+    if (!this.detalleOc) return;
+    this.imprimirOrden(this.detalleOc, this.detalleOc.ordenCompra, this.itemsDetalleOcFiltrados, this.proveedorFiltroExportacion());
+  }
+
+  exportarExcelDetalleOc(): void {
+    if (!this.detalleOc) return;
+    this.descargarExcelOrden(this.detalleOc, this.detalleOc.ordenCompra, this.itemsDetalleOcFiltrados, this.proveedorFiltroExportacion());
+  }
+
+  private proveedorFiltroExportacion(): string | null {
+    return this.filtroProveedorDetalle && this.filtroProveedorDetalle !== 'TODOS'
+      ? this.filtroProveedorDetalle
+      : null;
   }
 
   save() {
@@ -350,14 +395,29 @@ export class OrdenesCompraPage implements OnInit {
     });
   }
 
-  private imprimirOrden(data: any, fallbackRow?: any): void {
+  exportarExcelOrden(row: any): void {
+    const id = Number(row?.idOrdenCompra || 0);
+    if (!id) { this.msg = 'No se encontró la O.C. para exportar.'; return; }
+
+    this.compras.orden(id).subscribe({
+      next: (data: any) => this.descargarExcelOrden(data, row),
+      error: () => {
+        this.msg = 'No se pudo cargar la O.C. para exportar.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private imprimirOrden(data: any, fallbackRow?: any, itemsOverride?: any[], proveedorFiltrado?: string | null): void {
     const oc = data?.ordenCompra || {};
     const numeroRequerimiento = oc.numeroRequerimiento || fallbackRow?.numeroRequerimiento || '-';
     const especialidades = oc.especialidades || oc.especialidad || fallbackRow?.especialidades || fallbackRow?.especialidad || '-';
-    const items = (data?.items || []).map((item: any) => ({
+    const items = (itemsOverride || data?.items || []).map((item: any) => ({
       ...item,
-      especialidad: item.especialidad || especialidades
+      especialidad: item.especialidad || especialidades,
+      proveedor: item.proveedor || oc.proveedor || fallbackRow?.proveedor || '-'
     }));
+    const proveedorDocumento = proveedorFiltrado || oc.proveedor || fallbackRow?.proveedor || '-';
     const win = window.open('', '_blank');
     if (!win) return;
 
@@ -390,7 +450,7 @@ export class OrdenesCompraPage implements OnInit {
           <div><strong>Fecha:</strong> ${this.escapeHtml(oc.fechaOrdenCompra ? new Date(oc.fechaOrdenCompra).toLocaleDateString('es-PE') : '-')}</div>
           <div><strong>RQ:</strong> ${this.escapeHtml(numeroRequerimiento)}</div>
           <div><strong>Proyecto:</strong> ${this.escapeHtml(oc.nombreProyecto || '-')}</div>
-          <div><strong>Proveedor:</strong> ${this.escapeHtml(oc.proveedor || '-')}</div>
+          <div><strong>Proveedor:</strong> ${this.escapeHtml(proveedorDocumento)}</div>
           <div><strong>Especialidades:</strong> ${this.escapeHtml(especialidades)}</div>
           <div><strong>Estado:</strong> ${this.escapeHtml(oc.estado || '-')}</div>
         </div>
@@ -406,6 +466,52 @@ export class OrdenesCompraPage implements OnInit {
     setTimeout(() => win.print(), 400);
   }
 
+
+
+  private descargarExcelOrden(data: any, fallbackRow?: any, itemsOverride?: any[], proveedorFiltrado?: string | null): void {
+    const oc = data?.ordenCompra || fallbackRow || {};
+    const numeroRequerimiento = oc.numeroRequerimiento || fallbackRow?.numeroRequerimiento || '-';
+    const especialidades = oc.especialidades || oc.especialidad || fallbackRow?.especialidades || fallbackRow?.especialidad || '-';
+    const items = (itemsOverride || data?.items || []).map((item: any) => ({
+      ...item,
+      especialidad: item.especialidad || especialidades,
+      proveedor: item.proveedor || oc.proveedor || fallbackRow?.proveedor || '-'
+    }));
+    const proveedorDocumento = proveedorFiltrado || oc.proveedor || fallbackRow?.proveedor || '-';
+
+    const lines: any[][] = [];
+    lines.push(['Orden de compra', oc.numeroOrdenCompra || '']);
+    lines.push(['RQ', numeroRequerimiento]);
+    lines.push(['Proyecto', oc.nombreProyecto || '']);
+    lines.push(['Proveedor', proveedorDocumento]);
+    lines.push(['Especialidades', especialidades]);
+    lines.push(['Filtro proveedor', proveedorFiltrado || 'Todos']);
+    lines.push([]);
+    lines.push(['Especialidad', 'Material', 'Unidad', 'Cantidad', 'Proveedor']);
+    items.forEach((item: any) => lines.push([
+      item.especialidad || '-',
+      item.material || '-',
+      item.unidadMedida || '-',
+      Number(item.cantidad || 0),
+      item.proveedor || '-'
+    ]));
+
+    const escapeCell = (value: any) => {
+      const text = String(value ?? '');
+      return /[";\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+    };
+    const csv = lines.map(row => row.map(escapeCell).join(';')).join('\n');
+    const blob = new Blob(['\ufeff' + csv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const proveedorArchivo = proveedorFiltrado ? '_' + proveedorFiltrado.replace(/[^a-zA-Z0-9_-]+/g, '_') : '';
+    a.download = `oc_${String(oc.numeroOrdenCompra || 'detalle').replace(/[^a-zA-Z0-9_-]+/g, '_')}${proveedorArchivo}.xls`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
 
   normalizarNombreSolicitante(value: any): string {
     const raw = String(value ?? '').replace(/\s+/g, ' ').trim();

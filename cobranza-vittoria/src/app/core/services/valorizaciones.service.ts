@@ -35,6 +35,10 @@ export class ValorizacionesService {
     return this.api.http.get<any>(`${this.api.baseUrl}/api/contable/valorizaciones/${id}`);
   }
 
+  valorizacionPorConfiguracion(idConfiguracion: number) {
+    return this.api.http.get<any>(`${this.api.baseUrl}/api/contable/valorizaciones/configuracion/${idConfiguracion}`);
+  }
+
   guardarValorizacion(dto: any) {
     return this.api.http.post<any>(`${this.api.baseUrl}/api/contable/valorizaciones`, dto);
   }

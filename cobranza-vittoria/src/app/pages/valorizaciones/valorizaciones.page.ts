@@ -297,11 +297,83 @@ export class ValorizacionesPage implements OnInit {
       observacion: this.formConfiguracion.observacion || '',
       usuario: 'system'
     };
-    this.onConfiguracionSeleccionada();
+
+    this.cabecera = {
+      idValorizacion: null,
+      idConfiguracion: row.idConfiguracion,
+      proyecto: row.proyecto,
+      proveedor: row.proveedor,
+      especialidad: row.especialidad,
+      moneda: row.moneda,
+      cotizacion: row.montoCotizacion,
+      montoCotizacion: row.montoCotizacion,
+      porcentajeGarantia: row.porcentajeGarantia,
+      porcentajeDetraccion: row.porcentajeDetraccion
+    };
+
     this.detalle = [];
     this.resumen = this.buildResumenInicial(row);
     this.formDetalle = this.detalleVacio();
     this.syncDetalleCalculados();
+    this.cdr.detectChanges();
+
+    this.cargarValorizacionPorConfiguracion(row.idConfiguracion, row);
+  }
+
+  cargarValorizacionPorConfiguracion(idConfiguracion: any, configuracionFallback?: any): void {
+    const id = this.toRequiredNumber(idConfiguracion);
+    if (!id) return;
+
+    this.cargando = true;
+    this.valorizaciones.valorizacionPorConfiguracion(id).subscribe({
+      next: (resp: any) => {
+        const cfg = this.configuraciones.find(x => Number(x.idConfiguracion) === id) || configuracionFallback || null;
+        const cabeceraResp = resp?.cabecera || null;
+
+        this.cabecera = {
+          ...(cfg ? {
+            idConfiguracion: cfg.idConfiguracion,
+            proyecto: cfg.proyecto,
+            proveedor: cfg.proveedor,
+            especialidad: cfg.especialidad,
+            moneda: cfg.moneda,
+            cotizacion: Number(cfg.montoCotizacion || 0),
+            montoCotizacion: Number(cfg.montoCotizacion || 0),
+            porcentajeGarantia: Number(cfg.porcentajeGarantia ?? 0.05),
+            porcentajeDetraccion: Number(cfg.porcentajeDetraccion ?? 0.04)
+          } : {}),
+          ...(cabeceraResp || {})
+        };
+
+        const cotizacion = Number(this.cabecera?.cotizacion ?? this.cabecera?.montoCotizacion ?? cfg?.montoCotizacion ?? 0);
+        this.cabecera.cotizacion = cotizacion;
+        this.cabecera.montoCotizacion = cotizacion;
+        this.cabecera.idConfiguracion = this.cabecera?.idConfiguracion || id;
+
+        this.detalle = Array.isArray(resp?.detalle)
+          ? resp.detalle.filter((d: any) => !d?.idConfiguracion || Number(d.idConfiguracion) === id)
+          : [];
+        this.resumen = resp?.resumen || this.buildResumenInicial(this.cabecera);
+        this.formValorizacion = {
+          idValorizacion: this.cabecera?.idValorizacion || null,
+          idConfiguracion: id,
+          periodo: this.cabecera?.periodo || this.formValorizacion.periodo || this.defaultPeriodo(),
+          observacion: this.cabecera?.observacion || this.formValorizacion.observacion || '',
+          usuario: 'system'
+        };
+        this.formDetalle = this.detalleVacio(this.formValorizacion.idValorizacion);
+        this.syncDetalleCalculados();
+        this.cdr.detectChanges();
+      },
+      error: e => {
+        this.msg = e?.error?.message || 'No se pudo cargar la valorización de la configuración seleccionada.';
+        this.cdr.detectChanges();
+      },
+      complete: () => {
+        this.cargando = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   onAccionConfiguracion(event: Event, row: any): void {
@@ -337,7 +409,7 @@ export class ValorizacionesPage implements OnInit {
         if (idValorizacion) {
           this.formValorizacion.idValorizacion = idValorizacion;
           this.formDetalle.idValorizacion = idValorizacion;
-          this.ver(idValorizacion);
+          this.cargarValorizacionPorConfiguracion(this.formValorizacion.idConfiguracion, this.configuracionActiva);
         }
         this.cargarValorizaciones();
         this.cdr.detectChanges();
@@ -351,8 +423,23 @@ export class ValorizacionesPage implements OnInit {
     this.valorizaciones.valorizacion(idValorizacion).subscribe({
       next: (resp: any) => {
         this.cabecera = resp?.cabecera || null;
+        const cfg = this.configuraciones.find(x => Number(x.idConfiguracion) === Number(this.cabecera?.idConfiguracion || this.formValorizacion.idConfiguracion));
+        if (cfg) {
+          this.cabecera = {
+            ...this.cabecera,
+            idConfiguracion: this.cabecera?.idConfiguracion || cfg.idConfiguracion,
+            proyecto: this.cabecera?.proyecto || cfg.proyecto,
+            proveedor: this.cabecera?.proveedor || cfg.proveedor,
+            especialidad: this.cabecera?.especialidad || cfg.especialidad,
+            moneda: this.cabecera?.moneda || cfg.moneda,
+            cotizacion: Number(this.cabecera?.cotizacion ?? this.cabecera?.montoCotizacion ?? cfg.montoCotizacion ?? 0),
+            montoCotizacion: Number(this.cabecera?.montoCotizacion ?? this.cabecera?.cotizacion ?? cfg.montoCotizacion ?? 0),
+            porcentajeGarantia: Number(this.cabecera?.porcentajeGarantia ?? cfg.porcentajeGarantia ?? 0.05),
+            porcentajeDetraccion: Number(this.cabecera?.porcentajeDetraccion ?? cfg.porcentajeDetraccion ?? 0.04)
+          };
+        }
         this.detalle = resp?.detalle || [];
-        this.resumen = resp?.resumen || null;
+        this.resumen = resp?.resumen || this.buildResumenInicial(this.cabecera);
         this.formValorizacion = {
           idValorizacion: this.cabecera?.idValorizacion || idValorizacion,
           idConfiguracion: this.cabecera?.idConfiguracion || null,
@@ -391,6 +478,7 @@ export class ValorizacionesPage implements OnInit {
       const payload = {
         idDetalle: this.toNullableNumber(this.formDetalle.idDetalle),
         idValorizacion,
+        idConfiguracion: this.toRequiredNumber(this.formValorizacion.idConfiguracion),
         fechaFactura: this.formDetalle.fechaFactura || null,
         numeroFactura: String(this.formDetalle.numeroFactura || '').trim(),
         montoFactura: Number(this.formDetalle.montoFactura || 0),
@@ -410,7 +498,7 @@ export class ValorizacionesPage implements OnInit {
       this.valorizaciones.guardarDetalle(payload).subscribe({
         next: () => {
           this.msg = 'Detalle guardado correctamente.';
-          this.ver(idValorizacion);
+          this.cargarValorizacionPorConfiguracion(this.formValorizacion.idConfiguracion, this.configuracionActiva);
           this.cdr.detectChanges();
         },
         error: e => { this.msg = e?.error?.message || 'No se pudo guardar el detalle.'; this.cdr.detectChanges(); }
@@ -455,7 +543,7 @@ export class ValorizacionesPage implements OnInit {
     this.valorizaciones.eliminarDetalle(idDetalle).subscribe({
       next: () => {
         this.msg = 'Factura eliminada correctamente.';
-        if (this.formValorizacion.idValorizacion) this.ver(this.formValorizacion.idValorizacion);
+        if (this.formValorizacion.idConfiguracion) this.cargarValorizacionPorConfiguracion(this.formValorizacion.idConfiguracion, this.configuracionActiva);
         this.cdr.detectChanges();
       },
       error: e => { this.msg = e?.error?.message || 'No se pudo eliminar la factura.'; this.cdr.detectChanges(); }
@@ -486,7 +574,7 @@ export class ValorizacionesPage implements OnInit {
     this.valorizaciones.uploadDetalleArchivos(Number(idDetalle), this.modalAdjuntarFiles).subscribe({
       next: () => {
         this.msg = 'Facturas adjuntas correctamente.';
-        if (this.formValorizacion.idValorizacion) this.ver(this.formValorizacion.idValorizacion);
+        if (this.formValorizacion.idConfiguracion) this.cargarValorizacionPorConfiguracion(this.formValorizacion.idConfiguracion, this.configuracionActiva);
         this.cerrarAdjuntarFacturas();
         this.cdr.detectChanges();
       },
@@ -621,6 +709,21 @@ export class ValorizacionesPage implements OnInit {
 
   private syncDetalleCalculados(): void {
     this.formDetalle.montoTransferido = this.montoAAbonarCalculado;
+  }
+
+
+  private buscarValorizacionPorConfiguracion(idConfiguracion: any): any | null {
+    const id = Number(idConfiguracion || 0);
+    if (!id) return null;
+    return (this.rows || []).find((row: any) => Number(this.getIdConfiguracion(row)) === id) || null;
+  }
+
+  private getIdConfiguracion(row: any): number {
+    return Number(row?.idConfiguracion ?? row?.IdConfiguracion ?? row?.idProveedorEspecialidadCotizacion ?? row?.IdProveedorEspecialidadCotizacion ?? 0);
+  }
+
+  private getIdValorizacion(row: any): number {
+    return Number(row?.idValorizacion ?? row?.IdValorizacion ?? row?.id ?? row?.Id ?? 0);
   }
 
   private buildResumenInicial(source?: any): any {

@@ -65,6 +65,7 @@
                 <option value="">Acciones</option>
                 <option value="detalle">Detalle</option>
                 <option value="pdf">Exportar PDF</option>
+                <option value="excel">Exportar Excel</option>
               </select>
             </td>
           </tr>
@@ -135,18 +136,33 @@
     <div class="toolbar" style="margin-bottom:14px;">
       <span class="list-chip">{{ detalleOc.ordenCompra?.numeroOrdenCompra }}</span>
       <span class="list-chip">{{ detalleOc.ordenCompra?.estado }}</span>
+      <button class="btn btn-secondary btn-sm" type="button" (click)="exportarExcelDetalleOc()">Exportar Excel proveedor</button>
+      <button class="btn btn-primary btn-sm" type="button" (click)="exportarPdfDetalleOc()">Exportar PDF proveedor</button>
+    </div>
+
+    <div class="toolbar filters-inline" style="margin-bottom:14px;">
+      <div class="field inline-field">
+        <label>Proveedor para descargar</label>
+        <select [(ngModel)]="filtroProveedorDetalle">
+          <option value="TODOS">Todos</option>
+          <option *ngFor="let proveedor of proveedoresDetalleOc" [value]="proveedor">{{ proveedor }}</option>
+        </select>
+      </div>
     </div>
 
     <div class="table-wrap table-wrap--medium" *ngIf="detalleOc.items?.length">
       <table>
         <thead><tr><th>Especialidad</th><th>Material</th><th>Unidad</th><th>Cantidad</th><th>Proveedor</th></tr></thead>
         <tbody>
-          <tr *ngFor="let item of detalleOc.items">
+          <tr *ngFor="let item of itemsDetalleOcFiltrados">
             <td>{{ item.especialidad || detalleOc.ordenCompra?.especialidades || detalleOc.ordenCompra?.especialidad || '-' }}</td>
             <td>{{ item.material }}</td>
             <td>{{ item.unidadMedida }}</td>
             <td>{{ item.cantidad }}</td>
             <td>{{ item.proveedor || '-' }}</td>
+          </tr>
+          <tr *ngIf="!itemsDetalleOcFiltrados.length">
+            <td colspan="5" class="empty-row">No hay ítems para el proveedor seleccionado.</td>
           </tr>
         </tbody>
       </table>

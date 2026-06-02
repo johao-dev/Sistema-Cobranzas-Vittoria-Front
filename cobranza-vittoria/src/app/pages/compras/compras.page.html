@@ -38,7 +38,13 @@
   </div>
 
   <div class="panel panel-embedded compras-cerradas-panel">
-    <div class="panel-title">Compras cerradas</div>
+    <div class="panel-title-row">
+      <div class="panel-title">Compras cerradas</div>
+      <div class="toolbar toolbar--compact" *ngIf="comprasCerradas.length">
+        <button class="btn btn-secondary btn-sm" type="button" (click)="exportarComprasExcel()">Exportar Excel</button>
+        <button class="btn btn-primary btn-sm" type="button" (click)="exportarComprasPdf()">Exportar PDF</button>
+      </div>
+    </div>
 
     <div *ngIf="!comprasCerradas.length" class="empty-state">
       No hay compras cerradas.

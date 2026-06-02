@@ -402,6 +402,72 @@ export class ComprasPage implements OnInit {
     });
   }
 
+
+  exportarComprasExcel(): void {
+    if (!this.comprasCerradas.length) {
+      this.msg = 'No hay compras cerradas para exportar.';
+      this.cdr.detectChanges();
+      return;
+    }
+    const rows: any[][] = [
+      ['N° Compra', 'Fecha', 'Proveedor', 'Proyecto', 'Estado', 'Total']
+    ];
+    this.comprasCerradas.forEach((row: any) => rows.push([
+      row.numeroCompra || row.NumeroCompra || '',
+      (row.fechaCompra || row.FechaCompra) ? new Date(row.fechaCompra || row.FechaCompra).toLocaleDateString('es-PE') : '',
+      row.proveedor || row.Proveedor || '',
+      row.nombreProyecto || row.NombreProyecto || '',
+      row.estado || row.Estado || '',
+      Number(row.montoTotal || row.MontoTotal || row.total || row.Total || 0).toFixed(2)
+    ]));
+    this.downloadExcel(rows, `compras_cerradas_${new Date().toISOString().slice(0, 10)}.xls`);
+  }
+
+  exportarComprasPdf(): void {
+    if (!this.comprasCerradas.length) {
+      this.msg = 'No hay compras cerradas para exportar.';
+      this.cdr.detectChanges();
+      return;
+    }
+    const body = this.comprasCerradas.map((row: any) => `
+      <tr>
+        <td>${this.escapeHtml(row.numeroCompra || row.NumeroCompra || '-')}</td>
+        <td>${this.escapeHtml((row.fechaCompra || row.FechaCompra) ? new Date(row.fechaCompra || row.FechaCompra).toLocaleDateString('es-PE') : '-')}</td>
+        <td>${this.escapeHtml(row.proveedor || row.Proveedor || '-')}</td>
+        <td>${this.escapeHtml(row.nombreProyecto || row.NombreProyecto || '-')}</td>
+        <td>${this.escapeHtml(row.estado || row.Estado || '-')}</td>
+        <td class="num">${Number(row.montoTotal || row.MontoTotal || row.total || row.Total || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+      </tr>`).join('');
+
+    const win = window.open('', '_blank');
+    if (!win) return;
+    win.document.write(`
+      <html>
+      <head>
+        <title>Compras cerradas</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 22px; color: #111827; }
+          h1 { font-size: 20px; margin: 0 0 16px; }
+          table { width: 100%; border-collapse: collapse; font-size: 11px; }
+          th, td { border: 1px solid #dbe3ef; padding: 6px 8px; text-align: left; }
+          th { background: #f3f6fb; }
+          .num { text-align: right; white-space: nowrap; }
+        </style>
+      </head>
+      <body>
+        <h1>Compras cerradas</h1>
+        <table>
+          <thead><tr><th>N° Compra</th><th>Fecha</th><th>Proveedor</th><th>Proyecto</th><th>Estado</th><th>Total</th></tr></thead>
+          <tbody>${body}</tbody>
+        </table>
+      </body>
+      </html>
+    `);
+    win.document.close();
+    win.focus();
+    setTimeout(() => win.print(), 400);
+  }
+
   downloadDocumento(doc: any, compra: any) {
     const idCompra = compra?.compra?.idCompra || compra?.compra?.IdCompra;
     const docId = doc?.idCompraDocumento || doc?.IdCompraDocumento;
@@ -464,6 +530,33 @@ export class ComprasPage implements OnInit {
       item.subtotalSinIgv = this.round(total);
       item.montoIgv = 0;
     }
+  }
+
+
+  private downloadExcel(rows: any[][], filename: string): void {
+    const escapeCell = (value: any) => {
+      const text = String(value ?? '');
+      return /[";\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+    };
+    const csv = rows.map(row => row.map(escapeCell).join(';')).join('\n');
+    const blob = new Blob(['\ufeff' + csv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  private escapeHtml(value: any): string {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 
   private getNextNumeroCompra(): string {

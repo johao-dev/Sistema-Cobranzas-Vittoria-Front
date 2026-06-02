@@ -26,6 +26,8 @@ export class ResumenTotalPage implements OnInit {
 
   proyectos: any[] = [];
   selectedProjectId: number | null = null;
+  fechaDesde = '';
+  fechaHasta = '';
 
   comprasRows: CompraResumenRow[] = [];
   valorizacionesRows: ValResumenRow[] = [];
@@ -98,6 +100,10 @@ export class ResumenTotalPage implements OnInit {
     this.rebuildByProject();
   }
 
+  onFechaChange(): void {
+    this.rebuildByProject();
+  }
+
   formatMoney(value: any, currency: 'PEN' | 'USD' = 'PEN'): string {
     const number = Number(value || 0);
     return new Intl.NumberFormat('es-PE', {
@@ -115,6 +121,102 @@ export class ResumenTotalPage implements OnInit {
     return proyecto?.nombreProyecto || proyecto?.NombreProyecto || 'Sin proyecto';
   }
 
+
+  exportarExcel(): void {
+    const lines: string[][] = [];
+    lines.push(['Resumen Total']);
+    lines.push(['Proyecto', this.proyectoSeleccionadoNombre()]);
+    lines.push(['Fecha desde', this.fechaDesde || 'Todos']);
+    lines.push(['Fecha hasta', this.fechaHasta || 'Todos']);
+    lines.push([]);
+    lines.push(['Concepto', 'Monto']);
+    lines.push(['Cotización general', this.formatNumber(this.cotizacionGeneral)]);
+    lines.push(['Cotización de materiales', this.formatNumber(this.totalCotizacionMateriales)]);
+    lines.push(['Valorizaciones', this.formatNumber(this.totalValorizaciones)]);
+    lines.push(['Gastos administrativos', this.formatNumber(this.totalGastos)]);
+    lines.push(['Terreno', this.formatNumber(this.totalTerreno)]);
+    lines.push(['Alcabala', this.formatNumber(this.totalAlcabala)]);
+    lines.push(['Marketing / Ventas', this.formatNumber(this.totalMarketing)]);
+    lines.push(['Otros gastos', this.formatNumber(this.totalOtrosGastos)]);
+    lines.push(['Municipales / Distritales', this.formatNumber(this.totalMunicipales)]);
+    lines.push(['Total general', this.formatNumber(this.totalGeneral)]);
+    lines.push(['Saldo', this.formatNumber(this.saldo)]);
+    lines.push([]);
+
+    lines.push(['Cotización de materiales por especialidad']);
+    lines.push(['Especialidad', 'Cotización', 'Facturado', 'Saldo']);
+    this.comprasRows.forEach(row => lines.push([row.especialidad, this.formatNumber(row.cotizacion), this.formatNumber(row.facturado), this.formatNumber(row.saldo)]));
+    lines.push(['Total', this.formatNumber(this.totalCotizacionMateriales), this.formatNumber(this.totalMateriales), this.formatNumber(this.totalCotizacionMateriales - this.totalMateriales)]);
+    lines.push([]);
+
+    lines.push(['Valorizaciones']);
+    lines.push(['Especialidad', 'Cotización', 'Garantía', 'Transferido', 'Facturado', 'Saldo pendiente']);
+    this.valorizacionesRows.forEach(row => lines.push([row.especialidad, this.formatNumber(row.cotizacion), this.formatNumber(row.garantia), this.formatNumber(row.transferido), this.formatNumber(row.facturado), this.formatNumber(row.saldo)]));
+    lines.push([]);
+
+    lines.push(['Gastos administrativos']);
+    lines.push(['Categoría', 'Facturado']);
+    this.gastosRows.forEach(row => lines.push([row.categoria, this.formatNumber(row.facturado)]));
+
+    this.downloadTableAsExcel(lines, `resumen_total_${this.slug(this.proyectoSeleccionadoNombre())}_${new Date().toISOString().slice(0, 10)}.xls`);
+  }
+
+  exportarPdf(): void {
+    const win = window.open('', '_blank');
+    if (!win) return;
+
+    const rowsKpi = [
+      ['Cotización general', this.formatMoney(this.cotizacionGeneral)],
+      ['Cotización de materiales', this.formatMoney(this.totalCotizacionMateriales)],
+      ['Valorizaciones', this.formatMoney(this.totalValorizaciones)],
+      ['Gastos administrativos', this.formatMoney(this.totalGastos)],
+      ['Terreno', this.formatMoney(this.totalTerreno)],
+      ['Alcabala', this.formatMoney(this.totalAlcabala)],
+      ['Marketing / Ventas', this.formatMoney(this.totalMarketing)],
+      ['Otros gastos', this.formatMoney(this.totalOtrosGastos)],
+      ['Municipales / Distritales', this.formatMoney(this.totalMunicipales)],
+      ['Total general', this.formatMoney(this.totalGeneral)],
+      ['Saldo', this.formatMoney(this.saldo)]
+    ].map(row => `<tr><td>${this.escapeHtml(row[0])}</td><td class="num">${this.escapeHtml(row[1])}</td></tr>`).join('');
+
+    const materialesRows = this.comprasRows.map(row => `<tr><td>${this.escapeHtml(row.especialidad)}</td><td class="num">${this.escapeHtml(this.formatMoney(row.cotizacion))}</td><td class="num">${this.escapeHtml(this.formatMoney(row.facturado))}</td><td class="num">${this.escapeHtml(this.formatMoney(row.saldo))}</td></tr>`).join('');
+    const valorizacionesRows = this.valorizacionesRows.map(row => `<tr><td>${this.escapeHtml(row.especialidad)}</td><td class="num">${this.escapeHtml(this.formatMoney(row.cotizacion))}</td><td class="num">${this.escapeHtml(this.formatMoney(row.garantia))}</td><td class="num">${this.escapeHtml(this.formatMoney(row.transferido))}</td><td class="num">${this.escapeHtml(this.formatMoney(row.facturado))}</td><td class="num">${this.escapeHtml(this.formatMoney(row.saldo))}</td></tr>`).join('');
+    const gastosRows = this.gastosRows.map(row => `<tr><td>${this.escapeHtml(row.categoria)}</td><td class="num">${this.escapeHtml(this.formatMoney(row.facturado))}</td></tr>`).join('');
+
+    win.document.write(`
+      <html>
+      <head>
+        <title>Resumen Total</title>
+        <style>
+          body { font-family: Arial, sans-serif; color: #111827; padding: 22px; }
+          h1 { margin: 0 0 6px; font-size: 22px; }
+          h2 { margin-top: 22px; font-size: 16px; }
+          .meta { color: #4b5563; margin-bottom: 14px; font-size: 12px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 11px; }
+          th, td { border: 1px solid #dbe3ef; padding: 6px 8px; text-align: left; }
+          th { background: #f3f6fb; }
+          .num { text-align: right; white-space: nowrap; }
+        </style>
+      </head>
+      <body>
+        <h1>Resumen Total</h1>
+        <div class="meta">Proyecto: ${this.escapeHtml(this.proyectoSeleccionadoNombre())} | Desde: ${this.escapeHtml(this.fechaDesde || 'Todos')} | Hasta: ${this.escapeHtml(this.fechaHasta || 'Todos')}</div>
+        <h2>Consolidado</h2>
+        <table><tbody>${rowsKpi}</tbody></table>
+        <h2>Cotización de materiales por especialidad</h2>
+        <table><thead><tr><th>Especialidad</th><th>Cotización</th><th>Facturado</th><th>Saldo</th></tr></thead><tbody>${materialesRows || '<tr><td colspan="4">Sin datos</td></tr>'}</tbody></table>
+        <h2>Valorizaciones</h2>
+        <table><thead><tr><th>Especialidad</th><th>Cotización</th><th>Garantía</th><th>Transferido</th><th>Facturado</th><th>Saldo</th></tr></thead><tbody>${valorizacionesRows || '<tr><td colspan="6">Sin datos</td></tr>'}</tbody></table>
+        <h2>Gastos administrativos</h2>
+        <table><thead><tr><th>Categoría</th><th>Facturado</th></tr></thead><tbody>${gastosRows || '<tr><td colspan="2">Sin datos</td></tr>'}</tbody></table>
+      </body>
+      </html>
+    `);
+    win.document.close();
+    win.focus();
+    setTimeout(() => win.print(), 400);
+  }
+
   private rebuildByProject(): void {
     const idProyecto = Number(this.selectedProjectId || 0);
     const nombreProyecto = this.proyectoSeleccionadoNombre();
@@ -122,9 +224,9 @@ export class ResumenTotalPage implements OnInit {
     const proyecto = this.proyectos.find((x: any) => Number(x.idProyecto ?? x.IdProyecto) === idProyecto);
     this.cotizacionGeneral = this.toNumber(proyecto?.cotizacionGeneral ?? proyecto?.CotizacionGeneral);
 
-    const comprasFiltradas = this.filterByProject(this.comprasSource, idProyecto, nombreProyecto);
-    const valorizacionesFiltradas = this.filterByProject(this.valorizacionesSource, idProyecto, nombreProyecto);
-    const gastosFiltrados = this.filterByProjectStrict(this.gastosSource, idProyecto, nombreProyecto);
+    const comprasFiltradas = this.filterByDate(this.filterByProject(this.comprasSource, idProyecto, nombreProyecto));
+    const valorizacionesFiltradas = this.filterByDate(this.filterByProject(this.valorizacionesSource, idProyecto, nombreProyecto));
+    const gastosFiltrados = this.filterByDate(this.filterByProjectStrict(this.gastosSource, idProyecto, nombreProyecto));
 
     if (!idProyecto) {
       this.comprasRows = [];
@@ -158,7 +260,7 @@ export class ResumenTotalPage implements OnInit {
         const resumenItems = Array.isArray(resumenMateriales?.items) ? resumenMateriales.items : [];
         const cotizaciones = Array.isArray(cotizacionMateriales?.items) ? cotizacionMateriales.items : [];
 
-        if (resumenItems.length) {
+        if (resumenItems.length && !this.hasDateFilter()) {
           this.buildComprasFromResumen(resumenMateriales);
         } else {
           this.totalCotizacionMateriales = this.toNumber(cotizacionMateriales?.totalCotizacionMateriales ?? cotizacionMateriales?.TotalCotizacionMateriales);
@@ -167,10 +269,15 @@ export class ResumenTotalPage implements OnInit {
 
         this.buildValorizaciones(valorizacionesFiltradas);
         this.buildGastos(gastosFiltrados);
-        this.buildTerrenoTotals(Array.isArray(terreno) ? terreno : []);
-        this.totalMarketing = this.sumGastoProyecto(Array.isArray(marketing) ? marketing : []);
-        this.totalOtrosGastos = this.sumGastoProyecto(Array.isArray(otros) ? otros : []);
-        this.totalMunicipales = this.sumGastoProyecto(Array.isArray(municipales) ? municipales : []);
+        const terrenoFiltrado = this.filterByDate(Array.isArray(terreno) ? terreno : []);
+        const marketingFiltrado = this.filterByDate(Array.isArray(marketing) ? marketing : []);
+        const otrosFiltrado = this.filterByDate(Array.isArray(otros) ? otros : []);
+        const municipalesFiltrado = this.filterByDate(Array.isArray(municipales) ? municipales : []);
+
+        this.buildTerrenoTotals(terrenoFiltrado);
+        this.totalMarketing = this.sumGastoProyecto(marketingFiltrado);
+        this.totalOtrosGastos = this.sumGastoProyecto(otrosFiltrado);
+        this.totalMunicipales = this.sumGastoProyecto(municipalesFiltrado);
 
         this.totalGeneral = this.round(
           this.totalMateriales +
@@ -359,6 +466,73 @@ export class ResumenTotalPage implements OnInit {
     if (montoDolares > 0) return this.round(montoDolares * Number(this.readValue(row, 'tipoCambio', 'TipoCambio') || 3.41));
     if (moneda === 'USD') return this.round(monto * Number(this.readValue(row, 'tipoCambio', 'TipoCambio') || 3.41));
     return monto;
+  }
+
+
+  private hasDateFilter(): boolean {
+    return !!(this.fechaDesde || this.fechaHasta);
+  }
+
+  private filterByDate(rows: any[]): any[] {
+    if (!this.hasDateFilter()) return rows || [];
+    const desde = this.fechaDesde ? new Date(`${this.fechaDesde}T00:00:00`) : null;
+    const hasta = this.fechaHasta ? new Date(`${this.fechaHasta}T23:59:59`) : null;
+    return (rows || []).filter((row: any) => {
+      const date = this.readDate(row);
+      if (!date) return false;
+      if (desde && date < desde) return false;
+      if (hasta && date > hasta) return false;
+      return true;
+    });
+  }
+
+  private readDate(row: any): Date | null {
+    const value = this.readValue(row,
+      'fechaRegistro', 'FechaRegistro',
+      'fechaCreacion', 'FechaCreacion',
+      'fechaCompra', 'FechaCompra',
+      'fechaFactura', 'FechaFactura',
+      'fechaEmision', 'FechaEmision',
+      'fecha', 'Fecha',
+      'createdAt', 'CreatedAt'
+    );
+    if (!value) return null;
+    const date = new Date(String(value));
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  private formatNumber(value: any): string {
+    return Number(value || 0).toFixed(2);
+  }
+
+  private downloadTableAsExcel(rows: string[][], filename: string): void {
+    const escapeCell = (value: any) => {
+      const text = String(value ?? '');
+      return /[";\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+    };
+    const csv = rows.map(row => row.map(escapeCell).join(';')).join('\n');
+    const blob = new Blob(['\ufeff' + csv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  private slug(value: string): string {
+    return String(value || 'reporte').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_|_$/g, '').toLowerCase() || 'reporte';
+  }
+
+  private escapeHtml(value: any): string {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 
   private findCotizacionMatches(cotizaciones: Array<{ key: string; especialidad: string; cotizacion: number }>, rawEspecialidad: string): Array<{ key: string; especialidad: string; cotizacion: number }> {

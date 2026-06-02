@@ -6,17 +6,27 @@
   </div>
   <div class="toolbar resumen-toolbar">
     <button class="btn btn-secondary" (click)="load()">Actualizar</button>
+    <button class="btn btn-secondary" (click)="exportarExcel()" [disabled]="loading">Exportar Excel</button>
+    <button class="btn btn-primary" (click)="exportarPdf()" [disabled]="loading">Exportar PDF</button>
   </div>
 </div>
 
 <section class="panel resumen-filter-panel" *ngIf="!loading">
-  <div class="form-grid one">
+  <div class="form-grid three">
     <div class="field">
       <label>Proyecto</label>
       <select [(ngModel)]="selectedProjectId" (ngModelChange)="onProjectChange()">
         <option [ngValue]="null">Seleccionar</option>
         <option *ngFor="let p of proyectos" [ngValue]="p.idProyecto">{{ p.nombreProyecto }}</option>
       </select>
+    </div>
+    <div class="field">
+      <label>Fecha desde</label>
+      <input type="date" [(ngModel)]="fechaDesde" (ngModelChange)="onFechaChange()" />
+    </div>
+    <div class="field">
+      <label>Fecha hasta</label>
+      <input type="date" [(ngModel)]="fechaHasta" (ngModelChange)="onFechaChange()" />
     </div>
   </div>
 </section>
