@@ -20,7 +20,27 @@ export class UsuariosPage implements OnInit {
     this.cdr.detectChanges();
   }
 
-  rows:any[]=[]; roles:any[]=[]; detalle:any=null; filtroActivo:boolean|null=null; roleId:number|null=null; msg='';
+  rows:any[]=[];
+  filtroBusqueda = '';
+
+  private normalizarBusqueda(valor: any): string {
+    return (valor ?? '')
+      .toString()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+  }
+
+  get rowsFiltradas(): any[] {
+    const termino = this.normalizarBusqueda(this.filtroBusqueda);
+    if (!termino) return this.rows ?? [];
+
+    return (this.rows ?? []).filter(row =>
+      this.normalizarBusqueda(Object.values(row ?? {}).join(' ')).includes(termino)
+    );
+  }
+ roles:any[]=[]; detalle:any=null; filtroActivo:boolean|null=null; roleId:number|null=null; msg='';
   form:any={ nombres:'', apellidos:'', correo:'', usuarioLogin:'', passwordHash:'', activo:true, usuarioCreacion:'admin' };
   constructor(private seguridad: SeguridadService, private notifyService: NotificationService, private cdr: ChangeDetectorRef){}
   ngOnInit(){ this.seguridad.roles().subscribe(x=> { this.roles=x; this.cdr.detectChanges(); }); this.load(); }

@@ -1,10 +1,17 @@
 <div class="page-header"><div><div class="page-title">Especialidades</div><div class="page-subtitle">Configuración de especialidades del sistema.</div></div></div>
 <div class="split">
   <section class="panel">
-    <div class="panel-title-row"><div class="panel-title">Listado</div><button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button></div>
-    <div *ngIf="!rows.length" class="empty-state">No hay especialidades registradas.</div>
-    <div *ngIf="rows.length" class="table-wrap"><table><thead><tr><th>Nombre</th><th>Descripción</th><th>Estado</th><th></th></tr></thead><tbody>
-      <tr *ngFor="let row of rows"><td>{{ row.nombre }}</td><td>{{ row.descripcion || '-' }}</td><td><span class="badge" [class.badge--ok]="row.activo" [class.badge--neutral]="!row.activo">{{ row.activo ? 'Activo' : 'Inactivo' }}</span></td><td><button class="btn btn-secondary" (click)="edit(row)">Editar</button></td></tr>
+    <div class="panel-title-row"><div class="panel-title">Listado</div>
+    <div class="filters compact-filters maintenance-search">
+      <div class="field">
+        <label>Buscar</label>
+        <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Buscar especialidades" />
+      </div>
+    </div>
+<button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button></div>
+    <div *ngIf="!rowsFiltradas.length" class="empty-state">No hay especialidades registradas.</div>
+    <div *ngIf="rowsFiltradas.length" class="table-wrap"><table><thead><tr><th>Nombre</th><th>Descripción</th><th>Estado</th><th></th></tr></thead><tbody>
+      <tr *ngFor="let row of rowsFiltradas"><td>{{ row.nombre }}</td><td>{{ row.descripcion || '-' }}</td><td><span class="badge" [class.badge--ok]="row.activo" [class.badge--neutral]="!row.activo">{{ row.activo ? 'Activo' : 'Inactivo' }}</span></td><td><button class="btn btn-secondary" (click)="edit(row)">Editar</button></td></tr>
     </tbody></table></div>
   </section>
   <div class="design-modal-backdrop" *ngIf="modalOpen" (click)="cerrarModal()"></div>

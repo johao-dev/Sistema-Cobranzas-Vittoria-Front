@@ -7,13 +7,20 @@
 
 <div class="page-grid-2 split--form proyectos-layout">
   <section class="panel proyectos-panel-list">
-    <div class="panel-title-row"><div class="panel-title">Listado</div><button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button></div>
+    <div class="panel-title-row"><div class="panel-title">Listado</div>
+    <div class="filters compact-filters maintenance-search">
+      <div class="field">
+        <label>Buscar</label>
+        <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Buscar proyectos" />
+      </div>
+    </div>
+<button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button></div>
 
-    <div *ngIf="!rows.length" class="empty-state">
+    <div *ngIf="!rowsFiltradas.length" class="empty-state">
       No hay proyectos configurados.
     </div>
 
-    <div *ngIf="rows.length" class="table-wrap table-wrap--sticky-actions proyectos-table-wrap">
+    <div *ngIf="rowsFiltradas.length" class="table-wrap table-wrap--sticky-actions proyectos-table-wrap">
       <table class="proyectos-table">
         <thead>
           <tr>
@@ -26,7 +33,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let row of rows">
+          <tr *ngFor="let row of rowsFiltradas">
             <td class="proyectos-table__project">{{ row.nombreProyecto }}</td>
             <td>{{ row.descripcion || '-' }}</td>
             <td class="table-number proyectos-table__money">{{ formatMoney(row.cotizacionGeneral) }}</td>

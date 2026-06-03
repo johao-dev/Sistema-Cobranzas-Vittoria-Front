@@ -26,6 +26,26 @@ export class CategoriasGastoPage implements OnInit {
   }
 
   rows: any[] = [];
+  filtroBusqueda = '';
+
+  private normalizarBusqueda(valor: any): string {
+    return (valor ?? '')
+      .toString()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+  }
+
+  get rowsFiltradas(): any[] {
+    const termino = this.normalizarBusqueda(this.filtroBusqueda);
+    if (!termino) return this.rows ?? [];
+
+    return (this.rows ?? []).filter(row =>
+      this.normalizarBusqueda(Object.values(row ?? {}).join(' ')).includes(termino)
+    );
+  }
+
   loading = false;
   filtroActivo: string = 'true';
   form: any = this.createEmptyForm();

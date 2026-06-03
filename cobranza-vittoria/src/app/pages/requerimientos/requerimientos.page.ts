@@ -242,7 +242,7 @@ export class RequerimientosPage implements OnInit {
     const payload = {
       idMaterial: null,
       idEspecialidad: this.nuevoMaterial.idEspecialidad != null ? Number(this.nuevoMaterial.idEspecialidad) : 0,
-      codigo: (this.nuevoMaterial.codigo ?? '').toString().trim(),
+      codigo: '',
       descripcion: (this.nuevoMaterial.descripcion ?? '').toString().trim(),
       unidadMedida: (this.nuevoMaterial.unidadMedida ?? '').toString().trim(),
       stockMinimo: Number(this.nuevoMaterial.stockMinimo ?? 0) || 0,

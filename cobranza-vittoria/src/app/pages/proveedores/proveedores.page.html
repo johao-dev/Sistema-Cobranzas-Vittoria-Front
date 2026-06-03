@@ -7,13 +7,20 @@
 
 <div class="split split--form providers-layout">
   <section class="panel">
-    <div class="panel-title-row"><div class="panel-title">Listado</div><button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button></div>
+    <div class="panel-title-row"><div class="panel-title">Listado</div>
+    <div class="filters compact-filters maintenance-search">
+      <div class="field">
+        <label>Buscar</label>
+        <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Buscar proveedores" />
+      </div>
+    </div>
+<button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button></div>
 
-    <div *ngIf="!rows.length" class="empty-state">
+    <div *ngIf="!rowsFiltradas.length" class="empty-state">
       No hay proveedores registrados.
     </div>
 
-    <div *ngIf="rows.length" class="table-wrap table-wrap--sticky-actions">
+    <div *ngIf="rowsFiltradas.length" class="table-wrap table-wrap--sticky-actions">
       <table>
         <thead>
           <tr>
@@ -26,7 +33,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let row of rows">
+          <tr *ngFor="let row of rowsFiltradas">
             <td>{{ row.razonSocial }}</td>
             <td>{{ row.ruc }}</td>
             <td>{{ row.contacto || '-' }}</td>
