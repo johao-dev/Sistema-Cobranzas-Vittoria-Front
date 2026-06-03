@@ -70,6 +70,7 @@ export class MaestraService {
       idMaterial: dto.idMaterial ? Number(dto.idMaterial) : null,
       idEspecialidad: dto.idEspecialidad != null ? Number(dto.idEspecialidad) : 0,
       codigo: (dto.codigo ?? '').toString().trim(),
+      codigoProveedor: (dto.codigoProveedor ?? '').toString().trim(),
       descripcion: (dto.descripcion ?? '').toString().trim(),
       unidadMedida: (dto.unidadMedida ?? '').toString().trim(),
       stockMinimo: dto.stockMinimo != null && dto.stockMinimo !== ''

@@ -270,6 +270,7 @@
         </select>
       </div>
 
+
       <div class="field">
         <label>Unidad</label>
         <select [(ngModel)]="nuevoMaterial.unidadMedida">
@@ -284,8 +285,13 @@
       </div>
 
       <div class="field">
-        <label>Código</label>
+        <label>Código material</label>
         <input value="Automático" readonly />
+      </div>
+
+      <div class="field">
+        <label>Código proveedor</label>
+        <input [(ngModel)]="nuevoMaterial.codigoProveedor" placeholder="Código proporcionado por el proveedor" />
       </div>
     </div>
 

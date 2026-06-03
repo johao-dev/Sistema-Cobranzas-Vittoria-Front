@@ -37,7 +37,8 @@
         <thead>
           <tr>
             <th>Especialidad</th>
-            <th>Código</th>
+            <th>Código material</th>
+            <th>Código proveedor</th>
             <th>Descripción</th>
             <th>Unidad</th>
             <th>Stock mínimo</th>
@@ -47,7 +48,8 @@
         <tbody>
           <tr *ngFor="let row of rowsFiltradas">
             <td>{{ row.especialidad }}</td>
-            <td>{{ row.codigo || '-' }}</td>
+            <td>{{ getCodigoMaterial(row) || '-' }}</td>
+            <td>{{ row.codigoProveedor || '-' }}</td>
             <td>{{ row.descripcion }}</td>
             <td>{{ row.unidadMedida }}</td>
             <td>{{ row.stockMinimo }}</td>
@@ -66,7 +68,7 @@
     <div class="form-grid two">
       <div class="field">
         <label>Especialidad</label>
-        <select [(ngModel)]="form.idEspecialidad">
+        <select [(ngModel)]="form.idEspecialidad" (ngModelChange)="onEspecialidadChange($event)">
           <option [ngValue]="null">Seleccionar</option>
           <option *ngFor="let e of especialidades" [ngValue]="e.idEspecialidad">
             {{ e.nombre }}
@@ -74,9 +76,15 @@
         </select>
       </div>
 
+
       <div class="field">
-        <label>Código</label>
-        <input [value]="form.idMaterial ? (form.codigo || '-') : 'Automático'" readonly />
+        <label>Código material</label>
+        <input [value]="codigoMaterialVisible" readonly />
+      </div>
+
+      <div class="field">
+        <label>Código proveedor</label>
+        <input [(ngModel)]="form.codigoProveedor" placeholder="Código proporcionado por el proveedor" />
       </div>
 
       <div class="field" style="grid-column: 1 / -1;">

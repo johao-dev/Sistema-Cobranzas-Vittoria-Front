@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { NotificationService } from '../../core/services/notification.service';
 
 import { MaestraService } from '../../core/services/maestra.service';
+import { ApiService } from '../../core/services/api.service';
 
 @Component({
   standalone: true,
@@ -14,10 +15,12 @@ import { MaestraService } from '../../core/services/maestra.service';
 })
 export class MaterialesPage implements OnInit {
   modalOpen = false;
+  cargandoCodigoMaterial = false;
 
   abrirModalNuevo(): void {
-    this.reset();
+    this.reset(false);
     this.modalOpen = true;
+    this.cargarSiguienteCodigoMaterial();
     this.cdr.detectChanges();
   }
 
@@ -52,18 +55,11 @@ export class MaterialesPage implements OnInit {
   filtroEspecialidad: number | null = null;
   msg = '';
 
-  form: any = {
-    idMaterial: null,
-    idEspecialidad: null,
-    codigo: '',
-    descripcion: '',
-    unidadMedida: '',
-    stockMinimo: 0,
-    activo: true
-  };
+  form: any = this.crearFormVacio();
 
   constructor(
     private maestra: MaestraService,
+    private api: ApiService,
     private notifyService: NotificationService,
     private cdr: ChangeDetectorRef
   ) {}
@@ -84,45 +80,83 @@ export class MaterialesPage implements OnInit {
 
   load() {
     this.maestra.materiales(undefined, this.filtroEspecialidad).subscribe(x => {
-      this.rows = x || [];
+      this.rows = (x || []).map((row: any) => this.normalizarMaterial(row));
       this.cdr.detectChanges();
     });
   }
 
-  edit(row: any) {
-    this.modalOpen = true;
-    this.form = {
-      idMaterial: row.idMaterial ?? null,
-      idEspecialidad: row.idEspecialidad != null ? Number(row.idEspecialidad) : null,
-      codigo: row.codigo ?? '',
-      descripcion: row.descripcion ?? '',
-      unidadMedida: row.unidadMedida ?? '',
-      stockMinimo: row.stockMinimo != null ? Number(row.stockMinimo) : 0,
-      activo: row.activo ?? true
-    };
+  get codigoMaterialVisible(): string {
+    const codigo = this.getCodigoMaterial(this.form);
 
-    this.msg = '';
+    if (codigo) return codigo;
+    if (this.cargandoCodigoMaterial) return 'Calculando...';
+
+    return this.form?.idMaterial ? '-' : 'Calculando...';
   }
 
-  reset() {
-    this.form = {
-      idMaterial: null,
-      idEspecialidad: null,
-      codigo: '',
-      descripcion: '',
-      unidadMedida: '',
-      stockMinimo: 0,
-      activo: true
-    };
+  getCodigoMaterial(row: any): string {
+    return String(
+      this.read(row, [
+        'codigo',
+        'Codigo',
+        'codigoMaterial',
+        'CodigoMaterial',
+        'codMaterial',
+        'CodMaterial'
+      ]) ?? ''
+    ).trim();
+  }
 
+  onEspecialidadChange(idEspecialidad: any): void {
+    this.form.idEspecialidad = idEspecialidad != null && idEspecialidad !== ''
+      ? Number(idEspecialidad)
+      : null;
+
+    if (!this.form.idMaterial) {
+      this.cargarSiguienteCodigoMaterial();
+    }
+  }
+
+  edit(row: any) {
+    this.modalOpen = true;
+    this.cargandoCodigoMaterial = false;
+    this.form = this.normalizarMaterial(row);
     this.msg = '';
+    this.cdr.detectChanges();
+
+    const idMaterial = this.form.idMaterial;
+    if (idMaterial) {
+      this.maestra.material(idMaterial).subscribe({
+        next: (detalle: any) => {
+          this.form = {
+            ...this.form,
+            ...this.normalizarMaterial(detalle),
+            idMaterial
+          };
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.cdr.detectChanges();
+        }
+      });
+    }
+  }
+
+  reset(cargarCodigo = true) {
+    this.form = this.crearFormVacio();
+    this.msg = '';
+
+    if (cargarCodigo) {
+      this.cargarSiguienteCodigoMaterial();
+    }
   }
 
   save() {
     const payload = {
       idMaterial: this.form.idMaterial ? Number(this.form.idMaterial) : null,
       idEspecialidad: this.form.idEspecialidad != null ? Number(this.form.idEspecialidad) : 0,
-      codigo: (this.form.codigo ?? '').toString().trim(),
+      codigo: this.form.idMaterial ? this.getCodigoMaterial(this.form) : '',
+      codigoProveedor: (this.form.codigoProveedor ?? '').toString().trim(),
       descripcion: (this.form.descripcion ?? '').toString().trim(),
       unidadMedida: (this.form.unidadMedida ?? '').toString().trim(),
       stockMinimo: this.form.stockMinimo != null && this.form.stockMinimo !== ''
@@ -151,10 +185,10 @@ export class MaterialesPage implements OnInit {
         this.msg = payload.idMaterial
           ? 'Material actualizado correctamente.'
           : 'Material guardado correctamente.';
-          
+
         this.notifyService.show(this.msg, 'success');
 
-        this.reset();
+        this.reset(false);
         this.cerrarModal();
         this.load();
         this.cdr.detectChanges();
@@ -176,5 +210,87 @@ export class MaterialesPage implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  private cargarSiguienteCodigoMaterial(): void {
+    if (this.form?.idMaterial) return;
+
+    this.cargandoCodigoMaterial = true;
+    this.form.codigo = '';
+    this.cdr.detectChanges();
+
+    this.api.http.get<any>(`${this.api.baseUrl}/api/maestra/materiales/siguiente-codigo`).subscribe({
+      next: (res: any) => {
+        const codigo = this.getCodigoMaterial(res);
+        this.form.codigo = codigo;
+        this.cargandoCodigoMaterial = false;
+        this.cdr.detectChanges();
+      },
+      error: e => {
+        console.log('ERROR OBTENER SIGUIENTE CÓDIGO MATERIAL', e);
+        this.cargandoCodigoMaterial = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private crearFormVacio(): any {
+    return {
+      idMaterial: null,
+      idEspecialidad: null,
+      codigo: '',
+      codigoProveedor: '',
+      descripcion: '',
+      unidadMedida: '',
+      stockMinimo: 0,
+      activo: true
+    };
+  }
+
+  private normalizarMaterial(row: any): any {
+    if (!row) return this.crearFormVacio();
+
+    return {
+      idMaterial: this.toNumberOrNull(this.read(row, ['idMaterial', 'IdMaterial', 'id', 'Id'])),
+      idEspecialidad: this.toNumberOrNull(this.read(row, ['idEspecialidad', 'IdEspecialidad'])),
+      especialidad: this.read(row, ['especialidad', 'Especialidad']) ?? '',
+      codigo: this.getCodigoMaterial(row),
+      codigoProveedor: this.read(row, ['codigoProveedor', 'CodigoProveedor']) ?? '',
+      descripcion: this.read(row, ['descripcion', 'Descripcion', 'material', 'Material']) ?? '',
+      unidadMedida: this.read(row, ['unidadMedida', 'UnidadMedida', 'unidad', 'Unidad']) ?? '',
+      stockMinimo: this.toNumberOrDefault(this.read(row, ['stockMinimo', 'StockMinimo']), 0),
+      activo: this.read(row, ['activo', 'Activo']) ?? true
+    };
+  }
+
+  private read(obj: any, keys: string[]): any {
+    if (!obj) return null;
+
+    for (const key of keys) {
+      if (obj[key] !== undefined && obj[key] !== null) return obj[key];
+    }
+
+    const lowerMap = Object.keys(obj).reduce((acc: any, key: string) => {
+      acc[key.toLowerCase()] = obj[key];
+      return acc;
+    }, {});
+
+    for (const key of keys) {
+      const value = lowerMap[key.toLowerCase()];
+      if (value !== undefined && value !== null) return value;
+    }
+
+    return null;
+  }
+
+  private toNumberOrNull(value: any): number | null {
+    if (value === null || value === undefined || value === '') return null;
+    const n = Number(value);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  private toNumberOrDefault(value: any, fallback: number): number {
+    const n = this.toNumberOrNull(value);
+    return n === null ? fallback : n;
   }
 }

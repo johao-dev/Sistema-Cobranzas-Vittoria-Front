@@ -62,6 +62,7 @@ export class RequerimientosPage implements OnInit {
   nuevoMaterial = {
     idEspecialidad: null as number | null,
     codigo: '',
+    codigoProveedor: '',
     descripcion: '',
     unidadMedida: '',
     stockMinimo: 0,
@@ -224,6 +225,7 @@ export class RequerimientosPage implements OnInit {
     this.nuevoMaterial = {
       idEspecialidad: this.modalItem.idEspecialidad,
       codigo: '',
+      codigoProveedor: '',
       descripcion: '',
       unidadMedida: '',
       stockMinimo: 0,
@@ -243,6 +245,7 @@ export class RequerimientosPage implements OnInit {
       idMaterial: null,
       idEspecialidad: this.nuevoMaterial.idEspecialidad != null ? Number(this.nuevoMaterial.idEspecialidad) : 0,
       codigo: '',
+      codigoProveedor: (this.nuevoMaterial.codigoProveedor ?? '').toString().trim(),
       descripcion: (this.nuevoMaterial.descripcion ?? '').toString().trim(),
       unidadMedida: (this.nuevoMaterial.unidadMedida ?? '').toString().trim(),
       stockMinimo: Number(this.nuevoMaterial.stockMinimo ?? 0) || 0,
@@ -253,6 +256,7 @@ export class RequerimientosPage implements OnInit {
       this.msgMaterial = 'Debes seleccionar una especialidad.';
       return;
     }
+
 
     if (!payload.descripcion) {
       this.msgMaterial = 'Debes ingresar el material.';
