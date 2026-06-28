@@ -66,9 +66,8 @@
             <th>Proyecto</th>
             <th>Categoría</th>
             <th>Proveedor</th>
-            <th>Monto</th>
-            <th>Moneda</th>
-            <th>Facturas</th>
+            <th>Descripción</th>
+            <th>Moneda y Monto</th>
             <th class="actions-col">Acciones</th>
           </tr>
         </thead>
@@ -78,9 +77,8 @@
             <td>{{ readValue(row, 'proyecto', 'Proyecto', 'nombreProyecto', 'NombreProyecto') || '-' }}</td>
             <td>{{ readValue(row, 'categoria', 'Categoria') || '-' }}</td>
             <td>{{ readValue(row, 'proveedor', 'Proveedor') || '-' }}</td>
-            <td class="table-number">{{ (readValue(row, 'monto', 'Monto') || 0) | number:'1.2-2' }}</td>
-            <td>{{ readValue(row, 'moneda', 'Moneda') || 'PEN' }}</td>
-            <td>{{ readValue(row, 'totalFacturas', 'TotalFacturas') || 0 }}</td>
+            <td>{{ readValue(row, 'descripcion', 'Descripcion') || '-' }}</td>
+            <td class="table-number">{{ (readValue(row, 'moneda', 'Moneda') || 'PEN') }} {{ (readValue(row, 'monto', 'Monto') || 0) | number:'1.2-2' }}</td>
             <td>
               <select class="actions-select" (change)="onAccion($event, row)">
                 <option value="">Acciones</option>
