@@ -26,7 +26,7 @@ export class GastosAdministrativosPage implements OnInit {
     this.cdr.detectChanges();
   }
 
-  rows: any[] = [];
+  gastosAdministrativos: any[] = [];
   categorias: any[] = [];
   proveedores: any[] = [];
   proyectos: any[] = [];
@@ -108,7 +108,7 @@ export class GastosAdministrativosPage implements OnInit {
   }
 
   get sumatoriaPagosVisibles(): number {
-    return (this.rows || []).reduce((acc: number, row: any) => acc + Number(this.readValue(row, 'total', 'Total', 'monto', 'Monto') || 0), 0);
+    return (this.gastosAdministrativos || []).reduce((acc: number, row: any) => acc + Number(this.readValue(row, 'total', 'Total', 'monto', 'Monto') || 0), 0);
   }
 
   onCategoriaFiltroChange(): void {
@@ -178,13 +178,13 @@ export class GastosAdministrativosPage implements OnInit {
       idProveedorGastoAdministrativo: this.filtros.idProveedorGastoAdministrativo || null
     }).subscribe({
       next: rows => {
-        this.rows = rows ?? [];
+        this.gastosAdministrativos = rows ?? [];
         this.loading = false;
         this.cdr.detectChanges();
       },
       error: err => {
         this.loading = false;
-        this.rows = [];
+        this.gastosAdministrativos = [];
         this.notifications.show(err?.error?.message || 'No se pudieron cargar los gastos administrativos.', 'error');
         this.cdr.detectChanges();
       }

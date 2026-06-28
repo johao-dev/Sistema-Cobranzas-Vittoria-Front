@@ -16,7 +16,7 @@
   </article>
   <article class="hero-stat">
     <div class="hero-stat__label">Registros visibles</div>
-    <div class="hero-stat__value">{{ rows.length }}</div>
+    <div class="hero-stat__value">{{ gastosAdministrativos.length }}</div>
   </article>
   <article class="hero-stat">
     <div class="hero-stat__label">Total registrado</div>
@@ -56,9 +56,9 @@
     </div>
 
     <div *ngIf="loading" class="empty-state">Cargando gastos administrativos...</div>
-    <div *ngIf="!loading && !rows.length" class="empty-state">No hay gastos administrativos registrados.</div>
+    <div *ngIf="!loading && !gastosAdministrativos.length" class="empty-state">No hay gastos administrativos registrados.</div>
 
-    <div *ngIf="!loading && rows.length" class="table-wrap table-wrap--sticky-actions">
+    <div *ngIf="!loading && gastosAdministrativos.length" class="table-wrap table-wrap--sticky-actions">
       <table>
         <thead>
           <tr>
@@ -69,11 +69,11 @@
             <th>Monto</th>
             <th>Moneda</th>
             <th>Facturas</th>
-                        <th class="actions-col">Acciones</th>
+            <th class="actions-col">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let row of rows">
+          <tr *ngFor="let row of gastosAdministrativos">
             <td>{{ readValue(row, 'fecha', 'Fecha') | date:'dd/MM/yyyy' }}</td>
             <td>{{ readValue(row, 'proyecto', 'Proyecto', 'nombreProyecto', 'NombreProyecto') || '-' }}</td>
             <td>{{ readValue(row, 'categoria', 'Categoria') || '-' }}</td>
