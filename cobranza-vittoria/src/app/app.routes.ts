@@ -30,7 +30,7 @@ export const routes: Routes = [
   { path: 'resumen-total', canActivate: [authGuard], component: ResumenTotalPage },
   { path: 'presupuesto', canActivate: [authGuard], component: PresupuestoPage },
   { path: 'terreno', canActivate: [authGuard], component: TerrenoPage },
-  { path: 'marketing-publicidad', canActivate: [authGuard], component: GastosProyectoPage, data: { tipoModulo: 'marketing-publicidad', titulo: 'Marketing / Ventas', subtitulo: 'Registro de publicidad y comisión por ventas por proyecto.', conceptos: ['PUBLICIDAD', 'COMISION POR VENTAS'], conceptoLabel: 'Categoría' } },
+  { path: 'marketing-publicidad', canActivate: [authGuard], component: GastosProyectoPage, data: { tipoModulo: 'marketing-publicidad', titulo: 'Marketing / Ventas', subtitulo: 'Registro de publicidad y comisión por ventas por proyecto.', conceptos: ['PUBLICIDAD', 'COMISION POR VENTAS', 'MARKETING'], conceptoLabel: 'Categoría' } },
   { path: 'otros-gastos', canActivate: [authGuard], component: GastosProyectoPage, data: { tipoModulo: 'otros-gastos', titulo: 'Otros Gastos', subtitulo: 'Registro de otros gastos por proyecto.', conceptos: ['OTROS GASTOS'], conceptoLabel: 'Categoría' } },
   { path: 'gastos-municipales-distritales', canActivate: [authGuard], component: GastosProyectoPage, data: { tipoModulo: 'gastos-municipales-distritales', titulo: 'Gastos municipales y distritales', subtitulo: 'Registro de independización, declaratoria, conformidad e instalaciones por proyecto.', conceptos: ['INDEPENDIZACION', 'DECLARATORIA', 'CONFORMIDAD', 'INSTALACIONES'], conceptoLabel: 'Categoría' } },
   { path: 'especialidades', canActivate: [authGuard], component: EspecialidadesPage },
