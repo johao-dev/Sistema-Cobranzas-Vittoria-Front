@@ -4,16 +4,18 @@ import { FormsModule } from '@angular/forms';
 import { GastosAdministrativosService } from '../../core/services/gastos-administrativos.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { MaestraService } from '../../core/services/maestra.service';
+import { ImportModalComponent } from '../../shared/components/import-modal/import-modal.component';
 
 @Component({
   standalone: true,
   selector: 'app-proveedores-gasto-page',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ImportModalComponent],
   templateUrl: './proveedores-gasto.page.html',
   styleUrl: './proveedores-gasto.page.css'
 })
 export class ProveedoresGastoPage implements OnInit {
   modalOpen = false;
+  importOpen = false;
 
   abrirModalNuevo(): void {
     this.reset();
@@ -24,6 +26,21 @@ export class ProveedoresGastoPage implements OnInit {
   cerrarModal(): void {
     this.modalOpen = false;
     this.cdr.detectChanges();
+  }
+
+  abrirImportModal(): void {
+    this.importOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarImportModal(): void {
+    this.importOpen = false;
+    this.cdr.detectChanges();
+  }
+
+  onImportSuccess(): void {
+    this.cerrarImportModal();
+    this.load();
   }
 
   rows: any[] = [];

@@ -4,16 +4,18 @@ import { FormsModule } from '@angular/forms';
 import { NotificationService } from '../../core/services/notification.service';
 import { MaestraService } from '../../core/services/maestra.service';
 import { ProveedoresTerrenoService } from '../../core/services/proveedores-terreno.service';
+import { ImportModalComponent } from '../../shared/components/import-modal/import-modal.component';
 
 @Component({
   standalone: true,
   selector: 'app-proveedores-terreno-page',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ImportModalComponent],
   templateUrl: './proveedores-terreno.page.html',
   styleUrl: './proveedores-terreno.page.css'
 })
 export class ProveedoresTerrenoPage implements OnInit {
   modalOpen = false;
+  importOpen = false;
 
   abrirModalNuevo(): void {
     this.reset();
@@ -24,6 +26,21 @@ export class ProveedoresTerrenoPage implements OnInit {
   cerrarModal(): void {
     this.modalOpen = false;
     this.cdr.detectChanges();
+  }
+
+  abrirImportModal(): void {
+    this.importOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarImportModal(): void {
+    this.importOpen = false;
+    this.cdr.detectChanges();
+  }
+
+  onImportSuccess(): void {
+    this.cerrarImportModal();
+    this.load();
   }
 
   rows: any[] = [];

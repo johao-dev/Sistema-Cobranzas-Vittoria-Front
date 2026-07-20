@@ -5,16 +5,18 @@ import { NotificationService } from '../../core/services/notification.service';
 
 import { MaestraService } from '../../core/services/maestra.service';
 import { ApiService } from '../../core/services/api.service';
+import { ImportModalComponent } from '../../shared/components/import-modal/import-modal.component';
 
 @Component({
   standalone: true,
   selector: 'app-materiales-page',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ImportModalComponent],
   templateUrl: './materiales.page.html',
   styleUrl: './materiales.page.css'
 })
 export class MaterialesPage implements OnInit {
   modalOpen = false;
+  importOpen = false;
   cargandoCodigoMaterial = false;
 
   abrirModalNuevo(): void {
@@ -27,6 +29,21 @@ export class MaterialesPage implements OnInit {
   cerrarModal(): void {
     this.modalOpen = false;
     this.cdr.detectChanges();
+  }
+
+  abrirImportModal(): void {
+    this.importOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarImportModal(): void {
+    this.importOpen = false;
+    this.cdr.detectChanges();
+  }
+
+  onImportSuccess(): void {
+    this.cerrarImportModal();
+    this.load();
   }
 
   rows: any[] = [];

@@ -14,7 +14,8 @@
         <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Buscar proveedores" />
       </div>
     </div>
-<button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button></div>
+<button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button>
+<button type="button" class="btn btn-secondary btn-sm" (click)="abrirImportModal()">Importar</button></div>
 
     <div *ngIf="!rowsFiltradas.length" class="empty-state">
       No hay proveedores registrados.
@@ -143,4 +144,10 @@
       {{ msg }}
     </div>
   </section>
+  <app-import-modal
+    *ngIf="importOpen"
+    modulo="proveedor"
+    (onClose)="cerrarImportModal()"
+    (onSuccess)="onImportSuccess()">
+  </app-import-modal>
 </div>

@@ -14,7 +14,8 @@
         <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Buscar materiales" />
       </div>
     </div>
-<button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button></div>
+<button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button>
+<button type="button" class="btn btn-secondary btn-sm" (click)="abrirImportModal()">Importar</button></div>
 
     <div class="filters">
       <div class="field">
@@ -132,4 +133,10 @@
       {{ msg }}
     </div>
   </section>
+  <app-import-modal
+    *ngIf="importOpen"
+    modulo="material"
+    (onClose)="cerrarImportModal()"
+    (onSuccess)="onImportSuccess()">
+  </app-import-modal>
 </div>

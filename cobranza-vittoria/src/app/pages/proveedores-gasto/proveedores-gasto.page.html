@@ -15,7 +15,8 @@
         <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Buscar proveedores de gasto" />
       </div>
     </div>
-<button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button></div>
+<button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button>
+<button type="button" class="btn btn-secondary btn-sm" (click)="abrirImportModal()">Importar</button></div>
 
     <div class="filters compact-filters compact-filters--two">
       <div class="field">
@@ -123,4 +124,10 @@
       <button class="btn btn-ghost" (click)="reset()">Limpiar</button>
     </div>
   </section>
+  <app-import-modal
+    *ngIf="importOpen"
+    modulo="proveedor-gasto"
+    (onClose)="cerrarImportModal()"
+    (onSuccess)="onImportSuccess()">
+  </app-import-modal>
 </div>

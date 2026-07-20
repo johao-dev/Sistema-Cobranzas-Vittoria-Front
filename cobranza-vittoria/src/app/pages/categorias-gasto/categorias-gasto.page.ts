@@ -3,16 +3,18 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GastosAdministrativosService } from '../../core/services/gastos-administrativos.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { ImportModalComponent } from '../../shared/components/import-modal/import-modal.component';
 
 @Component({
   standalone: true,
   selector: 'app-categorias-gasto-page',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ImportModalComponent],
   templateUrl: './categorias-gasto.page.html',
   styleUrl: './categorias-gasto.page.css'
 })
 export class CategoriasGastoPage implements OnInit {
   modalOpen = false;
+  importOpen = false;
 
   abrirModalNuevo(): void {
     this.reset();
@@ -23,6 +25,21 @@ export class CategoriasGastoPage implements OnInit {
   cerrarModal(): void {
     this.modalOpen = false;
     this.cdr.detectChanges();
+  }
+
+  abrirImportModal(): void {
+    this.importOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarImportModal(): void {
+    this.importOpen = false;
+    this.cdr.detectChanges();
+  }
+
+  onImportSuccess(): void {
+    this.cerrarImportModal();
+    this.load();
   }
 
   rows: any[] = [];

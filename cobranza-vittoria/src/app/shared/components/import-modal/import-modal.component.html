@@ -1,0 +1,52 @@
+<div class="design-modal-backdrop" (click)="cerrar()"></div>
+<section class="panel panel--form design-modal-card design-modal-card--xl" (click)="$event.stopPropagation()">
+  <button type="button" class="modal-close" (click)="cerrar()" aria-label="Cerrar" [disabled]="loading">×</button>
+  <div class="panel-title">Importar {{ meta()?.titulo }}</div>
+  <div class="page-subtitle" style="margin-bottom:12px;">
+    Tamaño máx. 10 MB, máx. 100 filas.
+  </div>
+
+  <div class="form-grid two">
+    <div class="field" style="grid-column:1/-1;">
+      <label>Archivo (CSV, XLSX, XLS)</label>
+      <input type="file" accept=".csv,.xlsx,.xls" (change)="onFileSelected($event)" [disabled]="loading" />
+    </div>
+  </div>
+
+  <div class="toolbar" style="margin-top:14px;">
+    <button class="btn btn-primary" type="button" (click)="subir()" [disabled]="!archivo || loading">
+      <span *ngIf="!loading">Subir</span>
+      <span *ngIf="loading">Procesando…</span>
+    </button>
+    <button class="btn btn-secondary" type="button" (click)="descargarPlantilla()" [disabled]="loading">
+      Descargar plantilla
+    </button>
+    <button class="btn btn-ghost" type="button" (click)="cerrar()" [disabled]="loading">Cancelar</button>
+  </div>
+
+  <div *ngIf="resultado && !resultado.ok && resultado.error.error === 'DATOS_INVALIDOS'" style="margin-top:16px;">
+    <div class="empty-state" style="padding:12px; color:#a94442;">
+      {{ resultado.error.message }}
+    </div>
+    <div class="table-wrap" style="max-height:320px; overflow:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Fila</th>
+            <th>Campo</th>
+            <th>Código</th>
+            <th>Mensaje</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let e of resultado.error.errores; trackBy: trackError">
+            <td>{{ e.fila }}</td>
+            <td>{{ e.campo }}</td>
+            <td><code>{{ e.codigoError }}</code></td>
+            <td>{{ e.mensaje }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

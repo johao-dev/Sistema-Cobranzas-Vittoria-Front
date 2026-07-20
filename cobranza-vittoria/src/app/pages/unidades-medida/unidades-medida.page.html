@@ -8,7 +8,8 @@
         <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Buscar unidades de medida" />
       </div>
     </div>
-<button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button></div>
+<button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button>
+<button type="button" class="btn btn-secondary btn-sm" (click)="abrirImportModal()">Importar</button></div>
     <div class="form-grid two" style="margin-bottom:16px;">
       <div class="field"><label>Estado</label><select [(ngModel)]="filtroActivo" (change)="load()"><option [ngValue]="null">Todos</option><option [ngValue]="true">Activo</option><option [ngValue]="false">Inactivo</option></select></div>
     </div>
@@ -29,4 +30,10 @@
     <div class="toolbar" style="margin-top:14px;"><button class="btn btn-primary" (click)="save()" [disabled]="!form.codigo || !form.nombre">Guardar</button><button class="btn btn-ghost" (click)="reset()">Limpiar</button></div>
     <div *ngIf="msg" class="empty-state" style="margin-top:14px; padding:14px;">{{ msg }}</div>
   </section>
+  <app-import-modal
+    *ngIf="importOpen"
+    modulo="unidad-medida"
+    (onClose)="cerrarImportModal()"
+    (onSuccess)="onImportSuccess()">
+  </app-import-modal>
 </div>

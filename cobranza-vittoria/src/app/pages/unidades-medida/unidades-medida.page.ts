@@ -3,16 +3,18 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MaestraService } from '../../core/services/maestra.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { ImportModalComponent } from '../../shared/components/import-modal/import-modal.component';
 
 @Component({
   standalone: true,
   selector: 'app-unidades-medida-page',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ImportModalComponent],
   templateUrl: './unidades-medida.page.html',
   styleUrl: './unidades-medida.page.css'
 })
 export class UnidadesMedidaPage implements OnInit {
   modalOpen = false;
+  importOpen = false;
 
   abrirModalNuevo(): void {
     this.reset();
@@ -23,6 +25,21 @@ export class UnidadesMedidaPage implements OnInit {
   cerrarModal(): void {
     this.modalOpen = false;
     this.cdr.detectChanges();
+  }
+
+  abrirImportModal(): void {
+    this.importOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarImportModal(): void {
+    this.importOpen = false;
+    this.cdr.detectChanges();
+  }
+
+  onImportSuccess(): void {
+    this.cerrarImportModal();
+    this.load();
   }
 
   rows: any[] = [];
