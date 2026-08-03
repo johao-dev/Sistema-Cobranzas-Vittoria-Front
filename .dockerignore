@@ -1,0 +1,13 @@
+.git
+.gitignore
+node_modules
+dist
+.angular
+coverage
+npm-debug.log
+yarn-error.log
+
+cobranza-vittoria/node_modules
+cobranza-vittoria/dist
+cobranza-vittoria/.angular
+cobranza-vittoria/coverage

@@ -1,0 +1,54 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /workspace/Sistema-Cobranzas-Vittoria-Front/cobranza-vittoria
+    environment:
+      APP_UID: "${UID:-1000}"
+      APP_GID: "${GID:-1000}"
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+      NG_CLI_ANALYTICS: "false"
+      npm_config_cache: /tmp/npm
+    ports:
+      - "4200:4200"
+    volumes:
+      - .:/workspace/Sistema-Cobranzas-Vittoria-Front
+      - node_modules:/workspace/Sistema-Cobranzas-Vittoria-Front/cobranza-vittoria/node_modules
+      - npm_cache:/tmp/npm
+    command: >
+      bash -lc "mkdir -p node_modules /tmp/npm
+      && chown -R $${APP_UID}:$${APP_GID} node_modules /tmp/npm
+      && exec gosu $${APP_UID}:$${APP_GID} bash -lc 'if [ ! -d node_modules ] || [ -z \"$(ls -A node_modules 2>/dev/null)\" ]; then npm ci; fi
+      && npm run start -- --host 0.0.0.0 --port 4200 --poll 2000'"
+
+  test:
+    profiles:
+      - test
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /workspace/Sistema-Cobranzas-Vittoria-Front/cobranza-vittoria
+    environment:
+      APP_UID: "${UID:-1000}"
+      APP_GID: "${GID:-1000}"
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+      NG_CLI_ANALYTICS: "false"
+      npm_config_cache: /tmp/npm
+    volumes:
+      - .:/workspace/Sistema-Cobranzas-Vittoria-Front
+      - node_modules:/workspace/Sistema-Cobranzas-Vittoria-Front/cobranza-vittoria/node_modules
+      - npm_cache:/tmp/npm
+    command: >
+      bash -lc "mkdir -p node_modules /tmp/npm
+      && chown -R $${APP_UID}:$${APP_GID} node_modules /tmp/npm
+      && exec gosu $${APP_UID}:$${APP_GID} bash -lc 'if [ ! -d node_modules ] || [ -z \"$(ls -A node_modules 2>/dev/null)\" ]; then npm ci; fi
+      && npm test -- --watch=false'"
+
+volumes:
+  node_modules:
+    name: node_modules_cobranza_vittoria_front
+  npm_cache:
+    name: npm_cache_cobranza_vittoria_front
