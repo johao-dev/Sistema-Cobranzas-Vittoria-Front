@@ -40,7 +40,7 @@
             <td>{{ row.idKardexEntrada ?? '-' }}</td>
             <td>{{ row.especialidad || '-' }}</td>
             <td>{{ formatFecha(row.fecha) }}</td>
-            <td>{{ row.codigoProducto || '-' }}</td>
+            <td>{{ row.codigoMaterial || '-' }}</td>
             <td>{{ row.nombre || '-' }}</td>
             <td class="num-col">{{ formatCantidad(row.cantidad) }}</td>
             <td>
@@ -81,13 +81,13 @@
       </div>
 
       <div class="field">
-        <label>Código Producto</label>
-        <input [(ngModel)]="form.codigoProducto" placeholder="Código del producto" />
+        <label>Código Material</label>
+        <input [(ngModel)]="form.codigoMaterial" placeholder="Código del material" />
       </div>
 
       <div class="field" style="grid-column: 1 / -1;">
         <label>Nombre</label>
-        <input [(ngModel)]="form.nombre" placeholder="Nombre del producto" />
+        <input [(ngModel)]="form.nombre" placeholder="Nombre del material" />
       </div>
 
       <div class="field">

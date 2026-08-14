@@ -67,4 +67,29 @@ export class KardexService {
       ? this.api.http.put<any>(`${this.api.baseUrl}/api/almacen/kardex/entradas/${dto.idKardexEntrada}`, dto)
       : this.api.http.post<any>(`${this.api.baseUrl}/api/almacen/kardex/entradas`, dto);
   }
+
+  salidas(filters?: { idEspecialidad?: number | null; fechaDesde?: string | null; fechaHasta?: string | null }) {
+    const params = new URLSearchParams();
+
+    if (filters?.idEspecialidad !== undefined && filters?.idEspecialidad !== null) {
+      params.append('idEspecialidad', String(filters.idEspecialidad));
+    }
+    if (filters?.fechaDesde) {
+      params.append('fechaDesde', String(filters.fechaDesde));
+    }
+    if (filters?.fechaHasta) {
+      params.append('fechaHasta', String(filters.fechaHasta));
+    }
+
+    const qs = params.toString();
+    return this.api.http.get<any[]>(
+      `${this.api.baseUrl}/api/almacen/kardex/salidas${qs ? '?' + qs : ''}`
+    );
+  }
+
+  guardarSalida(dto: any) {
+    return dto.idKardexSalida
+      ? this.api.http.put<any>(`${this.api.baseUrl}/api/almacen/kardex/salidas/${dto.idKardexSalida}`, dto)
+      : this.api.http.post<any>(`${this.api.baseUrl}/api/almacen/kardex/salidas`, dto);
+  }
 }

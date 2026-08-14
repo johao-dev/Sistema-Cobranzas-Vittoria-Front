@@ -119,7 +119,7 @@ export class KardexEntradasPage implements OnInit {
       idProveedor: this.form.idProveedor != null ? Number(this.form.idProveedor) : null,
       numeroDocumento: (this.form.numeroDocumento ?? '').toString().trim(),
       fecha: this.form.fecha || null,
-      codigoProducto: (this.form.codigoProducto ?? '').toString().trim(),
+      codigoMaterial: (this.form.codigoMaterial ?? '').toString().trim(),
       nombre: (this.form.nombre ?? '').toString().trim(),
       cantidad: Number(this.form.cantidad || 0),
       observacion: (this.form.observacion ?? '').toString().trim()
@@ -184,7 +184,7 @@ export class KardexEntradasPage implements OnInit {
       idProveedor: null,
       numeroDocumento: '',
       fecha: new Date().toISOString().slice(0, 10),
-      codigoProducto: '',
+      codigoMaterial: '',
       nombre: '',
       cantidad: 0,
       observacion: ''
@@ -202,8 +202,8 @@ export class KardexEntradasPage implements OnInit {
       proveedor: this.read(row, ['proveedor', 'Proveedor', 'razonSocial', 'RazonSocial']) ?? '',
       numeroDocumento: this.read(row, ['numeroDocumento', 'NumeroDocumento', 'nroDocumento', 'NroDocumento']) ?? '',
       fecha: this.formatFechaInput(this.read(row, ['fecha', 'Fecha'])),
-      codigoProducto: this.read(row, ['codigoProducto', 'CodigoProducto', 'codigo', 'Codigo']) ?? '',
-      nombre: this.read(row, ['nombre', 'Nombre', 'producto', 'Producto']) ?? '',
+      codigoMaterial: this.read(row, ['codigoMaterial', 'CodigoMaterial']) ?? '',
+      nombre: this.read(row, ['nombre', 'Nombre', 'material', 'Material']) ?? '',
       cantidad: this.toNumberOrDefault(this.read(row, ['cantidad', 'Cantidad']), 0),
       observacion: this.read(row, ['observacion', 'Observacion', 'observaciones', 'Observaciones']) ?? ''
     };
