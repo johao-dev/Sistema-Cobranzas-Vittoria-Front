@@ -56,13 +56,24 @@ export class KardexSalidasPage implements OnInit {
 
   especialidades: any[] = [];
   proyectos: any[] = [];
+  materiales: any[] = [];
+  materialesFiltradosModal: any[] = [];
   msg = '';
+
+  modalItemOpen = false;
+  editingItemIndex: number | null = null;
+  modalItem: any = this.crearModalItemVacio();
+  modalItemMsg = '';
 
   form: any = this.crearFormVacio();
 
-  get cantidadInvalida(): boolean {
-    const n = Number(this.form?.cantidad);
+  get modalItemCantidadInvalida(): boolean {
+    const n = Number(this.modalItem?.cantidad);
     return !Number.isFinite(n) || n < 0;
+  }
+
+  get itemsInvalidos(): boolean {
+    return (this.form?.items || []).some((it: any) => !it.idMaterial || !(Number(it.cantidad) >= 0));
   }
 
   constructor(
@@ -81,6 +92,11 @@ export class KardexSalidasPage implements OnInit {
     this.maestra.proyectos(true).subscribe({
       next: (x: any) => { this.proyectos = x ?? []; this.cdr.detectChanges(); },
       error: () => { this.proyectos = []; this.cdr.detectChanges(); }
+    });
+
+    this.maestra.materiales(true).subscribe({
+      next: (x: any) => { this.materiales = x ?? []; this.actualizarMaterialesFiltrados(); this.cdr.detectChanges(); },
+      error: () => { this.materiales = []; this.materialesFiltradosModal = []; this.cdr.detectChanges(); }
     });
 
     this.load();
@@ -118,6 +134,7 @@ export class KardexSalidasPage implements OnInit {
     this.modalOpen = true;
     this.form = this.normalizarSalida(row);
     this.msg = '';
+    this.actualizarMaterialesFiltrados();
     this.cdr.detectChanges();
   }
 
@@ -128,8 +145,13 @@ export class KardexSalidasPage implements OnInit {
       return;
     }
 
-    const nombre = this.read(row, ['nombre', 'Nombre']) || 'este registro';
-    if (!confirm(`¿Eliminar la salida de "${nombre}"? Esta acción no se puede deshacer.`)) return;
+    const items = (this.form.items || []);
+    const cantidadItems = items.length;
+    const primerNombre = items[0]?.nombre || '';
+    const detalle = cantidadItems > 1
+      ? `esta salida con ${cantidadItems} ítems`
+      : (primerNombre ? `la salida de "${primerNombre}"` : 'esta salida');
+    if (!confirm(`¿Eliminar ${detalle}? Esta acción no se puede deshacer.`)) return;
 
     this.kardex.eliminarSalida(id).subscribe({
       next: () => {
@@ -146,36 +168,159 @@ export class KardexSalidasPage implements OnInit {
   reset() {
     this.form = this.crearFormVacio();
     this.msg = '';
+    this.cerrarModalItem();
     this.cdr.detectChanges();
   }
 
-  onCantidadInput() {
-    const n = Number(this.form.cantidad);
-    if (this.form.cantidad !== null && this.form.cantidad !== undefined && this.form.cantidad !== '' && (Number.isNaN(n) || n < 0)) {
-      this.form.cantidad = 0;
+  abrirModalItem() {
+    if (!this.form.idEspecialidad) {
+      this.msg = 'Selecciona primero una especialidad.';
+      this.notifyService.show(this.msg, 'error');
+      return;
+    }
+    this.editingItemIndex = null;
+    this.modalItem = this.crearModalItemVacio();
+    this.modalItemMsg = '';
+    this.modalItemOpen = true;
+    this.actualizarMaterialesFiltrados();
+    this.cdr.detectChanges();
+  }
+
+  editarItem(index: number) {
+    const it = this.form.items?.[index];
+    if (!it) return;
+    this.editingItemIndex = index;
+    this.modalItem = {
+      idMaterial: this.toNumberOrNull(it.idMaterial),
+      cantidad: Number(it.cantidad || 0),
+      observacion: it.observacion ?? ''
+    };
+    this.modalItemMsg = '';
+    this.modalItemOpen = true;
+    this.actualizarMaterialesFiltrados();
+    this.cdr.detectChanges();
+  }
+
+  eliminarItem(index: number) {
+    if (!confirm('¿Quitar este ítem de la salida?')) return;
+    this.form.items.splice(index, 1);
+    this.cdr.detectChanges();
+  }
+
+  cerrarModalItem() {
+    this.modalItemOpen = false;
+    this.editingItemIndex = null;
+    this.modalItem = this.crearModalItemVacio();
+    this.modalItemMsg = '';
+    this.cdr.detectChanges();
+  }
+
+  agregarItemDesdeModal() {
+    this.modalItemMsg = '';
+
+    const idMat = this.toNumberOrNull(this.modalItem.idMaterial);
+    if (!idMat) {
+      this.modalItemMsg = 'Debes seleccionar un material.';
+      this.notifyService.show(this.modalItemMsg, 'error');
+      return;
+    }
+
+    const cantidad = Number(this.modalItem.cantidad);
+    if (!Number.isFinite(cantidad) || cantidad < 0) {
+      this.modalItemMsg = 'La cantidad debe ser mayor o igual a 0.';
+      this.notifyService.show(this.modalItemMsg, 'error');
+      return;
+    }
+
+    const material = this.materiales.find((m: any) => this.getIdMaterial(m) === idMat);
+    if (!material) {
+      this.modalItemMsg = 'El material seleccionado no se encontró.';
+      this.notifyService.show(this.modalItemMsg, 'error');
+      return;
+    }
+
+    const nuevoItem = {
+      idMaterial: idMat,
+      codigoMaterial: this.getCodigoMaterial(material) ?? '',
+      nombre: this.getDescripcionMaterial(material) ?? '',
+      unidadMedida: this.getUnidadMaterial(material) ?? '',
+      cantidad,
+      observacion: (this.modalItem.observacion ?? '').toString().trim()
+    };
+
+    if (!this.form.items) this.form.items = [];
+
+    if (this.editingItemIndex !== null && this.editingItemIndex >= 0 && this.editingItemIndex < this.form.items.length) {
+      this.form.items[this.editingItemIndex] = nuevoItem;
+    } else {
+      this.form.items.push(nuevoItem);
+    }
+
+    this.cerrarModalItem();
+  }
+
+  onModalMaterialChange() {
+    // reservado para lógica futura; el modal-item solo guarda idMaterial
+  }
+
+  onModalCantidadInput() {
+    const n = Number(this.modalItem.cantidad);
+    if (this.modalItem.cantidad !== null && this.modalItem.cantidad !== undefined && this.modalItem.cantidad !== '' && (Number.isNaN(n) || n < 0)) {
+      this.modalItem.cantidad = 0;
     }
   }
 
+  actualizarMaterialesFiltrados() {
+    const idEsp = this.form?.idEspecialidad;
+    if (!idEsp) {
+      this.materialesFiltradosModal = [];
+      return;
+    }
+    this.materialesFiltradosModal = (this.materiales || []).filter((m: any) => {
+      const idMatEsp = this.read(m, ['idEspecialidad', 'IdEspecialidad', 'especialidadId', 'EspecialidadId']);
+      return idMatEsp == null ? true : Number(idMatEsp) === Number(idEsp);
+    });
+  }
+
+  getIdMaterial(m: any): number | null {
+    return this.toNumberOrNull(this.read(m, ['idMaterial', 'IdMaterial', 'id', 'Id']));
+  }
+
+  getDescripcionMaterial(m: any): string {
+    return this.read(m, ['nombre', 'Nombre', 'descripcion', 'Descripcion']) ?? '';
+  }
+
+  getCodigoMaterial(m: any): string {
+    return this.read(m, ['codigo', 'Codigo', 'codigoMaterial', 'CodigoMaterial']) ?? '';
+  }
+
+  getUnidadMaterial(m: any): string {
+    const unidad = this.read(m, ['unidadMedida', 'UnidadMedida', 'unidad', 'Unidad', 'abreviatura', 'Abreviatura']);
+    if (unidad && typeof unidad === 'object') {
+      return this.read(unidad, ['nombre', 'Nombre', 'abreviatura', 'Abreviatura', 'codigo', 'Codigo']) ?? '';
+    }
+    return unidad ?? '';
+  }
+
   save() {
+    const items = (this.form.items || []).map((x: any) => ({
+      idMaterial: x.idMaterial != null ? Number(x.idMaterial) : null,
+      cantidad: Number(x.cantidad || 0),
+      observacion: (x.observacion ?? '').toString().trim()
+    }));
+
     const payload = {
       idKardexSalida: this.form.idKardexSalida ? Number(this.form.idKardexSalida) : null,
       idEspecialidad: this.form.idEspecialidad != null ? Number(this.form.idEspecialidad) : null,
       numeroDocumento: (this.form.numeroDocumento ?? '').toString().trim(),
       fecha: this.form.fecha || null,
-      codigoMaterial: (this.form.codigoMaterial ?? '').toString().trim(),
-      nombre: (this.form.nombre ?? '').toString().trim(),
       solicitante: (this.form.solicitante ?? '').toString().trim(),
-      cantidad: Number(this.form.cantidad || 0),
-      observacion: (this.form.observacion ?? '').toString().trim()
+      observacion: (this.form.observacion ?? '').toString().trim(),
+      items
     };
 
     if (!payload.idEspecialidad) {
       this.msg = 'Debes seleccionar una especialidad.';
-      this.notifyService.show(this.msg, 'error');
-      return;
-    }
-    if (!payload.nombre) {
-      this.msg = 'Debes ingresar el nombre del material.';
       this.notifyService.show(this.msg, 'error');
       return;
     }
@@ -189,8 +334,13 @@ export class KardexSalidasPage implements OnInit {
       this.notifyService.show(this.msg, 'error');
       return;
     }
-    if (payload.cantidad < 0) {
-      this.msg = 'La cantidad no puede ser negativa.';
+    if (!items.length) {
+      this.msg = 'Debes agregar al menos un ítem con material y cantidad.';
+      this.notifyService.show(this.msg, 'error');
+      return;
+    }
+    if (items.some((it: any) => !it.idMaterial || !(it.cantidad >= 0))) {
+      this.msg = 'Revisa los ítems: cada uno debe tener material y cantidad mayor o igual a 0.';
       this.notifyService.show(this.msg, 'error');
       return;
     }
@@ -236,9 +386,15 @@ export class KardexSalidasPage implements OnInit {
       idEspecialidad: null,
       numeroDocumento: '',
       fecha: new Date().toISOString().slice(0, 10),
-      codigoMaterial: '',
-      nombre: '',
       solicitante: '',
+      observacion: '',
+      items: [] as any[]
+    };
+  }
+
+  private crearModalItemVacio(): any {
+    return {
+      idMaterial: null as number | null,
       cantidad: 0,
       observacion: ''
     };
@@ -247,15 +403,35 @@ export class KardexSalidasPage implements OnInit {
   private normalizarSalida(row: any): any {
     if (!row) return this.crearFormVacio();
 
+    // Si el backend devuelve items[], los usamos. Si no, creamos uno a partir del registro single-item (compatibilidad).
+    let items: any[] = [];
+    const itemsRaw = this.read(row, ['items', 'Items', 'detalles', 'Detalles']);
+    if (Array.isArray(itemsRaw) && itemsRaw.length) {
+      items = itemsRaw.map((it: any) => this.normalizarItem(it));
+    } else {
+      const item = this.normalizarItem(row);
+      if (item.idMaterial || item.codigoMaterial || item.nombre) items = [item];
+    }
+
     return {
       idKardexSalida: this.toNumberOrNull(this.read(row, ['idKardexSalida', 'IdKardexSalida', 'id', 'Id'])),
       idEspecialidad: this.toNumberOrNull(this.read(row, ['idEspecialidad', 'IdEspecialidad'])),
       especialidad: this.read(row, ['especialidad', 'Especialidad', 'nombreEspecialidad', 'NombreEspecialidad']) ?? '',
       numeroDocumento: this.read(row, ['numeroDocumento', 'NumeroDocumento', 'nroDocumento', 'NroDocumento']) ?? '',
       fecha: this.formatFechaInput(this.read(row, ['fecha', 'Fecha'])),
-      codigoMaterial: this.read(row, ['codigoMaterial', 'CodigoMaterial', 'codigo', 'Codigo']) ?? '',
-      nombre: this.read(row, ['nombre', 'Nombre', 'material', 'Material']) ?? '',
       solicitante: this.read(row, ['solicitante', 'Solicitante']) ?? '',
+      observacion: this.read(row, ['observacion', 'Observacion', 'observaciones', 'Observaciones']) ?? '',
+      items
+    };
+  }
+
+  private normalizarItem(row: any): any {
+    if (!row) return { idMaterial: null, codigoMaterial: '', nombre: '', unidadMedida: '', cantidad: 0, observacion: '' };
+    return {
+      idMaterial: this.toNumberOrNull(this.read(row, ['idMaterial', 'IdMaterial'])),
+      codigoMaterial: this.read(row, ['codigoMaterial', 'CodigoMaterial', 'codigo', 'Codigo']) ?? '',
+      nombre: this.read(row, ['nombre', 'Nombre', 'material', 'Material', 'descripcion', 'Descripcion']) ?? '',
+      unidadMedida: this.read(row, ['unidadMedida', 'UnidadMedida', 'unidad', 'Unidad', 'abreviatura', 'Abreviatura']) ?? '',
       cantidad: this.toNumberOrDefault(this.read(row, ['cantidad', 'Cantidad']), 0),
       observacion: this.read(row, ['observacion', 'Observacion', 'observaciones', 'Observaciones']) ?? ''
     };

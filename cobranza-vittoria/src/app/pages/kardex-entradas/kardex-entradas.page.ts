@@ -57,6 +57,8 @@ export class KardexEntradasPage implements OnInit {
   especialidades: any[] = [];
   proveedores: any[] = [];
   proyectos: any[] = [];
+  materiales: any[] = [];
+  materialesFiltrados: any[] = [];
   msg = '';
 
   form: any = this.crearFormVacio();
@@ -87,6 +89,11 @@ export class KardexEntradasPage implements OnInit {
     this.maestra.proyectos(true).subscribe({
       next: (x: any) => { this.proyectos = x ?? []; this.cdr.detectChanges(); },
       error: () => { this.proyectos = []; this.cdr.detectChanges(); }
+    });
+
+    this.maestra.materiales(true).subscribe({
+      next: (x: any) => { this.materiales = x ?? []; this.actualizarMaterialesFiltrados(); this.cdr.detectChanges(); },
+      error: () => { this.materiales = []; this.materialesFiltrados = []; this.cdr.detectChanges(); }
     });
 
     this.load();
@@ -124,6 +131,7 @@ export class KardexEntradasPage implements OnInit {
     this.modalOpen = true;
     this.form = this.normalizarEntrada(row);
     this.msg = '';
+    this.actualizarMaterialesFiltrados();
     this.cdr.detectChanges();
   }
 
@@ -155,6 +163,58 @@ export class KardexEntradasPage implements OnInit {
     this.cdr.detectChanges();
   }
 
+  onEspecialidadChange() {
+    this.form.idMaterial = null;
+    this.form.codigoMaterial = '';
+    this.form.nombre = '';
+    this.actualizarMaterialesFiltrados();
+  }
+
+  onMaterialChange() {
+    if (!this.form.idMaterial) {
+      this.form.codigoMaterial = '';
+      this.form.nombre = '';
+      return;
+    }
+    const m = this.materiales.find((x: any) => this.getIdMaterial(x) === this.form.idMaterial);
+    if (m) {
+      this.form.codigoMaterial = this.getCodigoMaterial(m) ?? '';
+      this.form.nombre = this.getDescripcionMaterial(m) ?? '';
+    }
+  }
+
+  actualizarMaterialesFiltrados() {
+    const idEsp = this.form?.idEspecialidad;
+    if (!idEsp) {
+      this.materialesFiltrados = [];
+      return;
+    }
+    this.materialesFiltrados = (this.materiales || []).filter((m: any) => {
+      const idMatEsp = this.read(m, ['idEspecialidad', 'IdEspecialidad', 'especialidadId', 'EspecialidadId']);
+      return idMatEsp == null ? true : Number(idMatEsp) === Number(idEsp);
+    });
+  }
+
+  getIdMaterial(m: any): number | null {
+    return this.toNumberOrNull(this.read(m, ['idMaterial', 'IdMaterial', 'id', 'Id']));
+  }
+
+  getDescripcionMaterial(m: any): string {
+    return this.read(m, ['nombre', 'Nombre', 'descripcion', 'Descripcion']) ?? '';
+  }
+
+  getCodigoMaterial(m: any): string {
+    return this.read(m, ['codigo', 'Codigo', 'codigoMaterial', 'CodigoMaterial']) ?? '';
+  }
+
+  getUnidadMaterial(m: any): string {
+    const unidad = this.read(m, ['unidadMedida', 'UnidadMedida', 'unidad', 'Unidad', 'abreviatura', 'Abreviatura']);
+    if (unidad && typeof unidad === 'object') {
+      return this.read(unidad, ['nombre', 'Nombre', 'abreviatura', 'Abreviatura', 'codigo', 'Codigo']) ?? '';
+    }
+    return unidad ?? '';
+  }
+
   onCantidadInput() {
     const n = Number(this.form.cantidad);
     if (this.form.cantidad !== null && this.form.cantidad !== undefined && this.form.cantidad !== '' && (Number.isNaN(n) || n < 0)) {
@@ -166,6 +226,7 @@ export class KardexEntradasPage implements OnInit {
     const payload = {
       idKardexEntrada: this.form.idKardexEntrada ? Number(this.form.idKardexEntrada) : null,
       idEspecialidad: this.form.idEspecialidad != null ? Number(this.form.idEspecialidad) : null,
+      idMaterial: this.form.idMaterial != null ? Number(this.form.idMaterial) : null,
       idProveedor: this.form.idProveedor != null ? Number(this.form.idProveedor) : null,
       numeroDocumento: (this.form.numeroDocumento ?? '').toString().trim(),
       fecha: this.form.fecha || null,
@@ -235,6 +296,7 @@ export class KardexEntradasPage implements OnInit {
     return {
       idKardexEntrada: null,
       idEspecialidad: null,
+      idMaterial: null,
       idProveedor: null,
       numeroDocumento: '',
       fecha: new Date().toISOString().slice(0, 10),
@@ -252,6 +314,7 @@ export class KardexEntradasPage implements OnInit {
       idKardexEntrada: this.toNumberOrNull(this.read(row, ['idKardexEntrada', 'IdKardexEntrada', 'id', 'Id'])),
       idEspecialidad: this.toNumberOrNull(this.read(row, ['idEspecialidad', 'IdEspecialidad'])),
       especialidad: this.read(row, ['especialidad', 'Especialidad', 'nombreEspecialidad', 'NombreEspecialidad']) ?? '',
+      idMaterial: this.toNumberOrNull(this.read(row, ['idMaterial', 'IdMaterial'])),
       idProveedor: this.toNumberOrNull(this.read(row, ['idProveedor', 'IdProveedor'])),
       proveedor: this.read(row, ['proveedor', 'Proveedor', 'razonSocial', 'RazonSocial']) ?? '',
       numeroDocumento: this.read(row, ['numeroDocumento', 'NumeroDocumento', 'nroDocumento', 'NroDocumento']) ?? '',

@@ -102,7 +102,7 @@
   <div class="form-grid two">
     <div class="field">
       <label>Especialidad</label>
-      <select [(ngModel)]="form.idEspecialidad">
+      <select [(ngModel)]="form.idEspecialidad" (ngModelChange)="onEspecialidadChange()">
         <option [ngValue]="null">Seleccionar</option>
         <option *ngFor="let e of especialidades" [ngValue]="e.idEspecialidad">
           {{ e.nombre }}
@@ -122,12 +122,17 @@
 
     <div class="field">
       <label>Código Material</label>
-      <input [(ngModel)]="form.codigoMaterial" placeholder="Código del material" />
+      <input [(ngModel)]="form.codigoMaterial" [readonly]="!!form.idMaterial" placeholder="Código del material" />
     </div>
 
-    <div class="field" style="grid-column: 1 / -1;">
+    <div class="field material-picker-field" style="grid-column: 1 / -1;">
       <label>Nombre</label>
-      <input [(ngModel)]="form.nombre" placeholder="Nombre del material" />
+      <select [(ngModel)]="form.idMaterial" (ngModelChange)="onMaterialChange()" [disabled]="!form.idEspecialidad">
+        <option [ngValue]="null">{{ form.idEspecialidad ? 'Seleccionar' : 'Selecciona una especialidad primero' }}</option>
+        <option *ngFor="let m of materialesFiltrados" [ngValue]="getIdMaterial(m)">
+          {{ getDescripcionMaterial(m) }} — {{ getCodigoMaterial(m) }} — {{ getUnidadMaterial(m) }}
+        </option>
+      </select>
     </div>
 
     <div class="field">

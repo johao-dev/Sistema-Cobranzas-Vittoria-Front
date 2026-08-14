@@ -104,7 +104,7 @@
   <div class="form-grid two">
     <div class="field">
       <label>Especialidad</label>
-      <select [(ngModel)]="form.idEspecialidad">
+      <select [(ngModel)]="form.idEspecialidad" name="encEsp">
         <option [ngValue]="null">Seleccionar</option>
         <option *ngFor="let e of especialidades" [ngValue]="e.idEspecialidad">
           {{ e.nombre }}
@@ -114,45 +114,78 @@
 
     <div class="field">
       <label>Nro. Documento</label>
-      <input [(ngModel)]="form.numeroDocumento" placeholder="Ej. S001-12345" />
+      <input [(ngModel)]="form.numeroDocumento" name="encNro" placeholder="Ej. S001-12345" />
     </div>
 
     <div class="field">
       <label>Fecha</label>
-      <input type="date" [(ngModel)]="form.fecha" />
-    </div>
-
-    <div class="field">
-      <label>Código Material</label>
-      <input [(ngModel)]="form.codigoMaterial" placeholder="Código del material" />
-    </div>
-
-    <div class="field" style="grid-column: 1 / -1;">
-      <label>Nombre</label>
-      <input [(ngModel)]="form.nombre" placeholder="Nombre del material" />
+      <input type="date" [(ngModel)]="form.fecha" name="encFecha" />
     </div>
 
     <div class="field">
       <label>Solicitante</label>
-      <input [(ngModel)]="form.solicitante" placeholder="Persona que solicita" />
-    </div>
-
-    <div class="field">
-      <label>Cantidad</label>
-      <input type="number" min="0" step="0.01" [(ngModel)]="form.cantidad" (input)="onCantidadInput()" />
+      <input [(ngModel)]="form.solicitante" name="encSol" placeholder="Persona que solicita" />
     </div>
 
     <div class="field" style="grid-column: 1 / -1;">
       <label>Observación</label>
-      <input [(ngModel)]="form.observacion" placeholder="Observación" />
+      <input [(ngModel)]="form.observacion" name="encObs" placeholder="Observación general" />
     </div>
+  </div>
+
+  <div class="items-section" style="margin-top: 18px;">
+    <div class="items-header">
+      <div class="items-title">Materiales a despachar</div>
+      <button
+        type="button"
+        class="btn btn-secondary btn-sm"
+        (click)="abrirModalItem()"
+        [disabled]="!form.idEspecialidad"
+      >
+        + Agregar ítem
+      </button>
+    </div>
+
+    <div *ngIf="!form.items.length" class="empty-state" style="padding: 12px;">
+      Aún no has agregado materiales. Selecciona una especialidad y haz clic en "+ Agregar ítem".
+    </div>
+
+    <table class="data-table" *ngIf="form.items.length">
+      <thead>
+        <tr>
+          <th style="width: 40px;">#</th>
+          <th>Código</th>
+          <th>Material</th>
+          <th>Unidad</th>
+          <th class="num-col">Cantidad</th>
+          <th>Observación</th>
+          <th class="sticky-actions">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let it of form.items; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ it.codigoMaterial || '-' }}</td>
+          <td>{{ it.nombre || '-' }}</td>
+          <td>{{ it.unidadMedida || '-' }}</td>
+          <td class="num-col">{{ formatCantidad(it.cantidad) }}</td>
+          <td>{{ it.observacion || '-' }}</td>
+          <td>
+            <div class="actions actions--end">
+              <button class="btn btn-secondary btn-sm action-btn" (click)="editarItem(i)">Editar</button>
+              <button class="btn btn-danger btn-sm action-btn" (click)="eliminarItem(i)">Quitar</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
   <div class="toolbar" style="margin-top: 14px;">
     <button
       class="btn btn-primary"
       (click)="save()"
-      [disabled]="!form.idEspecialidad || !form.nombre || !form.solicitante || !form.fecha || cantidadInvalida"
+      [disabled]="!form.idEspecialidad || !form.solicitante || !form.fecha || !form.items.length || itemsInvalidos"
     >
       Guardar
     </button>
@@ -161,5 +194,44 @@
 
   <div *ngIf="msg" class="empty-state" style="margin-top: 14px; padding: 14px;">
     {{ msg }}
+  </div>
+</section>
+
+<div class="design-modal-backdrop" *ngIf="modalItemOpen" (click)="cerrarModalItem()"></div>
+<section class="panel panel--form design-modal-card item-modal-card" *ngIf="modalItemOpen" (click)="$event.stopPropagation()">
+  <button type="button" class="modal-close" (click)="cerrarModalItem()" aria-label="Cerrar">×</button>
+  <div class="panel-title">{{ editingItemIndex !== null ? 'Editar ítem' : 'Agregar ítem' }}</div>
+
+  <div class="form-grid two item-modal-grid" style="margin-top: 12px;">
+    <div class="field material-picker-field" style="grid-column: 1 / -1;">
+      <label>Material</label>
+      <select [(ngModel)]="modalItem.idMaterial" (ngModelChange)="onModalMaterialChange()" [disabled]="!form.idEspecialidad">
+        <option [ngValue]="null">Seleccionar</option>
+        <option *ngFor="let m of materialesFiltradosModal" [ngValue]="getIdMaterial(m)">
+          {{ getDescripcionMaterial(m) }} — {{ getCodigoMaterial(m) }} — {{ getUnidadMaterial(m) }}
+        </option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Cantidad</label>
+      <input type="number" min="0" step="0.01" [(ngModel)]="modalItem.cantidad" (input)="onModalCantidadInput()" />
+    </div>
+
+    <div class="field">
+      <label>Observación (opcional)</label>
+      <input [(ngModel)]="modalItem.observacion" placeholder="Observación del ítem" />
+    </div>
+  </div>
+
+  <div class="toolbar" style="margin-top: 14px; justify-content: flex-end;">
+    <button class="btn btn-ghost" (click)="cerrarModalItem()">Cancelar</button>
+    <button
+      class="btn btn-primary"
+      (click)="agregarItemDesdeModal()"
+      [disabled]="!modalItem.idMaterial || modalItemCantidadInvalida"
+    >
+      {{ editingItemIndex !== null ? 'Guardar cambios' : 'Agregar ítem' }}
+    </button>
   </div>
 </section>
