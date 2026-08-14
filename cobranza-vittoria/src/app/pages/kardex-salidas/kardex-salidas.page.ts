@@ -31,6 +31,7 @@ export class KardexSalidasPage implements OnInit {
 
   filtros = {
     idEspecialidad: null as number | null,
+    idProyecto: null as number | null,
     fechaDesde: '',
     fechaHasta: ''
   };
@@ -54,6 +55,7 @@ export class KardexSalidasPage implements OnInit {
   }
 
   especialidades: any[] = [];
+  proyectos: any[] = [];
   msg = '';
 
   form: any = this.crearFormVacio();
@@ -76,12 +78,18 @@ export class KardexSalidasPage implements OnInit {
       error: () => { this.especialidades = []; this.cdr.detectChanges(); }
     });
 
+    this.maestra.proyectos(true).subscribe({
+      next: (x: any) => { this.proyectos = x ?? []; this.cdr.detectChanges(); },
+      error: () => { this.proyectos = []; this.cdr.detectChanges(); }
+    });
+
     this.load();
   }
 
   load() {
     this.kardex.salidas({
       idEspecialidad: this.filtros.idEspecialidad,
+      idProyecto: this.filtros.idProyecto,
       fechaDesde: this.filtros.fechaDesde || null,
       fechaHasta: this.filtros.fechaHasta || null
     }).subscribe({
@@ -99,6 +107,7 @@ export class KardexSalidasPage implements OnInit {
   limpiarFiltros() {
     this.filtros = {
       idEspecialidad: null,
+      idProyecto: null,
       fechaDesde: '',
       fechaHasta: ''
     };
@@ -215,6 +224,10 @@ export class KardexSalidasPage implements OnInit {
     const n = Number(value || 0);
     if (Number.isNaN(n)) return '0';
     return n.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  }
+
+  getProyectoLabel(p: any): string {
+    return this.read(p, ['nombre', 'Nombre', 'nombreProyecto', 'NombreProyecto']) ?? '';
   }
 
   private crearFormVacio(): any {

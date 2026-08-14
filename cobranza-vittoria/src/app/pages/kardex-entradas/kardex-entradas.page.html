@@ -9,6 +9,16 @@
   <div class="panel-title">Filtros</div>
   <div class="form-grid four">
     <div class="field">
+      <label>Proyecto</label>
+      <select [(ngModel)]="filtros.idProyecto">
+        <option [ngValue]="null">Todos</option>
+        <option *ngFor="let p of proyectos" [ngValue]="p.idProyecto">
+          {{ getProyectoLabel(p) }}
+        </option>
+      </select>
+    </div>
+
+    <div class="field">
       <label>Especialidad</label>
       <select [(ngModel)]="filtros.idEspecialidad">
         <option [ngValue]="null">Todas</option>

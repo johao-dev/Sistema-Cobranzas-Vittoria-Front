@@ -40,7 +40,7 @@ export class KardexService {
     return this.api.http.post<any>(`${this.api.baseUrl}/api/almacen/kardex/salidas`, dto);
   }
 
-  entradas(filters?: { idEspecialidad?: number | null; idProveedor?: number | null; fechaDesde?: string | null; fechaHasta?: string | null }) {
+  entradas(filters?: { idEspecialidad?: number | null; idProveedor?: number | null; idProyecto?: number | null; fechaDesde?: string | null; fechaHasta?: string | null }) {
     const params = new URLSearchParams();
 
     if (filters?.idEspecialidad !== undefined && filters?.idEspecialidad !== null) {
@@ -48,6 +48,9 @@ export class KardexService {
     }
     if (filters?.idProveedor !== undefined && filters?.idProveedor !== null) {
       params.append('idProveedor', String(filters.idProveedor));
+    }
+    if (filters?.idProyecto !== undefined && filters?.idProyecto !== null) {
+      params.append('idProyecto', String(filters.idProyecto));
     }
     if (filters?.fechaDesde) {
       params.append('fechaDesde', String(filters.fechaDesde));
@@ -72,11 +75,14 @@ export class KardexService {
     return this.api.http.delete<any>(`${this.api.baseUrl}/api/almacen/kardex/entradas/${id}`);
   }
 
-  salidas(filters?: { idEspecialidad?: number | null; fechaDesde?: string | null; fechaHasta?: string | null }) {
+  salidas(filters?: { idEspecialidad?: number | null; idProyecto?: number | null; fechaDesde?: string | null; fechaHasta?: string | null }) {
     const params = new URLSearchParams();
 
     if (filters?.idEspecialidad !== undefined && filters?.idEspecialidad !== null) {
       params.append('idEspecialidad', String(filters.idEspecialidad));
+    }
+    if (filters?.idProyecto !== undefined && filters?.idProyecto !== null) {
+      params.append('idProyecto', String(filters.idProyecto));
     }
     if (filters?.fechaDesde) {
       params.append('fechaDesde', String(filters.fechaDesde));
@@ -101,11 +107,14 @@ export class KardexService {
     return this.api.http.delete<any>(`${this.api.baseUrl}/api/almacen/kardex/salidas/${id}`);
   }
 
-  stockActual(filters?: { idEspecialidad?: number | null; fechaDesde?: string | null; fechaHasta?: string | null }) {
+  stockActual(filters?: { idEspecialidad?: number | null; idProyecto?: number | null; fechaDesde?: string | null; fechaHasta?: string | null }) {
     const params = new URLSearchParams();
 
     if (filters?.idEspecialidad !== undefined && filters?.idEspecialidad !== null) {
       params.append('idEspecialidad', String(filters.idEspecialidad));
+    }
+    if (filters?.idProyecto !== undefined && filters?.idProyecto !== null) {
+      params.append('idProyecto', String(filters.idProyecto));
     }
     if (filters?.fechaDesde) {
       params.append('fechaDesde', String(filters.fechaDesde));

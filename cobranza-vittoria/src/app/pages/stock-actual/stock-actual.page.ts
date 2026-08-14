@@ -17,11 +17,13 @@ export class StockActualPage implements OnInit {
 
   filtros = {
     idEspecialidad: null as number | null,
+    idProyecto: null as number | null,
     fechaDesde: '',
     fechaHasta: ''
   };
 
   especialidades: any[] = [];
+  proyectos: any[] = [];
 
   private normalizarBusqueda(valor: any): string {
     return (valor ?? '')
@@ -57,12 +59,18 @@ export class StockActualPage implements OnInit {
       error: () => { this.especialidades = []; this.cdr.detectChanges(); }
     });
 
+    this.maestra.proyectos(true).subscribe({
+      next: (x: any) => { this.proyectos = x ?? []; this.cdr.detectChanges(); },
+      error: () => { this.proyectos = []; this.cdr.detectChanges(); }
+    });
+
     this.load();
   }
 
   load() {
     this.kardex.stockActual({
       idEspecialidad: this.filtros.idEspecialidad,
+      idProyecto: this.filtros.idProyecto,
       fechaDesde: this.filtros.fechaDesde || null,
       fechaHasta: this.filtros.fechaHasta || null
     }).subscribe({
@@ -80,6 +88,7 @@ export class StockActualPage implements OnInit {
   limpiarFiltros() {
     this.filtros = {
       idEspecialidad: null,
+      idProyecto: null,
       fechaDesde: '',
       fechaHasta: ''
     };
@@ -90,6 +99,10 @@ export class StockActualPage implements OnInit {
     const n = Number(value || 0);
     if (Number.isNaN(n)) return '0';
     return n.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  }
+
+  getProyectoLabel(p: any): string {
+    return this.read(p, ['nombre', 'Nombre', 'nombreProyecto', 'NombreProyecto']) ?? '';
   }
 
   private normalizarStock(row: any): any {
