@@ -68,6 +68,10 @@ export class KardexService {
       : this.api.http.post<any>(`${this.api.baseUrl}/api/almacen/kardex/entradas`, dto);
   }
 
+  eliminarEntrada(id: number) {
+    return this.api.http.delete<any>(`${this.api.baseUrl}/api/almacen/kardex/entradas/${id}`);
+  }
+
   salidas(filters?: { idEspecialidad?: number | null; fechaDesde?: string | null; fechaHasta?: string | null }) {
     const params = new URLSearchParams();
 
@@ -91,6 +95,10 @@ export class KardexService {
     return dto.idKardexSalida
       ? this.api.http.put<any>(`${this.api.baseUrl}/api/almacen/kardex/salidas/${dto.idKardexSalida}`, dto)
       : this.api.http.post<any>(`${this.api.baseUrl}/api/almacen/kardex/salidas`, dto);
+  }
+
+  eliminarSalida(id: number) {
+    return this.api.http.delete<any>(`${this.api.baseUrl}/api/almacen/kardex/salidas/${id}`);
   }
 
   stockActual(filters?: { idEspecialidad?: number | null; fechaDesde?: string | null; fechaHasta?: string | null }) {

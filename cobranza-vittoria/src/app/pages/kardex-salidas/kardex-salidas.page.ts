@@ -112,6 +112,28 @@ export class KardexSalidasPage implements OnInit {
     this.cdr.detectChanges();
   }
 
+  delete(row: any) {
+    const id = this.toNumberOrNull(this.read(row, ['idKardexSalida', 'IdKardexSalida', 'id', 'Id']));
+    if (!id) {
+      this.notifyService.show('No se pudo identificar el registro a eliminar.', 'error');
+      return;
+    }
+
+    const nombre = this.read(row, ['nombre', 'Nombre']) || 'este registro';
+    if (!confirm(`¿Eliminar la salida de "${nombre}"? Esta acción no se puede deshacer.`)) return;
+
+    this.kardex.eliminarSalida(id).subscribe({
+      next: () => {
+        this.notifyService.show('Salida eliminada correctamente.', 'success');
+        this.load();
+      },
+      error: (e: any) => {
+        this.notifyService.show(e?.error?.message || 'No se pudo eliminar la salida.', 'error');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   reset() {
     this.form = this.crearFormVacio();
     this.msg = '';

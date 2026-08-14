@@ -118,6 +118,28 @@ export class KardexEntradasPage implements OnInit {
     this.cdr.detectChanges();
   }
 
+  delete(row: any) {
+    const id = this.toNumberOrNull(this.read(row, ['idKardexEntrada', 'IdKardexEntrada', 'id', 'Id']));
+    if (!id) {
+      this.notifyService.show('No se pudo identificar el registro a eliminar.', 'error');
+      return;
+    }
+
+    const nombre = this.read(row, ['nombre', 'Nombre']) || 'este registro';
+    if (!confirm(`¿Eliminar la entrada de "${nombre}"? Esta acción no se puede deshacer.`)) return;
+
+    this.kardex.eliminarEntrada(id).subscribe({
+      next: () => {
+        this.notifyService.show('Entrada eliminada correctamente.', 'success');
+        this.load();
+      },
+      error: (e: any) => {
+        this.notifyService.show(e?.error?.message || 'No se pudo eliminar la entrada.', 'error');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   reset() {
     this.form = this.crearFormVacio();
     this.msg = '';
