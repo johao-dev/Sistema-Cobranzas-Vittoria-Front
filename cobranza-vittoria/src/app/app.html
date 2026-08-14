@@ -75,6 +75,17 @@
           <a routerLink="/categorias-gasto" routerLinkActive="active" (click)="closeMobileMenu()">Categorías de gasto</a>
         </div>
       </div>
+
+      <div class="nav-section nav-section--collapsible">
+        <button type="button" class="nav-toggle" (click)="toggleMenu('inventario')" [class.open]="isMenuOpen('inventario')">
+          <span>Inventario</span><span class="nav-toggle__chev">⌄</span>
+        </button>
+        <div class="nav-panel" *ngIf="isMenuOpen('inventario')">
+          <a routerLink="/kardex-entradas" routerLinkActive="active" (click)="closeMobileMenu()">Kardex Entradas</a>
+          <a routerLink="/kardex-salidas" routerLinkActive="active" (click)="closeMobileMenu()">Kardex Salidas</a>
+          <a routerLink="/stock-actual" routerLinkActive="active" (click)="closeMobileMenu()">Stock Actual</a>
+        </div>
+      </div>
     </nav>
   </aside>
 
