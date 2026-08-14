@@ -92,4 +92,23 @@ export class KardexService {
       ? this.api.http.put<any>(`${this.api.baseUrl}/api/almacen/kardex/salidas/${dto.idKardexSalida}`, dto)
       : this.api.http.post<any>(`${this.api.baseUrl}/api/almacen/kardex/salidas`, dto);
   }
+
+  stockActual(filters?: { idEspecialidad?: number | null; fechaDesde?: string | null; fechaHasta?: string | null }) {
+    const params = new URLSearchParams();
+
+    if (filters?.idEspecialidad !== undefined && filters?.idEspecialidad !== null) {
+      params.append('idEspecialidad', String(filters.idEspecialidad));
+    }
+    if (filters?.fechaDesde) {
+      params.append('fechaDesde', String(filters.fechaDesde));
+    }
+    if (filters?.fechaHasta) {
+      params.append('fechaHasta', String(filters.fechaHasta));
+    }
+
+    const qs = params.toString();
+    return this.api.http.get<any[]>(
+      `${this.api.baseUrl}/api/almacen/kardex/stock-actual${qs ? '?' + qs : ''}`
+    );
+  }
 }

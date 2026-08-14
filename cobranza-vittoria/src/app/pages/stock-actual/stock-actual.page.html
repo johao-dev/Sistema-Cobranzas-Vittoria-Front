@@ -1,6 +1,81 @@
 <div class="page-header">
   <div>
     <div class="page-title">Stock Actual</div>
-    <div class="page-subtitle">Consulta de stock actual por material y especialidad.</div>
+    <div class="page-subtitle">Consolidado de entradas y salidas por material.</div>
   </div>
 </div>
+
+<section class="panel">
+  <div class="panel-title">Filtros</div>
+  <div class="form-grid four">
+    <div class="field">
+      <label>Especialidad</label>
+      <select [(ngModel)]="filtros.idEspecialidad">
+        <option [ngValue]="null">Todas</option>
+        <option *ngFor="let e of especialidades" [ngValue]="e.idEspecialidad">
+          {{ e.nombre }}
+        </option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Fecha desde</label>
+      <input type="date" [(ngModel)]="filtros.fechaDesde" />
+    </div>
+
+    <div class="field">
+      <label>Fecha hasta</label>
+      <input type="date" [(ngModel)]="filtros.fechaHasta" />
+    </div>
+  </div>
+
+  <div class="toolbar" style="margin-top: 14px;">
+    <button class="btn btn-primary" (click)="load()">Filtrar</button>
+    <button class="btn btn-ghost" (click)="limpiarFiltros()">Limpiar filtros</button>
+  </div>
+</section>
+
+<section class="panel" style="margin-top: 18px;">
+  <div class="panel-title-row">
+    <div class="panel-title">Listado</div>
+    <div class="filters compact-filters maintenance-search">
+      <div class="field">
+        <label>Buscar</label>
+        <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Buscar por ID, código o nombre" />
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!rowsFiltradas.length" class="empty-state">
+    No hay stock para los filtros aplicados.
+  </div>
+
+  <div *ngIf="rowsFiltradas.length" class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Especialidad</th>
+          <th>Código Material</th>
+          <th>Nombre</th>
+          <th>Unidad Medida</th>
+          <th class="num-col">Entrada</th>
+          <th class="num-col">Salida</th>
+          <th class="num-col">Stock Actual</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rowsFiltradas">
+          <td>{{ row.id ?? '-' }}</td>
+          <td>{{ row.especialidad || '-' }}</td>
+          <td>{{ row.codigoMaterial || '-' }}</td>
+          <td>{{ row.nombre || '-' }}</td>
+          <td>{{ row.unidadMedida || '-' }}</td>
+          <td class="num-col">{{ formatCantidad(row.entrada) }}</td>
+          <td class="num-col">{{ formatCantidad(row.salida) }}</td>
+          <td class="num-col">{{ formatCantidad(row.stockActual) }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
