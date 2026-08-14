@@ -11,6 +11,9 @@ import { RequerimientosPage } from './pages/requerimientos/requerimientos.page';
 import { OrdenesCompraPage } from './pages/ordenes-compra/ordenes-compra.page';
 import { ComprasPage } from './pages/compras/compras.page';
 import { KardexPage } from './pages/kardex/kardex.page';
+import { KardexEntradasPage } from './pages/kardex-entradas/kardex-entradas.page';
+import { KardexSalidasPage } from './pages/kardex-salidas/kardex-salidas.page';
+import { StockActualPage } from './pages/stock-actual/stock-actual.page';
 import { ValorizacionesPage } from './pages/valorizaciones/valorizaciones.page';
 import { CategoriasGastoPage } from './pages/categorias-gasto/categorias-gasto.page';
 import { ProveedoresGastoPage } from './pages/proveedores-gasto/proveedores-gasto.page';
@@ -44,6 +47,16 @@ export const routes: Routes = [
   { path: 'ordenes-compra', canActivate: [authGuard], component: OrdenesCompraPage },
   { path: 'compras', canActivate: [authGuard], component: ComprasPage },
   { path: 'kardex', canActivate: [authGuard], component: KardexPage },
+  {
+    path: 'inventario',
+    canActivate: [authGuard],
+    children: [
+      { path: '', redirectTo: 'kardex-entradas', pathMatch: 'full' },
+      { path: 'kardex-entradas', component: KardexEntradasPage },
+      { path: 'kardex-salidas', component: KardexSalidasPage },
+      { path: 'stock-actual', component: StockActualPage }
+    ]
+  },
   { path: 'valorizaciones', canActivate: [authGuard], component: ValorizacionesPage },
   { path: 'proveedores-gasto', canActivate: [authGuard], component: ProveedoresGastoPage },
   { path: 'proveedores-terreno', canActivate: [authGuard], component: ProveedoresTerrenoPage },
