@@ -5,125 +5,153 @@
   </div>
 </div>
 
-<div class="split split--form">
-  <section class="panel">
-    <div class="panel-title-row">
-      <div class="panel-title">Listado</div>
-      <div class="filters compact-filters maintenance-search">
-        <div class="field">
-          <label>Buscar</label>
-          <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Buscar entradas" />
-        </div>
-      </div>
-      <button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button>
+<section class="panel">
+  <div class="panel-title">Filtros</div>
+  <div class="form-grid four">
+    <div class="field">
+      <label>Especialidad</label>
+      <select [(ngModel)]="filtros.idEspecialidad">
+        <option [ngValue]="null">Todas</option>
+        <option *ngFor="let e of especialidades" [ngValue]="e.idEspecialidad">
+          {{ e.nombre }}
+        </option>
+      </select>
     </div>
 
-    <div *ngIf="!rowsFiltradas.length" class="empty-state">
-      No hay entradas registradas.
+    <div class="field">
+      <label>Fecha desde</label>
+      <input type="date" [(ngModel)]="filtros.fechaDesde" />
     </div>
 
-    <div *ngIf="rowsFiltradas.length" class="table-wrap table-wrap--sticky-actions">
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Especialidad</th>
-            <th>Fecha</th>
-            <th>Cód. Material</th>
-            <th>Nombre</th>
-            <th class="num-col">Cantidad</th>
-            <th class="actions-col">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let row of rowsFiltradas">
-            <td>{{ row.idKardexEntrada ?? '-' }}</td>
-            <td>{{ row.especialidad || '-' }}</td>
-            <td>{{ formatFecha(row.fecha) }}</td>
-            <td>{{ row.codigoMaterial || '-' }}</td>
-            <td>{{ row.nombre || '-' }}</td>
-            <td class="num-col">{{ formatCantidad(row.cantidad) }}</td>
-            <td>
-              <div class="actions actions--end">
-                <button class="btn btn-secondary btn-sm action-btn" (click)="edit(row)">Editar</button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="field">
+      <label>Fecha hasta</label>
+      <input type="date" [(ngModel)]="filtros.fechaHasta" />
     </div>
-  </section>
+  </div>
 
-  <div class="design-modal-backdrop" *ngIf="modalOpen" (click)="cerrarModal()"></div>
-  <section class="panel panel--form design-modal-card" *ngIf="modalOpen" (click)="$event.stopPropagation()">
-    <button type="button" class="modal-close" (click)="cerrarModal()" aria-label="Cerrar">×</button>
-    <div class="panel-title">Formulario</div>
+  <div class="toolbar" style="margin-top: 14px;">
+    <button class="btn btn-primary" (click)="load()">Filtrar</button>
+    <button class="btn btn-ghost" (click)="limpiarFiltros()">Limpiar filtros</button>
+  </div>
+</section>
 
-    <div class="form-grid two">
+<section class="panel" style="margin-top: 18px;">
+  <div class="panel-title-row">
+    <div class="panel-title">Listado</div>
+    <div class="filters compact-filters maintenance-search">
       <div class="field">
-        <label>Especialidad</label>
-        <select [(ngModel)]="form.idEspecialidad">
-          <option [ngValue]="null">Seleccionar</option>
-          <option *ngFor="let e of especialidades" [ngValue]="e.idEspecialidad">
-            {{ e.nombre }}
-          </option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label>Nro. Documento</label>
-        <input [(ngModel)]="form.numeroDocumento" placeholder="Ej. F001-12345" />
-      </div>
-
-      <div class="field">
-        <label>Fecha</label>
-        <input type="date" [(ngModel)]="form.fecha" />
-      </div>
-
-      <div class="field">
-        <label>Código Material</label>
-        <input [(ngModel)]="form.codigoMaterial" placeholder="Código del material" />
-      </div>
-
-      <div class="field" style="grid-column: 1 / -1;">
-        <label>Nombre</label>
-        <input [(ngModel)]="form.nombre" placeholder="Nombre del material" />
-      </div>
-
-      <div class="field">
-        <label>Proveedor</label>
-        <select [(ngModel)]="form.idProveedor">
-          <option [ngValue]="null">Seleccionar</option>
-          <option *ngFor="let p of proveedores" [ngValue]="p.idProveedor">
-            {{ p.razonSocial }}
-          </option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label>Cantidad</label>
-        <input type="number" min="0" step="0.01" [(ngModel)]="form.cantidad" (input)="onCantidadInput()" />
-      </div>
-
-      <div class="field" style="grid-column: 1 / -1;">
-        <label>Observación</label>
-        <input [(ngModel)]="form.observacion" placeholder="Observación" />
+        <label>Buscar</label>
+        <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Buscar entradas" />
       </div>
     </div>
+    <button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button>
+  </div>
 
-    <div class="toolbar" style="margin-top: 14px;">
-      <button
-        class="btn btn-primary"
-        (click)="save()"
-        [disabled]="!form.idEspecialidad || !form.nombre || !form.fecha || cantidadInvalida"
-      >
-        Guardar
-      </button>
-      <button class="btn btn-ghost" (click)="reset()">Limpiar</button>
+  <div *ngIf="!rowsFiltradas.length" class="empty-state">
+    No hay entradas registradas.
+  </div>
+
+  <div *ngIf="rowsFiltradas.length" class="table-wrap table-wrap--sticky-actions">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Especialidad</th>
+          <th>Fecha</th>
+          <th>Cód. Material</th>
+          <th>Nombre</th>
+          <th class="num-col">Cantidad</th>
+          <th class="actions-col">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rowsFiltradas">
+          <td>{{ row.idKardexEntrada ?? '-' }}</td>
+          <td>{{ row.especialidad || '-' }}</td>
+          <td>{{ formatFecha(row.fecha) }}</td>
+          <td>{{ row.codigoMaterial || '-' }}</td>
+          <td>{{ row.nombre || '-' }}</td>
+          <td class="num-col">{{ formatCantidad(row.cantidad) }}</td>
+          <td>
+            <div class="actions actions--end">
+              <button class="btn btn-secondary btn-sm action-btn" (click)="edit(row)">Editar</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="design-modal-backdrop" *ngIf="modalOpen" (click)="cerrarModal()"></div>
+<section class="panel panel--form design-modal-card" *ngIf="modalOpen" (click)="$event.stopPropagation()">
+  <button type="button" class="modal-close" (click)="cerrarModal()" aria-label="Cerrar">×</button>
+  <div class="panel-title">Formulario</div>
+
+  <div class="form-grid two">
+    <div class="field">
+      <label>Especialidad</label>
+      <select [(ngModel)]="form.idEspecialidad">
+        <option [ngValue]="null">Seleccionar</option>
+        <option *ngFor="let e of especialidades" [ngValue]="e.idEspecialidad">
+          {{ e.nombre }}
+        </option>
+      </select>
     </div>
 
-    <div *ngIf="msg" class="empty-state" style="margin-top: 14px; padding: 14px;">
-      {{ msg }}
+    <div class="field">
+      <label>Nro. Documento</label>
+      <input [(ngModel)]="form.numeroDocumento" placeholder="Ej. F001-12345" />
     </div>
-  </section>
-</div>
+
+    <div class="field">
+      <label>Fecha</label>
+      <input type="date" [(ngModel)]="form.fecha" />
+    </div>
+
+    <div class="field">
+      <label>Código Material</label>
+      <input [(ngModel)]="form.codigoMaterial" placeholder="Código del material" />
+    </div>
+
+    <div class="field" style="grid-column: 1 / -1;">
+      <label>Nombre</label>
+      <input [(ngModel)]="form.nombre" placeholder="Nombre del material" />
+    </div>
+
+    <div class="field">
+      <label>Proveedor</label>
+      <select [(ngModel)]="form.idProveedor">
+        <option [ngValue]="null">Seleccionar</option>
+        <option *ngFor="let p of proveedores" [ngValue]="p.idProveedor">
+          {{ p.razonSocial }}
+        </option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Cantidad</label>
+      <input type="number" min="0" step="0.01" [(ngModel)]="form.cantidad" (input)="onCantidadInput()" />
+    </div>
+
+    <div class="field" style="grid-column: 1 / -1;">
+      <label>Observación</label>
+      <input [(ngModel)]="form.observacion" placeholder="Observación" />
+    </div>
+  </div>
+
+  <div class="toolbar" style="margin-top: 14px;">
+    <button
+      class="btn btn-primary"
+      (click)="save()"
+      [disabled]="!form.idEspecialidad || !form.nombre || !form.fecha || cantidadInvalida"
+    >
+      Guardar
+    </button>
+    <button class="btn btn-ghost" (click)="reset()">Limpiar</button>
+  </div>
+
+  <div *ngIf="msg" class="empty-state" style="margin-top: 14px; padding: 14px;">
+    {{ msg }}
+  </div>
+</section>

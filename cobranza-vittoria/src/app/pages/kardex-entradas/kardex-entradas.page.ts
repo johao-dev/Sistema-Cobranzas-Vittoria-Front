@@ -29,6 +29,12 @@ export class KardexEntradasPage implements OnInit {
   rows: any[] = [];
   filtroBusqueda = '';
 
+  filtros = {
+    idEspecialidad: null as number | null,
+    fechaDesde: '',
+    fechaHasta: ''
+  };
+
   private normalizarBusqueda(valor: any): string {
     return (valor ?? '')
       .toString()
@@ -80,7 +86,11 @@ export class KardexEntradasPage implements OnInit {
   }
 
   load() {
-    this.kardex.entradas().subscribe({
+    this.kardex.entradas({
+      idEspecialidad: this.filtros.idEspecialidad,
+      fechaDesde: this.filtros.fechaDesde || null,
+      fechaHasta: this.filtros.fechaHasta || null
+    }).subscribe({
       next: (x: any) => {
         this.rows = (x || []).map((row: any) => this.normalizarEntrada(row));
         this.cdr.detectChanges();
@@ -90,6 +100,15 @@ export class KardexEntradasPage implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  limpiarFiltros() {
+    this.filtros = {
+      idEspecialidad: null,
+      fechaDesde: '',
+      fechaHasta: ''
+    };
+    this.load();
   }
 
   edit(row: any) {
