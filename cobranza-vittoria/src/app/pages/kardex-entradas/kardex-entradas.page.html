@@ -67,9 +67,12 @@
         <tr>
           <th>ID</th>
           <th>Especialidad</th>
+          <th>Proyecto</th>
           <th>Fecha</th>
+          <th>Nro. Documento</th>
           <th>Cód. Material</th>
           <th>Nombre</th>
+          <th>Proveedor</th>
           <th class="num-col">Cantidad</th>
           <th class="actions-col">Acciones</th>
         </tr>
@@ -78,9 +81,12 @@
         <tr *ngFor="let row of rowsFiltradas">
           <td>{{ row.idKardexEntrada ?? '-' }}</td>
           <td>{{ row.especialidad || '-' }}</td>
+          <td>{{ row.proyecto || '-' }}</td>
           <td>{{ formatFecha(row.fecha) }}</td>
+          <td>{{ row.numeroDocumento || '-' }}</td>
           <td>{{ row.codigoMaterial || '-' }}</td>
           <td>{{ row.nombre || '-' }}</td>
+          <td>{{ row.proveedor || '-' }}</td>
           <td class="num-col">{{ formatCantidad(row.cantidad) }}</td>
           <td>
             <div class="actions actions--end">
@@ -121,13 +127,18 @@
     </div>
 
     <div class="field">
-      <label>Código Material</label>
-      <input [(ngModel)]="form.codigoMaterial" [readonly]="!!form.idMaterial" placeholder="Código del material" />
+      <label>Proyecto</label>
+      <select [(ngModel)]="form.idProyecto">
+        <option [ngValue]="null">Seleccionar</option>
+        <option *ngFor="let p of proyectos" [ngValue]="p.idProyecto">
+          {{ getProyectoLabel(p) }}
+        </option>
+      </select>
     </div>
 
     <div class="field material-picker-field" style="grid-column: 1 / -1;">
-      <label>Nombre</label>
-      <select [(ngModel)]="form.idMaterial" (ngModelChange)="onMaterialChange()" [disabled]="!form.idEspecialidad">
+      <label>Material</label>
+      <select [(ngModel)]="form.idMaterial" [disabled]="!form.idEspecialidad">
         <option [ngValue]="null">{{ form.idEspecialidad ? 'Seleccionar' : 'Selecciona una especialidad primero' }}</option>
         <option *ngFor="let m of materialesFiltrados" [ngValue]="getIdMaterial(m)">
           {{ getDescripcionMaterial(m) }} — {{ getCodigoMaterial(m) }} — {{ getUnidadMaterial(m) }}

@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NotificationService } from '../../core/services/notification.service';
 import { MaestraService } from '../../core/services/maestra.service';
-import { KardexService } from '../../core/services/kardex.service';
+import { KardexInventarioService } from '../../core/services/kardex-inventario.service';
+import { KardexEntradaCreateDto, KardexFiltroInventarioDto } from '../../models/kardex-inventario.models';
+import { extraerMensajeError } from '../../core/utils/api-error.util';
 
 @Component({
   standalone: true,
@@ -70,7 +72,7 @@ export class KardexEntradasPage implements OnInit {
 
   constructor(
     private maestra: MaestraService,
-    private kardex: KardexService,
+    private kardex: KardexInventarioService,
     private notifyService: NotificationService,
     private cdr: ChangeDetectorRef
   ) {}
@@ -100,18 +102,20 @@ export class KardexEntradasPage implements OnInit {
   }
 
   load() {
-    this.kardex.entradas({
+    const filtros: KardexFiltroInventarioDto = {
       idEspecialidad: this.filtros.idEspecialidad,
       idProyecto: this.filtros.idProyecto,
       fechaDesde: this.filtros.fechaDesde || null,
       fechaHasta: this.filtros.fechaHasta || null
-    }).subscribe({
-      next: (x: any) => {
-        this.rows = (x || []).map((row: any) => this.normalizarEntrada(row));
+    };
+    this.kardex.listarEntradas(filtros).subscribe({
+      next: (x) => {
+        this.rows = (x || []).map((row) => this.normalizarEntrada(row));
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (e) => {
         this.rows = [];
+        this.notifyService.show(extraerMensajeError(e, 'No se pudo cargar el listado de entradas.'), 'error');
         this.cdr.detectChanges();
       }
     });
@@ -150,8 +154,8 @@ export class KardexEntradasPage implements OnInit {
         this.notifyService.show('Entrada eliminada correctamente.', 'success');
         this.load();
       },
-      error: (e: any) => {
-        this.notifyService.show(e?.error?.message || 'No se pudo eliminar la entrada.', 'error');
+      error: (e) => {
+        this.notifyService.show(extraerMensajeError(e, 'No se pudo eliminar la entrada.'), 'error');
         this.cdr.detectChanges();
       }
     });
@@ -165,22 +169,7 @@ export class KardexEntradasPage implements OnInit {
 
   onEspecialidadChange() {
     this.form.idMaterial = null;
-    this.form.codigoMaterial = '';
-    this.form.nombre = '';
     this.actualizarMaterialesFiltrados();
-  }
-
-  onMaterialChange() {
-    if (!this.form.idMaterial) {
-      this.form.codigoMaterial = '';
-      this.form.nombre = '';
-      return;
-    }
-    const m = this.materiales.find((x: any) => this.getIdMaterial(x) === this.form.idMaterial);
-    if (m) {
-      this.form.codigoMaterial = this.getCodigoMaterial(m) ?? '';
-      this.form.nombre = this.getDescripcionMaterial(m) ?? '';
-    }
   }
 
   actualizarMaterialesFiltrados() {
@@ -228,12 +217,11 @@ export class KardexEntradasPage implements OnInit {
       idEspecialidad: this.form.idEspecialidad != null ? Number(this.form.idEspecialidad) : null,
       idMaterial: this.form.idMaterial != null ? Number(this.form.idMaterial) : null,
       idProveedor: this.form.idProveedor != null ? Number(this.form.idProveedor) : null,
-      numeroDocumento: (this.form.numeroDocumento ?? '').toString().trim(),
+      idProyecto: this.form.idProyecto != null ? Number(this.form.idProyecto) : null,
+      numeroDocumento: (this.form.numeroDocumento ?? '').toString().trim() || null,
       fecha: this.form.fecha || null,
-      codigoMaterial: (this.form.codigoMaterial ?? '').toString().trim(),
-      nombre: (this.form.nombre ?? '').toString().trim(),
       cantidad: Number(this.form.cantidad || 0),
-      observacion: (this.form.observacion ?? '').toString().trim()
+      observacion: (this.form.observacion ?? '').toString().trim() || null
     };
 
     if (!payload.idEspecialidad) {
@@ -241,8 +229,8 @@ export class KardexEntradasPage implements OnInit {
       this.notifyService.show(this.msg, 'error');
       return;
     }
-    if (!payload.nombre) {
-      this.msg = 'Debes ingresar el nombre del producto.';
+    if (!payload.idMaterial) {
+      this.msg = 'Debes seleccionar un material.';
       this.notifyService.show(this.msg, 'error');
       return;
     }
@@ -257,9 +245,15 @@ export class KardexEntradasPage implements OnInit {
       return;
     }
 
-    this.kardex.guardarEntrada(payload).subscribe({
-      next: (resp: any) => {
-        this.msg = payload.idKardexEntrada
+    const dto = payload as KardexEntradaCreateDto;
+    const esEdicion = !!dto.idKardexEntrada;
+    const req$ = esEdicion
+      ? this.kardex.actualizarEntrada(dto.idKardexEntrada as number, dto)
+      : this.kardex.crearEntrada(dto);
+
+    req$.subscribe({
+      next: () => {
+        this.msg = esEdicion
           ? 'Entrada actualizada correctamente.'
           : 'Entrada registrada correctamente.';
         this.notifyService.show(this.msg, 'success');
@@ -267,8 +261,8 @@ export class KardexEntradasPage implements OnInit {
         this.cerrarModal();
         this.load();
       },
-      error: (e: any) => {
-        this.msg = e?.error?.message || 'No se pudo guardar la entrada.';
+      error: (e) => {
+        this.msg = extraerMensajeError(e, 'No se pudo guardar la entrada.');
         this.notifyService.show(this.msg, 'error');
         this.cdr.detectChanges();
       }
@@ -298,10 +292,9 @@ export class KardexEntradasPage implements OnInit {
       idEspecialidad: null,
       idMaterial: null,
       idProveedor: null,
+      idProyecto: null,
       numeroDocumento: '',
       fecha: new Date().toISOString().slice(0, 10),
-      codigoMaterial: '',
-      nombre: '',
       cantidad: 0,
       observacion: ''
     };
@@ -317,10 +310,10 @@ export class KardexEntradasPage implements OnInit {
       idMaterial: this.toNumberOrNull(this.read(row, ['idMaterial', 'IdMaterial'])),
       idProveedor: this.toNumberOrNull(this.read(row, ['idProveedor', 'IdProveedor'])),
       proveedor: this.read(row, ['proveedor', 'Proveedor', 'razonSocial', 'RazonSocial']) ?? '',
+      idProyecto: this.toNumberOrNull(this.read(row, ['idProyecto', 'IdProyecto'])),
+      proyecto: this.read(row, ['proyecto', 'Proyecto', 'nombreProyecto', 'NombreProyecto']) ?? '',
       numeroDocumento: this.read(row, ['numeroDocumento', 'NumeroDocumento', 'nroDocumento', 'NroDocumento']) ?? '',
       fecha: this.formatFechaInput(this.read(row, ['fecha', 'Fecha'])),
-      codigoMaterial: this.read(row, ['codigoMaterial', 'CodigoMaterial']) ?? '',
-      nombre: this.read(row, ['nombre', 'Nombre', 'material', 'Material']) ?? '',
       cantidad: this.toNumberOrDefault(this.read(row, ['cantidad', 'Cantidad']), 0),
       observacion: this.read(row, ['observacion', 'Observacion', 'observaciones', 'Observaciones']) ?? ''
     };

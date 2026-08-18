@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NotificationService } from '../../core/services/notification.service';
 import { MaestraService } from '../../core/services/maestra.service';
-import { KardexService } from '../../core/services/kardex.service';
+import { KardexInventarioService } from '../../core/services/kardex-inventario.service';
+import { KardexFiltroInventarioDto, KardexSalidaCreateDto } from '../../models/kardex-inventario.models';
+import { extraerMensajeError } from '../../core/utils/api-error.util';
 
 @Component({
   standalone: true,
@@ -78,7 +80,7 @@ export class KardexSalidasPage implements OnInit {
 
   constructor(
     private maestra: MaestraService,
-    private kardex: KardexService,
+    private kardex: KardexInventarioService,
     private notifyService: NotificationService,
     private cdr: ChangeDetectorRef
   ) {}
@@ -103,18 +105,20 @@ export class KardexSalidasPage implements OnInit {
   }
 
   load() {
-    this.kardex.salidas({
+    const filtros: KardexFiltroInventarioDto = {
       idEspecialidad: this.filtros.idEspecialidad,
       idProyecto: this.filtros.idProyecto,
       fechaDesde: this.filtros.fechaDesde || null,
       fechaHasta: this.filtros.fechaHasta || null
-    }).subscribe({
-      next: (x: any) => {
-        this.rows = (x || []).map((row: any) => this.normalizarSalida(row));
+    };
+    this.kardex.listarSalidas(filtros).subscribe({
+      next: (x) => {
+        this.rows = (x || []).map((row) => this.normalizarFilaSalida(row));
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (e) => {
         this.rows = [];
+        this.notifyService.show(extraerMensajeError(e, 'No se pudo cargar el listado de salidas.'), 'error');
         this.cdr.detectChanges();
       }
     });
@@ -132,7 +136,31 @@ export class KardexSalidasPage implements OnInit {
 
   edit(row: any) {
     this.modalOpen = true;
-    this.form = this.normalizarSalida(row);
+
+    const idKardexSalida = this.toNumberOrNull(this.read(row, ['idKardexSalida', 'IdKardexSalida', 'id', 'Id']));
+    const filasRelacionadas = idKardexSalida !== null
+      ? (this.rows || []).filter((r: any) =>
+          this.toNumberOrNull(this.read(r, ['idKardexSalida', 'IdKardexSalida', 'id', 'Id'])) === idKardexSalida
+        )
+      : [row];
+
+    const cabecera = filasRelacionadas[0] || row;
+    const items = filasRelacionadas.map((r: any) => this.normalizarItem(r));
+
+    this.form = {
+      ...this.crearFormVacio(),
+      idKardexSalida: this.toNumberOrNull(this.read(cabecera, ['idKardexSalida', 'IdKardexSalida'])),
+      idEspecialidad: this.toNumberOrNull(this.read(cabecera, ['idEspecialidad', 'IdEspecialidad'])),
+      especialidad: this.read(cabecera, ['especialidad', 'Especialidad', 'nombreEspecialidad', 'NombreEspecialidad']) ?? '',
+      idProyecto: this.toNumberOrNull(this.read(cabecera, ['idProyecto', 'IdProyecto'])),
+      proyecto: this.read(cabecera, ['proyecto', 'Proyecto', 'nombreProyecto', 'NombreProyecto']) ?? '',
+      numeroDocumento: this.read(cabecera, ['numeroDocumento', 'NumeroDocumento', 'nroDocumento', 'NroDocumento']) ?? '',
+      fecha: this.formatFechaInput(this.read(cabecera, ['fecha', 'Fecha'])),
+      solicitante: this.read(cabecera, ['solicitante', 'Solicitante']) ?? '',
+      observacion: this.read(cabecera, ['observacion', 'Observacion', 'observaciones', 'Observaciones']) ?? '',
+      items
+    };
+
     this.msg = '';
     this.actualizarMaterialesFiltrados();
     this.cdr.detectChanges();
@@ -145,9 +173,11 @@ export class KardexSalidasPage implements OnInit {
       return;
     }
 
-    const items = (this.form.items || []);
-    const cantidadItems = items.length;
-    const primerNombre = items[0]?.nombre || '';
+    const filasRelacionadas = (this.rows || []).filter((r: any) =>
+      this.toNumberOrNull(this.read(r, ['idKardexSalida', 'IdKardexSalida', 'id', 'Id'])) === id
+    );
+    const cantidadItems = filasRelacionadas.length || 1;
+    const primerNombre = this.read(filasRelacionadas[0] || row, ['nombre', 'Nombre']) || '';
     const detalle = cantidadItems > 1
       ? `esta salida con ${cantidadItems} ítems`
       : (primerNombre ? `la salida de "${primerNombre}"` : 'esta salida');
@@ -158,8 +188,8 @@ export class KardexSalidasPage implements OnInit {
         this.notifyService.show('Salida eliminada correctamente.', 'success');
         this.load();
       },
-      error: (e: any) => {
-        this.notifyService.show(e?.error?.message || 'No se pudo eliminar la salida.', 'error');
+      error: (e) => {
+        this.notifyService.show(extraerMensajeError(e, 'No se pudo eliminar la salida.'), 'error');
         this.cdr.detectChanges();
       }
     });
@@ -306,16 +336,17 @@ export class KardexSalidasPage implements OnInit {
     const items = (this.form.items || []).map((x: any) => ({
       idMaterial: x.idMaterial != null ? Number(x.idMaterial) : null,
       cantidad: Number(x.cantidad || 0),
-      observacion: (x.observacion ?? '').toString().trim()
+      observacion: (x.observacion ?? '').toString().trim() || null
     }));
 
     const payload = {
       idKardexSalida: this.form.idKardexSalida ? Number(this.form.idKardexSalida) : null,
       idEspecialidad: this.form.idEspecialidad != null ? Number(this.form.idEspecialidad) : null,
-      numeroDocumento: (this.form.numeroDocumento ?? '').toString().trim(),
+      idProyecto: this.form.idProyecto != null ? Number(this.form.idProyecto) : null,
+      numeroDocumento: (this.form.numeroDocumento ?? '').toString().trim() || null,
       fecha: this.form.fecha || null,
       solicitante: (this.form.solicitante ?? '').toString().trim(),
-      observacion: (this.form.observacion ?? '').toString().trim(),
+      observacion: (this.form.observacion ?? '').toString().trim() || null,
       items
     };
 
@@ -345,9 +376,15 @@ export class KardexSalidasPage implements OnInit {
       return;
     }
 
-    this.kardex.guardarSalida(payload).subscribe({
-      next: (resp: any) => {
-        this.msg = payload.idKardexSalida
+    const dto = payload as KardexSalidaCreateDto;
+    const esEdicion = !!dto.idKardexSalida;
+    const req$ = esEdicion
+      ? this.kardex.actualizarSalida(dto.idKardexSalida as number, dto)
+      : this.kardex.crearSalida(dto);
+
+    req$.subscribe({
+      next: () => {
+        this.msg = esEdicion
           ? 'Salida actualizada correctamente.'
           : 'Salida registrada correctamente.';
         this.notifyService.show(this.msg, 'success');
@@ -355,8 +392,8 @@ export class KardexSalidasPage implements OnInit {
         this.cerrarModal();
         this.load();
       },
-      error: (e: any) => {
-        this.msg = e?.error?.message || 'No se pudo guardar la salida.';
+      error: (e) => {
+        this.msg = extraerMensajeError(e, 'No se pudo guardar la salida.');
         this.notifyService.show(this.msg, 'error');
         this.cdr.detectChanges();
       }
@@ -384,6 +421,7 @@ export class KardexSalidasPage implements OnInit {
     return {
       idKardexSalida: null,
       idEspecialidad: null,
+      idProyecto: null,
       numeroDocumento: '',
       fecha: new Date().toISOString().slice(0, 10),
       solicitante: '',
@@ -400,40 +438,39 @@ export class KardexSalidasPage implements OnInit {
     };
   }
 
-  private normalizarSalida(row: any): any {
-    if (!row) return this.crearFormVacio();
-
-    // Si el backend devuelve items[], los usamos. Si no, creamos uno a partir del registro single-item (compatibilidad).
-    let items: any[] = [];
-    const itemsRaw = this.read(row, ['items', 'Items', 'detalles', 'Detalles']);
-    if (Array.isArray(itemsRaw) && itemsRaw.length) {
-      items = itemsRaw.map((it: any) => this.normalizarItem(it));
-    } else {
-      const item = this.normalizarItem(row);
-      if (item.idMaterial || item.codigoMaterial || item.nombre) items = [item];
-    }
+  private normalizarFilaSalida(row: any): any {
+    if (!row) return null;
 
     return {
       idKardexSalida: this.toNumberOrNull(this.read(row, ['idKardexSalida', 'IdKardexSalida', 'id', 'Id'])),
+      idKardexSalidaDetalle: this.toNumberOrNull(this.read(row, ['idKardexSalidaDetalle', 'IdKardexSalidaDetalle'])),
       idEspecialidad: this.toNumberOrNull(this.read(row, ['idEspecialidad', 'IdEspecialidad'])),
       especialidad: this.read(row, ['especialidad', 'Especialidad', 'nombreEspecialidad', 'NombreEspecialidad']) ?? '',
+      idProyecto: this.toNumberOrNull(this.read(row, ['idProyecto', 'IdProyecto'])),
+      proyecto: this.read(row, ['proyecto', 'Proyecto', 'nombreProyecto', 'NombreProyecto']) ?? '',
       numeroDocumento: this.read(row, ['numeroDocumento', 'NumeroDocumento', 'nroDocumento', 'NroDocumento']) ?? '',
       fecha: this.formatFechaInput(this.read(row, ['fecha', 'Fecha'])),
       solicitante: this.read(row, ['solicitante', 'Solicitante']) ?? '',
       observacion: this.read(row, ['observacion', 'Observacion', 'observaciones', 'Observaciones']) ?? '',
-      items
+      idMaterial: this.toNumberOrNull(this.read(row, ['idMaterial', 'IdMaterial'])),
+      codigoMaterial: this.read(row, ['codigoMaterial', 'CodigoMaterial', 'codigo', 'Codigo']) ?? '',
+      nombre: this.read(row, ['nombre', 'Nombre', 'material', 'Material', 'descripcion', 'Descripcion']) ?? '',
+      unidadMedida: this.read(row, ['unidadMedida', 'UnidadMedida', 'unidad', 'Unidad', 'abreviatura', 'Abreviatura']) ?? '',
+      cantidad: this.toNumberOrDefault(this.read(row, ['cantidad', 'Cantidad']), 0),
+      detalleObservacion: this.read(row, ['detalleObservacion', 'DetalleObservacion']) ?? ''
     };
   }
 
   private normalizarItem(row: any): any {
     if (!row) return { idMaterial: null, codigoMaterial: '', nombre: '', unidadMedida: '', cantidad: 0, observacion: '' };
     return {
+      idKardexSalidaDetalle: this.toNumberOrNull(this.read(row, ['idKardexSalidaDetalle', 'IdKardexSalidaDetalle'])),
       idMaterial: this.toNumberOrNull(this.read(row, ['idMaterial', 'IdMaterial'])),
       codigoMaterial: this.read(row, ['codigoMaterial', 'CodigoMaterial', 'codigo', 'Codigo']) ?? '',
       nombre: this.read(row, ['nombre', 'Nombre', 'material', 'Material', 'descripcion', 'Descripcion']) ?? '',
       unidadMedida: this.read(row, ['unidadMedida', 'UnidadMedida', 'unidad', 'Unidad', 'abreviatura', 'Abreviatura']) ?? '',
       cantidad: this.toNumberOrDefault(this.read(row, ['cantidad', 'Cantidad']), 0),
-      observacion: this.read(row, ['observacion', 'Observacion', 'observaciones', 'Observaciones']) ?? ''
+      observacion: this.read(row, ['detalleObservacion', 'DetalleObservacion', 'observacion', 'Observacion', 'observaciones', 'Observaciones']) ?? ''
     };
   }
 

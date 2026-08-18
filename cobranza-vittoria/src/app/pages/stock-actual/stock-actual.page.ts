@@ -2,7 +2,10 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MaestraService } from '../../core/services/maestra.service';
-import { KardexService } from '../../core/services/kardex.service';
+import { KardexInventarioService } from '../../core/services/kardex-inventario.service';
+import { KardexStockFiltroDto } from '../../models/kardex-inventario.models';
+import { extraerMensajeError } from '../../core/utils/api-error.util';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   standalone: true,
@@ -39,17 +42,19 @@ export class StockActualPage implements OnInit {
     if (!termino) return this.rows ?? [];
 
     return (this.rows ?? []).filter(row => {
-      const id = this.read(row, ['idStock', 'IdStock', 'id', 'Id']);
+      const id = this.read(row, ['idKardexStock', 'IdKardexStock', 'idStock', 'IdStock', 'id', 'Id']);
       const codigo = this.read(row, ['codigoMaterial', 'CodigoMaterial', 'codigo', 'Codigo']) ?? '';
       const nombre = this.read(row, ['nombre', 'Nombre']) ?? '';
-      const texto = `${id ?? ''} ${codigo} ${nombre}`;
+      const proyecto = this.read(row, ['proyecto', 'Proyecto']) ?? '';
+      const texto = `${id ?? ''} ${codigo} ${nombre} ${proyecto}`;
       return this.normalizarBusqueda(texto).includes(termino);
     });
   }
 
   constructor(
     private maestra: MaestraService,
-    private kardex: KardexService,
+    private kardex: KardexInventarioService,
+    private notifyService: NotificationService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -68,18 +73,20 @@ export class StockActualPage implements OnInit {
   }
 
   load() {
-    this.kardex.stockActual({
+    const filtros: KardexStockFiltroDto = {
       idEspecialidad: this.filtros.idEspecialidad,
       idProyecto: this.filtros.idProyecto,
       fechaDesde: this.filtros.fechaDesde || null,
       fechaHasta: this.filtros.fechaHasta || null
-    }).subscribe({
-      next: (x: any) => {
-        this.rows = (x || []).map((row: any) => this.normalizarStock(row));
+    };
+    this.kardex.listarStockActual(filtros).subscribe({
+      next: (x) => {
+        this.rows = (x || []).map((row) => this.normalizarStock(row));
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (e) => {
         this.rows = [];
+        this.notifyService.show(extraerMensajeError(e, 'No se pudo cargar el stock actual.'), 'error');
         this.cdr.detectChanges();
       }
     });
@@ -109,15 +116,19 @@ export class StockActualPage implements OnInit {
     if (!row) return null;
 
     return {
-      id: this.toNumberOrNull(this.read(row, ['idStock', 'IdStock', 'id', 'Id'])),
-      idEspecialidad: this.toNumberOrNull(this.read(row, ['idEspecialidad', 'IdEspecialidad'])),
-      especialidad: this.read(row, ['especialidad', 'Especialidad', 'nombreEspecialidad', 'NombreEspecialidad']) ?? '',
+      idKardexStock: this.toNumberOrNull(this.read(row, ['idKardexStock', 'IdKardexStock', 'idStock', 'IdStock', 'id', 'Id'])),
+      idMaterial: this.toNumberOrNull(this.read(row, ['idMaterial', 'IdMaterial'])),
       codigoMaterial: this.read(row, ['codigoMaterial', 'CodigoMaterial', 'codigo', 'Codigo']) ?? '',
       nombre: this.read(row, ['nombre', 'Nombre', 'material', 'Material']) ?? '',
       unidadMedida: this.read(row, ['unidadMedida', 'UnidadMedida', 'unidad', 'Unidad', 'abreviatura', 'Abreviatura']) ?? '',
-      entrada: this.toNumberOrDefault(this.read(row, ['totalEntrada', 'TotalEntrada', 'entrada', 'Entrada']), 0),
-      salida: this.toNumberOrDefault(this.read(row, ['totalSalida', 'TotalSalida', 'salida', 'Salida']), 0),
-      stockActual: this.toNumberOrDefault(this.read(row, ['stockActual', 'StockActual', 'stock', 'Stock', 'disponible', 'Disponible']), 0)
+      idEspecialidad: this.toNumberOrNull(this.read(row, ['idEspecialidad', 'IdEspecialidad'])),
+      especialidad: this.read(row, ['especialidad', 'Especialidad', 'nombreEspecialidad', 'NombreEspecialidad']) ?? '',
+      idProyecto: this.toNumberOrNull(this.read(row, ['idProyecto', 'IdProyecto'])),
+      proyecto: this.read(row, ['proyecto', 'Proyecto', 'nombreProyecto', 'NombreProyecto']) ?? '',
+      totalEntrada: this.toNumberOrDefault(this.read(row, ['totalEntrada', 'TotalEntrada', 'entrada', 'Entrada']), 0),
+      totalSalida: this.toNumberOrDefault(this.read(row, ['totalSalida', 'TotalSalida', 'salida', 'Salida']), 0),
+      stock: this.toNumberOrDefault(this.read(row, ['stock', 'Stock', 'stockActual', 'StockActual', 'disponible', 'Disponible']), 0),
+      fechaUltimaMovimiento: this.read(row, ['fechaUltimaMovimiento', 'FechaUltimaMovimiento']) ?? ''
     };
   }
 

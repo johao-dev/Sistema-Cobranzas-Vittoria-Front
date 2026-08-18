@@ -66,24 +66,28 @@
         <tr>
           <th>ID</th>
           <th>Especialidad</th>
+          <th>Proyecto</th>
           <th>Código Material</th>
           <th>Nombre</th>
           <th>Unidad Medida</th>
           <th class="num-col">Entrada</th>
           <th class="num-col">Salida</th>
-          <th class="num-col">Stock Actual</th>
+          <th class="num-col">Stock</th>
+          <th>Fecha Últ. Movimiento</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let row of rowsFiltradas">
-          <td>{{ row.id ?? '-' }}</td>
+          <td>{{ row.idKardexStock ?? '-' }}</td>
           <td>{{ row.especialidad || '-' }}</td>
+          <td>{{ row.proyecto || '-' }}</td>
           <td>{{ row.codigoMaterial || '-' }}</td>
           <td>{{ row.nombre || '-' }}</td>
           <td>{{ row.unidadMedida || '-' }}</td>
-          <td class="num-col">{{ formatCantidad(row.entrada) }}</td>
-          <td class="num-col">{{ formatCantidad(row.salida) }}</td>
-          <td class="num-col">{{ formatCantidad(row.stockActual) }}</td>
+          <td class="num-col">{{ formatCantidad(row.totalEntrada) }}</td>
+          <td class="num-col">{{ formatCantidad(row.totalSalida) }}</td>
+          <td class="num-col">{{ formatCantidad(row.stock) }}</td>
+          <td>{{ formatFecha(row.fechaUltimaMovimiento) }}</td>
         </tr>
       </tbody>
     </table>

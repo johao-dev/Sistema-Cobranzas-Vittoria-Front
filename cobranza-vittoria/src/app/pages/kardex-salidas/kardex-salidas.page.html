@@ -67,10 +67,12 @@
         <tr>
           <th>ID</th>
           <th>Especialidad</th>
+          <th>Proyecto</th>
           <th>Fecha</th>
+          <th>Nro. Documento</th>
+          <th>Solicitante</th>
           <th>Código Material</th>
           <th>Nombre</th>
-          <th>Solicitante</th>
           <th class="num-col">Cantidad</th>
           <th class="actions-col">Acciones</th>
         </tr>
@@ -79,10 +81,12 @@
         <tr *ngFor="let row of rowsFiltradas">
           <td>{{ row.idKardexSalida ?? '-' }}</td>
           <td>{{ row.especialidad || '-' }}</td>
+          <td>{{ row.proyecto || '-' }}</td>
           <td>{{ formatFecha(row.fecha) }}</td>
+          <td>{{ row.numeroDocumento || '-' }}</td>
+          <td>{{ row.solicitante || '-' }}</td>
           <td>{{ row.codigoMaterial || '-' }}</td>
           <td>{{ row.nombre || '-' }}</td>
-          <td>{{ row.solicitante || '-' }}</td>
           <td class="num-col">{{ formatCantidad(row.cantidad) }}</td>
           <td>
             <div class="actions actions--end">
@@ -115,6 +119,16 @@
     <div class="field">
       <label>Nro. Documento</label>
       <input [(ngModel)]="form.numeroDocumento" name="encNro" placeholder="Ej. S001-12345" />
+    </div>
+
+    <div class="field">
+      <label>Proyecto</label>
+      <select [(ngModel)]="form.idProyecto" name="encProyecto">
+        <option [ngValue]="null">Seleccionar</option>
+        <option *ngFor="let p of proyectos" [ngValue]="p.idProyecto">
+          {{ getProyectoLabel(p) }}
+        </option>
+      </select>
     </div>
 
     <div class="field">
