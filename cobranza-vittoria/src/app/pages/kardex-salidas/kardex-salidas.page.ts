@@ -52,8 +52,29 @@ export class KardexSalidasPage implements OnInit {
     if (!termino) return this.rows ?? [];
 
     return (this.rows ?? []).filter(row =>
-      this.normalizarBusqueda(Object.values(row ?? {}).join(' ')).includes(termino)
+      this.camposBuscables(row).includes(termino)
     );
+  }
+
+  private camposBuscables(row: any): string {
+    if (!row) return '';
+    const partes = [
+      row.idKardexSalida,
+      row.proyecto,
+      row.especialidad,
+      this.formatFecha(row.fecha),
+      row.numeroDocumento,
+      row.solicitante,
+      this.getCodigoMaterialLabel(row),
+      this.getNombreMaterialLabel(row),
+      row.cantidad
+    ];
+    return partes
+      .map(v => v == null ? '' : String(v))
+      .join(' ')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
   }
 
   especialidades: any[] = [];
