@@ -66,12 +66,12 @@
       <thead>
         <tr>
           <th>ID</th>
-          <th>Especialidad</th>
           <th>Proyecto</th>
+          <th>Especialidad</th>
           <th>Fecha</th>
           <th>Nro. Documento</th>
           <th>Solicitante</th>
-          <th>Código Material</th>
+          <th>Cód. Material</th>
           <th>Nombre</th>
           <th class="num-col">Cantidad</th>
           <th class="actions-col">Acciones</th>
@@ -80,19 +80,20 @@
       <tbody>
         <tr *ngFor="let row of rowsFiltradas">
           <td>{{ row.idKardexSalida ?? '-' }}</td>
-          <td>{{ row.especialidad || '-' }}</td>
           <td>{{ row.proyecto || '-' }}</td>
+          <td>{{ row.especialidad || '-' }}</td>
           <td>{{ formatFecha(row.fecha) }}</td>
           <td>{{ row.numeroDocumento || '-' }}</td>
           <td>{{ row.solicitante || '-' }}</td>
-          <td>{{ row.codigoMaterial || '-' }}</td>
-          <td>{{ row.nombre || '-' }}</td>
+          <td>{{ getCodigoMaterialLabel(row) }}</td>
+          <td>{{ getNombreMaterialLabel(row) }}</td>
           <td class="num-col">{{ formatCantidad(row.cantidad) }}</td>
           <td>
-            <div class="actions actions--end">
-              <button class="btn btn-secondary btn-sm action-btn" (click)="edit(row)">Editar</button>
-              <button class="btn btn-danger btn-sm action-btn" (click)="delete(row)">Eliminar</button>
-            </div>
+            <select class="actions-select" (change)="onAccion($event, row)">
+              <option value="">Acciones</option>
+              <option value="edit">Editar</option>
+              <option value="delete">Eliminar</option>
+            </select>
           </td>
         </tr>
       </tbody>

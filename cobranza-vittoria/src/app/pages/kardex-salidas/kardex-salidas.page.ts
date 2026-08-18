@@ -402,9 +402,39 @@ export class KardexSalidasPage implements OnInit {
 
   formatFecha(value: any): string {
     if (!value) return '-';
+    const s = String(value);
+    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return `${m[3]}/${m[2]}/${m[1]}`;
     const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return String(value);
-    return d.toLocaleDateString('es-PE');
+    if (Number.isNaN(d.getTime())) return s;
+    const iso = d.toISOString().slice(0, 10);
+    const mm = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return mm ? `${mm[3]}/${mm[2]}/${mm[1]}` : s;
+  }
+
+  getCodigoMaterialLabel(row: any): string {
+    const backend = this.read(row, ['codigoMaterial', 'CodigoMaterial', 'codigo', 'Codigo']);
+    if (backend) return String(backend);
+    const id = this.toNumberOrNull(this.read(row, ['idMaterial', 'IdMaterial']));
+    if (!id) return '-';
+    const m = this.materiales.find((x: any) => this.getIdMaterial(x) === id);
+    return m ? (this.getCodigoMaterial(m) || '-') : '-';
+  }
+
+  getNombreMaterialLabel(row: any): string {
+    const backend = this.read(row, ['nombre', 'Nombre', 'material', 'Material', 'descripcion', 'Descripcion']);
+    if (backend) return String(backend);
+    const id = this.toNumberOrNull(this.read(row, ['idMaterial', 'IdMaterial']));
+    if (!id) return '-';
+    const m = this.materiales.find((x: any) => this.getIdMaterial(x) === id);
+    return m ? (this.getDescripcionMaterial(m) || '-') : '-';
+  }
+
+  onAccion(event: Event, row: any): void {
+    const value = (event.target as HTMLSelectElement).value;
+    (event.target as HTMLSelectElement).value = '';
+    if (value === 'edit') this.edit(row);
+    else if (value === 'delete') this.delete(row);
   }
 
   formatCantidad(value: any): string {
