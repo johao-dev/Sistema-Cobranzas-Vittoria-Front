@@ -65,9 +65,9 @@
       <thead>
         <tr>
           <th>ID</th>
-          <th>Especialidad</th>
           <th>Proyecto</th>
-          <th>Código Material</th>
+          <th>Especialidad</th>
+          <th>Cód. Material</th>
           <th>Nombre</th>
           <th>Unidad Medida</th>
           <th class="num-col">Entrada</th>
@@ -79,8 +79,8 @@
       <tbody>
         <tr *ngFor="let row of rowsFiltradas">
           <td>{{ row.idKardexStock ?? '-' }}</td>
-          <td>{{ row.especialidad || '-' }}</td>
           <td>{{ row.proyecto || '-' }}</td>
+          <td>{{ row.especialidad || '-' }}</td>
           <td>{{ row.codigoMaterial || '-' }}</td>
           <td>{{ row.nombre || '-' }}</td>
           <td>{{ row.unidadMedida || '-' }}</td>
