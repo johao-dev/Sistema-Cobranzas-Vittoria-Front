@@ -42,6 +42,10 @@
   <div class="toolbar" style="margin-top: 14px;">
     <button class="btn btn-primary" (click)="load()">Filtrar</button>
     <button class="btn btn-ghost" (click)="limpiarFiltros()">Limpiar filtros</button>
+    <button class="btn btn-success" (click)="exportarExcel()" [disabled]="exportandoExcel">
+      <ng-container *ngIf="!exportandoExcel">Exportar a Excel</ng-container>
+      <ng-container *ngIf="exportandoExcel">Exportando…</ng-container>
+    </button>
   </div>
 </section>
 

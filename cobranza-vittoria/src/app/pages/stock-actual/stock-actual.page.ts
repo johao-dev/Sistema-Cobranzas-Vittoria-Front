@@ -5,6 +5,11 @@ import { MaestraService } from '../../core/services/maestra.service';
 import { KardexInventarioService } from '../../core/services/kardex-inventario.service';
 import { KardexStockFiltroDto } from '../../models/kardex-inventario.models';
 import { extraerMensajeError } from '../../core/utils/api-error.util';
+import {
+  descargarArchivo,
+  extraerFilenameDeContentDisposition,
+  generarNombreKardexStockXlsx
+} from '../../core/utils/file-download.util';
 import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
@@ -24,6 +29,8 @@ export class StockActualPage implements OnInit {
     fechaDesde: '',
     fechaHasta: ''
   };
+
+  exportandoExcel = false;
 
   especialidades: any[] = [];
   proyectos: any[] = [];
@@ -100,6 +107,63 @@ export class StockActualPage implements OnInit {
       fechaHasta: ''
     };
     this.load();
+  }
+
+  exportarExcel(): void {
+    if (this.exportandoExcel) return;
+    this.exportandoExcel = true;
+
+    const filtros: KardexStockFiltroDto = {
+      idEspecialidad: this.filtros.idEspecialidad,
+      idProyecto: this.filtros.idProyecto,
+      fechaDesde: this.filtros.fechaDesde || null,
+      fechaHasta: this.filtros.fechaHasta || null
+    };
+
+    this.kardex.exportarStockExcel(filtros).subscribe({
+      next: (resp) => {
+        this.exportandoExcel = false;
+        const blob = resp.body;
+        if (!blob) {
+          this.cdr.detectChanges();
+          return;
+        }
+
+        // Defensa: con responseType: 'blob', Angular no distingue 4xx/5xx.
+        // Si el backend responde con JSON (error), lo parseamos y mostramos como toast.
+        if (blob.type && blob.type.includes('application/json')) {
+          blob.text().then(txt => {
+            try {
+              const parsed = JSON.parse(txt);
+              this.notifyService.show(
+                extraerMensajeError(parsed, 'No se pudo exportar el Excel.'),
+                'error'
+              );
+            } catch {
+              this.notifyService.show('No se pudo exportar el Excel.', 'error');
+            }
+            this.cdr.detectChanges();
+          });
+          return;
+        }
+
+        const filename = extraerFilenameDeContentDisposition(
+          resp.headers.get('Content-Disposition'),
+          generarNombreKardexStockXlsx()
+        );
+        descargarArchivo(blob, filename);
+        this.notifyService.show('Excel descargado correctamente.', 'success');
+        this.cdr.detectChanges();
+      },
+      error: (e) => {
+        this.exportandoExcel = false;
+        this.notifyService.show(
+          extraerMensajeError(e, 'No se pudo exportar el Excel.'),
+          'error'
+        );
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   formatCantidad(value: any): string {
