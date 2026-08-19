@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 import {
@@ -70,6 +71,19 @@ export class KardexInventarioService {
       fechaHasta: filtros?.fechaHasta
     });
     return this.api.http.get<KardexStockActualResponseDto[]>(`${this.api.baseUrl}${this.base}/stock-actual${qs}`);
+  }
+
+  exportarStockExcel(filtros?: KardexStockFiltroDto): Observable<HttpResponse<Blob>> {
+    const qs = this.construirQueryParams({
+      idEspecialidad: filtros?.idEspecialidad,
+      idProyecto: filtros?.idProyecto,
+      fechaDesde: filtros?.fechaDesde,
+      fechaHasta: filtros?.fechaHasta
+    });
+    return this.api.http.get<Blob>(
+      `${this.api.baseUrl}${this.base}/stock-actual/exportar-excel${qs}`,
+      { responseType: 'blob' as 'json', observe: 'response' }
+    );
   }
 
   private construirQueryParams(valores: Record<string, string | number | null | undefined>): string {
