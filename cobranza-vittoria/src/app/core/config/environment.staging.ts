@@ -1,4 +1,4 @@
 export const environment = {
     production: false,
-    apiUrl: 'http://staging.vittoria-sistema-gastos.com'
+    apiUrl: 'https://staging.vittoria-sistema-gastos.com'
 }
