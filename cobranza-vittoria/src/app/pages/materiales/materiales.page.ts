@@ -6,6 +6,10 @@ import { NotificationService } from '../../core/services/notification.service';
 import { MaestraService } from '../../core/services/maestra.service';
 import { ApiService } from '../../core/services/api.service';
 import { ImportModalComponent } from '../../shared/components/import-modal/import-modal.component';
+import {
+  MaterialPlantillaFormato,
+  MATERIAL_PLANTILLA_FORMATOS
+} from '../../models/import.models';
 
 @Component({
   standalone: true,
@@ -17,6 +21,8 @@ import { ImportModalComponent } from '../../shared/components/import-modal/impor
 export class MaterialesPage implements OnInit {
   modalOpen = false;
   importOpen = false;
+  importFormato: MaterialPlantillaFormato = 'xlsx';
+  readonly formatosPlantilla = MATERIAL_PLANTILLA_FORMATOS;
   cargandoCodigoMaterial = false;
 
   abrirModalNuevo(): void {

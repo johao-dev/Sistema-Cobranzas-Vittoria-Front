@@ -15,6 +15,9 @@
       </div>
     </div>
 <button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button>
+<select class="actions-select btn-sm" [(ngModel)]="importFormato" aria-label="Formato de plantilla" title="Formato de plantilla">
+  <option *ngFor="let f of formatosPlantilla" [ngValue]="f">{{ f | uppercase }}</option>
+</select>
 <button type="button" class="btn btn-secondary btn-sm" (click)="abrirImportModal()">Importar</button></div>
 
     <div class="filters">
@@ -136,6 +139,7 @@
   <app-import-modal
     *ngIf="importOpen"
     modulo="material"
+    [plantillaFormato]="importFormato"
     (onClose)="cerrarImportModal()"
     (onSuccess)="onImportSuccess()">
   </app-import-modal>
