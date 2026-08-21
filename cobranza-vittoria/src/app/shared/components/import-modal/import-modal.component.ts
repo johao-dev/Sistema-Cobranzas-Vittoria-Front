@@ -16,6 +16,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import {
   ImportModulo,
   ImportResultado,
+  ImportErrorResponse,
   IMPORT_MODULOS_META,
   MAX_FILE_SIZE_BYTES,
   ACCEPTED_EXTENSIONS,
@@ -149,10 +150,15 @@ export class ImportModalComponent implements OnInit {
   }
 
   get tieneDetalles(): boolean {
-    return !!this.resultado && !this.resultado.ok && !!this.resultado.error.detalles?.length;
+    return !!this.errorActual?.detalles?.length;
   }
 
   get tieneErrores(): boolean {
-    return !!this.resultado && !this.resultado.ok && !!this.resultado.error.errores?.length;
+    return !!this.errorActual?.errores?.length;
+  }
+
+  get errorActual(): ImportErrorResponse | null {
+    if (!this.resultado || this.resultado.ok) return null;
+    return this.resultado.error;
   }
 }

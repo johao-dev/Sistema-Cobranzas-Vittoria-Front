@@ -40,7 +40,7 @@
   <!-- Errores v2: contrato Materiales con detalles[] (_fila + mensaje) -->
   <div *ngIf="tieneDetalles" style="margin-top:16px;">
     <div class="empty-state" style="padding:12px; color:#a94442;">
-      {{ resultado!.error.message }}
+      {{ errorActual?.message }}
     </div>
     <div class="table-wrap" style="max-height:320px; overflow:auto;">
       <table>
@@ -51,7 +51,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let d of resultado!.error.detalles; trackBy: trackDetalle">
+          <tr *ngFor="let d of errorActual?.detalles; trackBy: trackDetalle">
             <td>{{ d._fila }}</td>
             <td>{{ d.mensaje }}</td>
           </tr>
@@ -63,7 +63,7 @@
   <!-- Errores legacy: otros módulos con errores[] (fila, campo, codigoError, mensaje) -->
   <div *ngIf="tieneErrores" style="margin-top:16px;">
     <div class="empty-state" style="padding:12px; color:#a94442;">
-      {{ resultado!.error.message }}
+      {{ errorActual?.message }}
     </div>
     <div class="table-wrap" style="max-height:320px; overflow:auto;">
       <table>
@@ -76,7 +76,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let e of resultado!.error.errores; trackBy: trackError">
+          <tr *ngFor="let e of errorActual?.errores; trackBy: trackError">
             <td>{{ e.fila }}</td>
             <td>{{ e.campo }}</td>
             <td><code>{{ e.codigoError }}</code></td>
