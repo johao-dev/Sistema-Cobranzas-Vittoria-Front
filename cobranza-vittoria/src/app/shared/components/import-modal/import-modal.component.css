@@ -4,3 +4,15 @@ code {
   border-radius: 4px;
   font-size: 12px;
 }
+
+.form-hint {
+  display: block;
+  margin-top: 6px;
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.form-hint code {
+  background: #eef2f7;
+}

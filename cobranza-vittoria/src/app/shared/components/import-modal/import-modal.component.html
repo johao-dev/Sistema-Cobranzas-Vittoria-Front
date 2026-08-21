@@ -1,32 +1,69 @@
 <div class="design-modal-backdrop" (click)="cerrar()"></div>
 <section class="panel panel--form design-modal-card design-modal-card--xl" (click)="$event.stopPropagation()">
-  <button type="button" class="modal-close" (click)="cerrar()" aria-label="Cerrar" [disabled]="loading">×</button>
+  <button
+    type="button"
+    class="modal-close"
+    (click)="cerrar()"
+    aria-label="Cerrar"
+    [disabled]="loading || descargandoPlantilla">×</button>
   <div class="panel-title">Importar {{ meta()?.titulo }}</div>
   <div class="page-subtitle" style="margin-bottom:12px;">
-    Tamaño máx. 10 MB, máx. 100 filas.
+    Tamaño máx. 5 MB (~50.000 filas).
   </div>
 
   <div class="form-grid two">
     <div class="field" style="grid-column:1/-1;">
       <label>Archivo (CSV, XLSX, XLS)</label>
-      <input type="file" accept=".csv,.xlsx,.xls" (change)="onFileSelected($event)" [disabled]="loading" />
+      <input
+        type="file"
+        accept=".csv,.xlsx,.xls"
+        (change)="onFileSelected($event)"
+        [disabled]="loading || descargandoPlantilla" />
+      <small class="form-hint" *ngIf="modulo === 'material'">
+        CSV: delimitador <code>;</code> preferido (coma como fallback). Encoding UTF-8 o Windows-1252.
+      </small>
     </div>
   </div>
 
   <div class="toolbar" style="margin-top:14px;">
-    <button class="btn btn-primary" type="button" (click)="subir()" [disabled]="!archivo || loading">
+    <button class="btn btn-primary" type="button" (click)="subir()" [disabled]="!archivo || loading || descargandoPlantilla">
       <span *ngIf="!loading">Subir</span>
       <span *ngIf="loading">Procesando…</span>
     </button>
-    <button class="btn btn-secondary" type="button" (click)="descargarPlantilla()" [disabled]="loading">
-      Descargar plantilla
+    <button class="btn btn-secondary" type="button" (click)="descargarPlantilla()" [disabled]="loading || descargandoPlantilla">
+      <span *ngIf="!descargandoPlantilla">Descargar plantilla ({{ plantillaFormato | uppercase }})</span>
+      <span *ngIf="descargandoPlantilla">Descargando…</span>
     </button>
-    <button class="btn btn-ghost" type="button" (click)="cerrar()" [disabled]="loading">Cancelar</button>
+    <button class="btn btn-ghost" type="button" (click)="cerrar()" [disabled]="loading || descargandoPlantilla">Cancelar</button>
   </div>
 
-  <div *ngIf="resultado && !resultado.ok && resultado.error.error === 'DATOS_INVALIDOS'" style="margin-top:16px;">
+  <!-- Errores v2: contrato Materiales con detalles[] (_fila + mensaje) -->
+  <div *ngIf="tieneDetalles" style="margin-top:16px;">
     <div class="empty-state" style="padding:12px; color:#a94442;">
-      {{ resultado.error.message }}
+      {{ resultado!.error.message }}
+    </div>
+    <div class="table-wrap" style="max-height:320px; overflow:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Fila</th>
+            <th>Mensaje</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let d of resultado!.error.detalles; trackBy: trackDetalle">
+            <td>{{ d._fila }}</td>
+            <td>{{ d.mensaje }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Errores legacy: otros módulos con errores[] (fila, campo, codigoError, mensaje) -->
+  <div *ngIf="tieneErrores" style="margin-top:16px;">
+    <div class="empty-state" style="padding:12px; color:#a94442;">
+      {{ resultado!.error.message }}
     </div>
     <div class="table-wrap" style="max-height:320px; overflow:auto;">
       <table>
@@ -39,7 +76,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let e of resultado.error.errores; trackBy: trackError">
+          <tr *ngFor="let e of resultado!.error.errores; trackBy: trackError">
             <td>{{ e.fila }}</td>
             <td>{{ e.campo }}</td>
             <td><code>{{ e.codigoError }}</code></td>

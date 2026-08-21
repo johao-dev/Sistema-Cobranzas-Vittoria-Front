@@ -20,7 +20,9 @@ import {
   MAX_FILE_SIZE_BYTES,
   ACCEPTED_EXTENSIONS,
   ImportFilaError,
-  ImportModuloMeta
+  ImportDetalleFila,
+  ImportModuloMeta,
+  MaterialPlantillaFormato
 } from '../../../models/import.models';
 
 @Component({
@@ -32,11 +34,14 @@ import {
 })
 export class ImportModalComponent implements OnInit {
   @Input({ required: true }) modulo!: ImportModulo;
+  /** Formato de la plantilla a descargar. Por defecto XLSX. */
+  @Input() plantillaFormato: MaterialPlantillaFormato = 'xlsx';
   @Output() onClose = new EventEmitter<void>();
   @Output() onSuccess = new EventEmitter<number>();
 
   archivo: File | null = null;
   loading = false;
+  descargandoPlantilla = false;
   resultado: ImportResultado | null = null;
   readonly meta = signal<ImportModuloMeta | null>(null);
 
@@ -50,7 +55,7 @@ export class ImportModalComponent implements OnInit {
   }
 
   cerrar() {
-    if (this.loading) return;
+    if (this.loading || this.descargandoPlantilla) return;
     this.onClose.emit();
   }
 
@@ -71,7 +76,8 @@ export class ImportModalComponent implements OnInit {
     }
     if (file.size > MAX_FILE_SIZE_BYTES) {
       const mb = (file.size / (1024 * 1024)).toFixed(2);
-      this.notify.show(`El archivo (${mb} MB) supera el tamaño máximo de 10 MB.`, 'error');
+      const maxMb = (MAX_FILE_SIZE_BYTES / (1024 * 1024)).toFixed(0);
+      this.notify.show(`El archivo (${mb} MB) supera el tamaño máximo de ${maxMb} MB.`, 'error');
       input.value = '';
       this.cdr.detectChanges();
       return;
@@ -82,16 +88,22 @@ export class ImportModalComponent implements OnInit {
   }
 
   descargarPlantilla() {
-    const meta = this.meta();
-    if (!meta) return;
-    const header = [...meta.columnasRequeridas, ...meta.columnasOpcionales].join(',');
-    const blob = new Blob([header + '\n'], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `plantilla-${meta.modulo}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    if (this.descargandoPlantilla || this.loading) return;
+
+    this.descargandoPlantilla = true;
+    this.cdr.detectChanges();
+
+    this.importsSvc.descargarPlantilla(this.modulo, this.plantillaFormato).subscribe(r => {
+      this.descargandoPlantilla = false;
+      this.cdr.detectChanges();
+
+      if (r.ok) return;
+
+      this.notify.show(
+        r.message ?? 'No se pudo descargar la plantilla.',
+        'error'
+      );
+    });
   }
 
   subir() {
@@ -130,5 +142,17 @@ export class ImportModalComponent implements OnInit {
 
   trackError(_: number, e: ImportFilaError) {
     return `${e.fila}-${e.campo}-${e.codigoError}`;
+  }
+
+  trackDetalle(_: number, e: ImportDetalleFila) {
+    return `${e._fila}-${e.mensaje}`;
+  }
+
+  get tieneDetalles(): boolean {
+    return !!this.resultado && !this.resultado.ok && !!this.resultado.error.detalles?.length;
+  }
+
+  get tieneErrores(): boolean {
+    return !!this.resultado && !this.resultado.ok && !!this.resultado.error.errores?.length;
   }
 }
