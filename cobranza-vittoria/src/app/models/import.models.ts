@@ -30,6 +30,10 @@ export type ImportErrorCodigo =
   | 'DEMASIADAS_FILAS'
   | 'MODULO_NO_SOPORTADO'
   | 'TAMANIO_EXCEDIDO'
+  | 'FORMATO_INVALIDO'
+  | 'ESTRUCTURA_INVALIDA'
+  | 'FORMATO_PLANTILLA_INVALIDO'
+  | 'PLANTILLA_NO_DISPONIBLE'
   | 'DATOS_INVALIDOS'
   | 'UNHANDLED_ERROR';
 
@@ -48,11 +52,22 @@ export interface ImportFilaError {
   mensaje: string;
 }
 
+/**
+ * Estructura de detalle de error de fila para la versión v2 del endpoint
+ * de importación de Materiales. El backend envía un arreglo `detalles[]`
+ * con la fila del archivo y el mensaje legible.
+ */
+export interface ImportDetalleFila {
+  _fila: number;
+  mensaje: string;
+}
+
 export interface ImportErrorResponse {
   ok: false;
   error: ImportErrorCodigo;
   message: string;
   errores?: ImportFilaError[];
+  detalles?: ImportDetalleFila[];
 }
 
 export type ImportResultado =
@@ -78,8 +93,8 @@ export const IMPORT_MODULOS_META: Record<ImportModulo, ImportModuloMeta> = {
     modulo: 'material',
     titulo: 'Materiales',
     tablaDestino: 'maestra.Material',
-    columnasRequeridas: ['IdEspecialidad', 'Descripcion', 'UnidadMedida'],
-    columnasOpcionales: ['Codigo', 'StockMinimo', 'Activo', 'IdUnidadMedida', 'CodigoProveedor']
+    columnasRequeridas: ['Especialidad', 'Nombre', 'UnidadMedida', 'Codigo'],
+    columnasOpcionales: []
   },
   'proveedor': {
     modulo: 'proveedor',
@@ -122,5 +137,8 @@ export const IMPORT_MODULOS_META: Record<ImportModulo, ImportModuloMeta> = {
   }
 };
 
-export const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
+export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 export const ACCEPTED_EXTENSIONS = ['.csv', '.xlsx', '.xls'] as const;
+
+export const MATERIAL_PLANTILLA_FORMATOS = ['xlsx', 'csv'] as const;
+export type MaterialPlantillaFormato = typeof MATERIAL_PLANTILLA_FORMATOS[number];
