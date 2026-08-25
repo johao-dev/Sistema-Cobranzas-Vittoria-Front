@@ -46,6 +46,11 @@
       <ng-container *ngIf="!exportandoExcel">Exportar a Excel</ng-container>
       <ng-container *ngIf="exportandoExcel">Exportando…</ng-container>
     </button>
+    <label class="switch" [class.is-disabled]="exportandoExcel">
+      <input type="checkbox" [(ngModel)]="incluirTotales" [disabled]="exportandoExcel" />
+      <span class="slider"></span>
+      <span class="switch-label">Incluir fila de totales</span>
+    </label>
   </div>
 </section>
 

@@ -31,6 +31,7 @@ export class StockActualPage implements OnInit {
   };
 
   exportandoExcel = false;
+  incluirTotales = false;
 
   especialidades: any[] = [];
   proyectos: any[] = [];
@@ -120,7 +121,7 @@ export class StockActualPage implements OnInit {
       fechaHasta: this.filtros.fechaHasta || null
     };
 
-    this.kardex.exportarStockExcel(filtros).subscribe({
+    this.kardex.exportarStockExcel(filtros, this.incluirTotales).subscribe({
       next: (resp) => {
         this.exportandoExcel = false;
         const blob = resp.body;

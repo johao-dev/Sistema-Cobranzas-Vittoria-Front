@@ -73,12 +73,16 @@ export class KardexInventarioService {
     return this.api.http.get<KardexStockActualResponseDto[]>(`${this.api.baseUrl}${this.base}/stock-actual${qs}`);
   }
 
-  exportarStockExcel(filtros?: KardexStockFiltroDto): Observable<HttpResponse<Blob>> {
+  exportarStockExcel(
+    filtros?: KardexStockFiltroDto,
+    incluirTotales?: boolean | null
+  ): Observable<HttpResponse<Blob>> {
     const qs = this.construirQueryParams({
       idEspecialidad: filtros?.idEspecialidad,
       idProyecto: filtros?.idProyecto,
       fechaDesde: filtros?.fechaDesde,
-      fechaHasta: filtros?.fechaHasta
+      fechaHasta: filtros?.fechaHasta,
+      incluirTotales: incluirTotales
     });
     return this.api.http.get<Blob>(
       `${this.api.baseUrl}${this.base}/stock-actual/exportar-excel${qs}`,
@@ -86,7 +90,9 @@ export class KardexInventarioService {
     );
   }
 
-  private construirQueryParams(valores: Record<string, string | number | null | undefined>): string {
+  private construirQueryParams(
+    valores: Record<string, string | number | boolean | null | undefined>
+  ): string {
     const params = new URLSearchParams();
     for (const [clave, valor] of Object.entries(valores)) {
       if (valor === undefined || valor === null || valor === '') continue;
