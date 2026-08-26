@@ -118,7 +118,7 @@
 <section class="panel panel--form requer-form-panel design-modal-card design-modal-card--xl" *ngIf="formModalOpen" (click)="$event.stopPropagation()">
   <button type="button" class="modal-close" (click)="cerrarFormModal()" aria-label="Cerrar">×</button>
   <div class="panel-title">{{ editando ? 'Editar requerimiento' : 'Nuevo requerimiento' }}</div>
-  <div class="helper-text">Número y fecha se generan automáticamente. Completa proyecto, solicitante, entrega e ítems.</div>
+  <div class="helper-text">Número se genera automáticamente. Completa proyecto, solicitante, entrega e ítems.</div>
 
   <div class="form-grid two requer-form-grid">
     <div class="field auto-field">
@@ -127,7 +127,7 @@
     </div>
     <div class="field auto-field">
       <label>Fecha</label>
-      <input type="date" [(ngModel)]="form.fechaRequerimiento" readonly />
+      <input type="date" [(ngModel)]="form.fechaRequerimiento" />
     </div>
     <div class="field">
       <label>Proyecto</label>
