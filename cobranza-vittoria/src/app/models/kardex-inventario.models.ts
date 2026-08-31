@@ -8,7 +8,6 @@ export interface KardexFiltroInventarioDto {
 
 export interface KardexStockFiltroDto {
   idEspecialidad?: number | null;
-  idProyecto?: number | null;
   fechaDesde?: string | null;
   fechaHasta?: string | null;
 }
@@ -87,8 +86,6 @@ export interface KardexStockActualResponseDto {
   unidadMedida: string | null;
   idEspecialidad: number;
   especialidad: string | null;
-  idProyecto: number | null;
-  proyecto: string | null;
   totalEntrada: number;
   totalSalida: number;
   stock: number;

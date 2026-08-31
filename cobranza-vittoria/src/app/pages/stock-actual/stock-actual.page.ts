@@ -25,7 +25,6 @@ export class StockActualPage implements OnInit {
 
   filtros = {
     idEspecialidad: null as number | null,
-    idProyecto: null as number | null,
     fechaDesde: '',
     fechaHasta: ''
   };
@@ -34,7 +33,6 @@ export class StockActualPage implements OnInit {
   incluirTotales = false;
 
   especialidades: any[] = [];
-  proyectos: any[] = [];
 
   private normalizarBusqueda(valor: any): string {
     return (valor ?? '')
@@ -53,8 +51,7 @@ export class StockActualPage implements OnInit {
       const id = this.read(row, ['idKardexStock', 'IdKardexStock', 'idStock', 'IdStock', 'id', 'Id']);
       const codigo = this.read(row, ['codigoMaterial', 'CodigoMaterial', 'codigo', 'Codigo']) ?? '';
       const nombre = this.read(row, ['nombre', 'Nombre']) ?? '';
-      const proyecto = this.read(row, ['proyecto', 'Proyecto']) ?? '';
-      const texto = `${id ?? ''} ${codigo} ${nombre} ${proyecto}`;
+      const texto = `${id ?? ''} ${codigo} ${nombre}`;
       return this.normalizarBusqueda(texto).includes(termino);
     });
   }
@@ -72,18 +69,12 @@ export class StockActualPage implements OnInit {
       error: () => { this.especialidades = []; this.cdr.detectChanges(); }
     });
 
-    this.maestra.proyectos(true).subscribe({
-      next: (x: any) => { this.proyectos = x ?? []; this.cdr.detectChanges(); },
-      error: () => { this.proyectos = []; this.cdr.detectChanges(); }
-    });
-
     this.load();
   }
 
   load() {
     const filtros: KardexStockFiltroDto = {
       idEspecialidad: this.filtros.idEspecialidad,
-      idProyecto: this.filtros.idProyecto,
       fechaDesde: this.filtros.fechaDesde || null,
       fechaHasta: this.filtros.fechaHasta || null
     };
@@ -103,7 +94,6 @@ export class StockActualPage implements OnInit {
   limpiarFiltros() {
     this.filtros = {
       idEspecialidad: null,
-      idProyecto: null,
       fechaDesde: '',
       fechaHasta: ''
     };
@@ -116,7 +106,6 @@ export class StockActualPage implements OnInit {
 
     const filtros: KardexStockFiltroDto = {
       idEspecialidad: this.filtros.idEspecialidad,
-      idProyecto: this.filtros.idProyecto,
       fechaDesde: this.filtros.fechaDesde || null,
       fechaHasta: this.filtros.fechaHasta || null
     };
@@ -173,10 +162,6 @@ export class StockActualPage implements OnInit {
     return n.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
   }
 
-  getProyectoLabel(p: any): string {
-    return this.read(p, ['nombre', 'Nombre', 'nombreProyecto', 'NombreProyecto']) ?? '';
-  }
-
   private normalizarStock(row: any): any {
     if (!row) return null;
 
@@ -188,8 +173,6 @@ export class StockActualPage implements OnInit {
       unidadMedida: this.read(row, ['unidadMedida', 'UnidadMedida', 'unidad', 'Unidad', 'abreviatura', 'Abreviatura']) ?? '',
       idEspecialidad: this.toNumberOrNull(this.read(row, ['idEspecialidad', 'IdEspecialidad'])),
       especialidad: this.read(row, ['especialidad', 'Especialidad', 'nombreEspecialidad', 'NombreEspecialidad']) ?? '',
-      idProyecto: this.toNumberOrNull(this.read(row, ['idProyecto', 'IdProyecto'])),
-      proyecto: this.read(row, ['proyecto', 'Proyecto', 'nombreProyecto', 'NombreProyecto']) ?? '',
       totalEntrada: this.toNumberOrDefault(this.read(row, ['totalEntrada', 'TotalEntrada', 'entrada', 'Entrada']), 0),
       totalSalida: this.toNumberOrDefault(this.read(row, ['totalSalida', 'TotalSalida', 'salida', 'Salida']), 0),
       stock: this.toNumberOrDefault(this.read(row, ['stock', 'Stock', 'stockActual', 'StockActual', 'disponible', 'Disponible']), 0),

@@ -66,7 +66,6 @@ export class KardexInventarioService {
   listarStockActual(filtros?: KardexStockFiltroDto): Observable<KardexStockActualResponseDto[]> {
     const qs = this.construirQueryParams({
       idEspecialidad: filtros?.idEspecialidad,
-      idProyecto: filtros?.idProyecto,
       fechaDesde: filtros?.fechaDesde,
       fechaHasta: filtros?.fechaHasta
     });
@@ -79,7 +78,6 @@ export class KardexInventarioService {
   ): Observable<HttpResponse<Blob>> {
     const qs = this.construirQueryParams({
       idEspecialidad: filtros?.idEspecialidad,
-      idProyecto: filtros?.idProyecto,
       fechaDesde: filtros?.fechaDesde,
       fechaHasta: filtros?.fechaHasta,
       incluirTotales: incluirTotales

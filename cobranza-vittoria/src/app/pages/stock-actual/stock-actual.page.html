@@ -9,16 +9,6 @@
   <div class="panel-title">Filtros</div>
   <div class="form-grid four">
     <div class="field">
-      <label>Proyecto</label>
-      <select [(ngModel)]="filtros.idProyecto">
-        <option [ngValue]="null">Todos</option>
-        <option *ngFor="let p of proyectos" [ngValue]="p.idProyecto">
-          {{ getProyectoLabel(p) }}
-        </option>
-      </select>
-    </div>
-
-    <div class="field">
       <label>Especialidad</label>
       <select [(ngModel)]="filtros.idEspecialidad">
         <option [ngValue]="null">Todas</option>
@@ -74,7 +64,6 @@
       <thead>
         <tr>
           <th>ID</th>
-          <th>Proyecto</th>
           <th>Especialidad</th>
           <th>Cód. Material</th>
           <th>Nombre</th>
@@ -88,7 +77,6 @@
       <tbody>
         <tr *ngFor="let row of rowsFiltradas">
           <td>{{ row.idKardexStock ?? '-' }}</td>
-          <td>{{ row.proyecto || '-' }}</td>
           <td>{{ row.especialidad || '-' }}</td>
           <td>{{ row.codigoMaterial || '-' }}</td>
           <td>{{ row.nombre || '-' }}</td>
