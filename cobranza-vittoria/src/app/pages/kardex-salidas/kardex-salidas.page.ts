@@ -104,7 +104,7 @@ export class KardexSalidasPage implements OnInit {
     private kardex: KardexInventarioService,
     private notifyService: NotificationService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.maestra.especialidades(true).subscribe({
@@ -161,8 +161,8 @@ export class KardexSalidasPage implements OnInit {
     const idKardexSalida = this.toNumberOrNull(this.read(row, ['idKardexSalida', 'IdKardexSalida', 'id', 'Id']));
     const filasRelacionadas = idKardexSalida !== null
       ? (this.rows || []).filter((r: any) =>
-          this.toNumberOrNull(this.read(r, ['idKardexSalida', 'IdKardexSalida', 'id', 'Id'])) === idKardexSalida
-        )
+        this.toNumberOrNull(this.read(r, ['idKardexSalida', 'IdKardexSalida', 'id', 'Id'])) === idKardexSalida
+      )
       : [row];
 
     const cabecera = filasRelacionadas[0] || row;

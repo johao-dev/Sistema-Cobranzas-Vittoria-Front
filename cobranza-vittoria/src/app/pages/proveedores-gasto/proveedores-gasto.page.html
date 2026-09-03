@@ -8,15 +8,17 @@
 
 <div class="split split--form admin-split">
   <section class="panel">
-    <div class="panel-title-row"><div class="panel-title">Listado</div>
-    <div class="filters compact-filters maintenance-search">
-      <div class="field">
-        <label>Buscar</label>
-        <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Buscar proveedores de gasto" />
+    <div class="panel-title-row">
+      <div class="panel-title">Listado</div>
+      <div class="filters compact-filters maintenance-search">
+        <div class="field">
+          <label>Buscar</label>
+          <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Buscar proveedores de gasto" />
+        </div>
       </div>
+      <button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button>
+      <button type="button" class="btn btn-secondary btn-sm" (click)="abrirImportModal()">Importar</button>
     </div>
-<button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button>
-<button type="button" class="btn btn-secondary btn-sm" (click)="abrirImportModal()">Importar</button></div>
 
     <div class="filters compact-filters compact-filters--two">
       <div class="field">
@@ -37,7 +39,8 @@
     </div>
 
     <div *ngIf="loading" class="empty-state">Cargando proveedores...</div>
-    <div *ngIf="!loading && !rowsFiltradas.length" class="empty-state">No hay proveedores de gasto registrados. Crea uno y
+    <div *ngIf="!loading && !rowsFiltradas.length" class="empty-state">No hay proveedores de gasto registrados. Crea uno
+      y
       asígnalo a una categoría.</div>
 
     <div *ngIf="!loading && rowsFiltradas.length" class="table-wrap table-wrap--sticky-actions">
@@ -124,10 +127,7 @@
       <button class="btn btn-ghost" (click)="reset()">Limpiar</button>
     </div>
   </section>
-  <app-import-modal
-    *ngIf="importOpen"
-    modulo="proveedor-gasto"
-    (onClose)="cerrarImportModal()"
+  <app-import-modal *ngIf="importOpen" modulo="proveedor-gasto" (onClose)="cerrarImportModal()"
     (onSuccess)="onImportSuccess()">
   </app-import-modal>
 </div>

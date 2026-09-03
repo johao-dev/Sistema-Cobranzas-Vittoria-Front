@@ -4,7 +4,7 @@ import { OrdenCompraGenerar, OrdenCompraGenerarResponse, OrdenCompraGetResponse 
 
 @Injectable({ providedIn: 'root' })
 export class OrdenesCompraService {
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService) { }
 
   generar(dto: OrdenCompraGenerar) {
     return this.api.http.post<OrdenCompraGenerarResponse>(`${this.api.baseUrl}/api/ordenes-compra/generar`, dto);

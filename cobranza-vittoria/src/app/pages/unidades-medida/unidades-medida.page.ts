@@ -71,7 +71,7 @@ export class UnidadesMedidaPage implements OnInit {
     private maestra: MaestraService,
     private notifyService: NotificationService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit() { this.load(); }
 

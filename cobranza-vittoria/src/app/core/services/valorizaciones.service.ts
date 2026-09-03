@@ -3,7 +3,7 @@ import { ApiService } from './api.service';
 
 @Injectable({ providedIn: 'root' })
 export class ValorizacionesService {
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService) { }
 
   configuraciones(filters?: any) {
     const params = new URLSearchParams();

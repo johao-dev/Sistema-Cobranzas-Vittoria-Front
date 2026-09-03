@@ -1,21 +1,24 @@
 <div class="page-header">
   <div>
     <div class="page-title">Proveedores de terreno</div>
-    <div class="page-subtitle">Mantenimiento de proveedores usados en Terreno, Marketing, Otros gastos y Gastos municipales.</div>
+    <div class="page-subtitle">Mantenimiento de proveedores usados en Terreno, Marketing, Otros gastos y Gastos
+      municipales.</div>
   </div>
 </div>
 
 <div class="split split--form admin-split">
   <section class="panel">
-    <div class="panel-title-row"><div class="panel-title">Listado</div>
-    <div class="filters compact-filters maintenance-search">
-      <div class="field">
-        <label>Buscar</label>
-        <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Buscar proveedores de terreno" />
+    <div class="panel-title-row">
+      <div class="panel-title">Listado</div>
+      <div class="filters compact-filters maintenance-search">
+        <div class="field">
+          <label>Buscar</label>
+          <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Buscar proveedores de terreno" />
+        </div>
       </div>
+      <button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button>
+      <button type="button" class="btn btn-secondary btn-sm" (click)="abrirImportModal()">Importar</button>
     </div>
-<button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button>
-<button type="button" class="btn btn-secondary btn-sm" (click)="abrirImportModal()">Importar</button></div>
 
     <div class="filters compact-filters compact-filters--one">
       <div class="field">
@@ -31,7 +34,8 @@
     <div *ngIf="loading" class="empty-state">Cargando proveedores...</div>
     <div *ngIf="!loading && !rowsFiltradas.length" class="empty-state">No hay proveedores de terreno registrados.</div>
 
-    <div *ngIf="!loading && rowsFiltradas.length" class="table-wrap table-wrap--sticky-actions table-wrap--compact proveedores-terreno-table">
+    <div *ngIf="!loading && rowsFiltradas.length"
+      class="table-wrap table-wrap--sticky-actions table-wrap--compact proveedores-terreno-table">
       <table>
         <thead>
           <tr>
@@ -49,7 +53,9 @@
             <td>{{ readValue(row, 'ruc', 'Ruc') || '-' }}</td>
             <td>{{ readValue(row, 'telefono', 'Telefono') || '-' }}</td>
             <td>{{ readValue(row, 'correo', 'Correo') || '-' }}</td>
-            <td><span class="badge" [class.badge--ok]="readValue(row, 'activo', 'Activo')" [class.badge--neutral]="!readValue(row, 'activo', 'Activo')">{{ readValue(row, 'activo', 'Activo') ? 'Activo' : 'Inactivo' }}</span></td>
+            <td><span class="badge" [class.badge--ok]="readValue(row, 'activo', 'Activo')"
+                [class.badge--neutral]="!readValue(row, 'activo', 'Activo')">{{ readValue(row, 'activo', 'Activo') ?
+                'Activo' : 'Inactivo' }}</span></td>
             <td class="actions-col--select">
               <select class="actions-select" (change)="onAccion($event, row)">
                 <option value="">Acciones</option>
@@ -103,10 +109,7 @@
       <button class="btn btn-ghost" (click)="reset()">Limpiar</button>
     </div>
   </section>
-  <app-import-modal
-    *ngIf="importOpen"
-    modulo="proveedor-terreno"
-    (onClose)="cerrarImportModal()"
+  <app-import-modal *ngIf="importOpen" modulo="proveedor-terreno" (onClose)="cerrarImportModal()"
     (onSuccess)="onImportSuccess()">
   </app-import-modal>
 </div>

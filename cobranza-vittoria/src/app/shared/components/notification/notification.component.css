@@ -41,6 +41,7 @@
   border-left: 4px solid #22c55e;
   color: #166534;
 }
+
 .notification-container.success i {
   color: #22c55e;
 }
@@ -50,6 +51,7 @@
   border-left: 4px solid #ef4444;
   color: #991b1b;
 }
+
 .notification-container.error i {
   color: #ef4444;
 }
@@ -59,6 +61,7 @@
   border-left: 4px solid #3b82f6;
   color: #1e40af;
 }
+
 .notification-container.info i {
   color: #3b82f6;
 }

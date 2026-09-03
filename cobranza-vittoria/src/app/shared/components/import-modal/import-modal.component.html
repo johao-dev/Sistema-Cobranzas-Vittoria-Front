@@ -1,10 +1,6 @@
 <div class="design-modal-backdrop" (click)="cerrar()"></div>
 <section class="panel panel--form design-modal-card design-modal-card--xl" (click)="$event.stopPropagation()">
-  <button
-    type="button"
-    class="modal-close"
-    (click)="cerrar()"
-    aria-label="Cerrar"
+  <button type="button" class="modal-close" (click)="cerrar()" aria-label="Cerrar"
     [disabled]="loading || descargandoPlantilla">×</button>
   <div class="panel-title">Importar {{ meta()?.titulo }}</div>
   <div class="page-subtitle" style="margin-bottom:12px;">
@@ -14,10 +10,7 @@
   <div class="form-grid two">
     <div class="field" style="grid-column:1/-1;">
       <label>Archivo (CSV, XLSX, XLS)</label>
-      <input
-        type="file"
-        accept=".csv,.xlsx,.xls"
-        (change)="onFileSelected($event)"
+      <input type="file" accept=".csv,.xlsx,.xls" (change)="onFileSelected($event)"
         [disabled]="loading || descargandoPlantilla" />
       <small class="form-hint" *ngIf="modulo === 'material'">
         CSV: delimitador <code>;</code> preferido (coma como fallback). Encoding UTF-8 o Windows-1252.
@@ -26,15 +19,18 @@
   </div>
 
   <div class="toolbar" style="margin-top:14px;">
-    <button class="btn btn-primary" type="button" (click)="subir()" [disabled]="!archivo || loading || descargandoPlantilla">
+    <button class="btn btn-primary" type="button" (click)="subir()"
+      [disabled]="!archivo || loading || descargandoPlantilla">
       <span *ngIf="!loading">Subir</span>
       <span *ngIf="loading">Procesando…</span>
     </button>
-    <button class="btn btn-secondary" type="button" (click)="descargarPlantilla()" [disabled]="loading || descargandoPlantilla">
+    <button class="btn btn-secondary" type="button" (click)="descargarPlantilla()"
+      [disabled]="loading || descargandoPlantilla">
       <span *ngIf="!descargandoPlantilla">Descargar plantilla ({{ plantillaFormato | uppercase }})</span>
       <span *ngIf="descargandoPlantilla">Descargando…</span>
     </button>
-    <button class="btn btn-ghost" type="button" (click)="cerrar()" [disabled]="loading || descargandoPlantilla">Cancelar</button>
+    <button class="btn btn-ghost" type="button" (click)="cerrar()"
+      [disabled]="loading || descargandoPlantilla">Cancelar</button>
   </div>
 
   <!-- Errores v2: contrato Materiales con detalles[] (_fila + mensaje) -->

@@ -26,7 +26,10 @@
 
 <div class="admin-split">
   <section class="panel">
-    <div class="panel-title-row"><div class="panel-title">Listado</div><button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button></div>
+    <div class="panel-title-row">
+      <div class="panel-title">Listado</div><button type="button" class="btn btn-primary btn-sm"
+        (click)="abrirModalNuevo()">+ Nuevo registro</button>
+    </div>
 
     <div class="filters compact-filters">
       <div class="field">
@@ -50,13 +53,15 @@
         <label>Proveedor</label>
         <select [(ngModel)]="filtros.idProveedorGastoAdministrativo" (change)="load()">
           <option value="">Todos</option>
-          <option *ngFor="let p of proveedoresFiltroFiltrados" [ngValue]="p.idProveedorGastoAdministrativo">{{ p.razonSocial }}</option>
+          <option *ngFor="let p of proveedoresFiltroFiltrados" [ngValue]="p.idProveedorGastoAdministrativo">{{
+            p.razonSocial }}</option>
         </select>
       </div>
     </div>
 
     <div *ngIf="loading" class="empty-state">Cargando gastos administrativos...</div>
-    <div *ngIf="!loading && !gastosAdministrativos.length" class="empty-state">No hay gastos administrativos registrados.</div>
+    <div *ngIf="!loading && !gastosAdministrativos.length" class="empty-state">No hay gastos administrativos
+      registrados.</div>
 
     <div *ngIf="!loading && gastosAdministrativos.length" class="table-wrap table-wrap--sticky-actions">
       <table>
@@ -78,7 +83,8 @@
             <td>{{ readValue(row, 'categoria', 'Categoria') || '-' }}</td>
             <td>{{ readValue(row, 'proveedor', 'Proveedor') || '-' }}</td>
             <td>{{ readValue(row, 'descripcion', 'Descripcion') || '-' }}</td>
-            <td class="table-number">{{ (readValue(row, 'moneda', 'Moneda') || 'PEN') }} {{ (readValue(row, 'monto', 'Monto') || 0) | number:'1.2-2' }}</td>
+            <td class="table-number">{{ (readValue(row, 'moneda', 'Moneda') || 'PEN') }} {{ (readValue(row, 'monto',
+              'Monto') || 0) | number:'1.2-2' }}</td>
             <td>
               <select class="actions-select" (change)="onAccion($event, row)">
                 <option value="">Acciones</option>
@@ -97,7 +103,8 @@
   </section>
 
   <div class="design-modal-backdrop" *ngIf="modalOpen" (click)="cerrarModal()"></div>
-  <section class="panel panel--form panel--sticky design-modal-card" *ngIf="modalOpen" (click)="$event.stopPropagation()">
+  <section class="panel panel--form panel--sticky design-modal-card" *ngIf="modalOpen"
+    (click)="$event.stopPropagation()">
     <button type="button" class="modal-close" (click)="cerrarModal()" aria-label="Cerrar">×</button>
     <div class="panel-title">Formulario</div>
 
@@ -135,7 +142,8 @@
         <label>Proveedor</label>
         <select [(ngModel)]="form.idProveedorGastoAdministrativo">
           <option [ngValue]="null">Seleccionar</option>
-          <option *ngFor="let p of proveedoresFormFiltrados" [ngValue]="p.idProveedorGastoAdministrativo">{{ p.razonSocial }}</option>
+          <option *ngFor="let p of proveedoresFormFiltrados" [ngValue]="p.idProveedorGastoAdministrativo">{{
+            p.razonSocial }}</option>
         </select>
       </div>
 
@@ -155,7 +163,8 @@
       <button class="btn btn-ghost" (click)="reset()">Limpiar</button>
     </div>
 
-    <div class="form-tip" *ngIf="!form.idGastoAdministrativo">Guarda el gasto y luego usa <strong>Acciones &gt; Archivos</strong> para subir facturas o sustentos.</div>
+    <div class="form-tip" *ngIf="!form.idGastoAdministrativo">Guarda el gasto y luego usa <strong>Acciones &gt;
+        Archivos</strong> para subir facturas o sustentos.</div>
 
     <div class="documents-grid" *ngIf="form.idGastoAdministrativo && archivosTargetRow">
       <section class="documents-card">
@@ -165,9 +174,11 @@
           <button class="btn btn-secondary" (click)="upload('Factura')">Subir archivo</button>
         </div>
         <div class="docs-list" *ngIf="documentosPorTipo('Factura').length; else noFacturaDocs">
-          <a class="doc-item" *ngFor="let doc of documentosPorTipo('Factura')" [href]="downloadUrl(doc)" target="_blank">
+          <a class="doc-item" *ngFor="let doc of documentosPorTipo('Factura')" [href]="downloadUrl(doc)"
+            target="_blank">
             <span>{{ readValue(doc, 'nombreArchivo', 'NombreArchivo') }}</span>
-            <span class="doc-item__meta">{{ readValue(doc, 'fechaCreacion', 'FechaCreacion') | date:'dd/MM/yyyy' }}</span>
+            <span class="doc-item__meta">{{ readValue(doc, 'fechaCreacion', 'FechaCreacion') | date:'dd/MM/yyyy'
+              }}</span>
           </a>
         </div>
         <ng-template #noFacturaDocs>

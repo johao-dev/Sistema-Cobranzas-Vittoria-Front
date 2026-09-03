@@ -84,7 +84,7 @@ export class ProveedoresPage implements OnInit {
     activo: true
   };
 
-  constructor(private maestra: MaestraService, private notifyService: NotificationService, private cdr: ChangeDetectorRef) {}
+  constructor(private maestra: MaestraService, private notifyService: NotificationService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit() {
     this.load();
@@ -156,7 +156,7 @@ export class ProveedoresPage implements OnInit {
           this.form.razonSocial = res.razon_social || '';
           this.form.direccion = res.direccion !== '-' ? (res.direccion || '') : '';
           this.form.activo = res.estado === 'ACTIVO';
-          
+
           this.msg = 'Datos recuperados de SUNAT correctamente.';
           this.notifyService.show(this.msg, 'success');
         } else {

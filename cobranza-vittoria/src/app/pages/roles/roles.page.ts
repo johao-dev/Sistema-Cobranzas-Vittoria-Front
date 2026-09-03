@@ -54,7 +54,7 @@ export class RolesPage implements OnInit {
     private seguridad: SeguridadService,
     private notifyService: NotificationService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit() { this.load(); }
 

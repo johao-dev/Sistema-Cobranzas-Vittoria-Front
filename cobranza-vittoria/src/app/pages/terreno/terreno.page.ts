@@ -80,7 +80,7 @@ export class TerrenoPage implements OnInit {
     private proveedoresService: ProveedoresTerrenoService,
     private notifications: NotificationService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.sunatService.tipoCambio$

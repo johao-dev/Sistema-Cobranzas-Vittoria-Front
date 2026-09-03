@@ -171,7 +171,7 @@ export class ComprasPage implements OnInit {
       error: () => {
         this.detalleOc = null;
         this.itemPrecios = [];
-    this.selectedCompraFiles = [];
+        this.selectedCompraFiles = [];
         this.msg = 'No se pudo cargar la O.C. pendiente.';
         this.cdr.detectChanges();
       }

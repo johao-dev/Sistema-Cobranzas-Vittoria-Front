@@ -49,7 +49,7 @@ export class GastosAdministrativosPage implements OnInit {
     private maestraService: MaestraService,
     private notifications: NotificationService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadCatalogos();

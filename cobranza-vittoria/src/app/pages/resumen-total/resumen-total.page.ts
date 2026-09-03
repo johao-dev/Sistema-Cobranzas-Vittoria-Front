@@ -58,7 +58,7 @@ export class ResumenTotalPage implements OnInit {
     private gastoProyectoService: GastoProyectoService,
     private cotizacionMaterialesService: CotizacionMaterialesService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void { this.load(); }
 

@@ -1,61 +1,61 @@
 <div class="page-header">
-    <div>
-        <div class="page-title">Acciones Disponibles</div>
-        <div class="page-subtitle">
-            Los permisos listados en este módulo son las acciones que se pueden realizar actualmente en el sistema,
-            alterarlos tiene efecto inmediato.
-        </div>
+  <div>
+    <div class="page-title">Acciones Disponibles</div>
+    <div class="page-subtitle">
+      Los permisos listados en este módulo son las acciones que se pueden realizar actualmente en el sistema,
+      alterarlos tiene efecto inmediato.
     </div>
+  </div>
 </div>
 
 <section class="panel">
-    <div class="panel-title-row">
-        <div class="panel-title">Listado</div>
-        <div class="filters compact-filters maintenance-search">
-            <div class="field">
-                <label>Buscar</label>
-                <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Buscar acciones" />
-            </div>
-        </div>
-        <button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">Nuevo</button>
+  <div class="panel-title-row">
+    <div class="panel-title">Listado</div>
+    <div class="filters compact-filters maintenance-search">
+      <div class="field">
+        <label>Buscar</label>
+        <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Buscar acciones" />
+      </div>
     </div>
+    <button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">Nuevo</button>
+  </div>
 
-    <div class="permiso-list">
-        <app-permiso-card *ngFor="let row of rowsFiltradas" [permiso]="row" (toggle)="onToggle(row, $event)"
-            (edit)="edit(row)" (remove)="onDelete(row)"></app-permiso-card>
-    </div>
+  <div class="permiso-list">
+    <app-permiso-card *ngFor="let row of rowsFiltradas" [permiso]="row" (toggle)="onToggle(row, $event)"
+      (edit)="edit(row)" (remove)="onDelete(row)"></app-permiso-card>
+  </div>
 
-    <div *ngIf="!rowsFiltradas.length && !cargando" class="empty-state">
-        No hay acciones registradas.
-    </div>
+  <div *ngIf="!rowsFiltradas.length && !cargando" class="empty-state">
+    No hay acciones registradas.
+  </div>
 
-    <div *ngIf="cargando" class="empty-state">Cargando acciones...</div>
+  <div *ngIf="cargando" class="empty-state">Cargando acciones...</div>
 </section>
 
 <div class="design-modal-backdrop" *ngIf="modalOpen" (click)="cerrarModal()"></div>
 <section class="panel panel--form design-modal-card" *ngIf="modalOpen" (click)="$event.stopPropagation()">
-    <button type="button" class="modal-close" (click)="cerrarModal()" aria-label="Cerrar">×</button>
-    <div class="panel-title">Formulario</div>
+  <button type="button" class="modal-close" (click)="cerrarModal()" aria-label="Cerrar">×</button>
+  <div class="panel-title">Formulario</div>
 
-    <div class="form-grid two">
-        <div class="field" style="grid-column: 1 / -1;">
-            <label>Código</label>
-            <input [(ngModel)]="form.codigo" placeholder="Ej: inventario.crear" />
-        </div>
-        <div class="field" style="grid-column: 1 / -1;">
-            <label>Nombre</label>
-            <input [(ngModel)]="form.nombre" placeholder="Nombre de la acción" />
-        </div>
-        <div class="field" style="grid-column: 1 / -1;">
-            <label>Descripción</label>
-            <input [(ngModel)]="form.descripcion" placeholder="Descripción de la acción" />
-        </div>
+  <div class="form-grid two">
+    <div class="field" style="grid-column: 1 / -1;">
+      <label>Código</label>
+      <input [(ngModel)]="form.codigo" placeholder="Ej: inventario.crear" />
     </div>
-
-    <div class="toolbar" style="margin-top: 14px;">
-        <button class="btn btn-primary" (click)="save()" [disabled]="!form.nombre">Guardar</button>
-        <button class="btn btn-ghost" (click)="reset()">Limpiar</button>
+    <div class="field" style="grid-column: 1 / -1;">
+      <label>Nombre</label>
+      <input [(ngModel)]="form.nombre" placeholder="Nombre de la acción" />
     </div>
+    <div class="field" style="grid-column: 1 / -1;">
+      <label>Descripción</label>
+      <input [(ngModel)]="form.descripcion" placeholder="Descripción de la acción" />
+    </div>
+  </div>
 
-    <div *ngIf="msg" class="empty-state" style="margin-top: 14px; padding: 14px;">{{ msg }}</div>
+  <div class="toolbar" style="margin-top: 14px;">
+    <button class="btn btn-primary" (click)="save()" [disabled]="!form.nombre">Guardar</button>
+    <button class="btn btn-ghost" (click)="reset()">Limpiar</button>
+  </div>
+
+  <div *ngIf="msg" class="empty-state" style="margin-top: 14px; padding: 14px;">{{ msg }}</div>
 </section>

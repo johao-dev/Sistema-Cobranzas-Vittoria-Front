@@ -67,7 +67,7 @@ export class ProyectosPage implements OnInit {
     private cotizacionMaterialesService: CotizacionMaterialesService,
     private notifyService: NotificationService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.load();

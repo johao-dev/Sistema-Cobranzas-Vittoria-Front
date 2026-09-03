@@ -2,24 +2,14 @@
   <span class="tipo-cambio-pill__label">
     {{ formatFecha(tipoCambio.date) }} - 1 USD = {{ tipoCambio.sell_price | number:'1.2-2' }} PEN
   </span>
-  <input
-    class="tipo-cambio-pill__date-input"
-    type="date"
-    [value]="fechaSeleccionada"
-    (change)="onFechaChange($any($event.target).value)"
-    aria-label="Seleccionar fecha de tipo de cambio"
-  />
+  <input class="tipo-cambio-pill__date-input" type="date" [value]="fechaSeleccionada"
+    (change)="onFechaChange($any($event.target).value)" aria-label="Seleccionar fecha de tipo de cambio" />
 </div>
 
 <ng-template #tipoCambioLoading>
   <div class="tipo-cambio-pill tipo-cambio-pill--loading">
     <span class="tipo-cambio-pill__label">--/--/---- - 1 USD = --.-- PEN</span>
-    <input
-      class="tipo-cambio-pill__date-input"
-      type="date"
-      [value]="fechaSeleccionada"
-      (change)="onFechaChange($any($event.target).value)"
-      aria-label="Seleccionar fecha de tipo de cambio"
-    />
+    <input class="tipo-cambio-pill__date-input" type="date" [value]="fechaSeleccionada"
+      (change)="onFechaChange($any($event.target).value)" aria-label="Seleccionar fecha de tipo de cambio" />
   </div>
 </ng-template>

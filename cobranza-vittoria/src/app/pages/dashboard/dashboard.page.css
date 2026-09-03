@@ -1,4 +1,9 @@
-.dashboard-status { margin-bottom: 16px; color: var(--muted); font-weight: 700; }
+.dashboard-status {
+  margin-bottom: 16px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
 .dashboard-kpis {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -11,7 +16,7 @@
   border: 1px solid var(--border);
   border-radius: 18px;
   padding: 18px;
-  box-shadow: 0 10px 24px rgba(31,36,48,.05);
+  box-shadow: 0 10px 24px rgba(31, 36, 48, .05);
 }
 
 .kpi-card__label {
@@ -164,7 +169,7 @@
 
 @media (max-width: 1280px) {
   .dashboard-kpis {
-    grid-template-columns: repeat(2, minmax(0,1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .panel-header,

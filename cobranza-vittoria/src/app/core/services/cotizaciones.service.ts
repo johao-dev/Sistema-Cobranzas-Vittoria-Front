@@ -4,7 +4,7 @@ import { CotizacionCreate, CotizacionGetResponse } from '../../models/cotizacion
 
 @Injectable({ providedIn: 'root' })
 export class CotizacionesService {
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService) { }
 
   crear(idRequerimiento: number, dto: CotizacionCreate) {
     return this.api.http.post<{ idCotizacion: number }>(

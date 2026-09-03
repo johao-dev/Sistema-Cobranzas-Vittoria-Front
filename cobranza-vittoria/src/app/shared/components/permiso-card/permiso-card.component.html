@@ -6,27 +6,19 @@
 
   <div class="permiso-card__controls">
     <label class="switch" [attr.aria-label]="permiso().activo ? 'Desactivar acción' : 'Activar acción'">
-      <input
-        type="checkbox"
-        [checked]="permiso().activo"
-        (change)="onToggle($event)"
-      />
+      <input type="checkbox" [checked]="permiso().activo" (change)="onToggle($event)" />
       <span class="slider"></span>
     </label>
 
     <div class="permiso-card__actions">
-      <button
-        type="button"
-        class="permiso-card__menu-btn"
-        (click)="toggleMenu()"
-        aria-label="Acciones"
-      >
+      <button type="button" class="permiso-card__menu-btn" (click)="toggleMenu()" aria-label="Acciones">
         ⋮
       </button>
 
       <div class="permiso-card__menu" *ngIf="menuOpen()" (click)="$event.stopPropagation()">
         <button type="button" class="permiso-card__menu-item" (click)="onEdit()">Editar</button>
-        <button type="button" class="permiso-card__menu-item permiso-card__menu-item--danger" (click)="onRemove()">Eliminar</button>
+        <button type="button" class="permiso-card__menu-item permiso-card__menu-item--danger"
+          (click)="onRemove()">Eliminar</button>
       </div>
     </div>
   </div>

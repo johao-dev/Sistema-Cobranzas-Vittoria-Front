@@ -1,4 +1,7 @@
- :host { display: block; min-height: 100vh; }
+:host {
+  display: block;
+  min-height: 100vh;
+}
 
 .login-shell {
   min-height: 100vh;
@@ -6,7 +9,7 @@
   grid-template-columns: minmax(320px, 1.08fr) minmax(320px, .92fr);
   gap: 28px;
   padding: 28px;
-  background: radial-gradient(circle at top left, rgba(82,85,152,.18), transparent 34%), linear-gradient(180deg, #f7f9ff 0%, #eef3fb 100%);
+  background: radial-gradient(circle at top left, rgba(82, 85, 152, .18), transparent 34%), linear-gradient(180deg, #f7f9ff 0%, #eef3fb 100%);
 }
 
 .login-panel {
@@ -17,7 +20,7 @@
 }
 
 .login-panel--visual {
-  background: linear-gradient(180deg, rgba(82,85,152,.96), rgba(63,112,167,.95));
+  background: linear-gradient(180deg, rgba(82, 85, 152, .96), rgba(63, 112, 167, .95));
   color: #fff;
   padding: 42px;
   display: flex;
@@ -37,8 +40,8 @@
   align-self: flex-start;
   padding: 8px 12px;
   border-radius: 999px;
-  background: rgba(255,255,255,.14);
-  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255, 255, 255, .14);
+  border: 1px solid rgba(255, 255, 255, .18);
   font-weight: 800;
   margin-bottom: 18px;
 }
@@ -67,8 +70,8 @@
 .login-highlights li {
   padding: 14px 16px;
   border-radius: 18px;
-  background: rgba(255,255,255,.12);
-  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255, 255, 255, .12);
+  border: 1px solid rgba(255, 255, 255, .12);
   font-weight: 700;
 }
 
@@ -101,8 +104,16 @@
   font-size: .76rem;
 }
 
-.field { display: flex; flex-direction: column; gap: 8px; }
-.field label { color: var(--muted); font-weight: 800; }
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field label {
+  color: var(--muted);
+  font-weight: 800;
+}
 
 .login-panel--form input {
   min-height: 54px;

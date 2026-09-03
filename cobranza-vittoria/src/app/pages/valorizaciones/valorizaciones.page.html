@@ -45,41 +45,28 @@
       <div class="field field-autocomplete">
         <label>Proveedor</label>
         <div class="proveedor-autocomplete" [class.is-open]="proveedorConfiguracionDropdownOpen">
-          <input
-            type="text"
-            [(ngModel)]="proveedorConfiguracionTexto"
+          <input type="text" [(ngModel)]="proveedorConfiguracionTexto"
             (input)="onProveedorConfiguracionTextoChange(proveedorConfiguracionTexto)"
-            (focus)="abrirProveedorConfiguracion()"
-            (blur)="cerrarProveedorConfiguracionConDelay()"
-            (keydown.escape)="cerrarProveedorConfiguracion()"
-            placeholder="Escribe para buscar proveedor"
-            autocomplete="off"
-          />
-          <button
-            type="button"
-            class="proveedor-autocomplete__clear"
-            *ngIf="proveedorConfiguracionTexto"
-            (mousedown)="$event.preventDefault()"
-            (click)="limpiarProveedorConfiguracion()"
-            aria-label="Limpiar proveedor"
-          >×</button>
+            (focus)="abrirProveedorConfiguracion()" (blur)="cerrarProveedorConfiguracionConDelay()"
+            (keydown.escape)="cerrarProveedorConfiguracion()" placeholder="Escribe para buscar proveedor"
+            autocomplete="off" />
+          <button type="button" class="proveedor-autocomplete__clear" *ngIf="proveedorConfiguracionTexto"
+            (mousedown)="$event.preventDefault()" (click)="limpiarProveedorConfiguracion()"
+            aria-label="Limpiar proveedor">×</button>
 
           <div class="proveedor-autocomplete__panel" *ngIf="proveedorConfiguracionDropdownOpen">
             <div class="proveedor-autocomplete__empty" *ngIf="!proveedorConfiguracionTexto">
               Escribe para buscar proveedor.
             </div>
 
-            <button
-              type="button"
-              class="proveedor-autocomplete__option"
-              *ngFor="let p of proveedoresConfiguracionFiltrados"
-              (mousedown)="$event.preventDefault()"
-              (click)="seleccionarProveedorConfiguracion(p)"
-            >
+            <button type="button" class="proveedor-autocomplete__option"
+              *ngFor="let p of proveedoresConfiguracionFiltrados" (mousedown)="$event.preventDefault()"
+              (click)="seleccionarProveedorConfiguracion(p)">
               {{ p.razonSocial }}
             </button>
 
-            <div class="proveedor-autocomplete__empty" *ngIf="proveedorConfiguracionTexto && !proveedoresConfiguracionFiltrados.length">
+            <div class="proveedor-autocomplete__empty"
+              *ngIf="proveedorConfiguracionTexto && !proveedoresConfiguracionFiltrados.length">
               No se encontraron proveedores.
             </div>
           </div>
@@ -159,7 +146,8 @@
   <div class="two-col two-col--detail">
     <section class="panel">
       <div class="panel-title">2. Detalle de emisión de factura</div>
-      <div class="helper-strip">Primero usa o guarda una configuración. Después registra la factura con su detracción y garantía.</div>
+      <div class="helper-strip">Primero usa o guarda una configuración. Después registra la factura con su detracción y
+        garantía.</div>
 
       <div class="form-grid detail-grid top-gap">
         <div class="field">
@@ -312,7 +300,8 @@
       </table>
     </div>
 
-    <div *ngIf="resumen && !resumenFacturas.length" class="empty-state">La valorización todavía no tiene facturas registradas.</div>
+    <div *ngIf="resumen && !resumenFacturas.length" class="empty-state">La valorización todavía no tiene facturas
+      registradas.</div>
     <div *ngIf="!resumen" class="empty-state">Selecciona una valorización para ver el resumen.</div>
   </section>
 

@@ -73,7 +73,7 @@ export class ProveedoresTerrenoPage implements OnInit {
     private notifications: NotificationService,
     private cdr: ChangeDetectorRef,
     private maestra: MaestraService
-  ) {}
+  ) { }
 
   ngOnInit(): void { this.load(); }
 

@@ -4,7 +4,7 @@ import { CategoriaGasto, Proveedor, Material } from '../../models/catalogos.mode
 
 @Injectable({ providedIn: 'root' })
 export class CatalogosService {
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService) { }
 
   categorias() {
     return this.api.http.get<CategoriaGasto[]>(`${this.api.baseUrl}/api/catalogos/categorias`);

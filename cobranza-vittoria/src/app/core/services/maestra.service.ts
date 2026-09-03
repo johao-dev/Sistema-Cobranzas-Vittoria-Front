@@ -3,7 +3,7 @@ import { ApiService } from './api.service';
 
 @Injectable({ providedIn: 'root' })
 export class MaestraService {
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService) { }
 
   especialidades(activo?: boolean | null) {
     const qs = activo === undefined || activo === null ? '' : `?activo=${activo}`;

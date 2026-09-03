@@ -1,4 +1,5 @@
-<div class="app-shell" [class.app-shell--sidebar-collapsed]="sidebarCollapsed" [class.app-shell--mobile-open]="mobileMenuOpen" [class.app-shell--auth-free]="isLoginRoute()">
+<div class="app-shell" [class.app-shell--sidebar-collapsed]="sidebarCollapsed"
+  [class.app-shell--mobile-open]="mobileMenuOpen" [class.app-shell--auth-free]="isLoginRoute()">
   <div class="sidebar-backdrop" *ngIf="!isLoginRoute()" (click)="closeMobileMenu()"></div>
 
   <aside class="sidebar" *ngIf="!isLoginRoute()" aria-label="Menú principal">
@@ -8,7 +9,8 @@
         <div class="brand__subtitle">Sistema de control de gastos</div>
       </div>
 
-      <button type="button" class="sidebar-toggle" (click)="toggleSidebar()" [attr.aria-label]="sidebarCollapsed ? 'Expandir menú' : 'Contraer menú'">
+      <button type="button" class="sidebar-toggle" (click)="toggleSidebar()"
+        [attr.aria-label]="sidebarCollapsed ? 'Expandir menú' : 'Contraer menú'">
         <span>{{ sidebarCollapsed ? '›' : '‹' }}</span>
       </button>
     </div>
@@ -26,17 +28,20 @@
       </div>
 
       <div class="nav-section nav-section--collapsible">
-        <button type="button" class="nav-toggle" (click)="toggleMenu('operaciones')" [class.open]="isMenuOpen('operaciones')">
+        <button type="button" class="nav-toggle" (click)="toggleMenu('operaciones')"
+          [class.open]="isMenuOpen('operaciones')">
           <span>Operaciones</span><span class="nav-toggle__chev">⌄</span>
         </button>
         <div class="nav-panel" *ngIf="isMenuOpen('operaciones')">
           <div class="nav-subsection">
-            <button type="button" class="nav-subtoggle" (click)="toggleMenu('gestionObra')" [class.open]="isMenuOpen('gestionObra')">
+            <button type="button" class="nav-subtoggle" (click)="toggleMenu('gestionObra')"
+              [class.open]="isMenuOpen('gestionObra')">
               <span>Gestión de obra</span><span class="nav-toggle__chev">⌄</span>
             </button>
             <div class="nav-subpanel" *ngIf="isMenuOpen('gestionObra')">
               <a routerLink="/requerimientos" routerLinkActive="active" (click)="closeMobileMenu()">Requerimientos</a>
-              <a routerLink="/ordenes-compra" routerLinkActive="active" (click)="closeMobileMenu()">Órdenes de compra</a>
+              <a routerLink="/ordenes-compra" routerLinkActive="active" (click)="closeMobileMenu()">Órdenes de
+                compra</a>
               <a routerLink="/compras" routerLinkActive="active" (click)="closeMobileMenu()">Compras</a>
               <a routerLink="/kardex" routerLinkActive="active" (click)="closeMobileMenu()">Kardex</a>
               <a routerLink="/valorizaciones" routerLinkActive="active" (click)="closeMobileMenu()">Valorizaciones</a>
@@ -44,22 +49,28 @@
           </div>
 
           <div class="nav-subsection">
-            <button type="button" class="nav-subtoggle" (click)="toggleMenu('gastosProyecto')" [class.open]="isMenuOpen('gastosProyecto')">
+            <button type="button" class="nav-subtoggle" (click)="toggleMenu('gastosProyecto')"
+              [class.open]="isMenuOpen('gastosProyecto')">
               <span>Gastos del proyecto</span><span class="nav-toggle__chev">⌄</span>
             </button>
             <div class="nav-subpanel" *ngIf="isMenuOpen('gastosProyecto')">
-              <a routerLink="/gastos-administrativos" routerLinkActive="active" (click)="closeMobileMenu()">Gastos administrativos</a>
-              <a routerLink="/terreno" routerLinkActive="active" (click)="closeMobileMenu()">Terreno - Anteproyecto - Proyecto</a>
-              <a routerLink="/marketing-publicidad" routerLinkActive="active" (click)="closeMobileMenu()">Marketing / Ventas</a>
+              <a routerLink="/gastos-administrativos" routerLinkActive="active" (click)="closeMobileMenu()">Gastos
+                administrativos</a>
+              <a routerLink="/terreno" routerLinkActive="active" (click)="closeMobileMenu()">Terreno - Anteproyecto -
+                Proyecto</a>
+              <a routerLink="/marketing-publicidad" routerLinkActive="active" (click)="closeMobileMenu()">Marketing /
+                Ventas</a>
               <a routerLink="/otros-gastos" routerLinkActive="active" (click)="closeMobileMenu()">Otros Gastos</a>
-              <a routerLink="/gastos-municipales-distritales" routerLinkActive="active" (click)="closeMobileMenu()">Gastos municipales y distritales</a>
+              <a routerLink="/gastos-municipales-distritales" routerLinkActive="active"
+                (click)="closeMobileMenu()">Gastos municipales y distritales</a>
             </div>
           </div>
         </div>
       </div>
 
       <div class="nav-section nav-section--collapsible">
-        <button type="button" class="nav-toggle" (click)="toggleMenu('mantenimiento')" [class.open]="isMenuOpen('mantenimiento')">
+        <button type="button" class="nav-toggle" (click)="toggleMenu('mantenimiento')"
+          [class.open]="isMenuOpen('mantenimiento')">
           <span>Mantenimiento</span><span class="nav-toggle__chev">⌄</span>
         </button>
         <div class="nav-panel" *ngIf="isMenuOpen('mantenimiento')">
@@ -68,33 +79,43 @@
           <a routerLink="/materiales" routerLinkActive="active" (click)="closeMobileMenu()">Materiales</a>
           <a routerLink="/proyectos" routerLinkActive="active" (click)="closeMobileMenu()">Proyectos</a>
           <a routerLink="/unidades-medida" routerLinkActive="active" (click)="closeMobileMenu()">Unidades de medida</a>
-          <a routerLink="/proveedores-gasto" routerLinkActive="active" (click)="closeMobileMenu()">Proveedores de gasto</a>
-          <a routerLink="/proveedores-terreno" routerLinkActive="active" (click)="closeMobileMenu()">Proveedores de terreno</a>
-          <a routerLink="/categorias-gasto" routerLinkActive="active" (click)="closeMobileMenu()">Categorías de gasto</a>
+          <a routerLink="/proveedores-gasto" routerLinkActive="active" (click)="closeMobileMenu()">Proveedores de
+            gasto</a>
+          <a routerLink="/proveedores-terreno" routerLinkActive="active" (click)="closeMobileMenu()">Proveedores de
+            terreno</a>
+          <a routerLink="/categorias-gasto" routerLinkActive="active" (click)="closeMobileMenu()">Categorías de
+            gasto</a>
         </div>
       </div>
 
       <!-- Módulo de Inventario -->
       <div class="nav-section nav-section--collapsible">
-        <button type="button" class="nav-toggle" (click)="toggleMenu('inventario')" [class.open]="isMenuOpen('inventario')">
+        <button type="button" class="nav-toggle" (click)="toggleMenu('inventario')"
+          [class.open]="isMenuOpen('inventario')">
           <span>Inventario</span><span class="nav-toggle__chev">⌄</span>
         </button>
         <div class="nav-panel" *ngIf="isMenuOpen('inventario')">
-          <a routerLink="/inventario/kardex-entradas" routerLinkActive="active" (click)="closeMobileMenu()">Kardex Entradas</a>
-          <a routerLink="/inventario/kardex-salidas" routerLinkActive="active" (click)="closeMobileMenu()">Kardex Salidas</a>
-          <a routerLink="/inventario/stock-actual" routerLinkActive="active" (click)="closeMobileMenu()">Stock Actual</a>
+          <a routerLink="/inventario/kardex-entradas" routerLinkActive="active" (click)="closeMobileMenu()">Kardex
+            Entradas</a>
+          <a routerLink="/inventario/kardex-salidas" routerLinkActive="active" (click)="closeMobileMenu()">Kardex
+            Salidas</a>
+          <a routerLink="/inventario/stock-actual" routerLinkActive="active" (click)="closeMobileMenu()">Stock
+            Actual</a>
         </div>
       </div>
 
       <!-- Módulo de seguridad -->
       <div class="nav-section nav-section--collapsible">
-        <button type="button" class="nav-toggle" (click)="toggleMenu('controlAccesos')" [class.open]="isMenuOpen('controlAccesos')">
+        <button type="button" class="nav-toggle" (click)="toggleMenu('controlAccesos')"
+          [class.open]="isMenuOpen('controlAccesos')">
           <span>Control de Acceso</span><span class="nav-toggle__chev">⌄</span>
         </button>
         <div class="nav-panel" *ngIf="isMenuOpen('controlAccesos')">
           <a routerLink="/control-accesos/usuarios" routerLinkActive="active" (click)="closeMobileMenu()">Usuarios</a>
-          <a routerLink="/control-accesos/perfiles" routerLinkActive="active" (click)="closeMobileMenu()">Perfiles de Acceso</a>
-          <a routerLink="/control-accesos/acciones" routerLinkActive="active" (click)="closeMobileMenu()">Acciones Disponibles</a>
+          <a routerLink="/control-accesos/perfiles" routerLinkActive="active" (click)="closeMobileMenu()">Perfiles de
+            Acceso</a>
+          <a routerLink="/control-accesos/acciones" routerLinkActive="active" (click)="closeMobileMenu()">Acciones
+            Disponibles</a>
         </div>
       </div>
     </nav>
@@ -103,7 +124,8 @@
   <section class="main-shell">
     <header class="topbar" *ngIf="!isLoginRoute()">
       <div class="topbar__left">
-        <button type="button" class="menu-toggle" (click)="toggleSidebar()" aria-label="Mostrar u ocultar menú">☰</button>
+        <button type="button" class="menu-toggle" (click)="toggleSidebar()"
+          aria-label="Mostrar u ocultar menú">☰</button>
         <div class="topbar__brand">
           <img src="/logo-vittoria.png?v=3" alt="Vittoria" class="topbar__logo" />
           <div>

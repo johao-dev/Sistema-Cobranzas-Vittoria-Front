@@ -1,20 +1,23 @@
 <div class="page-header">
   <div>
     <div class="page-title">Proyectos</div>
-    <div class="page-subtitle">Configura el nombre del proyecto, su cotización general y su estado. Desde aquí se toma la cotización que alimenta el módulo de resumen total.</div>
+    <div class="page-subtitle">Configura el nombre del proyecto, su cotización general y su estado. Desde aquí se toma
+      la cotización que alimenta el módulo de resumen total.</div>
   </div>
 </div>
 
 <div class="page-grid-2 split--form proyectos-layout">
   <section class="panel proyectos-panel-list">
-    <div class="panel-title-row"><div class="panel-title">Listado</div>
-    <div class="filters compact-filters maintenance-search">
-      <div class="field">
-        <label>Buscar</label>
-        <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Buscar proyectos" />
+    <div class="panel-title-row">
+      <div class="panel-title">Listado</div>
+      <div class="filters compact-filters maintenance-search">
+        <div class="field">
+          <label>Buscar</label>
+          <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Buscar proyectos" />
+        </div>
       </div>
+      <button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button>
     </div>
-<button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button></div>
 
     <div *ngIf="!rowsFiltradas.length" class="empty-state">
       No hay proyectos configurados.
@@ -37,7 +40,8 @@
             <td class="proyectos-table__project">{{ row.nombreProyecto }}</td>
             <td>{{ row.descripcion || '-' }}</td>
             <td class="table-number proyectos-table__money">{{ formatMoney(row.cotizacionGeneral) }}</td>
-            <td class="table-number proyectos-table__money proyectos-table__money--materials">{{ formatMoney(row.cotizacionMateriales) }}</td>
+            <td class="table-number proyectos-table__money proyectos-table__money--materials">{{
+              formatMoney(row.cotizacionMateriales) }}</td>
             <td>
               <span class="badge" [class.badge--ok]="row.activo" [class.badge--neutral]="!row.activo">
                 {{ row.activo ? 'Activo' : 'Inactivo' }}
@@ -56,7 +60,8 @@
   </section>
 
   <div class="design-modal-backdrop" *ngIf="modalOpen" (click)="cerrarModal()"></div>
-  <section class="panel panel--form proyectos-panel-form design-modal-card" *ngIf="modalOpen" (click)="$event.stopPropagation()">
+  <section class="panel panel--form proyectos-panel-form design-modal-card" *ngIf="modalOpen"
+    (click)="$event.stopPropagation()">
     <button type="button" class="modal-close" (click)="cerrarModal()" aria-label="Cerrar">×</button>
     <div class="panel-title">
       {{ form.idProyecto ? 'Editar proyecto' : 'Nuevo proyecto' }}
@@ -89,7 +94,8 @@
 
     <div class="cotizacion-materiales-card" *ngIf="especialidades.length">
       <div class="panel-title panel-title--small">Subcotizaciones de materiales por especialidad</div>
-      <div class="helper-text">La suma de estas subcotizaciones se mostrará como <strong>Cotización de materiales</strong> en Resumen Total.</div>
+      <div class="helper-text">La suma de estas subcotizaciones se mostrará como <strong>Cotización de
+          materiales</strong> en Resumen Total.</div>
       <div class="table-wrap cotizacion-materiales-wrap">
         <table>
           <thead>

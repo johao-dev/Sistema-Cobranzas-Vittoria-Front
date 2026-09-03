@@ -1,23 +1,39 @@
-
 .admin-split {
   align-items: start;
 }
+
 .admin-split .panel--form {
   max-width: 430px;
   justify-self: end;
 }
-.compact-filters { margin-bottom: 14px; }
-.actions-col { width: 132px; }
-.form-grid.one { grid-template-columns: 1fr; }
-.toolbar--compact { margin-top: 16px; }
+
+.compact-filters {
+  margin-bottom: 14px;
+}
+
+.actions-col {
+  width: 132px;
+}
+
+.form-grid.one {
+  grid-template-columns: 1fr;
+}
+
+.toolbar--compact {
+  margin-top: 16px;
+}
+
 @media (max-width: 1320px) {
   .admin-split .panel--form {
     max-width: none;
     justify-self: stretch;
   }
 }
+
 @media (max-width: 760px) {
-  .actions--stack-mobile { flex-direction: column; }
+  .actions--stack-mobile {
+    flex-direction: column;
+  }
 }
 
 /* HOTFIX V17 - Categorías: columnas proporcionales sin achicar el texto */
@@ -25,24 +41,39 @@
   width: fit-content;
   max-width: 100%;
 }
+
 .table-wrap--categorias table {
   width: 560px !important;
   min-width: 560px !important;
   max-width: 100% !important;
   table-layout: fixed !important;
 }
+
 .table-wrap--categorias table th,
 .table-wrap--categorias table td {
   padding: 10px 12px !important;
   font-size: .88rem !important;
   line-height: 1.25 !important;
 }
+
 .table-wrap--categorias table th:nth-child(1),
-.table-wrap--categorias table td:nth-child(1) { width: 280px !important; }
+.table-wrap--categorias table td:nth-child(1) {
+  width: 280px !important;
+}
+
 .table-wrap--categorias table th:nth-child(2),
-.table-wrap--categorias table td:nth-child(2) { width: 110px !important; }
+.table-wrap--categorias table td:nth-child(2) {
+  width: 110px !important;
+}
+
 .table-wrap--categorias table th:nth-child(3),
-.table-wrap--categorias table td:nth-child(3) { width: 104px !important; min-width: 104px !important; max-width: 104px !important; text-align: center !important; }
+.table-wrap--categorias table td:nth-child(3) {
+  width: 104px !important;
+  min-width: 104px !important;
+  max-width: 104px !important;
+  text-align: center !important;
+}
+
 .table-wrap--categorias .actions-select {
   width: 92px !important;
   min-width: 92px !important;

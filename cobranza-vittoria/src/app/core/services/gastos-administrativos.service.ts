@@ -3,11 +3,14 @@ import { ApiService } from './api.service';
 
 @Injectable({ providedIn: 'root' })
 export class GastosAdministrativosService {
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService) { }
 
   categorias(activo?: boolean | null) {
     const params = new URLSearchParams();
-    if (activo !== undefined && activo !== null) params.set('activo', String(activo));
+
+    if (activo !== undefined && activo !== null)
+      params.set('activo', String(activo));
+
     const qs = params.toString();
     return this.api.http.get<any[]>(`${this.api.baseUrl}/api/maestra/categorias-gasto${qs ? '?' + qs : ''}`);
   }
@@ -25,8 +28,13 @@ export class GastosAdministrativosService {
 
   proveedores(activo?: boolean | null, idCategoriaGasto?: number | null) {
     const params = new URLSearchParams();
-    if (activo !== undefined && activo !== null) params.set('activo', String(activo));
-    if (idCategoriaGasto !== undefined && idCategoriaGasto !== null) params.set('idCategoriaGasto', String(idCategoriaGasto));
+
+    if (activo !== undefined && activo !== null)
+      params.set('activo', String(activo));
+
+    if (idCategoriaGasto !== undefined && idCategoriaGasto !== null)
+      params.set('idCategoriaGasto', String(idCategoriaGasto));
+
     const qs = params.toString();
     return this.api.http.get<any[]>(`${this.api.baseUrl}/api/maestra/proveedores-gasto${qs ? '?' + qs : ''}`);
   }
@@ -48,10 +56,19 @@ export class GastosAdministrativosService {
     const idCategoria = filters?.idCategoriaGasto ?? filters?.IdCategoriaGasto;
     const idProveedor = filters?.idProveedorGastoAdministrativo ?? filters?.IdProveedorGastoAdministrativo;
     const activo = filters?.activo ?? filters?.Activo;
-    if (idProyecto !== undefined && idProyecto !== null && idProyecto !== '') params.set('idProyecto', String(idProyecto));
-    if (idCategoria !== undefined && idCategoria !== null && idCategoria !== '') params.set('idCategoriaGasto', String(idCategoria));
-    if (idProveedor !== undefined && idProveedor !== null && idProveedor !== '') params.set('idProveedorGastoAdministrativo', String(idProveedor));
-    if (activo !== undefined && activo !== null && activo !== '') params.set('activo', String(activo));
+
+    if (idProyecto !== undefined && idProyecto !== null && idProyecto !== '')
+      params.set('idProyecto', String(idProyecto));
+
+    if (idCategoria !== undefined && idCategoria !== null && idCategoria !== '')
+      params.set('idCategoriaGasto', String(idCategoria));
+
+    if (idProveedor !== undefined && idProveedor !== null && idProveedor !== '')
+      params.set('idProveedorGastoAdministrativo', String(idProveedor));
+
+    if (activo !== undefined && activo !== null && activo !== '')
+      params.set('activo', String(activo));
+
     const qs = params.toString();
     return this.api.http.get<any[]>(`${this.api.baseUrl}/api/contable/gastos-administrativos${qs ? '?' + qs : ''}`);
   }

@@ -1,22 +1,51 @@
-<div class="page-header"><div><div class="page-title">Unidades de medida</div><div class="page-subtitle">Mantenimiento de unidades de medida del sistema.</div></div></div>
+<div class="page-header">
+  <div>
+    <div class="page-title">Unidades de medida</div>
+    <div class="page-subtitle">Mantenimiento de unidades de medida del sistema.</div>
+  </div>
+</div>
 <div class="split">
   <section class="panel">
-    <div class="panel-title-row"><div class="panel-title">Listado</div>
-    <div class="filters compact-filters maintenance-search">
-      <div class="field">
-        <label>Buscar</label>
-        <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Buscar unidades de medida" />
+    <div class="panel-title-row">
+      <div class="panel-title">Listado</div>
+      <div class="filters compact-filters maintenance-search">
+        <div class="field">
+          <label>Buscar</label>
+          <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Buscar unidades de medida" />
+        </div>
       </div>
+      <button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button>
+      <button type="button" class="btn btn-secondary btn-sm" (click)="abrirImportModal()">Importar</button>
     </div>
-<button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button>
-<button type="button" class="btn btn-secondary btn-sm" (click)="abrirImportModal()">Importar</button></div>
     <div class="form-grid two" style="margin-bottom:16px;">
-      <div class="field"><label>Estado</label><select [(ngModel)]="filtroActivo" (change)="load()"><option [ngValue]="null">Todos</option><option [ngValue]="true">Activo</option><option [ngValue]="false">Inactivo</option></select></div>
+      <div class="field"><label>Estado</label><select [(ngModel)]="filtroActivo" (change)="load()">
+          <option [ngValue]="null">Todos</option>
+          <option [ngValue]="true">Activo</option>
+          <option [ngValue]="false">Inactivo</option>
+        </select></div>
     </div>
     <div *ngIf="!rowsFiltradas.length" class="empty-state">No hay unidades de medida registradas.</div>
-    <div *ngIf="rowsFiltradas.length" class="table-wrap"><table><thead><tr><th>Código</th><th>Nombre</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
-      <tr *ngFor="let row of rowsFiltradas"><td>{{ row.codigo }}</td><td>{{ row.nombre }}</td><td><span class="badge" [class.badge--ok]="row.activo" [class.badge--neutral]="!row.activo">{{ row.activo ? 'Activo' : 'Inactivo' }}</span></td><td><button class="btn btn-secondary" (click)="edit(row)">Editar</button></td></tr>
-    </tbody></table></div>
+    <div *ngIf="rowsFiltradas.length" class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rowsFiltradas">
+            <td>{{ row.codigo }}</td>
+            <td>{{ row.nombre }}</td>
+            <td><span class="badge" [class.badge--ok]="row.activo" [class.badge--neutral]="!row.activo">{{ row.activo ?
+                'Activo' : 'Inactivo' }}</span></td>
+            <td><button class="btn btn-secondary" (click)="edit(row)">Editar</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </section>
   <div class="design-modal-backdrop" *ngIf="modalOpen" (click)="cerrarModal()"></div>
   <section class="panel panel--form design-modal-card" *ngIf="modalOpen" (click)="$event.stopPropagation()">
@@ -24,16 +53,18 @@
     <div class="panel-title">Formulario</div>
     <div class="form-grid two">
       <div class="field"><label>Código</label><input [(ngModel)]="form.codigo"></div>
-      <div class="field"><label>Estado</label><select [(ngModel)]="form.activo"><option [ngValue]="true">Activo</option><option [ngValue]="false">Inactivo</option></select></div>
+      <div class="field"><label>Estado</label><select [(ngModel)]="form.activo">
+          <option [ngValue]="true">Activo</option>
+          <option [ngValue]="false">Inactivo</option>
+        </select></div>
       <div class="field" style="grid-column:1/-1;"><label>Nombre</label><input [(ngModel)]="form.nombre"></div>
     </div>
-    <div class="toolbar" style="margin-top:14px;"><button class="btn btn-primary" (click)="save()" [disabled]="!form.codigo || !form.nombre">Guardar</button><button class="btn btn-ghost" (click)="reset()">Limpiar</button></div>
+    <div class="toolbar" style="margin-top:14px;"><button class="btn btn-primary" (click)="save()"
+        [disabled]="!form.codigo || !form.nombre">Guardar</button><button class="btn btn-ghost"
+        (click)="reset()">Limpiar</button></div>
     <div *ngIf="msg" class="empty-state" style="margin-top:14px; padding:14px;">{{ msg }}</div>
   </section>
-  <app-import-modal
-    *ngIf="importOpen"
-    modulo="unidad-medida"
-    (onClose)="cerrarImportModal()"
+  <app-import-modal *ngIf="importOpen" modulo="unidad-medida" (onClose)="cerrarImportModal()"
     (onSuccess)="onImportSuccess()">
   </app-import-modal>
 </div>

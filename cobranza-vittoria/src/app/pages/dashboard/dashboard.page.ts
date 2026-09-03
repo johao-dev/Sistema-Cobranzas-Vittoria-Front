@@ -55,7 +55,7 @@ export class DashboardPage implements OnInit, OnDestroy {
     private valorizacionesService: ValorizacionesService,
     private router: Router,
     private cdr: ChangeDetectorRef,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.load();
@@ -120,7 +120,7 @@ export class DashboardPage implements OnInit, OnDestroy {
             )
           )
         )
-          .pipe(finalize(() => { 
+          .pipe(finalize(() => {
             if (version === this.loadVersion) {
               this.loadingMaterials = false;
               this.cdr.detectChanges();

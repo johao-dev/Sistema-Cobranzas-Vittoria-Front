@@ -108,7 +108,7 @@ export class RequerimientosPage implements OnInit {
     private seguridad: SeguridadService,
     private notifyService: NotificationService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   abrirModalNuevo(): void {
     this.reset();

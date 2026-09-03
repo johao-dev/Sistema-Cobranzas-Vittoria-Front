@@ -15,7 +15,15 @@
   <div *ngIf="rqPendientesOc.length" class="table-wrap table-wrap--sticky-actions table-wrap--medium">
     <table>
       <thead>
-        <tr><th>RQ</th><th>Fecha</th><th>Especialidades</th><th>Proyecto</th><th>Solicitante</th><th>Estado</th><th class="actions-col actions-col--select">Acciones</th></tr>
+        <tr>
+          <th>RQ</th>
+          <th>Fecha</th>
+          <th>Especialidades</th>
+          <th>Proyecto</th>
+          <th>Solicitante</th>
+          <th>Estado</th>
+          <th class="actions-col actions-col--select">Acciones</th>
+        </tr>
       </thead>
       <tbody>
         <tr *ngFor="let row of rqPendientesOc">
@@ -39,7 +47,7 @@
   <div class="panel panel-embedded">
     <div class="panel-title-row">
       <div class="panel-title">Órdenes de compra generadas</div>
-      
+
     </div>
 
     <div *ngIf="!ordenesCreadas.length" class="empty-state">
@@ -49,7 +57,16 @@
     <div *ngIf="ordenesCreadas.length" class="table-wrap table-wrap--sticky-actions table-wrap--medium">
       <table id="tabla-ordenes-compra-generadas-export">
         <thead>
-          <tr><th>N° O.C.</th><th>Fecha</th><th>RQ</th><th>Especialidades</th><th>Proveedor</th><th>Proyecto</th><th>Estado</th><th class="actions-col actions-col--select">Acciones</th></tr>
+          <tr>
+            <th>N° O.C.</th>
+            <th>Fecha</th>
+            <th>RQ</th>
+            <th>Especialidades</th>
+            <th>Proveedor</th>
+            <th>Proyecto</th>
+            <th>Estado</th>
+            <th class="actions-col actions-col--select">Acciones</th>
+          </tr>
         </thead>
         <tbody>
           <tr *ngFor="let row of ordenesCreadas">
@@ -76,7 +93,8 @@
 </section>
 
 <div class="design-modal-backdrop" *ngIf="flujoModalOpen" (click)="cerrarFlujoModal()"></div>
-<section class="panel panel--form design-modal-card design-modal-card--xl" *ngIf="flujoModalOpen" (click)="$event.stopPropagation()">
+<section class="panel panel--form design-modal-card design-modal-card--xl" *ngIf="flujoModalOpen"
+  (click)="$event.stopPropagation()">
   <button type="button" class="modal-close" (click)="cerrarFlujoModal()" aria-label="Cerrar">×</button>
   <div class="panel-title">Continuar flujo de O.C.</div>
 
@@ -89,17 +107,31 @@
     <div class="oc-form-note">El número de O.C. se genera correlativamente y la fecha toma el día de hoy.</div>
 
     <div class="form-grid two oc-form-grid">
-      <div class="field auto-field"><label>Número O.C.</label><input [(ngModel)]="form.numeroOrdenCompra" readonly></div>
-      <div class="field auto-field"><label>Fecha</label><input type="date" [(ngModel)]="form.fechaOrdenCompra" readonly></div>
+      <div class="field auto-field"><label>Número O.C.</label><input [(ngModel)]="form.numeroOrdenCompra" readonly>
+      </div>
+      <div class="field auto-field"><label>Fecha</label><input type="date" [(ngModel)]="form.fechaOrdenCompra" readonly>
+      </div>
       <div class="field auto-field"><label>Proyecto</label><input [value]="form.proyectoNombre || '-'" readonly></div>
-      <div class="field auto-field"><label>Usuario creación</label><input [value]="form.usuarioCreacionNombre || '-'" readonly></div>
+      <div class="field auto-field"><label>Usuario creación</label><input [value]="form.usuarioCreacionNombre || '-'"
+          readonly></div>
     </div>
 
     <div class="panel panel-embedded panel-compact">
-      <div class="panel-title-row"><div class="panel-title panel-subtitle">Detalle jalado del requerimiento</div><button type="button" class="btn btn-secondary btn-sm" (click)="abrirNuevoProveedor()">+ Nuevo proveedor</button></div>
+      <div class="panel-title-row">
+        <div class="panel-title panel-subtitle">Detalle jalado del requerimiento</div><button type="button"
+          class="btn btn-secondary btn-sm" (click)="abrirNuevoProveedor()">+ Nuevo proveedor</button>
+      </div>
       <div class="table-wrap table-wrap--medium" *ngIf="form.items.length">
         <table>
-          <thead><tr><th>Especialidad</th><th>Material</th><th>Unidad</th><th>Cantidad</th><th class="provider-column">Proveedor</th></tr></thead>
+          <thead>
+            <tr>
+              <th>Especialidad</th>
+              <th>Material</th>
+              <th>Unidad</th>
+              <th>Cantidad</th>
+              <th class="provider-column">Proveedor</th>
+            </tr>
+          </thead>
           <tbody>
             <tr *ngFor="let x of form.items">
               <td>{{ x.especialidad }}</td>
@@ -128,7 +160,8 @@
 </section>
 
 <div class="design-modal-backdrop" *ngIf="detalleModalOpen" (click)="cerrarDetalleModal()"></div>
-<section class="panel design-modal-card design-modal-card--xl" *ngIf="detalleModalOpen" (click)="$event.stopPropagation()">
+<section class="panel design-modal-card design-modal-card--xl" *ngIf="detalleModalOpen"
+  (click)="$event.stopPropagation()">
   <button type="button" class="modal-close" (click)="cerrarDetalleModal()" aria-label="Cerrar">×</button>
   <div class="panel-title">Detalle de O.C. generada</div>
 
@@ -136,8 +169,10 @@
     <div class="toolbar" style="margin-bottom:14px;">
       <span class="list-chip">{{ detalleOc.ordenCompra?.numeroOrdenCompra }}</span>
       <span class="list-chip">{{ detalleOc.ordenCompra?.estado }}</span>
-      <button class="btn btn-secondary btn-sm" type="button" (click)="exportarExcelDetalleOc()">Exportar Excel proveedor</button>
-      <button class="btn btn-primary btn-sm" type="button" (click)="exportarPdfDetalleOc()">Exportar PDF proveedor</button>
+      <button class="btn btn-secondary btn-sm" type="button" (click)="exportarExcelDetalleOc()">Exportar Excel
+        proveedor</button>
+      <button class="btn btn-primary btn-sm" type="button" (click)="exportarPdfDetalleOc()">Exportar PDF
+        proveedor</button>
     </div>
 
     <div class="toolbar filters-inline" style="margin-bottom:14px;">
@@ -152,10 +187,19 @@
 
     <div class="table-wrap table-wrap--medium" *ngIf="detalleOc.items?.length">
       <table>
-        <thead><tr><th>Especialidad</th><th>Material</th><th>Unidad</th><th>Cantidad</th><th>Proveedor</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Especialidad</th>
+            <th>Material</th>
+            <th>Unidad</th>
+            <th>Cantidad</th>
+            <th>Proveedor</th>
+          </tr>
+        </thead>
         <tbody>
           <tr *ngFor="let item of itemsDetalleOcFiltrados">
-            <td>{{ item.especialidad || detalleOc.ordenCompra?.especialidades || detalleOc.ordenCompra?.especialidad || '-' }}</td>
+            <td>{{ item.especialidad || detalleOc.ordenCompra?.especialidades || detalleOc.ordenCompra?.especialidad ||
+              '-' }}</td>
             <td>{{ item.material }}</td>
             <td>{{ item.unidadMedida }}</td>
             <td>{{ item.cantidad }}</td>
@@ -169,7 +213,8 @@
     </div>
   </div>
 
-  <div class="helper-strip">Para registrar la compra, usa el módulo <strong>Compras</strong> con la O.C. correspondiente.</div>
+  <div class="helper-strip">Para registrar la compra, usa el módulo <strong>Compras</strong> con la O.C.
+    correspondiente.</div>
   <div *ngIf="msg" class="empty-state" style="margin-top:14px; padding:14px;">{{ msg }}</div>
 </section>
 
@@ -179,13 +224,18 @@
   <button type="button" class="modal-close" (click)="cerrarProveedorModal()" aria-label="Cerrar">×</button>
   <div class="panel-title">Nuevo proveedor</div>
   <div class="form-grid two">
-    <div class="field full-width"><label>Razón social / Nombre comercial</label><input [(ngModel)]="proveedorForm.razonSocial"></div>
-    <div class="field"><label>RUC</label><input [(ngModel)]="proveedorForm.ruc" (blur)="buscarRucProveedor()" (keyup.enter)="buscarRucProveedor()"></div>
+    <div class="field full-width"><label>Razón social / Nombre comercial</label><input
+        [(ngModel)]="proveedorForm.razonSocial"></div>
+    <div class="field"><label>RUC</label><input [(ngModel)]="proveedorForm.ruc" (blur)="buscarRucProveedor()"
+        (keyup.enter)="buscarRucProveedor()"></div>
     <div class="field"><label>Contacto</label><input [(ngModel)]="proveedorForm.contacto"></div>
     <div class="field"><label>Teléfono</label><input [(ngModel)]="proveedorForm.telefono"></div>
     <div class="field"><label>Correo</label><input [(ngModel)]="proveedorForm.correo"></div>
     <div class="field full-width"><label>Dirección</label><input [(ngModel)]="proveedorForm.direccion"></div>
-    <div class="field"><label>Estado</label><select [(ngModel)]="proveedorForm.activo"><option [ngValue]="true">Activo</option><option [ngValue]="false">Inactivo</option></select></div>
+    <div class="field"><label>Estado</label><select [(ngModel)]="proveedorForm.activo">
+        <option [ngValue]="true">Activo</option>
+        <option [ngValue]="false">Inactivo</option>
+      </select></div>
   </div>
   <div class="toolbar toolbar--compact">
     <button class="btn btn-primary" (click)="guardarNuevoProveedor()">Guardar proveedor</button>

@@ -26,7 +26,8 @@
     <div class="field">
       <label>Contraseña</label>
       <div class="password-box">
-        <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="form.password" placeholder="Tu contraseña" (keyup.enter)="submit()" />
+        <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="form.password" placeholder="Tu contraseña"
+          (keyup.enter)="submit()" />
         <button type="button" class="password-box__toggle" (click)="showPassword = !showPassword">
           {{ showPassword ? 'Ocultar' : 'Ver' }}
         </button>

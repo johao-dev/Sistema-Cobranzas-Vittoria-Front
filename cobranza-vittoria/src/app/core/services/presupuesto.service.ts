@@ -3,7 +3,7 @@ import { ApiService } from './api.service';
 
 @Injectable({ providedIn: 'root' })
 export class PresupuestoService {
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService) { }
 
   getByProyecto(idProyecto: number) {
     return this.api.http.get<any>(`${this.api.baseUrl}/api/contable/presupuesto/${idProyecto}`);

@@ -13,7 +13,8 @@
       <label>Compra</label>
       <select [(ngModel)]="filtros.idCompra">
         <option [ngValue]="null">Todas</option>
-        <option *ngFor="let c of comprasRealizadas" [ngValue]="c.idCompra">Compra {{ c.numeroCompra }} - RQ {{ c.numeroRequerimiento || '-' }}</option>
+        <option *ngFor="let c of comprasRealizadas" [ngValue]="c.idCompra">Compra {{ c.numeroCompra }} - RQ {{
+          c.numeroRequerimiento || '-' }}</option>
       </select>
     </div>
 
@@ -129,10 +130,12 @@
       </thead>
       <tbody>
         <tr *ngFor="let row of rowsAgrupadas; let i = index">
-          <td>Compra {{ row.numeroCompraCorrelativo || row.NumeroCompraCorrelativo || row.numeroCompra || row.NumeroCompra || '-' }}</td>
+          <td>Compra {{ row.numeroCompraCorrelativo || row.NumeroCompraCorrelativo || row.numeroCompra ||
+            row.NumeroCompra || '-' }}</td>
           <td>{{ row.numeroRequerimiento || row.NumeroRequerimiento || '-' }}</td>
           <td><strong *ngIf="esNuevoGrupo(i)">{{ row.especialidad || row.Especialidad || '-' }}</strong></td>
-          <td>{{ row.fechaMovimiento || row.FechaMovimiento ? ((row.fechaMovimiento || row.FechaMovimiento) | date:'dd/MM/yyyy') : '-' }}</td>
+          <td>{{ row.fechaMovimiento || row.FechaMovimiento ? ((row.fechaMovimiento || row.FechaMovimiento) |
+            date:'dd/MM/yyyy') : '-' }}</td>
           <td>{{ row.material || row.Material || '-' }}</td>
           <td>{{ formatCantidad(row.entrada || row.Entrada || 0) }}</td>
           <td>{{ formatCantidad(row.salida || row.Salida || 0) }}</td>

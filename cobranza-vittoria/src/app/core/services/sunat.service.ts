@@ -12,7 +12,7 @@ export class SunatService {
 
   readonly tipoCambio$: Observable<TipoCambioResponse | null> = this.tipoCambioSubject.asObservable();
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService) { }
 
   consultarTipoCambio(fecha?: string): void {
     if (this.isLoading) return;

@@ -5,7 +5,7 @@ export type TipoGastoProyecto = 'terreno' | 'marketing-publicidad' | 'otros-gast
 
 @Injectable({ providedIn: 'root' })
 export class GastoProyectoService {
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService) { }
 
   listar(tipoModulo: TipoGastoProyecto, filters?: any) {
     const params = new URLSearchParams();
@@ -13,10 +13,19 @@ export class GastoProyectoService {
     const concepto = filters?.concepto ?? filters?.Concepto;
     const estado = filters?.estado ?? filters?.Estado;
     const activo = filters?.activo ?? filters?.Activo;
-    if (idProyecto !== undefined && idProyecto !== null && idProyecto !== '') params.set('idProyecto', String(idProyecto));
-    if (concepto !== undefined && concepto !== null && concepto !== '') params.set('concepto', String(concepto));
-    if (estado !== undefined && estado !== null && estado !== '') params.set('estado', String(estado));
-    if (activo !== undefined && activo !== null && activo !== '') params.set('activo', String(activo));
+
+    if (idProyecto !== undefined && idProyecto !== null && idProyecto !== '')
+      params.set('idProyecto', String(idProyecto));
+
+    if (concepto !== undefined && concepto !== null && concepto !== '')
+      params.set('concepto', String(concepto));
+
+    if (estado !== undefined && estado !== null && estado !== '')
+      params.set('estado', String(estado));
+
+    if (activo !== undefined && activo !== null && activo !== '')
+      params.set('activo', String(activo));
+
     const qs = params.toString();
     return this.api.http.get<any[]>(`${this.api.baseUrl}/api/contable/gastos-proyecto/${tipoModulo}${qs ? '?' + qs : ''}`);
   }

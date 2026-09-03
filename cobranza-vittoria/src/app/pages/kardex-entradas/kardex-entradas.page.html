@@ -136,7 +136,8 @@
     <div class="field material-picker-field" style="grid-column: 1 / -1;">
       <label>Material</label>
       <select [(ngModel)]="form.idMaterial" [disabled]="!form.idEspecialidad">
-        <option [ngValue]="null">{{ form.idEspecialidad ? 'Seleccionar' : 'Selecciona una especialidad primero' }}</option>
+        <option [ngValue]="null">{{ form.idEspecialidad ? 'Seleccionar' : 'Selecciona una especialidad primero' }}
+        </option>
         <option *ngFor="let m of materialesFiltrados" [ngValue]="getIdMaterial(m)">
           {{ getDescripcionMaterial(m) }} — {{ getCodigoMaterial(m) }} — {{ getUnidadMaterial(m) }}
         </option>
@@ -165,11 +166,8 @@
   </div>
 
   <div class="toolbar" style="margin-top: 14px;">
-    <button
-      class="btn btn-primary"
-      (click)="save()"
-      [disabled]="!form.idEspecialidad || !form.idMaterial || !form.fecha || cantidadInvalida"
-    >
+    <button class="btn btn-primary" (click)="save()"
+      [disabled]="!form.idEspecialidad || !form.idMaterial || !form.fecha || cantidadInvalida">
       Guardar
     </button>
     <button class="btn btn-ghost" (click)="reset()">Limpiar</button>

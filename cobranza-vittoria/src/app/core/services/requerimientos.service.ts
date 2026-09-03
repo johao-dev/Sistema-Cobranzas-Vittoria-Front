@@ -4,7 +4,7 @@ import { RequerimientoCreate, RequerimientoGetResponse } from '../../models/requ
 
 @Injectable({ providedIn: 'root' })
 export class RequerimientosService {
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService) { }
 
   crear(dto: RequerimientoCreate) {
     return this.api.http.post<{ idRequerimiento: number }>(`${this.api.baseUrl}/api/requerimientos`, dto);

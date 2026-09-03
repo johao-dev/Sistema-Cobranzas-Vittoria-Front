@@ -61,7 +61,7 @@ export class StockActualPage implements OnInit {
     private kardex: KardexInventarioService,
     private notifyService: NotificationService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.maestra.especialidades(true).subscribe({

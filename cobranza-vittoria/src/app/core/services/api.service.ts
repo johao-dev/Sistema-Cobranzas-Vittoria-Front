@@ -5,5 +5,5 @@ import { environment } from '../config/environment';
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   readonly baseUrl = environment.apiUrl;
-  constructor(public http: HttpClient) {}
+  constructor(public http: HttpClient) { }
 }

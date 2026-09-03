@@ -75,7 +75,7 @@ export class ProveedoresGastoPage implements OnInit {
     private notifications: NotificationService,
     private cdr: ChangeDetectorRef,
     private maestra: MaestraService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadCatalogos();
@@ -159,7 +159,7 @@ export class ProveedoresGastoPage implements OnInit {
         if (res && res.numero_documento) {
           this.form.razonSocial = res.razon_social || '';
           this.form.activo = res.estado === 'ACTIVO';
-          
+
           this.notifications.show('Datos recuperados de SUNAT correctamente.', 'success');
         } else {
           this.notifications.show('No se encontraron datos para el RUC ingresado.', 'info');

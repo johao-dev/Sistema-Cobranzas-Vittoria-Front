@@ -3,13 +3,20 @@ import { ApiService } from './api.service';
 
 @Injectable({ providedIn: 'root' })
 export class ComprasService {
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService) { }
 
   requerimientos(filters?: any) {
     const params = new URLSearchParams();
-    if (filters?.estado) params.append('estado', String(filters.estado));
-    if (filters?.idEspecialidad !== undefined && filters?.idEspecialidad !== null) params.append('idEspecialidad', String(filters.idEspecialidad));
-    if (filters?.idProyecto !== undefined && filters?.idProyecto !== null) params.append('idProyecto', String(filters.idProyecto));
+
+    if (filters?.estado)
+      params.append('estado', String(filters.estado));
+
+    if (filters?.idEspecialidad !== undefined && filters?.idEspecialidad !== null)
+      params.append('idEspecialidad', String(filters.idEspecialidad));
+
+    if (filters?.idProyecto !== undefined && filters?.idProyecto !== null)
+      params.append('idProyecto', String(filters.idProyecto));
+
     const qs = params.toString();
     return this.api.http.get<any[]>(`${this.api.baseUrl}/api/compras/requerimientos${qs ? '?' + qs : ''}`);
   }
@@ -40,9 +47,16 @@ export class ComprasService {
 
   ordenes(filters?: any) {
     const params = new URLSearchParams();
-    if (filters?.estado) params.append('estado', String(filters.estado));
-    if (filters?.idProveedor !== undefined && filters?.idProveedor !== null) params.append('idProveedor', String(filters.idProveedor));
-    if (filters?.idProyecto !== undefined && filters?.idProyecto !== null) params.append('idProyecto', String(filters.idProyecto));
+
+    if (filters?.estado)
+      params.append('estado', String(filters.estado));
+
+    if (filters?.idProveedor !== undefined && filters?.idProveedor !== null)
+      params.append('idProveedor', String(filters.idProveedor));
+
+    if (filters?.idProyecto !== undefined && filters?.idProyecto !== null)
+      params.append('idProyecto', String(filters.idProyecto));
+
     const qs = params.toString();
     return this.api.http.get<any[]>(`${this.api.baseUrl}/api/compras/ordenes-compra${qs ? '?' + qs : ''}`);
   }
@@ -65,8 +79,13 @@ export class ComprasService {
 
   compras(filters?: any) {
     const params = new URLSearchParams();
-    if (filters?.aceptada !== undefined && filters?.aceptada !== null) params.append('aceptada', String(filters.aceptada));
-    if (filters?.idProveedor !== undefined && filters?.idProveedor !== null) params.append('idProveedor', String(filters.idProveedor));
+
+    if (filters?.aceptada !== undefined && filters?.aceptada !== null)
+      params.append('aceptada', String(filters.aceptada));
+
+    if (filters?.idProveedor !== undefined && filters?.idProveedor !== null)
+      params.append('idProveedor', String(filters.idProveedor));
+
     const qs = params.toString();
     return this.api.http.get<any[]>(`${this.api.baseUrl}/api/compras/compras${qs ? '?' + qs : ''}`);
   }

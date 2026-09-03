@@ -7,18 +7,21 @@
 
 <div class="split split--form">
   <section class="panel">
-    <div class="panel-title-row"><div class="panel-title">Listado</div>
-    <div class="filters compact-filters maintenance-search">
-      <div class="field">
-        <label>Buscar</label>
-        <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Buscar materiales" />
+    <div class="panel-title-row">
+      <div class="panel-title">Listado</div>
+      <div class="filters compact-filters maintenance-search">
+        <div class="field">
+          <label>Buscar</label>
+          <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Buscar materiales" />
+        </div>
       </div>
+      <button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button>
+      <select class="actions-select btn-sm" [(ngModel)]="importFormato" aria-label="Formato de plantilla"
+        title="Formato de plantilla">
+        <option *ngFor="let f of formatosPlantilla" [ngValue]="f">{{ f | uppercase }}</option>
+      </select>
+      <button type="button" class="btn btn-secondary btn-sm" (click)="abrirImportModal()">Importar</button>
     </div>
-<button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button>
-<select class="actions-select btn-sm" [(ngModel)]="importFormato" aria-label="Formato de plantilla" title="Formato de plantilla">
-  <option *ngFor="let f of formatosPlantilla" [ngValue]="f">{{ f | uppercase }}</option>
-</select>
-<button type="button" class="btn btn-secondary btn-sm" (click)="abrirImportModal()">Importar</button></div>
 
     <div class="filters">
       <div class="field">
@@ -57,7 +60,10 @@
             <td>{{ row.descripcion }}</td>
             <td>{{ row.unidadMedida }}</td>
             <td>{{ row.stockMinimo }}</td>
-            <td><div class="actions actions--end"><button class="btn btn-secondary btn-sm action-btn" (click)="edit(row)">Editar</button></div></td>
+            <td>
+              <div class="actions actions--end"><button class="btn btn-secondary btn-sm action-btn"
+                  (click)="edit(row)">Editar</button></div>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -121,11 +127,8 @@
     </div>
 
     <div class="toolbar" style="margin-top: 14px;">
-      <button
-        class="btn btn-primary"
-        (click)="save()"
-        [disabled]="!form.idEspecialidad || !form.descripcion || !form.unidadMedida"
-      >
+      <button class="btn btn-primary" (click)="save()"
+        [disabled]="!form.idEspecialidad || !form.descripcion || !form.unidadMedida">
         Guardar
       </button>
 
@@ -136,11 +139,7 @@
       {{ msg }}
     </div>
   </section>
-  <app-import-modal
-    *ngIf="importOpen"
-    modulo="material"
-    [plantillaFormato]="importFormato"
-    (onClose)="cerrarImportModal()"
-    (onSuccess)="onImportSuccess()">
+  <app-import-modal *ngIf="importOpen" modulo="material" [plantillaFormato]="importFormato"
+    (onClose)="cerrarImportModal()" (onSuccess)="onImportSuccess()">
   </app-import-modal>
 </div>

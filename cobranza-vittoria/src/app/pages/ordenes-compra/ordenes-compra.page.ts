@@ -48,7 +48,7 @@ export class OrdenesCompraPage implements OnInit {
     private seguridad: SeguridadService,
     private notifyService: NotificationService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   onAccionRq(event: Event, row: any): void {
     const value = (event.target as HTMLSelectElement).value;
@@ -133,7 +133,7 @@ export class OrdenesCompraPage implements OnInit {
           this.proveedorForm.razonSocial = res.razon_social || '';
           this.proveedorForm.direccion = res.direccion !== '-' ? (res.direccion || '') : '';
           this.proveedorForm.activo = res.estado === 'ACTIVO';
-          
+
           this.msg = 'Datos recuperados de SUNAT correctamente.';
           this.notifyService.show(this.msg, 'success');
         } else {

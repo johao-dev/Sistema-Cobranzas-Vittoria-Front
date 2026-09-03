@@ -1,11 +1,12 @@
-
 :host {
   display: block;
 }
+
 .split .panel--form {
   max-width: 470px;
   justify-self: end;
 }
+
 @media (max-width: 1320px) {
   .split .panel--form {
     max-width: none;
@@ -18,14 +19,25 @@
 .materiales-table table {
   min-width: max(100%, 860px) !important;
 }
+
 .materiales-table th,
 .materiales-table td {
   padding: 9px 10px !important;
   font-size: .86rem !important;
 }
+
 .materiales-table th:nth-child(2),
-.materiales-table td:nth-child(2) { width: 110px; }
+.materiales-table td:nth-child(2) {
+  width: 110px;
+}
+
 .materiales-table th:nth-child(4),
-.materiales-table td:nth-child(4) { width: 110px; }
+.materiales-table td:nth-child(4) {
+  width: 110px;
+}
+
 .materiales-table th:nth-child(5),
-.materiales-table td:nth-child(5) { width: 120px; text-align: right; }
+.materiales-table td:nth-child(5) {
+  width: 120px;
+  text-align: right;
+}

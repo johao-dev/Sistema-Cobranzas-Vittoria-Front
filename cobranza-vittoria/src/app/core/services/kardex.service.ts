@@ -5,7 +5,7 @@ import { ApiService } from './api.service';
 /** @deprecated Servicio legacy ligado al flujo de Compras. Para el nuevo módulo de Kardex manual usar `KardexInventarioService`. */
 @Injectable({ providedIn: 'root' })
 export class KardexService {
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService) { }
 
   /** @deprecated Endpoint legacy `/api/almacen/kardex/movimientos` (flujo Compras). Sin reemplazo directo en el nuevo módulo. */
   movimientos(filters?: any) {

@@ -151,12 +151,8 @@
   <div class="items-section" style="margin-top: 18px;">
     <div class="items-header">
       <div class="items-title">Materiales a despachar</div>
-      <button
-        type="button"
-        class="btn btn-secondary btn-sm"
-        (click)="abrirModalItem()"
-        [disabled]="!form.idEspecialidad"
-      >
+      <button type="button" class="btn btn-secondary btn-sm" (click)="abrirModalItem()"
+        [disabled]="!form.idEspecialidad">
         + Agregar ítem
       </button>
     </div>
@@ -197,11 +193,8 @@
   </div>
 
   <div class="toolbar" style="margin-top: 14px;">
-    <button
-      class="btn btn-primary"
-      (click)="save()"
-      [disabled]="!form.idEspecialidad || !form.solicitante || !form.fecha || !form.items.length || itemsInvalidos"
-    >
+    <button class="btn btn-primary" (click)="save()"
+      [disabled]="!form.idEspecialidad || !form.solicitante || !form.fecha || !form.items.length || itemsInvalidos">
       Guardar
     </button>
     <button class="btn btn-ghost" (click)="reset()">Limpiar</button>
@@ -213,14 +206,16 @@
 </section>
 
 <div class="design-modal-backdrop" *ngIf="modalItemOpen" (click)="cerrarModalItem()"></div>
-<section class="panel panel--form design-modal-card item-modal-card" *ngIf="modalItemOpen" (click)="$event.stopPropagation()">
+<section class="panel panel--form design-modal-card item-modal-card" *ngIf="modalItemOpen"
+  (click)="$event.stopPropagation()">
   <button type="button" class="modal-close" (click)="cerrarModalItem()" aria-label="Cerrar">×</button>
   <div class="panel-title">{{ editingItemIndex !== null ? 'Editar ítem' : 'Agregar ítem' }}</div>
 
   <div class="form-grid two item-modal-grid" style="margin-top: 12px;">
     <div class="field material-picker-field" style="grid-column: 1 / -1;">
       <label>Material</label>
-      <select [(ngModel)]="modalItem.idMaterial" (ngModelChange)="onModalMaterialChange()" [disabled]="!form.idEspecialidad">
+      <select [(ngModel)]="modalItem.idMaterial" (ngModelChange)="onModalMaterialChange()"
+        [disabled]="!form.idEspecialidad">
         <option [ngValue]="null">Seleccionar</option>
         <option *ngFor="let m of materialesFiltradosModal" [ngValue]="getIdMaterial(m)">
           {{ getDescripcionMaterial(m) }} — {{ getCodigoMaterial(m) }} — {{ getUnidadMaterial(m) }}
@@ -241,11 +236,8 @@
 
   <div class="toolbar" style="margin-top: 14px; justify-content: flex-end;">
     <button class="btn btn-ghost" (click)="cerrarModalItem()">Cancelar</button>
-    <button
-      class="btn btn-primary"
-      (click)="agregarItemDesdeModal()"
-      [disabled]="!modalItem.idMaterial || modalItemCantidadInvalida"
-    >
+    <button class="btn btn-primary" (click)="agregarItemDesdeModal()"
+      [disabled]="!modalItem.idMaterial || modalItemCantidadInvalida">
       {{ editingItemIndex !== null ? 'Guardar cambios' : 'Agregar ítem' }}
     </button>
   </div>

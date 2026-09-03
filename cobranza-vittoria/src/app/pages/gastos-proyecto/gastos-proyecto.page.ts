@@ -79,7 +79,7 @@ export class GastosProyectoPage implements OnInit {
     private proveedoresService: ProveedoresTerrenoService,
     private notifications: NotificationService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.applyRouteData();

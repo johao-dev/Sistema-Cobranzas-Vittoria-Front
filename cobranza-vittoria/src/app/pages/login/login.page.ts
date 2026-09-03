@@ -25,7 +25,7 @@ export class LoginPage {
     private router: Router,
     private route: ActivatedRoute,
     private notifications: NotificationService
-  ) {}
+  ) { }
 
   submit(): void {
     if (this.loading) return;

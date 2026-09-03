@@ -16,7 +16,7 @@ import {
 export class KardexInventarioService {
   private readonly base = '/api/almacen/kardex';
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService) { }
 
   listarEntradas(filtros?: KardexFiltroInventarioDto): Observable<KardexEntradaResponseDto[]> {
     const qs = this.construirQueryParams({

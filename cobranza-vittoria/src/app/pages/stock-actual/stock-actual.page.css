@@ -47,15 +47,15 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-.switch input:checked + .slider {
+.switch input:checked+.slider {
   background-color: #10b981;
 }
 
-.switch input:checked + .slider::before {
+.switch input:checked+.slider::before {
   transform: translateX(16px);
 }
 
-.switch input:focus-visible + .slider {
+.switch input:focus-visible+.slider {
   outline: 2px solid #93c5fd;
   outline-offset: 2px;
 }

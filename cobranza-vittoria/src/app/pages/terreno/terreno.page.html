@@ -1,20 +1,28 @@
 <div class="page-header terreno-header">
   <div>
     <div class="page-title">Terreno - Anteproyecto - Proyecto</div>
-    <div class="page-subtitle">Registra montos por proyecto y proveedor. Las facturas se adjuntan desde el botón Archivos después de guardar el registro.</div>
+    <div class="page-subtitle">Registra montos por proyecto y proveedor. Las facturas se adjuntan desde el botón
+      Archivos después de guardar el registro.</div>
   </div>
 </div>
 
 <div class="terreno-summary-grid">
-  <div class="terreno-summary-card"><span>Total registrado</span><strong>{{ formatMoney(totalRegistrado()) }}</strong></div>
-  <div class="terreno-summary-card"><span>Total TERRENO</span><strong>{{ formatMoney(totalPorConcepto('TERRENO')) }}</strong></div>
-  <div class="terreno-summary-card"><span>Total ALCABALA</span><strong>{{ formatMoney(totalPorConcepto('ALCABALA')) }}</strong></div>
-  <div class="terreno-summary-card terreno-summary-card--accent"><span>Registros activos</span><strong>{{ registrosActivos() }}</strong><small>TC referencial: {{ tipoCambioActual | number:'1.2-2' }}</small></div>
+  <div class="terreno-summary-card"><span>Total registrado</span><strong>{{ formatMoney(totalRegistrado()) }}</strong>
+  </div>
+  <div class="terreno-summary-card"><span>Total TERRENO</span><strong>{{ formatMoney(totalPorConcepto('TERRENO'))
+      }}</strong></div>
+  <div class="terreno-summary-card"><span>Total ALCABALA</span><strong>{{ formatMoney(totalPorConcepto('ALCABALA'))
+      }}</strong></div>
+  <div class="terreno-summary-card terreno-summary-card--accent"><span>Registros activos</span><strong>{{
+      registrosActivos() }}</strong><small>TC referencial: {{ tipoCambioActual | number:'1.2-2' }}</small></div>
 </div>
 
 <div class="split split--form terreno-layout">
   <section class="panel terreno-list-panel">
-    <div class="panel-title-row"><div class="panel-title">Listado</div><button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo registro</button></div>
+    <div class="panel-title-row">
+      <div class="panel-title">Listado</div><button type="button" class="btn btn-primary btn-sm"
+        (click)="abrirModalNuevo()">+ Nuevo registro</button>
+    </div>
 
     <div class="filters terreno-filters">
       <div class="field">
@@ -88,37 +96,63 @@
   </section>
 
   <div class="design-modal-backdrop" *ngIf="modalOpen" (click)="cerrarModal()"></div>
-  <section class="panel panel--form terreno-form-panel design-modal-card" *ngIf="modalOpen" (click)="$event.stopPropagation()">
+  <section class="panel panel--form terreno-form-panel design-modal-card" *ngIf="modalOpen"
+    (click)="$event.stopPropagation()">
     <button type="button" class="modal-close" (click)="cerrarModal()" aria-label="Cerrar">×</button>
     <div class="panel-title">{{ editandoId ? 'Editar registro' : 'Nuevo registro' }}</div>
 
     <div class="form-grid two terreno-form-grid">
       <div class="field"><label>Fecha emisión</label><input type="date" [(ngModel)]="form.fecha"></div>
-      <div class="field"><label>Estado</label><select [(ngModel)]="form.estado"><option value="Activo">Activo</option><option value="Inactivo">Inactivo</option></select></div>
+      <div class="field"><label>Estado</label><select [(ngModel)]="form.estado">
+          <option value="Activo">Activo</option>
+          <option value="Inactivo">Inactivo</option>
+        </select></div>
 
-      <div class="field" style="grid-column: 1 / -1;"><label>Proyecto</label><select [(ngModel)]="form.idProyecto"><option [ngValue]="null">Seleccionar</option><option *ngFor="let p of proyectos" [ngValue]="p.idProyecto">{{ p.nombreProyecto }}</option></select></div>
-      <div class="field" style="grid-column: 1 / -1;"><label>Proveedor</label><select [(ngModel)]="form.idProveedorTerreno"><option [ngValue]="null">Seleccionar</option><option *ngFor="let p of proveedores" [ngValue]="p.idProveedorTerreno">{{ p.razonSocial }}</option></select></div>
-      <div class="field" style="grid-column: 1 / -1;"><label>Categoría</label><select [(ngModel)]="form.concepto"><option value="">Seleccionar</option><option *ngFor="let c of conceptos" [value]="c">{{ c }}</option></select></div>
+      <div class="field" style="grid-column: 1 / -1;"><label>Proyecto</label><select [(ngModel)]="form.idProyecto">
+          <option [ngValue]="null">Seleccionar</option>
+          <option *ngFor="let p of proyectos" [ngValue]="p.idProyecto">{{ p.nombreProyecto }}</option>
+        </select></div>
+      <div class="field" style="grid-column: 1 / -1;"><label>Proveedor</label><select
+          [(ngModel)]="form.idProveedorTerreno">
+          <option [ngValue]="null">Seleccionar</option>
+          <option *ngFor="let p of proveedores" [ngValue]="p.idProveedorTerreno">{{ p.razonSocial }}</option>
+        </select></div>
+      <div class="field" style="grid-column: 1 / -1;"><label>Categoría</label><select [(ngModel)]="form.concepto">
+          <option value="">Seleccionar</option>
+          <option *ngFor="let c of conceptos" [value]="c">{{ c }}</option>
+        </select></div>
 
-      <div class="field"><label>Monto en dólares</label><input type="number" min="0" step="0.01" [(ngModel)]="form.montoDolares" (ngModelChange)="onDolaresInput()" placeholder="0.00" /></div>
-      <div class="field"><label>Fecha Tipo Cambio</label><input type="date" [(ngModel)]="form.fechaTipoCambio" (ngModelChange)="onFechaTipoCambioChange($event)" /></div>
-      <div class="field"><label>Tipo de cambio</label><input type="number" min="0" step="0.01" [(ngModel)]="form.tipoCambio" (ngModelChange)="onDolaresInput()" placeholder="0.00" /></div>
-      <div class="field"><label>Monto en soles</label><input type="number" min="0" step="0.01" [(ngModel)]="form.montoSoles" (ngModelChange)="onSolesInput()" placeholder="0.00" /></div>
+      <div class="field"><label>Monto en dólares</label><input type="number" min="0" step="0.01"
+          [(ngModel)]="form.montoDolares" (ngModelChange)="onDolaresInput()" placeholder="0.00" /></div>
+      <div class="field"><label>Fecha Tipo Cambio</label><input type="date" [(ngModel)]="form.fechaTipoCambio"
+          (ngModelChange)="onFechaTipoCambioChange($event)" /></div>
+      <div class="field"><label>Tipo de cambio</label><input type="number" min="0" step="0.01"
+          [(ngModel)]="form.tipoCambio" (ngModelChange)="onDolaresInput()" placeholder="0.00" /></div>
+      <div class="field"><label>Monto en soles</label><input type="number" min="0" step="0.01"
+          [(ngModel)]="form.montoSoles" (ngModelChange)="onSolesInput()" placeholder="0.00" /></div>
 
-      <div class="field" style="grid-column: 1 / -1;"><label>Descripción</label><input class="descripcion-input" [(ngModel)]="form.descripcion" placeholder="Ingresar descripción" /></div>
+      <div class="field" style="grid-column: 1 / -1;"><label>Descripción</label><input class="descripcion-input"
+          [(ngModel)]="form.descripcion" placeholder="Ingresar descripción" /></div>
     </div>
 
-    <div class="toolbar top-gap terreno-toolbar"><button class="btn btn-primary" (click)="guardar()">{{ editandoId ? 'Actualizar' : 'Guardar' }}</button><button class="btn btn-ghost" (click)="limpiar()">Limpiar</button></div>
-    <div class="form-tip" *ngIf="!form.idGastoProyecto">Las facturas se gestionan desde el combo <strong>Acciones &gt; Archivos</strong> después de guardar.</div>
+    <div class="toolbar top-gap terreno-toolbar"><button class="btn btn-primary" (click)="guardar()">{{ editandoId ?
+        'Actualizar' : 'Guardar' }}</button><button class="btn btn-ghost" (click)="limpiar()">Limpiar</button></div>
+    <div class="form-tip" *ngIf="!form.idGastoProyecto">Las facturas se gestionan desde el combo <strong>Acciones &gt;
+        Archivos</strong> después de guardar.</div>
 
     <div class="documents-card top-gap" *ngIf="form.idGastoProyecto && archivosTargetRow">
       <div class="documents-card__title">Facturas</div>
       <input type="file" accept=".pdf,application/pdf" multiple (change)="onFilesSelected($event)" />
-      <div class="toolbar toolbar--compact"><button class="btn btn-secondary" (click)="uploadFacturas()">Subir factura</button><button class="btn btn-ghost" (click)="cerrarArchivos()">Cerrar archivos</button></div>
+      <div class="toolbar toolbar--compact"><button class="btn btn-secondary" (click)="uploadFacturas()">Subir
+          factura</button><button class="btn btn-ghost" (click)="cerrarArchivos()">Cerrar archivos</button></div>
       <div class="docs-list" *ngIf="documentos.length; else noFacturaDocs">
-        <a class="doc-item" *ngFor="let doc of documentos" [href]="downloadUrl(doc)" target="_blank"><span>{{ readValue(doc, 'nombreArchivo', 'NombreArchivo') }}</span><span class="doc-item__meta">{{ readValue(doc, 'fechaCreacion', 'FechaCreacion') | date:'dd/MM/yyyy' }}</span></a>
+        <a class="doc-item" *ngFor="let doc of documentos" [href]="downloadUrl(doc)" target="_blank"><span>{{
+            readValue(doc, 'nombreArchivo', 'NombreArchivo') }}</span><span class="doc-item__meta">{{ readValue(doc,
+            'fechaCreacion', 'FechaCreacion') | date:'dd/MM/yyyy' }}</span></a>
       </div>
-      <ng-template #noFacturaDocs><div class="empty-inline">Aún no hay facturas subidas.</div></ng-template>
+      <ng-template #noFacturaDocs>
+        <div class="empty-inline">Aún no hay facturas subidas.</div>
+      </ng-template>
     </div>
   </section>
 </div>

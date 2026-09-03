@@ -22,7 +22,7 @@ export interface AuthSession {
 export class AuthService {
   private readonly storageKey = 'vittoria.auth.session';
 
-  constructor(private api: ApiService, private router: Router) {}
+  constructor(private api: ApiService, private router: Router) { }
 
   login(payload: LoginPayload): Observable<AuthSession> {
     return this.api.http.post<any>(`${this.api.baseUrl}/api/auth/login`, payload).pipe(
@@ -32,8 +32,11 @@ export class AuthService {
   }
 
   get session(): AuthSession | null {
-    if (typeof window === 'undefined') return null;
+    if (typeof window === 'undefined')
+      return null;
+
     const raw = window.localStorage.getItem(this.storageKey);
+
     if (!raw) return null;
     try {
       return JSON.parse(raw) as AuthSession;
@@ -67,7 +70,9 @@ export class AuthService {
   private normalizeSession(res: any): AuthSession {
     const nombres = String(res?.nombres ?? res?.Nombres ?? '').trim();
     const apellidos = String(res?.apellidos ?? res?.Apellidos ?? '').trim();
-    const displayName = [nombres, apellidos].filter(Boolean).join(' ') || String(res?.usuarioLogin ?? res?.UsuarioLogin ?? 'Usuario');
+    const displayName = [nombres, apellidos]
+      .filter(Boolean).join(' ') || String(res?.usuarioLogin ?? res?.UsuarioLogin ?? 'Usuario');
+
     return {
       idUsuario: Number(res?.idUsuario ?? res?.IdUsuario ?? 0),
       nombres,

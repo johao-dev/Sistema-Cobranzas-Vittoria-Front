@@ -1,8 +1,8 @@
-
 <div class="page-header">
   <div>
     <div class="page-title">Resumen Total</div>
-    <div class="page-subtitle">Consulta el consolidado por proyecto. La cotización general, la cotización de materiales, valorizaciones, gastos administrativos y nuevos conceptos se recalculan según el proyecto seleccionado.</div>
+    <div class="page-subtitle">Consulta el consolidado por proyecto. La cotización general, la cotización de materiales,
+      valorizaciones, gastos administrativos y nuevos conceptos se recalculan según el proyecto seleccionado.</div>
   </div>
   <div class="toolbar resumen-toolbar">
     <button class="btn btn-secondary" (click)="load()">Actualizar</button>
@@ -38,7 +38,8 @@
   <div class="hero-resumen__main">
     <span class="hero-resumen__eyebrow">Consolidado general</span>
     <h2>{{ formatMoney(cotizacionGeneral) }}</h2>
-    <p>La cotización general, el total general y el saldo se calculan solo con la información del proyecto seleccionado.</p>
+    <p>La cotización general, el total general y el saldo se calculan solo con la información del proyecto seleccionado.
+    </p>
   </div>
   <div class="hero-resumen__stats">
     <div>
@@ -57,24 +58,64 @@
 </section>
 
 <div class="kpi-grid" *ngIf="!loading">
-  <div class="kpi-card kpi-card--accent"><div class="kpi-label">Cotización general</div><div class="kpi-value">{{ formatMoney(cotizacionGeneral) }}</div></div>
-  <div class="kpi-card"><div class="kpi-label">Cotización de materiales</div><div class="kpi-value">{{ formatMoney(totalCotizacionMateriales) }}</div></div>
-  <div class="kpi-card"><div class="kpi-label">Valorizaciones</div><div class="kpi-value">{{ formatMoney(totalValorizaciones) }}</div></div>
-  <div class="kpi-card"><div class="kpi-label">Gastos administrativos</div><div class="kpi-value">{{ formatMoney(totalGastos) }}</div></div>
-  <div class="kpi-card"><div class="kpi-label">Terreno</div><div class="kpi-value">{{ formatMoney(totalTerreno) }}</div></div>
-  <div class="kpi-card"><div class="kpi-label">Alcabala</div><div class="kpi-value">{{ formatMoney(totalAlcabala) }}</div></div>
-  <div class="kpi-card"><div class="kpi-label">Marketing / Ventas</div><div class="kpi-value">{{ formatMoney(totalMarketing) }}</div></div>
-  <div class="kpi-card"><div class="kpi-label">Otros gastos</div><div class="kpi-value">{{ formatMoney(totalOtrosGastos) }}</div></div>
-  <div class="kpi-card"><div class="kpi-label">Municipales / Distritales</div><div class="kpi-value">{{ formatMoney(totalMunicipales) }}</div></div>
-  <div class="kpi-card"><div class="kpi-label">Total general</div><div class="kpi-value">{{ formatMoney(totalGeneral) }}</div></div>
-  <div class="kpi-card kpi-card--dark"><div class="kpi-label">Saldo</div><div class="kpi-value">{{ formatMoney(saldo) }}</div></div>
+  <div class="kpi-card kpi-card--accent">
+    <div class="kpi-label">Cotización general</div>
+    <div class="kpi-value">{{ formatMoney(cotizacionGeneral) }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Cotización de materiales</div>
+    <div class="kpi-value">{{ formatMoney(totalCotizacionMateriales) }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Valorizaciones</div>
+    <div class="kpi-value">{{ formatMoney(totalValorizaciones) }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Gastos administrativos</div>
+    <div class="kpi-value">{{ formatMoney(totalGastos) }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Terreno</div>
+    <div class="kpi-value">{{ formatMoney(totalTerreno) }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Alcabala</div>
+    <div class="kpi-value">{{ formatMoney(totalAlcabala) }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Marketing / Ventas</div>
+    <div class="kpi-value">{{ formatMoney(totalMarketing) }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Otros gastos</div>
+    <div class="kpi-value">{{ formatMoney(totalOtrosGastos) }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Municipales / Distritales</div>
+    <div class="kpi-value">{{ formatMoney(totalMunicipales) }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Total general</div>
+    <div class="kpi-value">{{ formatMoney(totalGeneral) }}</div>
+  </div>
+  <div class="kpi-card kpi-card--dark">
+    <div class="kpi-label">Saldo</div>
+    <div class="kpi-value">{{ formatMoney(saldo) }}</div>
+  </div>
 </div>
 
 <section class="panel top-gap" *ngIf="!loading">
   <div class="panel-title">Cotización de materiales por especialidad</div>
   <div class="table-wrap top-gap" *ngIf="comprasRows.length; else emptyCompras">
     <table>
-      <thead><tr><th>Especialidad</th><th class="table-number">Cotización</th><th class="table-number">Facturado</th><th class="table-number">Saldo</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Especialidad</th>
+          <th class="table-number">Cotización</th>
+          <th class="table-number">Facturado</th>
+          <th class="table-number">Saldo</th>
+        </tr>
+      </thead>
       <tbody>
         <tr *ngFor="let row of comprasRows">
           <td>{{ row.especialidad }}</td>
@@ -93,14 +134,26 @@
       </tfoot>
     </table>
   </div>
-  <ng-template #emptyCompras><div class="empty-state">No hay cotizaciones de materiales ni compras registradas para el proyecto seleccionado.</div></ng-template>
+  <ng-template #emptyCompras>
+    <div class="empty-state">No hay cotizaciones de materiales ni compras registradas para el proyecto seleccionado.
+    </div>
+  </ng-template>
 </section>
 
 <section class="panel top-gap" *ngIf="!loading">
   <div class="panel-title">Valorizaciones</div>
   <div class="table-wrap top-gap" *ngIf="valorizacionesRows.length; else emptyVals">
     <table>
-      <thead><tr><th>Especialidad</th><th class="table-number">Cotización</th><th class="table-number">Garantía</th><th class="table-number">Transferido</th><th class="table-number">Facturado</th><th class="table-number">Saldo pendiente</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Especialidad</th>
+          <th class="table-number">Cotización</th>
+          <th class="table-number">Garantía</th>
+          <th class="table-number">Transferido</th>
+          <th class="table-number">Facturado</th>
+          <th class="table-number">Saldo pendiente</th>
+        </tr>
+      </thead>
       <tbody>
         <tr *ngFor="let row of valorizacionesRows">
           <td>{{ row.especialidad }}</td>
@@ -113,14 +166,21 @@
       </tbody>
     </table>
   </div>
-  <ng-template #emptyVals><div class="empty-state">No hay valorizaciones registradas para el proyecto seleccionado.</div></ng-template>
+  <ng-template #emptyVals>
+    <div class="empty-state">No hay valorizaciones registradas para el proyecto seleccionado.</div>
+  </ng-template>
 </section>
 
 <section class="panel top-gap" *ngIf="!loading">
   <div class="panel-title">Gastos administrativos</div>
   <div class="table-wrap top-gap" *ngIf="gastosRows.length; else emptyGastos">
     <table>
-      <thead><tr><th>Categoría</th><th class="table-number">Facturado</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Categoría</th>
+          <th class="table-number">Facturado</th>
+        </tr>
+      </thead>
       <tbody>
         <tr *ngFor="let row of gastosRows">
           <td>{{ row.categoria }}</td>
@@ -129,5 +189,7 @@
       </tbody>
     </table>
   </div>
-  <ng-template #emptyGastos><div class="empty-state">No hay gastos administrativos registrados para el proyecto seleccionado.</div></ng-template>
+  <ng-template #emptyGastos>
+    <div class="empty-state">No hay gastos administrativos registrados para el proyecto seleccionado.</div>
+  </ng-template>
 </section>

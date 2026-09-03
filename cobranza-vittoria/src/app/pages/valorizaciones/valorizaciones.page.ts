@@ -67,7 +67,7 @@ export class ValorizacionesPage implements OnInit {
   proveedorConfiguracionDropdownOpen = false;
   private proveedorConfiguracionBlurTimer: any = null;
 
-  constructor(private maestra: MaestraService, private valorizaciones: ValorizacionesService, private cdr: ChangeDetectorRef) {}
+  constructor(private maestra: MaestraService, private valorizaciones: ValorizacionesService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.cargarCatalogos();

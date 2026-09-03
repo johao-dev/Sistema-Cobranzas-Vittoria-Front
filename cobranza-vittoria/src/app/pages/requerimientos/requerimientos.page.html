@@ -76,7 +76,8 @@
 </section>
 
 <div class="design-modal-backdrop" *ngIf="detalleModalOpen" (click)="cerrarDetalleModal()"></div>
-<section class="panel design-modal-card design-modal-card--xl" *ngIf="detalleModalOpen" (click)="$event.stopPropagation()">
+<section class="panel design-modal-card design-modal-card--xl" *ngIf="detalleModalOpen"
+  (click)="$event.stopPropagation()">
   <button type="button" class="modal-close" (click)="cerrarDetalleModal()" aria-label="Cerrar">×</button>
   <div class="panel-title">Detalle del requerimiento</div>
 
@@ -99,7 +100,15 @@
 
     <div class="table-wrap table-wrap--medium" *ngIf="detalle.items?.length">
       <table>
-        <thead><tr><th>Especialidad</th><th>Material</th><th>Unidad</th><th>Cantidad</th><th>Observación</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Especialidad</th>
+            <th>Material</th>
+            <th>Unidad</th>
+            <th>Cantidad</th>
+            <th>Observación</th>
+          </tr>
+        </thead>
         <tbody>
           <tr *ngFor="let x of detalle.items">
             <td>{{ x.especialidad || '-' }}</td>
@@ -115,7 +124,8 @@
 </section>
 
 <div class="design-modal-backdrop" *ngIf="formModalOpen" (click)="cerrarFormModal()"></div>
-<section class="panel panel--form requer-form-panel design-modal-card design-modal-card--xl" *ngIf="formModalOpen" (click)="$event.stopPropagation()">
+<section class="panel panel--form requer-form-panel design-modal-card design-modal-card--xl" *ngIf="formModalOpen"
+  (click)="$event.stopPropagation()">
   <button type="button" class="modal-close" (click)="cerrarFormModal()" aria-label="Cerrar">×</button>
   <div class="panel-title">{{ editando ? 'Editar requerimiento' : 'Nuevo requerimiento' }}</div>
   <div class="helper-text">Número se genera automáticamente. Completa proyecto, solicitante, entrega e ítems.</div>
@@ -140,7 +150,8 @@
       <label>Solicitante</label>
       <select [(ngModel)]="form.idUsuarioSolicitante">
         <option [ngValue]="null">Seleccionar</option>
-        <option *ngFor="let s of solicitantesCombo" [ngValue]="s.idUsuario" [disabled]="!s.idUsuario">{{ s.nombre }}</option>
+        <option *ngFor="let s of solicitantesCombo" [ngValue]="s.idUsuario" [disabled]="!s.idUsuario">{{ s.nombre }}
+        </option>
       </select>
     </div>
     <div class="field compact-field">
@@ -167,7 +178,16 @@
 
     <div *ngIf="form.items.length" class="table-wrap table-wrap--sticky-actions table-wrap--medium">
       <table>
-        <thead><tr><th>Especialidad</th><th>Material</th><th>Unidad</th><th>Cantidad</th><th>Observación</th><th class="actions-col actions-col--select">Acciones</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Especialidad</th>
+            <th>Material</th>
+            <th>Unidad</th>
+            <th>Cantidad</th>
+            <th>Observación</th>
+            <th class="actions-col actions-col--select">Acciones</th>
+          </tr>
+        </thead>
         <tbody>
           <tr *ngFor="let x of form.items; index as i">
             <td>{{ x.especialidad || '-' }}</td>
@@ -193,7 +213,8 @@
   </div>
 
   <div class="toolbar form-actions">
-    <button class="btn btn-primary" (click)="save()" [disabled]="saving">{{ saving ? 'Guardando...' : (editando ? 'Actualizar requerimiento' : 'Guardar requerimiento') }}</button>
+    <button class="btn btn-primary" (click)="save()" [disabled]="saving">{{ saving ? 'Guardando...' : (editando ?
+      'Actualizar requerimiento' : 'Guardar requerimiento') }}</button>
     <button class="btn btn-ghost" (click)="reset()">Limpiar</button>
   </div>
 
@@ -204,8 +225,10 @@
   <div class="modal-card item-modal-card">
     <div class="modal-header">
       <div>
-        <div class="panel-title" style="margin:0;">{{ editingItemIndex !== null ? 'Editar ítem' : 'Agregar ítem' }}</div>
-        <div class="helper-text" style="margin:6px 0 0 0;">Selecciona primero la especialidad y luego el material correspondiente.</div>
+        <div class="panel-title" style="margin:0;">{{ editingItemIndex !== null ? 'Editar ítem' : 'Agregar ítem' }}
+        </div>
+        <div class="helper-text" style="margin:6px 0 0 0;">Selecciona primero la especialidad y luego el material
+          correspondiente.</div>
       </div>
       <button class="btn btn-ghost" (click)="cerrarModalEspecialidades()">Cerrar</button>
     </div>
@@ -215,18 +238,22 @@
         <label>Especialidad</label>
         <select [(ngModel)]="modalItem.idEspecialidad" (change)="onModalEspecialidadChange()">
           <option [ngValue]="null">Seleccionar</option>
-          <option *ngFor="let e of especialidades" [ngValue]="getIdEspecialidad(e)">{{ getNombreEspecialidad(e) }}</option>
+          <option *ngFor="let e of especialidades" [ngValue]="getIdEspecialidad(e)">{{ getNombreEspecialidad(e) }}
+          </option>
         </select>
       </div>
 
       <div class="field material-picker-field">
         <div class="field-label-row">
           <label>Material</label>
-          <button class="btn btn-secondary btn-xs" type="button" (click)="abrirFormNuevoMaterial()">+ Agregar material</button>
+          <button class="btn btn-secondary btn-xs" type="button" (click)="abrirFormNuevoMaterial()">+ Agregar
+            material</button>
         </div>
         <select [(ngModel)]="modalItem.idMaterial" [disabled]="!modalItem.idEspecialidad">
-          <option [ngValue]="null">{{ modalItem.idEspecialidad ? 'Seleccionar' : 'Selecciona una especialidad primero' }}</option>
-          <option *ngFor="let m of materialesFiltradosModal" [ngValue]="getIdMaterial(m)">{{ getDescripcionMaterial(m) }} — {{ getUnidadMaterial(m) }}</option>
+          <option [ngValue]="null">{{ modalItem.idEspecialidad ? 'Seleccionar' : 'Selecciona una especialidad primero'
+            }}</option>
+          <option *ngFor="let m of materialesFiltradosModal" [ngValue]="getIdMaterial(m)">{{ getDescripcionMaterial(m)
+            }} — {{ getUnidadMaterial(m) }}</option>
         </select>
       </div>
 
@@ -245,7 +272,8 @@
 
     <div class="toolbar" style="margin-top:14px; justify-content:flex-end;">
       <button class="btn btn-ghost" (click)="cerrarModalEspecialidades()">Cancelar</button>
-      <button class="btn btn-primary" (click)="agregarItemDesdeModal()">{{ editingItemIndex !== null ? 'Guardar cambios' : 'Agregar ítem' }}</button>
+      <button class="btn btn-primary" (click)="agregarItemDesdeModal()">{{ editingItemIndex !== null ? 'Guardar cambios'
+        : 'Agregar ítem' }}</button>
     </div>
   </div>
 </div>
@@ -256,7 +284,8 @@
     <div class="modal-header">
       <div>
         <div class="panel-title" style="margin:0;">Nuevo material</div>
-        <div class="helper-text" style="margin:6px 0 0 0;">Registra el material y quedará seleccionado automáticamente en el ítem.</div>
+        <div class="helper-text" style="margin:6px 0 0 0;">Registra el material y quedará seleccionado automáticamente
+          en el ítem.</div>
       </div>
       <button class="btn btn-ghost" type="button" (click)="cerrarFormNuevoMaterial()">Cerrar</button>
     </div>
@@ -266,7 +295,8 @@
         <label>Especialidad</label>
         <select [(ngModel)]="nuevoMaterial.idEspecialidad">
           <option [ngValue]="null">Seleccionar</option>
-          <option *ngFor="let e of especialidades" [ngValue]="getIdEspecialidad(e)">{{ getNombreEspecialidad(e) }}</option>
+          <option *ngFor="let e of especialidades" [ngValue]="getIdEspecialidad(e)">{{ getNombreEspecialidad(e) }}
+          </option>
         </select>
       </div>
 
@@ -275,7 +305,8 @@
         <label>Unidad</label>
         <select [(ngModel)]="nuevoMaterial.unidadMedida">
           <option value="">Seleccionar</option>
-          <option *ngFor="let u of unidadesMedida" [ngValue]="u.codigo || u.nombre || u.unidadMedida">{{ u.codigo || u.nombre || u.unidadMedida }}</option>
+          <option *ngFor="let u of unidadesMedida" [ngValue]="u.codigo || u.nombre || u.unidadMedida">{{ u.codigo ||
+            u.nombre || u.unidadMedida }}</option>
         </select>
       </div>
 

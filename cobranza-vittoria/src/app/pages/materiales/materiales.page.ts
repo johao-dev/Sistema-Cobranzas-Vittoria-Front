@@ -85,7 +85,7 @@ export class MaterialesPage implements OnInit {
     private api: ApiService,
     private notifyService: NotificationService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.maestra.especialidades(true).subscribe(x => {

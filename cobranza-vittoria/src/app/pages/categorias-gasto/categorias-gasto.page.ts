@@ -71,7 +71,7 @@ export class CategoriasGastoPage implements OnInit {
     private gastosService: GastosAdministrativosService,
     private notifications: NotificationService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.load();

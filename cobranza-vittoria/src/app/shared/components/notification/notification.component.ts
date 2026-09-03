@@ -11,7 +11,7 @@ import { NotificationService } from '../../../core/services/notification.service
 })
 export class NotificationComponent {
   notificationService = inject(NotificationService);
-  
+
   get state() {
     return this.notificationService.state();
   }
