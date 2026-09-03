@@ -25,6 +25,7 @@ import { TerrenoPage } from './pages/terreno/terreno.page';
 import { ProveedoresTerrenoPage } from './pages/proveedores-terreno/proveedores-terreno.page';
 import { GastosProyectoPage } from './pages/gastos-proyecto/gastos-proyecto.page';
 import { authGuard } from './core/guards/auth.guard';
+import { PermisosPage } from './pages/permisos/permisos.page';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -55,6 +56,16 @@ export const routes: Routes = [
       { path: 'kardex-entradas', component: KardexEntradasPage },
       { path: 'kardex-salidas', component: KardexSalidasPage },
       { path: 'stock-actual', component: StockActualPage }
+    ]
+  },
+  {
+    path: 'control-accesos',
+    canActivate: [authGuard],
+    children: [
+      { path: '', redirectTo: 'usuarios', pathMatch: 'full' },
+      { path: 'usuarios', component: UsuariosPage },
+      { path: 'perfiles', component: RolesPage },
+      { path: 'acciones', component: PermisosPage }
     ]
   },
   { path: 'valorizaciones', canActivate: [authGuard], component: ValorizacionesPage },

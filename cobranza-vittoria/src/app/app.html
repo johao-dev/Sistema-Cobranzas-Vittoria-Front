@@ -86,6 +86,18 @@
           <a routerLink="/inventario/stock-actual" routerLinkActive="active" (click)="closeMobileMenu()">Stock Actual</a>
         </div>
       </div>
+
+      <!-- Módulo de seguridad -->
+      <div class="nav-section nav-section--collapsible">
+        <button type="button" class="nav-toggle" (click)="toggleMenu('controlAccesos')" [class.open]="isMenuOpen('controlAccesos')">
+          <span>Control de Acceso</span><span class="nav-toggle__chev">⌄</span>
+        </button>
+        <div class="nav-panel" *ngIf="isMenuOpen('controlAccesos')">
+          <a routerLink="/control-accesos/usuarios" routerLinkActive="active" (click)="closeMobileMenu()">Usuarios</a>
+          <a routerLink="/control-accesos/perfiles" routerLinkActive="active" (click)="closeMobileMenu()">Perfiles de Acceso</a>
+          <a routerLink="/control-accesos/acciones" routerLinkActive="active" (click)="closeMobileMenu()">Acciones Disponibles</a>
+        </div>
+      </div>
     </nav>
   </aside>
 

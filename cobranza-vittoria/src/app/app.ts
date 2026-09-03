@@ -22,10 +22,12 @@ export class App {
   currentUrl = this.router.url;
   openMenus: Record<string, boolean> = {
     general: true,
-    operaciones: true,
-    gestionObra: true,
+    operaciones: false,
+    gestionObra: false,
     gastosProyecto: false,
-    mantenimiento: false
+    mantenimiento: false,
+    inventario: false,
+    controlAccesos: false
   };
 
   constructor() {
