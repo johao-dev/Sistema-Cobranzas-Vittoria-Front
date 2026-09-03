@@ -20,12 +20,17 @@
         <button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">Nuevo</button>
     </div>
 
-    <div class="permiso-list">
+    <!-- TODO: cuando se eliminen los registros estáticos, quitar *ngIf="rowsFiltradas.length" del primer div -->
+    <div class="permiso-list" *ngIf="rowsFiltradas.length">
         <app-permiso-card *ngFor="let row of rowsFiltradas" [permiso]="row" (toggle)="onToggle(row, $event)"
             (edit)="edit(row)" (remove)="onDelete(row)"></app-permiso-card>
     </div>
 
-    <div *ngIf="!rowsFiltradas.length" class="empty-state">No hay acciones registradas.</div>
+    <div *ngIf="!rowsFiltradas.length && !cargando" class="empty-state">
+        No hay acciones registradas.
+    </div>
+
+    <div *ngIf="cargando" class="empty-state">Cargando acciones...</div>
 </section>
 
 <div class="design-modal-backdrop" *ngIf="modalOpen" (click)="cerrarModal()"></div>

@@ -7,6 +7,37 @@ import { SeguridadService } from '../../core/services/seguridad.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { Permiso } from '../../models/permisos.models';
 
+// TODO: BORRAR cuando el backend ya devuelva permisos reales.
+// Estos registros son solo para visualizar la interfaz mientras no haya datos.
+// Para eliminarlos:
+// 1. Borra la constante PERMISOS_ESTATICOS.
+// 2. En load(), quita la concatenación con PERMISOS_ESTATICOS.
+// 3. En onToggle() y onDelete(), quita las guardas que ignoran registros estáticos.
+const PERMISOS_ESTATICOS: Permiso[] = [
+    {
+        idPermiso: -1,
+        nombre: 'Crear Requerimientos',
+        descripcion: 'Permite crear requerimientos en el sistema.',
+        activo: true
+    },
+    {
+        idPermiso: -2,
+        nombre: 'Aprobar Órdenes de Compra',
+        descripcion: 'Permite aprobar órdenes de compra pendientes.',
+        activo: false
+    },
+    {
+        idPermiso: -3,
+        nombre: 'Administrar Usuarios',
+        descripcion: 'Permite crear, editar y desactivar usuarios.',
+        activo: true
+    }
+];
+
+function esPermisoEstatico(row: Permiso): boolean {
+    return row.idPermiso !== undefined && row.idPermiso < 0;
+}
+
 @Component({
     standalone: true,
     selector: 'app-permisos-page',
@@ -16,6 +47,7 @@ import { Permiso } from '../../models/permisos.models';
 })
 export class PermisosPage implements OnInit {
     permisosListado: Permiso[] = [];
+    cargando = false;
     filtroBusqueda = '';
     filtroActivo: boolean | null = null;
     msg = '';
@@ -33,16 +65,29 @@ export class PermisosPage implements OnInit {
     }
 
     load(): void {
+        this.cargando = false;
+
+        // TODO: descomentar el bloque de abajo cuando el backend ya tenga /api/seguridad/permisos.
+        // Por ahora usamos solo registros estáticos para visualizar la interfaz.
+        this.permisosListado = [...PERMISOS_ESTATICOS];
+        this.cdr.detectChanges();
+
+        /*
+        this.cargando = true;
         this.seguridad.permisos(this.filtroActivo).subscribe({
             next: (data) => {
                 this.permisosListado = data || [];
+                this.cargando = false;
                 this.cdr.detectChanges();
             },
-            error: () => {
+            error: (e) => {
                 this.permisosListado = [];
+                this.cargando = false;
                 this.cdr.detectChanges();
+                console.error('Error cargando permisos:', e);
             }
         });
+        */
     }
 
     private normalizarBusqueda(valor: any): string {
@@ -121,6 +166,13 @@ export class PermisosPage implements OnInit {
     }
 
     onToggle(row: Permiso, activo: boolean): void {
+        // TODO: quitar esta guarda cuando se eliminen los permisos estáticos.
+        if (esPermisoEstatico(row)) {
+            row.activo = activo;
+            this.cdr.detectChanges();
+            return;
+        }
+
         const payload = { ...row, activo };
         this.seguridad.guardarPermiso(payload).subscribe({
             next: () => {
@@ -137,6 +189,15 @@ export class PermisosPage implements OnInit {
 
     onDelete(row: Permiso): void {
         if (!row.idPermiso) return;
+
+        // TODO: quitar esta guarda cuando se eliminen los permisos estáticos.
+        if (esPermisoEstatico(row)) {
+            this.permisosListado = this.permisosListado.filter((p) => p.idPermiso !== row.idPermiso);
+            this.notifyService.show('Registro de ejemplo eliminado.', 'success');
+            this.cdr.detectChanges();
+            return;
+        }
+
         if (!confirm('¿Estás seguro de eliminar esta acción?')) return;
 
         this.seguridad.eliminarPermiso(row.idPermiso).subscribe({
