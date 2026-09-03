@@ -41,8 +41,6 @@ export const routes: Routes = [
   { path: 'proveedores', canActivate: [authGuard], component: ProveedoresPage },
   { path: 'materiales', canActivate: [authGuard], component: MaterialesPage },
   { path: 'proyectos', canActivate: [authGuard], component: ProyectosPage },
-  { path: 'usuarios', canActivate: [authGuard], component: UsuariosPage },
-  { path: 'roles', canActivate: [authGuard], component: RolesPage },
   { path: 'unidades-medida', canActivate: [authGuard], component: UnidadesMedidaPage },
   { path: 'requerimientos', canActivate: [authGuard], component: RequerimientosPage },
   { path: 'ordenes-compra', canActivate: [authGuard], component: OrdenesCompraPage },

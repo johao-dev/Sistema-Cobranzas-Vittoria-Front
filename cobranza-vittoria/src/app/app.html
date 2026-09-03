@@ -67,8 +67,6 @@
           <a routerLink="/proveedores" routerLinkActive="active" (click)="closeMobileMenu()">Proveedores</a>
           <a routerLink="/materiales" routerLinkActive="active" (click)="closeMobileMenu()">Materiales</a>
           <a routerLink="/proyectos" routerLinkActive="active" (click)="closeMobileMenu()">Proyectos</a>
-          <a routerLink="/usuarios" routerLinkActive="active" (click)="closeMobileMenu()">Usuarios</a>
-          <a routerLink="/roles" routerLinkActive="active" (click)="closeMobileMenu()">Roles</a>
           <a routerLink="/unidades-medida" routerLinkActive="active" (click)="closeMobileMenu()">Unidades de medida</a>
           <a routerLink="/proveedores-gasto" routerLinkActive="active" (click)="closeMobileMenu()">Proveedores de gasto</a>
           <a routerLink="/proveedores-terreno" routerLinkActive="active" (click)="closeMobileMenu()">Proveedores de terreno</a>
@@ -76,6 +74,7 @@
         </div>
       </div>
 
+      <!-- Módulo de Inventario -->
       <div class="nav-section nav-section--collapsible">
         <button type="button" class="nav-toggle" (click)="toggleMenu('inventario')" [class.open]="isMenuOpen('inventario')">
           <span>Inventario</span><span class="nav-toggle__chev">⌄</span>
