@@ -1,0 +1,181 @@
+:host {
+  display: block;
+}
+
+.permiso-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  background: var(--card, #ffffff);
+  border: 1px solid var(--border, #e7ebf2);
+  border-radius: 16px;
+  box-shadow: var(--shadow-soft, 0 12px 28px rgba(31, 36, 48, .05));
+  transition: box-shadow .15s ease, transform .15s ease;
+}
+
+.permiso-card:hover {
+  box-shadow: var(--shadow-card, 0 18px 42px rgba(31, 36, 48, .08));
+}
+
+.permiso-card__info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.permiso-card__title {
+  font-family: 'Montserrat', 'Mulish', Arial, sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text, #1f2430);
+}
+
+.permiso-card__desc {
+  margin-top: 4px;
+  font-size: .9rem;
+  color: var(--muted, #6d7485);
+  line-height: 1.45;
+}
+
+.permiso-card__controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* Toggle switch */
+.switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.switch input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.switch .slider {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+  background-color: #cbd5e1;
+  border-radius: 999px;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.switch .slider::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background-color: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.switch input:checked + .slider {
+  background-color: var(--green, #579982);
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(18px);
+}
+
+.switch input:focus-visible + .slider {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+/* Actions menu */
+.permiso-card__actions {
+  position: relative;
+}
+
+.permiso-card__menu-btn {
+  appearance: none;
+  background: transparent;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  color: var(--muted, #6d7485);
+  font-size: 1.2rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.permiso-card__menu-btn:hover {
+  background: #f3f5fb;
+  color: var(--violet, #525598);
+}
+
+.permiso-card__menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 120px;
+  background: #fff;
+  border: 1px solid var(--border, #e7ebf2);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card, 0 18px 42px rgba(31, 36, 48, .08));
+  padding: 6px;
+  z-index: 10;
+  overflow: hidden;
+}
+
+.permiso-card__menu-item {
+  appearance: none;
+  background: transparent;
+  border: none;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  text-align: left;
+  font: inherit;
+  font-size: .86rem;
+  font-weight: 700;
+  color: var(--text, #1f2430);
+  cursor: pointer;
+}
+
+.permiso-card__menu-item:hover {
+  background: #f3f5fb;
+  color: var(--violet, #525598);
+}
+
+.permiso-card__menu-item--danger {
+  color: var(--danger, #d44a44);
+}
+
+.permiso-card__menu-item--danger:hover {
+  background: #fff1f0;
+}
+
+@media (max-width: 760px) {
+  .permiso-card {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .permiso-card__controls {
+    gap: 8px;
+  }
+}

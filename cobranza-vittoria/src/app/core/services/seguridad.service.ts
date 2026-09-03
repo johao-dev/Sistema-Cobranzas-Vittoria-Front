@@ -1,9 +1,26 @@
 import { Injectable } from '@angular/core';
 import { ApiService } from './api.service';
+import { Permiso } from '../../models/permisos.models';
 
 @Injectable({ providedIn: 'root' })
 export class SeguridadService {
   constructor(private api: ApiService) {}
+
+  // Permisos API endpoints
+  permisos(activo?: boolean | null) {
+    const qs = activo === undefined || activo === null ? '' : `?activo=${activo}`;
+    return this.api.http.get<Permiso[]>(`${this.api.baseUrl}/api/seguridad/permisos${qs}`);
+  }
+
+  guardarPermiso(dto: Permiso) {
+    return dto.idPermiso
+      ? this.api.http.put<Permiso>(`${this.api.baseUrl}/api/seguridad/permisos/${dto.idPermiso}`, dto)
+      : this.api.http.post<Permiso>(`${this.api.baseUrl}/api/seguridad/permisos`, dto);
+  }
+
+  eliminarPermiso(id: number) {
+    return this.api.http.delete<void>(`${this.api.baseUrl}/api/seguridad/permisos/${id}`);
+  }
 
   roles(activo?: boolean | null) {
     const qs = activo === undefined || activo === null ? '' : `?activo=${activo}`;
