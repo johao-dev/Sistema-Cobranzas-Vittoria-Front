@@ -5,38 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { PermisoCardComponent } from '../../shared/components/permiso-card/permiso-card.component';
 import { SeguridadService } from '../../core/services/seguridad.service';
 import { NotificationService } from '../../core/services/notification.service';
-import { Permiso } from '../../models/permisos.models';
-
-// TODO: BORRAR cuando el backend ya devuelva permisos reales.
-// Estos registros son solo para visualizar la interfaz mientras no haya datos.
-// Para eliminarlos:
-// 1. Borra la constante PERMISOS_ESTATICOS.
-// 2. En load(), quita la concatenación con PERMISOS_ESTATICOS.
-// 3. En onToggle() y onDelete(), quita las guardas que ignoran registros estáticos.
-const PERMISOS_ESTATICOS: Permiso[] = [
-    {
-        idPermiso: -1,
-        nombre: 'Crear Requerimientos',
-        descripcion: 'Permite crear requerimientos en el sistema.',
-        activo: true
-    },
-    {
-        idPermiso: -2,
-        nombre: 'Aprobar Órdenes de Compra',
-        descripcion: 'Permite aprobar órdenes de compra pendientes.',
-        activo: false
-    },
-    {
-        idPermiso: -3,
-        nombre: 'Administrar Usuarios',
-        descripcion: 'Permite crear, editar y desactivar usuarios.',
-        activo: true
-    }
-];
-
-function esPermisoEstatico(row: Permiso): boolean {
-    return row.idPermiso !== undefined && row.idPermiso < 0;
-}
+import { CreatePermisoRequest, Permiso, UpdatePermisoRequest } from '../../models/permisos.models';
 
 @Component({
     standalone: true,
@@ -52,7 +21,7 @@ export class PermisosPage implements OnInit {
     filtroActivo: boolean | null = null;
     msg = '';
     modalOpen = false;
-    form: Permiso = { idPermiso: undefined, nombre: '', descripcion: '', activo: true };
+    form: Permiso = { idPermiso: 0, codigo: '', nombre: '', descripcion: '', activo: true };
 
     constructor(
         private seguridad: SeguridadService,
@@ -65,18 +34,10 @@ export class PermisosPage implements OnInit {
     }
 
     load(): void {
-        this.cargando = false;
-
-        // TODO: descomentar el bloque de abajo cuando el backend ya tenga /api/seguridad/permisos.
-        // Por ahora usamos solo registros estáticos para visualizar la interfaz.
-        this.permisosListado = [...PERMISOS_ESTATICOS];
-        this.cdr.detectChanges();
-
-        /*
         this.cargando = true;
         this.seguridad.permisos(this.filtroActivo).subscribe({
-            next: (data) => {
-                this.permisosListado = data || [];
+            next: (res) => {
+                this.permisosListado = res?.permisos || [];
                 this.cargando = false;
                 this.cdr.detectChanges();
             },
@@ -87,7 +48,6 @@ export class PermisosPage implements OnInit {
                 console.error('Error cargando permisos:', e);
             }
         });
-        */
     }
 
     private normalizarBusqueda(valor: any): string {
@@ -122,6 +82,7 @@ export class PermisosPage implements OnInit {
     edit(row: Permiso): void {
         this.form = {
             idPermiso: row.idPermiso,
+            codigo: row.codigo ?? '',
             nombre: row.nombre ?? '',
             descripcion: row.descripcion ?? '',
             activo: row.activo ?? true
@@ -131,33 +92,56 @@ export class PermisosPage implements OnInit {
     }
 
     reset(): void {
-        this.form = { idPermiso: undefined, nombre: '', descripcion: '', activo: true };
+        this.form = { idPermiso: 0, codigo: '', nombre: '', descripcion: '', activo: true };
         this.msg = '';
     }
 
     save(): void {
-        const payload: Permiso = {
-            idPermiso: this.form.idPermiso,
-            nombre: (this.form.nombre ?? '').toString().trim(),
-            descripcion: (this.form.descripcion ?? '').toString().trim(),
-            activo: !!this.form.activo
-        };
+        const nombre = (this.form.nombre ?? '').toString().trim();
+        const descripcion = (this.form.descripcion ?? '').toString().trim();
+        const codigo = (this.form.codigo ?? '').toString().trim().toLowerCase();
 
-        if (!payload.nombre) {
+        if (!nombre) {
             this.msg = 'Debes ingresar el nombre de la acción.';
             this.notifyService.show(this.msg, 'error');
             return;
         }
 
-        this.seguridad.guardarPermiso(payload).subscribe({
+        if (!this.form.idPermiso && !codigo) {
+            this.msg = 'Debes ingresar el código de la acción.';
+            this.notifyService.show(this.msg, 'error');
+            return;
+        }
+
+        const esEdicion = !!this.form.idPermiso;
+
+        if (esEdicion) {
+            this.seguridad.actualizarPermiso(this.form.idPermiso, { nombre, descripcion }).subscribe({
+                next: () => {
+                    this.msg = 'Acción actualizada correctamente.';
+                    this.notifyService.show(this.msg, 'success');
+                    this.reset();
+                    this.cerrarModal();
+                    this.load();
+                },
+                error: (e: any) => {
+                    this.msg = e?.error?.message || 'No se pudo actualizar la acción.';
+                    this.notifyService.show(this.msg, 'error');
+                    this.cdr.detectChanges();
+                }
+            });
+            return;
+        }
+
+        this.seguridad.crearPermiso({ codigo: codigo.replace(/\s+/g, '.'), nombre, descripcion }).subscribe({
             next: () => {
-                this.msg = payload.idPermiso ? 'Acción actualizada correctamente.' : 'Acción guardada correctamente.';
+                this.msg = 'Acción guardada correctamente.';
                 this.notifyService.show(this.msg, 'success');
                 this.reset();
                 this.cerrarModal();
                 this.load();
             },
-            error: (e) => {
+            error: (e: any) => {
                 this.msg = e?.error?.message || 'No se pudo guardar la acción.';
                 this.notifyService.show(this.msg, 'error');
                 this.cdr.detectChanges();
@@ -166,37 +150,14 @@ export class PermisosPage implements OnInit {
     }
 
     onToggle(row: Permiso, activo: boolean): void {
-        // TODO: quitar esta guarda cuando se eliminen los permisos estáticos.
-        if (esPermisoEstatico(row)) {
-            row.activo = activo;
-            this.cdr.detectChanges();
-            return;
-        }
-
-        const payload = { ...row, activo };
-        this.seguridad.guardarPermiso(payload).subscribe({
-            next: () => {
-                row.activo = activo;
-                this.notifyService.show('Estado actualizado correctamente.', 'success');
-                this.cdr.detectChanges();
-            },
-            error: (e) => {
-                this.notifyService.show(e?.error?.message || 'No se pudo actualizar el estado.', 'error');
-                this.cdr.detectChanges();
-            }
-        });
+        // La API no expone endpoint para cambiar solo el estado; el controlador
+        // no permite editar activo. Se actualiza localmente hasta que exista endpoint.
+        row.activo = activo;
+        this.cdr.detectChanges();
     }
 
     onDelete(row: Permiso): void {
         if (!row.idPermiso) return;
-
-        // TODO: quitar esta guarda cuando se eliminen los permisos estáticos.
-        if (esPermisoEstatico(row)) {
-            this.permisosListado = this.permisosListado.filter((p) => p.idPermiso !== row.idPermiso);
-            this.notifyService.show('Registro de ejemplo eliminado.', 'success');
-            this.cdr.detectChanges();
-            return;
-        }
 
         if (!confirm('¿Estás seguro de eliminar esta acción?')) return;
 

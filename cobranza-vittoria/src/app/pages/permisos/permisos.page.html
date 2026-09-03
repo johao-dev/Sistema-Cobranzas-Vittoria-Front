@@ -20,8 +20,7 @@
         <button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">Nuevo</button>
     </div>
 
-    <!-- TODO: cuando se eliminen los registros estáticos, quitar *ngIf="rowsFiltradas.length" del primer div -->
-    <div class="permiso-list" *ngIf="rowsFiltradas.length">
+    <div class="permiso-list">
         <app-permiso-card *ngFor="let row of rowsFiltradas" [permiso]="row" (toggle)="onToggle(row, $event)"
             (edit)="edit(row)" (remove)="onDelete(row)"></app-permiso-card>
     </div>
@@ -40,19 +39,16 @@
 
     <div class="form-grid two">
         <div class="field" style="grid-column: 1 / -1;">
+            <label>Código</label>
+            <input [(ngModel)]="form.codigo" placeholder="Ej: inventario.crear" />
+        </div>
+        <div class="field" style="grid-column: 1 / -1;">
             <label>Nombre</label>
             <input [(ngModel)]="form.nombre" placeholder="Nombre de la acción" />
         </div>
         <div class="field" style="grid-column: 1 / -1;">
             <label>Descripción</label>
             <input [(ngModel)]="form.descripcion" placeholder="Descripción de la acción" />
-        </div>
-        <div class="field">
-            <label>Estado</label>
-            <select [(ngModel)]="form.activo">
-                <option [ngValue]="true">Activo</option>
-                <option [ngValue]="false">Inactivo</option>
-            </select>
         </div>
     </div>
 

@@ -1,21 +1,26 @@
 import { Injectable } from '@angular/core';
 import { ApiService } from './api.service';
-import { Permiso } from '../../models/permisos.models';
+import { CreatePermisoRequest, ListarPermisoResponse, Permiso, UpdatePermisoRequest } from '../../models/permisos.models';
 
 @Injectable({ providedIn: 'root' })
 export class SeguridadService {
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService) { }
 
-  // Permisos API endpoints
   permisos(activo?: boolean | null) {
     const qs = activo === undefined || activo === null ? '' : `?activo=${activo}`;
-    return this.api.http.get<Permiso[]>(`${this.api.baseUrl}/api/seguridad/permisos${qs}`);
+    return this.api.http.get<ListarPermisoResponse>(`${this.api.baseUrl}/api/seguridad/permisos${qs}`);
   }
 
-  guardarPermiso(dto: Permiso) {
-    return dto.idPermiso
-      ? this.api.http.put<Permiso>(`${this.api.baseUrl}/api/seguridad/permisos/${dto.idPermiso}`, dto)
-      : this.api.http.post<Permiso>(`${this.api.baseUrl}/api/seguridad/permisos`, dto);
+  permisoPorId(id: number) {
+    return this.api.http.get<Permiso>(`${this.api.baseUrl}/api/seguridad/permisos/${id}`);
+  }
+
+  crearPermiso(dto: CreatePermisoRequest) {
+    return this.api.http.post<Permiso>(`${this.api.baseUrl}/api/seguridad/permisos`, dto);
+  }
+
+  actualizarPermiso(id: number, dto: UpdatePermisoRequest) {
+    return this.api.http.put<void>(`${this.api.baseUrl}/api/seguridad/permisos/${id}`, dto);
   }
 
   eliminarPermiso(id: number) {
