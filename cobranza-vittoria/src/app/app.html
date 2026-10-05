@@ -69,6 +69,25 @@
         </div>
       </div>
 
+      <div class="nav-section nav-section--collapsible" *ngIf="canAccess(accessRules.controlPresupuestario)">
+        <button type="button" class="nav-toggle" (click)="toggleMenu('controlPresupuestario')"
+          [class.open]="isMenuOpen('controlPresupuestario')">
+          <span>Control Presupuestario</span><span class="nav-toggle__chev">⌄</span>
+        </button>
+        <div class="nav-panel" *ngIf="isMenuOpen('controlPresupuestario')">
+          <a *ngIf="canAccess(accessRules.controlPresupuestarioReportes)" routerLink="/control-presupuestario/panel" routerLinkActive="active"
+            (click)="closeMobileMenu()">Panel de control</a>
+          <a *ngIf="canAccess(accessRules.controlPresupuestarioPresupuestos)" routerLink="/control-presupuestario/presupuestos" routerLinkActive="active"
+            (click)="closeMobileMenu()">Presupuestos</a>
+          <a *ngIf="canAccess(accessRules.controlPresupuestarioCentrosCosto)"
+            routerLink="/control-presupuestario/centros-costo" routerLinkActive="active"
+            (click)="closeMobileMenu()">Centros de costo</a>
+          <a *ngIf="canAccess(accessRules.controlPresupuestarioPartidas)"
+            routerLink="/control-presupuestario/partidas" routerLinkActive="active"
+            (click)="closeMobileMenu()">Catálogo de partidas</a>
+        </div>
+      </div>
+
       <div class="nav-section nav-section--collapsible">
         <button type="button" class="nav-toggle" (click)="toggleMenu('mantenimiento')"
           [class.open]="isMenuOpen('mantenimiento')">

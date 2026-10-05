@@ -415,3 +415,18 @@
         grid-template-columns: 1fr !important
     }
 }
+/* Confirmación de aceptar compra */
+.aceptar-backdrop {
+  z-index: 92;
+}
+
+.aceptar-card {
+  z-index: 93;
+  max-width: 520px;
+}
+
+.aceptar-nota {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #374151;
+}

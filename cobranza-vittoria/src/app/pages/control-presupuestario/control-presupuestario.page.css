@@ -1,0 +1,179 @@
+.panel-title-row {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.maintenance-search {
+  flex: 1 1 220px;
+  min-width: 200px;
+  margin: 0;
+}
+
+.field--check label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  margin-top: 18px;
+}
+
+.field--check input {
+  width: auto;
+}
+
+/* Tarjetas de indicadores */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.kpi-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.kpi-card--danger {
+  border-color: #f0b4b4;
+  background: #fff7f7;
+}
+
+.kpi-card__label {
+  font-size: 11px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.kpi-card__value {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.kpi-card--danger .kpi-card__value {
+  color: #9b1c1c;
+}
+
+/* Pestañas de reporte */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tab {
+  border: none;
+  background: transparent;
+  padding: 8px 14px;
+  font-size: 13px;
+  color: #4b5563;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.tab:hover {
+  color: #1f2937;
+}
+
+.tab--active {
+  color: #1f3864;
+  font-weight: 600;
+  border-bottom-color: #1f3864;
+}
+
+/* Barra de avance */
+.barra-col {
+  min-width: 140px;
+  white-space: nowrap;
+}
+
+.barra {
+  display: inline-block;
+  vertical-align: middle;
+  width: 88px;
+  height: 8px;
+  border-radius: 999px;
+  background: #eceff3;
+  overflow: hidden;
+}
+
+.barra__fill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.barra__fill--ok {
+  background: #1e6b34;
+}
+
+.barra__fill--warn {
+  background: #b26b00;
+}
+
+.barra__fill--danger {
+  background: #b00020;
+}
+
+.barra__label {
+  margin-left: 8px;
+  font-size: 11px;
+  color: #4b5563;
+}
+
+.num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.num--danger {
+  color: #9b1c1c;
+  font-weight: 600;
+}
+
+.row--excedido td {
+  background: #fff7f7;
+}
+
+.modal-nota {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.design-modal-card--wide {
+  max-width: 960px;
+  width: 92vw;
+}
+
+.toolbar--compact {
+  margin-top: 16px;
+  gap: 8px;
+}
+
+@media (max-width: 720px) {
+  .panel-title-row {
+    align-items: stretch;
+  }
+
+  .maintenance-search {
+    flex-basis: 100%;
+  }
+
+  .field--check label {
+    margin-top: 0;
+  }
+}
+
+.tablero-invitacion {
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #52514e;
+  text-align: center;
+}

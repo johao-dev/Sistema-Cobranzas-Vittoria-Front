@@ -1,0 +1,280 @@
+<div class="tablero" [class.tablero--cargando]="cargando">
+  <div *ngIf="error" class="tablero-aviso tablero-aviso--error" role="alert">{{ error }}</div>
+  <div *ngIf="!datos && cargando" class="empty-state">Cargando dashboard...</div>
+
+  <ng-container *ngIf="datos">
+    <!-- 1. Distribución del gasto por rubro -->
+    <section class="panel tablero-card">
+      <header class="tablero-card__header">
+        <h2 class="tablero-card__titulo">Distribución del gasto por {{ etiquetaAgrupacion }}</h2>
+        <p class="tablero-card__sub">
+          {{ datos.encabezado.nombreProyecto ? 'Proyecto: ' + datos.encabezado.nombreProyecto
+            : datos.encabezado.codigoCentroCosto + ' — ' + datos.encabezado.nombreCentroCosto }}
+          <span class="sep">|</span> Corte: {{ datos.encabezado.fechaCorte | date:'dd/MM/yyyy' }}
+        </p>
+      </header>
+
+      <nav class="tablero-ruta" aria-label="Rama del tablero" *ngIf="rama.length">
+        <button type="button" class="tablero-ruta__item" (click)="irARama(null)">Todo</button>
+        <ng-container *ngFor="let n of rama; let ultimo = last">
+          <span class="tablero-ruta__sep" aria-hidden="true">›</span>
+          <button type="button" class="tablero-ruta__item" [class.tablero-ruta__item--actual]="ultimo"
+            [attr.aria-current]="ultimo ? 'location' : null" (click)="irARama(n.idCatalogoPartida)">
+            {{ n.codigo }} {{ n.nombre }}</button>
+        </ng-container>
+      </nav>
+      <p class="tablero-ayuda" *ngIf="hayNavegables">
+        Haz clic en una categoría para ver cómo se reparte su gasto.
+      </p>
+
+      <div *ngIf="!segmentos.length" class="empty-state">Aún no hay gasto ejecutado en {{ rama.length ? 'esta rama' : 'este centro de costo' }}.</div>
+
+      <div *ngIf="segmentos.length" class="distribucion">
+        <div class="dona">
+          <svg viewBox="0 0 200 200" role="img"
+            [attr.aria-label]="'Distribución del gasto total de ' + simbolo + ' ' + (datos.resumen.ejecutado | number:'1.0-0') + ' por rubro'">
+            <path *ngFor="let s of segmentos" class="dona__segmento" [attr.d]="s.path" [attr.fill]="s.color"
+              [class.dona__segmento--activo]="segmentoActivo === s"
+              [class.dona__segmento--navegable]="puedeBajar(s.rubro)"
+              (pointerenter)="segmentoActivo = s" (pointerleave)="segmentoActivo = null"
+              (focus)="segmentoActivo = s" (blur)="segmentoActivo = null" tabindex="0"
+              (click)="bajarA(s.rubro)" (keydown.enter)="bajarA(s.rubro)"
+              [attr.aria-label]="s.nombre + ': ' + simbolo + ' ' + (s.monto | number:'1.0-0') + ', ' + (s.porcentaje | number:'1.0-0') + '%'">
+            </path>
+          </svg>
+          <div class="dona__centro" aria-hidden="true">
+            <ng-container *ngIf="!segmentoActivo">
+              <span class="dona__label">Gasto total</span>
+              <strong class="dona__valor">{{ simbolo }} {{ datos.resumen.ejecutado | number:'1.0-0' }}</strong>
+            </ng-container>
+            <ng-container *ngIf="segmentoActivo">
+              <span class="dona__label">{{ segmentoActivo.nombre }}</span>
+              <strong class="dona__valor">{{ simbolo }} {{ segmentoActivo.monto | number:'1.0-0' }}</strong>
+              <span class="dona__pct">{{ segmentoActivo.porcentaje | number:'1.0-1' }}%</span>
+            </ng-container>
+          </div>
+        </div>
+
+        <div class="table-wrap distribucion__tabla">
+          <table>
+            <thead>
+              <tr>
+                <th>{{ datos.encabezado.nivel ? 'Categoría' : 'Partida' }}</th>
+                <th class="num">Gasto ({{ simbolo }})</th>
+                <th class="num">% del total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of rubrosConGasto; let i = index" [class.fila-navegable]="puedeBajar(r)"
+                (click)="bajarA(r)">
+                <td>
+                  <span class="swatch" [style.background]="colorRubro(i)" aria-hidden="true"></span>
+                  <button *ngIf="puedeBajar(r)" type="button" class="rubro-enlace"
+                    (click)="$event.stopPropagation(); bajarA(r)">{{ nombreRubro(r) }}</button>
+                  <ng-container *ngIf="!puedeBajar(r)">{{ nombreRubro(r) }}</ng-container>
+                  <small *ngIf="i >= 5" class="otros-tag">(en "Otros")</small>
+                </td>
+                <td class="num">{{ r.ejecutado | number:'1.0-0' }}</td>
+                <td class="num">{{ r.porcentajeDelTotal | number:'1.0-1' }}%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <aside class="resumen">
+          <div class="resumen__titulo">Resumen</div>
+          <div class="resumen__fila">
+            <span>Presupuesto vigente</span>
+            <strong>{{ simbolo }} {{ datos.resumen.presupuestado | number:'1.0-0' }}</strong>
+          </div>
+          <div class="resumen__fila">
+            <span>Gasto real (ejecutado)</span>
+            <strong>{{ simbolo }} {{ datos.resumen.ejecutado | number:'1.0-0' }}</strong>
+          </div>
+          <div class="resumen__fila">
+            <span>Avance del gasto</span>
+            <strong>{{ datos.resumen.porcentajeEjecutado ?? 0 | number:'1.1-1' }}%</strong>
+          </div>
+          <div class="resumen__fila">
+            <span>Desviación</span>
+            <strong [class.txt-malo]="datos.resumen.desviacion > 0" [class.txt-bueno]="datos.resumen.desviacion <= 0">
+              {{ datos.resumen.desviacion > 0 ? '▲' : '▼' }} {{ simbolo }} {{ abs(datos.resumen.desviacion) | number:'1.0-0' }}
+            </strong>
+            <small>{{ datos.resumen.desviacion > 0 ? 'Sobre el presupuesto' : 'Por debajo del presupuesto' }}
+              ({{ abs(datos.resumen.desviacionPorcentaje ?? 0) | number:'1.1-1' }}%)</small>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- 2. Evolución del gasto: real vs presupuesto -->
+    <section class="panel tablero-card">
+      <header class="tablero-card__header">
+        <h2 class="tablero-card__titulo">Evolución del gasto: real vs presupuesto</h2>
+        <p class="tablero-card__sub">Acumulado semanal en {{ datos.encabezado.codigoMoneda }}</p>
+      </header>
+
+      <div *ngIf="!datos.encabezado.tieneCronograma" class="tablero-aviso">
+        Registra las fechas de inicio y fin del presupuesto para ver la curva planificada y la desviación a la
+        fecha. Mientras tanto, la línea punteada marca el presupuesto total como referencia.
+      </div>
+
+      <div class="evolucion">
+        <div class="evolucion__grafico">
+          <div class="leyenda" aria-hidden="true">
+            <span class="leyenda__item"><span class="linea-key linea-key--real"></span>Gasto real acumulado</span>
+            <span class="leyenda__item" *ngIf="datos.encabezado.tieneCronograma">
+              <span class="linea-key linea-key--plan"></span>Presupuesto acumulado
+            </span>
+            <span class="leyenda__item" *ngIf="referenciaTotal">
+              <span class="linea-key linea-key--plan"></span>Presupuesto total
+            </span>
+            <span class="leyenda__item" *ngIf="hayExceso">
+              <span class="area-key"></span>Real por encima del presupuesto
+            </span>
+          </div>
+
+          <div class="lineas">
+            <svg #svg [attr.viewBox]="'0 0 ' + ancho + ' ' + alto" role="img"
+              aria-label="Gasto real acumulado frente al presupuesto acumulado por semana"
+              (pointermove)="onMoverPuntero($event, svg)" (pointerleave)="onSalirPuntero()">
+              <defs>
+                <clipPath id="sobre-plan"><polygon [attr.points]="areaSobrePlan"></polygon></clipPath>
+              </defs>
+              <!-- Grilla y ejes -->
+              <g class="grilla">
+                <line *ngFor="let t of ticksY" [attr.x1]="margen.izquierda" [attr.x2]="ancho - margen.derecha"
+                  [attr.y1]="t.y" [attr.y2]="t.y"></line>
+              </g>
+              <g class="eje-texto">
+                <text *ngFor="let t of ticksY" [attr.x]="margen.izquierda - 8" [attr.y]="t.y + 4" text-anchor="end">
+                  {{ formatoCompacto(t.valor) }}
+                </text>
+                <text *ngFor="let t of ticksX" [attr.x]="t.x" [attr.y]="alto - margen.abajo + 18" text-anchor="middle">
+                  {{ t.semana }}
+                </text>
+                <text [attr.x]="margen.izquierda + (ancho - margen.izquierda - margen.derecha) / 2" [attr.y]="alto - 2"
+                  text-anchor="middle" class="eje-titulo">Semana</text>
+              </g>
+              <!-- Desviación: franja entre curvas donde el real supera al presupuesto -->
+              <polygon *ngIf="hayExceso" class="area-desviacion" [attr.points]="areaEntreCurvas"
+                clip-path="url(#sobre-plan)"></polygon>
+              <path *ngIf="rutaPlan" class="linea-plan" [attr.d]="rutaPlan"></path>
+              <g *ngIf="referenciaTotal">
+                <line class="linea-plan" [attr.x1]="margen.izquierda" [attr.x2]="ancho - margen.derecha"
+                  [attr.y1]="referenciaTotal.y" [attr.y2]="referenciaTotal.y"></line>
+                <text class="referencia-texto" [attr.x]="ancho - margen.derecha - 4" [attr.y]="referenciaTotal.y - 6"
+                  text-anchor="end">Presupuesto total · {{ simbolo }} {{ formatoCompacto(referenciaTotal.valor) }}</text>
+              </g>
+              <path *ngIf="rutaReal" class="linea-real" [attr.d]="rutaReal"></path>
+              <circle *ngIf="puntoFinReal" class="punto-fin" [attr.cx]="puntoFinReal.x" [attr.cy]="puntoFinReal.y" r="5"></circle>
+              <!-- Crosshair -->
+              <line *ngIf="hover" class="crosshair" [attr.x1]="hover.x" [attr.x2]="hover.x"
+                [attr.y1]="margen.arriba" [attr.y2]="alto - margen.abajo"></line>
+            </svg>
+
+            <div *ngIf="hover" class="tooltip" [class.tooltip--izquierda]="hover.izquierda"
+              [style.left.%]="porcentajeX(hover.x)">
+              <div class="tooltip__titulo">Semana {{ hover.punto.semana | number:'1.0-1' }} ·
+                {{ hover.punto.fecha | date:'dd/MM/yyyy' }}</div>
+              <div class="tooltip__fila" *ngIf="hover.punto.realAcumulado !== null">
+                <span class="linea-key linea-key--real"></span>
+                <strong>{{ simbolo }} {{ hover.punto.realAcumulado | number:'1.0-0' }}</strong><span>Real</span>
+              </div>
+              <div class="tooltip__fila" *ngIf="hover.punto.presupuestoAcumulado !== null">
+                <span class="linea-key linea-key--plan"></span>
+                <strong>{{ simbolo }} {{ hover.punto.presupuestoAcumulado | number:'1.0-0' }}</strong><span>Presupuesto</span>
+              </div>
+              <div class="tooltip__fila" *ngIf="desviacionDe(hover.punto) !== null">
+                <strong>{{ desviacionDe(hover.punto)! > 0 ? '+' : '' }}{{ desviacionDe(hover.punto) | number:'1.0-0' }}</strong>
+                <span>Desviación</span>
+              </div>
+            </div>
+          </div>
+
+          <button type="button" class="btn btn-ghost btn-sm" (click)="verTablaSemanal = !verTablaSemanal">
+            {{ verTablaSemanal ? 'Ocultar tabla' : 'Ver datos en tabla' }}
+          </button>
+          <div *ngIf="verTablaSemanal" class="table-wrap tabla-semanal">
+            <table>
+              <thead>
+                <tr>
+                  <th class="num">Semana</th>
+                  <th>Fecha</th>
+                  <th class="num">Real acumulado</th>
+                  <th class="num">Presupuesto acumulado</th>
+                  <th class="num">Desviación</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of datos.semanas">
+                  <td class="num">{{ s.semana | number:'1.0-1' }}</td>
+                  <td>{{ s.fecha | date:'dd/MM/yyyy' }}</td>
+                  <td class="num">{{ s.realAcumulado === null ? '—' : (s.realAcumulado | number:'1.0-0') }}</td>
+                  <td class="num">{{ s.presupuestoAcumulado === null ? '—' : (s.presupuestoAcumulado | number:'1.0-0') }}</td>
+                  <td class="num">{{ desviacionDe(s) === null ? '—' : (desviacionDe(s) | number:'1.0-0') }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <aside class="evolucion__lateral">
+          <div class="resumen">
+            <div class="resumen__titulo">Resumen a la fecha</div>
+            <div class="resumen__fila" *ngIf="datos.alCorte.presupuestoAcumulado !== null">
+              <span>Presupuesto (acumulado)</span>
+              <strong>{{ simbolo }} {{ datos.alCorte.presupuestoAcumulado | number:'1.0-0' }}</strong>
+            </div>
+            <div class="resumen__fila">
+              <span>Gasto real (acumulado)</span>
+              <strong>{{ simbolo }} {{ datos.alCorte.realAcumulado | number:'1.0-0' }}</strong>
+            </div>
+            <div class="resumen__fila" *ngIf="datos.alCorte.desviacion !== null">
+              <span>Desviación</span>
+              <strong [class.txt-malo]="datos.alCorte.desviacion > 0" [class.txt-bueno]="datos.alCorte.desviacion <= 0">
+                {{ datos.alCorte.desviacion > 0 ? '▲' : '▼' }} {{ simbolo }} {{ abs(datos.alCorte.desviacion) | number:'1.0-0' }}
+                ({{ abs(datos.alCorte.desviacionPorcentaje ?? 0) | number:'1.1-1' }}%)
+              </strong>
+              <small>{{ datos.alCorte.desviacion > 0 ? 'Gasto adelantado al plan' : 'Gasto por debajo del plan' }}</small>
+            </div>
+          </div>
+
+          <div class="resumen" *ngIf="datos.desviacionPorRubro.length">
+            <div class="resumen__titulo">Desviación por rubro (acumulado)</div>
+            <table class="tabla-desviacion">
+              <thead>
+                <tr>
+                  <th>{{ datos.encabezado.nivel ? 'Categoría' : 'Partida' }}</th>
+                  <th class="num">Desviación</th>
+                  <th class="num">%</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let r of topDesviaciones">
+                  <td [title]="r.codigo">{{ nombreRubro(r) }}</td>
+                  <td class="num" [class.txt-malo]="r.desviacion > 0">{{ r.desviacion > 0 ? '+' : '' }}{{ r.desviacion | number:'1.0-0' }}</td>
+                  <td class="num" [class.txt-malo]="r.desviacion > 0">
+                    {{ r.desviacionPorcentaje === null ? '—' : ((r.desviacionPorcentaje > 0 ? '+' : '') + (r.desviacionPorcentaje | number:'1.1-1') + '%') }}
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th>Total</th>
+                  <th class="num">{{ totalDesviacionRubros > 0 ? '+' : '' }}{{ totalDesviacionRubros | number:'1.0-0' }}</th>
+                  <th></th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </aside>
+      </div>
+
+      <p class="nota">
+        Presupuesto acumulado: el presupuesto vigente repartido en forma pareja entre la fecha de inicio y fin
+        del presupuesto. Gasto real: compras aceptadas y gastos directos confirmados, con sus ajustes.
+      </p>
+    </section>
+  </ng-container>
+</div>

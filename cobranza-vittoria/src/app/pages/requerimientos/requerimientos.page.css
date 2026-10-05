@@ -392,3 +392,38 @@
     width: 100% !important;
   }
 }
+
+/* Imputación presupuestal por línea */
+.alerta-presupuesto {
+  margin: 12px 0;
+  padding: 10px 14px;
+  border-left: 4px solid #b26b00;
+  background: #fff8ec;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #6b4b00;
+}
+
+.saldo-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #1e6b34;
+  line-height: 1.4;
+}
+
+.saldo-hint--danger {
+  color: #9b1c1c;
+  font-weight: 600;
+}
+
+.partida-aviso {
+  display: block;
+  margin-top: 6px;
+  padding: 6px 8px;
+  border-left: 3px solid #b26b00;
+  background: #fff8ec;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #6b4b00;
+}

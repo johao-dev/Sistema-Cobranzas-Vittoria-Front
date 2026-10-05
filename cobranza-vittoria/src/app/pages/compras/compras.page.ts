@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ComprasService } from '../../core/services/compras.service';
 import { MaestraService } from '../../core/services/maestra.service';
+import { AuthService } from '../../core/services/auth.service';
+import { NotificationService } from '../../core/services/notification.service';
 
 type PrecioItem = {
   idMaterial: number;
@@ -59,7 +61,79 @@ export class ComprasPage implements OnInit {
   modalIndex = -1;
   modalItem: PrecioItem | null = null;
 
-  constructor(private compras: ComprasService, private maestra: MaestraService, private cdr: ChangeDetectorRef) { }
+  /** Compra REGISTRADA a la espera de aceptación; la aceptación ejecuta el gasto en el presupuesto. */
+  compraPorAceptar: { row: any; observacion: string } | null = null;
+  aceptandoCompra = false;
+
+  constructor(
+    private compras: ComprasService,
+    private maestra: MaestraService,
+    private auth: AuthService,
+    private notifications: NotificationService,
+    private cdr: ChangeDetectorRef
+  ) { }
+
+  // ------------------------------------------------------------ aceptar compra
+
+  estadoCompra(row: any): string {
+    return String(row?.estado ?? row?.Estado ?? '').trim().toUpperCase();
+  }
+
+  esAceptable(row: any): boolean {
+    const aceptada = row?.aceptada ?? row?.Aceptada;
+    return this.estadoCompra(row) === 'REGISTRADA' && !aceptada;
+  }
+
+  montoCompra(row: any): number {
+    return Number(row?.montoTotal ?? row?.MontoTotal ?? row?.total ?? row?.Total ?? 0);
+  }
+
+  simboloCompra(row: any): string {
+    return row?.simboloMoneda ?? row?.SimboloMoneda ?? row?.codigoMoneda ?? row?.CodigoMoneda ?? '';
+  }
+
+  pedirAceptarCompra(row: any): void {
+    if (!this.esAceptable(row)) return;
+    this.compraPorAceptar = { row, observacion: '' };
+    this.cdr.detectChanges();
+  }
+
+  cerrarAceptarCompra(): void {
+    if (this.aceptandoCompra) return;
+    this.compraPorAceptar = null;
+    this.cdr.detectChanges();
+  }
+
+  confirmarAceptarCompra(): void {
+    if (!this.compraPorAceptar || this.aceptandoCompra) return;
+    const { row, observacion } = this.compraPorAceptar;
+    const idCompra = Number(row?.idCompra ?? row?.IdCompra ?? 0);
+    const idUsuario = Number(this.auth.session?.idUsuario ?? 0);
+    if (!idCompra) return;
+    if (!idUsuario) {
+      this.notifications.show('No se pudo identificar al usuario de la sesión. Vuelve a iniciar sesión.', 'error');
+      return;
+    }
+
+    this.aceptandoCompra = true;
+    this.compras.aceptarCompra(idCompra, { idUsuario, observacion: observacion.trim() || null }).subscribe({
+      next: () => {
+        this.aceptandoCompra = false;
+        this.compraPorAceptar = null;
+        this.notifications.show(
+          `Compra ${row.numeroCompra ?? row.NumeroCompra ?? ''} aceptada: el gasto quedó ejecutado en el presupuesto.`, 'success');
+        this.load();
+      },
+      error: (e: any) => {
+        this.aceptandoCompra = false;
+        const mensaje = e?.status === 403
+          ? 'No tienes permiso para aceptar compras.'
+          : e?.error?.message || 'No se pudo aceptar la compra.';
+        this.notifications.show(mensaje, 'error');
+        this.cdr.detectChanges();
+      }
+    });
+  }
 
   onAccionPendiente(event: Event, row: any): void {
     const value = (event.target as HTMLSelectElement).value;

@@ -5,6 +5,16 @@ import { ComprasService } from '../../core/services/compras.service';
 import { MaestraService } from '../../core/services/maestra.service';
 import { SeguridadService } from '../../core/services/seguridad.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { AuthService } from '../../core/services/auth.service';
+
+type EstadoOcDestino = 'APROBADA' | 'ANULADA' | 'CERRADA';
+
+/** Transiciones que acepta el backend; el resto responde 409 TRANSICION_OC_INVALIDA. */
+const TRANSICIONES_OC: Record<string, EstadoOcDestino[]> = {
+  REGISTRADA: ['APROBADA', 'ANULADA'],
+  APROBADA: ['ANULADA'],
+  ATENDIDA: ['CERRADA']
+};
 
 @Component({
   standalone: true,
@@ -28,6 +38,10 @@ export class OrdenesCompraPage implements OnInit {
   proveedorForm: any = this.createEmptyProveedorForm();
   filtroProveedorDetalle = 'TODOS';
 
+  readonly etiquetaAccion: Record<EstadoOcDestino, string> = { APROBADA: 'Aprobar', ANULADA: 'Anular', CERRADA: 'Cerrar' };
+  cambioEstado: { oc: any; estadoNuevo: EstadoOcDestino; observacion: string } | null = null;
+  cambiandoEstado = false;
+
   form: any = {
     numeroOrdenCompra: '',
     idRequerimiento: null,
@@ -47,8 +61,108 @@ export class OrdenesCompraPage implements OnInit {
     private maestra: MaestraService,
     private seguridad: SeguridadService,
     private notifyService: NotificationService,
+    private auth: AuthService,
     private cdr: ChangeDetectorRef
   ) { }
+
+  // ----------------------------------------------------------------- precios
+
+  precioItem(item: any): number {
+    const precio = Number(item?.precioUnitario);
+    return isNaN(precio) || precio < 0 ? 0 : Math.round(precio * 100) / 100;
+  }
+
+  subtotalItem(item: any): number {
+    return Math.round(this.precioItem(item) * Number(item?.cantidad || 0) * 100) / 100;
+  }
+
+  get totalFormulario(): number {
+    return (this.form.items || []).reduce((acc: number, x: any) => acc + this.subtotalItem(x), 0);
+  }
+
+  /** Una OC sin precios tiene total 0: el precio se define en la Compra. */
+  textoTotalOc(oc: any): string {
+    const total = Number(oc?.total ?? oc?.Total ?? 0);
+    if (!(total > 0)) return 'Sin precio (se define en la Compra)';
+    const simbolo = oc?.simboloMoneda ?? oc?.SimboloMoneda ?? oc?.codigoMoneda ?? oc?.CodigoMoneda ?? '';
+    return `${simbolo} ${total.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`.trim();
+  }
+
+  // -------------------------------------------------------- estado de la O.C.
+
+  estadoOc(oc: any): string {
+    return String(oc?.estado ?? oc?.Estado ?? '').trim().toUpperCase();
+  }
+
+  accionesEstado(oc: any): EstadoOcDestino[] {
+    return TRANSICIONES_OC[this.estadoOc(oc)] ?? [];
+  }
+
+  pedirCambioEstado(oc: any, estadoNuevo: EstadoOcDestino): void {
+    if (!this.accionesEstado(oc).includes(estadoNuevo)) return;
+    this.cambioEstado = { oc, estadoNuevo, observacion: '' };
+    this.cdr.detectChanges();
+  }
+
+  cerrarCambioEstado(): void {
+    if (this.cambiandoEstado) return;
+    this.cambioEstado = null;
+    this.cdr.detectChanges();
+  }
+
+  /** Aprobar y anular mueven el compromiso presupuestal; se avisa antes de confirmar. */
+  get notaCambioEstado(): string {
+    if (!this.cambioEstado) return '';
+    const { oc, estadoNuevo } = this.cambioEstado;
+    if (estadoNuevo === 'APROBADA') {
+      return 'Al aprobarla, el monto de la O.C. queda comprometido en el presupuesto de sus partidas. '
+        + 'Si la O.C. no tiene precios no se compromete nada: el gasto se ejecuta al aceptar la Compra.';
+    }
+    if (estadoNuevo === 'ANULADA') {
+      return this.estadoOc(oc) === 'APROBADA'
+        ? 'Al anularla se libera el monto que tenía comprometido en el presupuesto. La O.C. anulada no se puede reactivar.'
+        : 'La O.C. anulada no se puede reactivar. Como no está aprobada, no afecta el presupuesto.';
+    }
+    return 'La O.C. quedará cerrada y ya no admitirá cambios.';
+  }
+
+  confirmarCambioEstado(): void {
+    if (!this.cambioEstado || this.cambiandoEstado) return;
+    const { oc, estadoNuevo, observacion } = this.cambioEstado;
+    const idOrdenCompra = Number(oc?.idOrdenCompra ?? oc?.IdOrdenCompra ?? 0);
+    const idUsuario = Number(this.auth.session?.idUsuario ?? 0);
+    if (!idOrdenCompra) return;
+    if (!idUsuario) {
+      this.notifyService.show('No se pudo identificar al usuario de la sesión. Vuelve a iniciar sesión.', 'error');
+      return;
+    }
+
+    this.cambiandoEstado = true;
+    this.compras.actualizarEstadoOrden(idOrdenCompra, {
+      estadoNuevo,
+      idUsuario,
+      observacion: observacion.trim() || null
+    }).subscribe({
+      next: () => {
+        this.cambiandoEstado = false;
+        this.cambioEstado = null;
+        const accion = estadoNuevo === 'APROBADA' ? 'aprobada' : estadoNuevo === 'ANULADA' ? 'anulada' : 'cerrada';
+        this.notifyService.show(`O.C. ${oc.numeroOrdenCompra ?? ''} ${accion} correctamente.`, 'success');
+        if (this.detalleModalOpen && Number(this.detalleOc?.ordenCompra?.idOrdenCompra) === idOrdenCompra) {
+          this.verOc({ idOrdenCompra });
+        }
+        this.load();
+      },
+      error: (e: any) => {
+        this.cambiandoEstado = false;
+        const mensaje = e?.status === 403
+          ? 'No tienes permiso para cambiar el estado de las órdenes de compra.'
+          : e?.error?.message || 'No se pudo cambiar el estado de la O.C.';
+        this.notifyService.show(mensaje, 'error');
+        this.cdr.detectChanges();
+      }
+    });
+  }
 
   onAccionRq(event: Event, row: any): void {
     const value = (event.target as HTMLSelectElement).value;
@@ -62,6 +176,7 @@ export class OrdenesCompraPage implements OnInit {
     const value = (event.target as HTMLSelectElement).value;
     (event.target as HTMLSelectElement).value = '';
     if (value === 'detalle') this.verOc(row);
+    if (value === 'APROBADA' || value === 'ANULADA' || value === 'CERRADA') this.pedirCambioEstado(row, value);
     if (value === 'pdf') this.exportarPdfOrden(row);
     if (value === 'excel') this.exportarExcelOrden(row);
   }
@@ -208,7 +323,7 @@ export class OrdenesCompraPage implements OnInit {
           unidadMedida: it.unidadMedida,
           cantidad: Number(it.cantidad),
           idProveedor: null,
-          precioUnitario: 0
+          precioUnitario: null
         }));
 
         this.msg = 'RQ cargado para continuar flujo de O.C.';
@@ -311,9 +426,15 @@ export class OrdenesCompraPage implements OnInit {
         idMaterial: Number(x.idMaterial),
         cantidad: Number(x.cantidad),
         idProveedor: Number(x.idProveedor || 0),
-        precioUnitario: 0
+        // Opcional: 0 = sin precio. Con precio, al aprobar la OC el monto queda comprometido.
+        precioUnitario: this.precioItem(x)
       }))
     };
+
+    if ((this.form.items || []).some((x: any) => Number(x.precioUnitario) < 0)) {
+      this.msg = 'El precio unitario no puede ser negativo.';
+      return;
+    }
 
     if (!dto.idRequerimiento) { this.msg = 'Debes seleccionar un RQ enviado a O.C.'; return; }
     if (!dto.idProyecto) { this.msg = 'Debes seleccionar proyecto.'; return; }

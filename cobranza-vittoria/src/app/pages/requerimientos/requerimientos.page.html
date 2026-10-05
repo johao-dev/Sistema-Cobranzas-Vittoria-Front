@@ -115,6 +115,7 @@
           <tr>
             <th>Especialidad</th>
             <th>Material</th>
+            <th>Partida presupuestal</th>
             <th>Unidad</th>
             <th>Cantidad</th>
             <th>Observación</th>
@@ -124,6 +125,10 @@
           <tr *ngFor="let x of detalle.items">
             <td>{{ x.especialidad || '-' }}</td>
             <td>{{ x.material }}</td>
+            <td>
+              <span class="badge" [class.badge--ok]="x.idPresupuestoDetalle"
+                [class.badge--neutral]="!x.idPresupuestoDetalle">{{ etiquetaPartida(x) }}</span>
+            </td>
             <td>{{ x.unidadMedida || x.unidad || '-' }}</td>
             <td>{{ x.cantidad }}</td>
             <td>{{ x.observacion || '-' }}</td>
@@ -200,7 +205,7 @@
     </div>
     <div class="field">
       <label>Proyecto</label>
-      <select [(ngModel)]="form.idProyecto" [disabled]="edicionSoloCantidadesAlmacen">
+      <select [(ngModel)]="form.idProyecto" [disabled]="edicionSoloCantidadesAlmacen" (change)="onProyectoChange()">
         <option [ngValue]="null">Seleccionar</option>
         <option *ngFor="let p of proyectos" [ngValue]="p.idProyecto">{{ p.nombreProyecto }}</option>
       </select>
@@ -228,6 +233,11 @@
       <button class="btn btn-secondary" type="button" (click)="abrirModalEspecialidades()" *ngIf="!edicionSoloCantidadesAlmacen">+ Agregar ítem</button>
     </div>
 
+    <div class="alerta-presupuesto" *ngIf="proyectoSinCentroCosto">
+      Este proyecto no tiene centro de costo asociado, por lo que no hay partidas disponibles. El requerimiento se
+      puede registrar, pero no quedará imputado al presupuesto.
+    </div>
+
     <div *ngIf="form.items.length" class="resumen-especialidades">
       <label>Especialidades del requerimiento</label>
       <div>
@@ -241,6 +251,7 @@
           <tr>
             <th>Especialidad</th>
             <th>Material</th>
+            <th>Partida presupuestal</th>
             <th>Unidad</th>
             <th>Cantidad</th>
             <th>Observación</th>
@@ -251,6 +262,10 @@
           <tr *ngFor="let x of form.items; index as i">
             <td>{{ x.especialidad || '-' }}</td>
             <td>{{ x.material }}</td>
+            <td>
+              <span class="badge" [class.badge--ok]="x.idPresupuestoDetalle"
+                [class.badge--neutral]="!x.idPresupuestoDetalle">{{ etiquetaPartida(x) }}</span>
+            </td>
             <td>{{ x.unidadMedida || x.unidad || '-' }}</td>
             <td>
               <input *ngIf="edicionSoloCantidadesAlmacen" type="number" min="0.01" step="0.01" [(ngModel)]="x.cantidad" />
@@ -312,12 +327,34 @@
           <button class="btn btn-secondary btn-xs" type="button" (click)="abrirFormNuevoMaterial()">+ Agregar
             material</button>
         </div>
-        <select [(ngModel)]="modalItem.idMaterial" [disabled]="!modalItem.idEspecialidad">
+        <select [(ngModel)]="modalItem.idMaterial" (ngModelChange)="onModalMaterialChange()"
+          [disabled]="!modalItem.idEspecialidad">
           <option [ngValue]="null">{{ modalItem.idEspecialidad ? 'Seleccionar' : 'Selecciona una especialidad primero'
             }}</option>
           <option *ngFor="let m of materialesFiltradosModal" [ngValue]="getIdMaterial(m)">{{ getDescripcionMaterial(m)
             }} — {{ getUnidadMaterial(m) }}</option>
         </select>
+      </div>
+
+      <div class="field">
+        <label>Partida presupuestal</label>
+        <select [(ngModel)]="modalItem.idPresupuestoDetalle" [disabled]="!partidasPresupuesto.length">
+          <option [ngValue]="null">{{ cargandoPartidas ? 'Cargando partidas…'
+            : (partidasPresupuesto.length ? 'Sin imputar' : 'No hay presupuesto aprobado para este proyecto') }}
+          </option>
+          <option *ngFor="let p of partidasPresupuesto" [ngValue]="p.idPresupuestoDetalle">
+            {{ p.codigoPartida }} — {{ p.partida }}
+          </option>
+        </select>
+        <small class="saldo-hint" *ngIf="partidaSeleccionadaModal"
+          [class.saldo-hint--danger]="partidaSeleccionadaModal.saldoDisponible <= 0">
+          Saldo disponible: {{ partidaSeleccionadaModal.simboloMoneda }}
+          {{ partidaSeleccionadaModal.saldoDisponible | number:'1.2-2' }}
+          · Presupuestado {{ partidaSeleccionadaModal.montoPresupuestado | number:'1.2-2' }}
+          · Comprometido {{ partidaSeleccionadaModal.comprometido | number:'1.2-2' }}
+          · Ejecutado {{ partidaSeleccionadaModal.ejecutado | number:'1.2-2' }}
+        </small>
+        <small class="partida-aviso" *ngIf="avisoPartidaMaterial">{{ avisoPartidaMaterial }}</small>
       </div>
 
       <div class="field">
@@ -386,6 +423,15 @@
       <div class="field">
         <label>Código proveedor</label>
         <input [(ngModel)]="nuevoMaterial.codigoProveedor" placeholder="Código proporcionado por el proveedor" />
+      </div>
+
+      <div class="field" style="grid-column: 1 / -1;">
+        <label>Partida presupuestal por defecto</label>
+        <select [(ngModel)]="nuevoMaterial.idCatalogoPartida">
+          <option [ngValue]="null">Sin partida</option>
+          <option *ngFor="let p of partidasCatalogo" [ngValue]="p.idCatalogoPartida">{{ p.codigo }} — {{ p.nombre }}</option>
+        </select>
+        <small class="helper-text">Se asignará sola cada vez que este material se agregue a un requerimiento.</small>
       </div>
     </div>
 

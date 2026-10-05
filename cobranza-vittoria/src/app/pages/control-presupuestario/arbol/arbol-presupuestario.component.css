@@ -1,0 +1,238 @@
+.arbol-controles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.arbol-controles .field {
+  margin: 0;
+}
+
+.arbol-busqueda {
+  flex: 1 1 220px;
+  min-width: 180px;
+}
+
+.arbol-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  padding-bottom: 8px;
+}
+
+.arbol-check input {
+  width: auto;
+}
+
+.arbol-acciones {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+/* Breadcrumb de la rama seleccionada */
+.arbol-ruta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.arbol-ruta__item {
+  border: none;
+  background: transparent;
+  padding: 2px 4px;
+  color: #1f3864;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.arbol-ruta__item:hover {
+  background: #eef2f8;
+}
+
+.arbol-ruta__item--actual {
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.arbol-ruta__sep {
+  color: #9ca3af;
+}
+
+/* Tabla */
+.arbol-tabla {
+  max-height: 640px;
+  overflow: auto;
+}
+
+.arbol-tabla thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.arbol-fila {
+  cursor: pointer;
+}
+
+.arbol-fila:hover td {
+  background: #f7f9fc;
+}
+
+.arbol-fila--padre td {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.arbol-fila--excedida td {
+  background: #fff7f7;
+}
+
+.arbol-fila--seleccionada td {
+  box-shadow: inset 0 1px 0 #c7d3e8, inset 0 -1px 0 #c7d3e8;
+}
+
+.arbol-codigo {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: #4b5563;
+}
+
+.arbol-nombre {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 240px;
+}
+
+.arbol-nombre__texto {
+  flex: 0 1 auto;
+}
+
+.arbol-toggle {
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d5dbe5;
+  border-radius: 4px;
+  background: #fff;
+  color: #1f3864;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.arbol-toggle span {
+  display: inline-block;
+  transition: transform .15s ease;
+}
+
+.arbol-toggle__chev--abierto {
+  transform: rotate(90deg);
+}
+
+.arbol-toggle--vacio {
+  border-color: transparent;
+  background: transparent;
+  cursor: default;
+}
+
+.arbol-conteo {
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 400;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.arbol-alerta {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9b1c1c;
+  background: #fdecec;
+  border-radius: 999px;
+  padding: 1px 8px;
+  white-space: nowrap;
+}
+
+.arbol-movimientos {
+  margin-left: auto;
+  opacity: 0;
+}
+
+.arbol-fila:hover .arbol-movimientos,
+.arbol-movimientos:focus-visible {
+  opacity: 1;
+}
+
+.num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.num--danger {
+  color: #9b1c1c;
+  font-weight: 600;
+}
+
+/* Semáforo del % ejecutado */
+.barra-col {
+  min-width: 140px;
+  white-space: nowrap;
+}
+
+.barra {
+  display: inline-block;
+  vertical-align: middle;
+  width: 88px;
+  height: 8px;
+  border-radius: 999px;
+  background: #eceff3;
+  overflow: hidden;
+}
+
+.barra__fill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.barra__fill--ok {
+  background: #1e6b34;
+}
+
+.barra__fill--warn {
+  background: #b26b00;
+}
+
+.barra__fill--danger {
+  background: #b00020;
+}
+
+.barra__label {
+  margin-left: 8px;
+  font-size: 11px;
+  color: #4b5563;
+}
+
+@media (hover: none) {
+  .arbol-movimientos {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 720px) {
+  .arbol-acciones {
+    margin-left: 0;
+  }
+}

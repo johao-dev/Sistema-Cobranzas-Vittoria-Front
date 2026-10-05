@@ -33,6 +33,10 @@
 
 <div class="dashboard-status" *ngIf="loading">Cargando resumen total...</div>
 <div class="empty-state" *ngIf="!loading && msg">{{ msg }}</div>
+<div class="empty-state" *ngIf="!loading && selectedProjectId && sinCentroCosto">
+  Este proyecto no tiene centro de costo asociado: los gastos del proyecto (administrativos, terreno, marketing,
+  otros y municipales) no se incluyen. Asocia el proyecto en Control Presupuestario → Centros de costo.
+</div>
 
 <section class="hero-resumen" *ngIf="!loading">
   <div class="hero-resumen__main">
@@ -64,7 +68,8 @@
   </div>
   <div class="kpi-card">
     <div class="kpi-label">Cotización de materiales</div>
-    <div class="kpi-value">{{ formatMoney(totalCotizacionMateriales) }}</div>
+    <div class="kpi-value" *ngIf="cotizacionMaterialesDisponible">{{ formatMoney(totalCotizacionMateriales) }}</div>
+    <div class="kpi-value kpi-value--na" *ngIf="!cotizacionMaterialesDisponible">No disponible</div>
   </div>
   <div class="kpi-card">
     <div class="kpi-label">Valorizaciones</div>
@@ -119,17 +124,17 @@
       <tbody>
         <tr *ngFor="let row of comprasRows">
           <td>{{ row.especialidad }}</td>
-          <td class="table-number">{{ formatMoney(row.cotizacion) }}</td>
+          <td class="table-number">{{ cotizacionMaterialesDisponible ? formatMoney(row.cotizacion) : 'No disponible' }}</td>
           <td class="table-number">{{ formatMoney(row.facturado) }}</td>
-          <td class="table-number">{{ formatMoney(row.saldo) }}</td>
+          <td class="table-number">{{ cotizacionMaterialesDisponible ? formatMoney(row.saldo) : '—' }}</td>
         </tr>
       </tbody>
       <tfoot>
         <tr>
           <th>Total</th>
-          <th class="table-number">{{ formatMoney(totalCotizacionMateriales) }}</th>
+          <th class="table-number">{{ cotizacionMaterialesDisponible ? formatMoney(totalCotizacionMateriales) : 'No disponible' }}</th>
           <th class="table-number">{{ formatMoney(totalMateriales) }}</th>
-          <th class="table-number">{{ formatMoney(totalCotizacionMateriales - totalMateriales) }}</th>
+          <th class="table-number">{{ cotizacionMaterialesDisponible ? formatMoney(totalCotizacionMateriales - totalMateriales) : '—' }}</th>
         </tr>
       </tfoot>
     </table>

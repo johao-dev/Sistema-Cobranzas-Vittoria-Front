@@ -1,0 +1,238 @@
+<div class="page-header">
+  <div>
+    <div class="page-title">Control presupuestario</div>
+    <div class="page-subtitle">Presupuesto, comprometido, ejecutado y saldo disponible. Fuente única del módulo.</div>
+  </div>
+</div>
+
+<section class="panel">
+  <div class="filters filters--two">
+    <div class="field">
+      <label>Centro de costo</label>
+      <select [(ngModel)]="filtroCentroCosto" (change)="onCentroCostoChange()">
+        <option value="">Todos</option>
+        <option *ngFor="let c of centrosCosto" [value]="c.idCentroCosto">{{ c.codigo }} — {{ c.nombre }}</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Presupuesto</label>
+      <select [(ngModel)]="filtroPresupuesto" (change)="recargar()">
+        <option value="">Todos</option>
+        <option *ngFor="let p of presupuestosDisponibles" [value]="p.idPresupuesto">
+          {{ p.codigo }} — {{ p.nombre }}
+        </option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Nivel de anidamiento</label>
+      <select [(ngModel)]="filtroNivel" [disabled]="!idCentroCostoDashboard">
+        <option value="">Partidas finales</option>
+        <option *ngFor="let n of nivelesDisponibles" [value]="n">
+          Nivel {{ n }}{{ n === 1 ? ' (categorías principales)' : '' }}
+        </option>
+      </select>
+    </div>
+    <div class="field field--check">
+      <label>
+        <input type="checkbox" [(ngModel)]="soloExcedidos" (change)="recargar()" />
+        Solo partidas excedidas
+      </label>
+    </div>
+  </div>
+</section>
+
+<app-tablero-presupuestario *ngIf="idCentroCostoDashboard" [idCentroCosto]="idCentroCostoDashboard"
+  [idPresupuesto]="idPresupuestoDashboard" [nivel]="nivelDashboard"
+  (nivelMaximo)="onNivelMaximo($event)"></app-tablero-presupuestario>
+<section *ngIf="!idCentroCostoDashboard" class="panel tablero-invitacion">
+  Elige un centro de costo para ver el dashboard: distribución del gasto por rubro y evolución del gasto real
+  frente al presupuesto.
+</section>
+
+<section class="panel" *ngIf="idCentroCostoDashboard">
+  <div class="panel-title">Árbol de partidas</div>
+  <p class="modal-nota">Presupuesto vigente (versiones aprobadas) con subtotales por categoría. Haz clic en una
+    categoría para abrirla y en una partida para ver sus movimientos.</p>
+  <app-arbol-presupuestario modo="vigente" [idCentroCosto]="idCentroCostoDashboard"
+    [idPresupuesto]="idPresupuestoDashboard" [nivelSincronizado]="nivelDashboard"
+    (abrirHoja)="verMovimientosNodo($event)"></app-arbol-presupuestario>
+</section>
+
+<div class="kpi-grid" *ngIf="totales">
+  <div class="kpi-card">
+    <div class="kpi-card__label">Presupuestado</div>
+    <div class="kpi-card__value">{{ totales.presupuestado | number:'1.2-2' }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-card__label">Comprometido</div>
+    <div class="kpi-card__value">{{ totales.comprometido | number:'1.2-2' }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-card__label">Ejecutado</div>
+    <div class="kpi-card__value">{{ totales.ejecutado | number:'1.2-2' }}</div>
+  </div>
+  <div class="kpi-card" [class.kpi-card--danger]="totales.saldoDisponible < 0">
+    <div class="kpi-card__label">Saldo disponible</div>
+    <div class="kpi-card__value">{{ totales.saldoDisponible | number:'1.2-2' }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-card__label">% ejecutado</div>
+    <div class="kpi-card__value">{{ totales.porcentajeEjecutado | number:'1.2-2' }}%</div>
+  </div>
+  <div class="kpi-card" [class.kpi-card--danger]="totales.partidasExcedidas > 0">
+    <div class="kpi-card__label">Partidas excedidas</div>
+    <div class="kpi-card__value">{{ totales.partidasExcedidas }} / {{ totales.partidas }}</div>
+  </div>
+</div>
+
+<div class="empty-state" *ngIf="cargandoResumen && !totales">Cargando resumen...</div>
+
+<section class="panel" *ngIf="partidasExcedidas.length">
+  <div class="panel-title">Partidas con saldo excedido</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Centro de costo</th>
+          <th>Presupuesto</th>
+          <th>Partida</th>
+          <th class="num">Presupuestado</th>
+          <th class="num">Comprometido</th>
+          <th class="num">Ejecutado</th>
+          <th class="num">Exceso</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let f of partidasExcedidas">
+          <td>{{ f.centroCosto }}</td>
+          <td>{{ f.codigoPresupuesto }}</td>
+          <td>{{ f.codigoPartida }} — {{ f.partida }}</td>
+          <td class="num">{{ f.montoPresupuestado | number:'1.2-2' }}</td>
+          <td class="num">{{ f.comprometido | number:'1.2-2' }}</td>
+          <td class="num">{{ f.ejecutado | number:'1.2-2' }}</td>
+          <td class="num num--danger">{{ f.simboloMoneda }} {{ f.montoExcedido | number:'1.2-2' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-title-row">
+    <div class="panel-title">{{ etiquetaVista }}</div>
+    <div class="filters maintenance-search">
+      <div class="field">
+        <label>Buscar</label>
+        <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Partida, centro de costo o presupuesto" />
+      </div>
+    </div>
+    <button type="button" class="btn btn-secondary btn-sm" (click)="exportarCsv()">Exportar CSV</button>
+  </div>
+
+  <div class="tabs">
+    <button type="button" class="tab" [class.tab--active]="vista === 'saldos'"
+      (click)="cambiarVista('saldos')">Saldos</button>
+    <button type="button" class="tab" [class.tab--active]="vista === 'comprometido'"
+      (click)="cambiarVista('comprometido')">Vs. comprometido</button>
+    <button type="button" class="tab" [class.tab--active]="vista === 'ejecutado'"
+      (click)="cambiarVista('ejecutado')">Vs. ejecutado</button>
+    <button type="button" class="tab" [class.tab--active]="vista === 'gastos-partida'"
+      (click)="cambiarVista('gastos-partida')">Gastos por partida</button>
+    <button type="button" class="tab" [class.tab--active]="vista === 'gastos-centro'"
+      (click)="cambiarVista('gastos-centro')">Gastos por centro</button>
+  </div>
+
+  <div *ngIf="cargando" class="empty-state">Cargando reporte...</div>
+  <div *ngIf="!cargando && !filasFiltradas.length" class="empty-state">
+    No hay información para los filtros seleccionados.
+  </div>
+
+  <div *ngIf="!cargando && filasFiltradas.length" class="table-wrap table-wrap--sticky-actions">
+    <table>
+      <thead>
+        <tr>
+          <th>Centro de costo</th>
+          <th>Presupuesto</th>
+          <th *ngIf="muestraPartida">Partida</th>
+          <th>Versión</th>
+          <th class="num">Presupuestado</th>
+          <th class="num" *ngIf="muestraComprometido">Comprometido</th>
+          <th class="num" *ngIf="muestraEjecutado">Ejecutado</th>
+          <th class="num" *ngIf="muestraSaldo">Saldo</th>
+          <th class="barra-col">Avance</th>
+          <th class="actions-col" *ngIf="muestraPartida">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let f of filasFiltradas" [class.row--excedido]="f.excedido">
+          <td>{{ f.codigoCentroCosto }} — {{ f.centroCosto }}</td>
+          <td>{{ f.codigoPresupuesto }}</td>
+          <td *ngIf="muestraPartida">{{ f.codigoPartida }} — {{ f.partida }}</td>
+          <td>v{{ f.numeroVersion }} · {{ f.estado }}</td>
+          <td class="num">{{ f.simboloMoneda }} {{ f.montoPresupuestado | number:'1.2-2' }}</td>
+          <td class="num" *ngIf="muestraComprometido">{{ f.comprometido | number:'1.2-2' }}</td>
+          <td class="num" *ngIf="muestraEjecutado">{{ f.ejecutado | number:'1.2-2' }}</td>
+          <td class="num" *ngIf="muestraSaldo" [class.num--danger]="f.saldoDisponible < 0">
+            {{ f.saldoDisponible | number:'1.2-2' }}
+          </td>
+          <td class="barra-col">
+            <div class="barra">
+              <div class="barra__fill" [ngClass]="claseBarra(porcentaje(f))" [style.width]="anchoBarra(porcentaje(f))">
+              </div>
+            </div>
+            <span class="barra__label">{{ porcentaje(f) | number:'1.1-1' }}%</span>
+          </td>
+          <td class="actions-col" *ngIf="muestraPartida">
+            <button type="button" class="btn btn-ghost btn-sm" (click)="verMovimientos(f)">Historial</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="design-modal-backdrop" *ngIf="modalMovimientos" (click)="cerrarModal()"></div>
+<section class="panel panel--form design-modal-card design-modal-card--wide" *ngIf="modalMovimientos"
+  (click)="$event.stopPropagation()">
+  <button type="button" class="modal-close" (click)="cerrarModal()" aria-label="Cerrar">&times;</button>
+  <div class="panel-title">Historial de movimientos</div>
+  <p class="modal-nota" *ngIf="detalleSeleccionado">
+    {{ detalleSeleccionado.codigoPartida }} — {{ detalleSeleccionado.partida }}
+  </p>
+
+  <div *ngIf="cargandoMovimientos" class="empty-state">Cargando historial...</div>
+  <div *ngIf="!cargandoMovimientos && !movimientos.length" class="empty-state">
+    Esta partida no registra movimientos.
+  </div>
+
+  <div *ngIf="!cargandoMovimientos && movimientos.length" class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Tipo</th>
+          <th>Afectación</th>
+          <th>Dirección</th>
+          <th>Origen</th>
+          <th class="num">Monto</th>
+          <th>Observación</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let m of movimientos">
+          <td>{{ m.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>{{ m.tipo }}</td>
+          <td>{{ m.afectacion || '—' }}</td>
+          <td>{{ m.direccion || '—' }}</td>
+          <td>{{ m.origen }} #{{ m.idOrigen }}</td>
+          <td class="num">{{ m.simboloMoneda }} {{ m.monto | number:'1.2-2' }}</td>
+          <td>{{ m.observacion || '—' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="toolbar toolbar--compact">
+    <button class="btn btn-ghost" (click)="cerrarModal()">Cerrar</button>
+  </div>
+</section>

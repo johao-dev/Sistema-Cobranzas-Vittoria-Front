@@ -13,7 +13,8 @@ import {
   ImportExito,
   ImportResultado,
   ImportErrorResponse,
-  MaterialPlantillaFormato
+  MaterialPlantillaFormato,
+  IMPORT_MODULOS_META
 } from '../../models/import.models';
 
 export interface DescargarPlantillaResultado {
@@ -31,8 +32,9 @@ export class ImportService {
     form.append('archivo', archivo);
     form.append('usuario', usuario);
 
+    const ruta = IMPORT_MODULOS_META[modulo]?.urlImportar ?? `/api/import/${modulo}`;
     return this.http
-      .post<ImportExito>(`${this.api.baseUrl}/api/import/${modulo}`, form)
+      .post<ImportExito>(`${this.api.baseUrl}${ruta}`, form)
       .pipe(
         map(data => ({ ok: true as const, data })),
         catchError((err: HttpErrorResponse) => of(this.normalizarError(err)))
@@ -53,7 +55,8 @@ export class ImportService {
     modulo: ImportModulo,
     formato: MaterialPlantillaFormato
   ): Observable<DescargarPlantillaResultado> {
-    const url = `${this.api.baseUrl}/api/import/${modulo}/plantilla?formato=${formato}`;
+    const ruta = IMPORT_MODULOS_META[modulo]?.urlPlantilla ?? `/api/import/${modulo}/plantilla`;
+    const url = `${this.api.baseUrl}${ruta}?formato=${formato}`;
 
     return this.http
       .get(url, { responseType: 'blob', observe: 'response' })

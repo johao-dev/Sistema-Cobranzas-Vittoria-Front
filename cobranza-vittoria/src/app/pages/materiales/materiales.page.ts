@@ -5,6 +5,7 @@ import { NotificationService } from '../../core/services/notification.service';
 
 import { MaestraService } from '../../core/services/maestra.service';
 import { ApiService } from '../../core/services/api.service';
+import { ControlPresupuestarioService } from '../../core/services/control-presupuestario.service';
 import { ImportModalComponent } from '../../shared/components/import-modal/import-modal.component';
 import {
   MaterialPlantillaFormato,
@@ -80,9 +81,13 @@ export class MaterialesPage implements OnInit {
 
   form: any = this.crearFormVacio();
 
+  /** Partidas hoja activas: las únicas que pueden ser partida por defecto de un material. */
+  partidas: any[] = [];
+
   constructor(
     private maestra: MaestraService,
     private api: ApiService,
+    private controlPresupuestario: ControlPresupuestarioService,
     private notifyService: NotificationService,
     private cdr: ChangeDetectorRef
   ) { }
@@ -96,6 +101,19 @@ export class MaterialesPage implements OnInit {
     this.maestra.unidadesMedida(true).subscribe(x => {
       this.unidadesMedida = x || [];
       this.cdr.detectChanges();
+    });
+
+    // Sin permiso sobre Control Presupuestario el selector queda vacío y el
+    // material se guarda sin partida, como antes.
+    this.controlPresupuestario.partidas({ activo: true, esHoja: true }).subscribe({
+      next: x => {
+        this.partidas = x || [];
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.partidas = [];
+        this.cdr.detectChanges();
+      }
     });
 
     this.load();
@@ -182,6 +200,7 @@ export class MaterialesPage implements OnInit {
       codigoProveedor: (this.form.codigoProveedor ?? '').toString().trim(),
       descripcion: (this.form.descripcion ?? '').toString().trim(),
       unidadMedida: (this.form.unidadMedida ?? '').toString().trim(),
+      idCatalogoPartida: this.form.idCatalogoPartida || null,
       stockMinimo: this.form.stockMinimo != null && this.form.stockMinimo !== ''
         ? Number(this.form.stockMinimo)
         : 0,
@@ -266,8 +285,25 @@ export class MaterialesPage implements OnInit {
       descripcion: '',
       unidadMedida: '',
       stockMinimo: 0,
-      activo: true
+      activo: true,
+      idCatalogoPartida: '',
+      codigoPartida: '',
+      nombrePartida: ''
     };
+  }
+
+  /**
+   * Opciones del selector de partida. Si el material tiene una partida que ya no
+   * está disponible (inactiva o con hijas), se agrega para no perderla al editar.
+   */
+  get partidasOpciones(): any[] {
+    const actual = this.form?.idCatalogoPartida;
+    if (!actual || this.partidas.some(p => Number(p.idCatalogoPartida) === Number(actual))) return this.partidas;
+    return [...this.partidas, {
+      idCatalogoPartida: Number(actual),
+      codigo: this.form.codigoPartida || '?',
+      nombre: `${this.form.nombrePartida || 'Partida'} (no disponible)`
+    }];
   }
 
   private normalizarMaterial(row: any): any {
@@ -282,7 +318,10 @@ export class MaterialesPage implements OnInit {
       descripcion: this.read(row, ['descripcion', 'Descripcion', 'material', 'Material']) ?? '',
       unidadMedida: this.read(row, ['unidadMedida', 'UnidadMedida', 'unidad', 'Unidad']) ?? '',
       stockMinimo: this.toNumberOrDefault(this.read(row, ['stockMinimo', 'StockMinimo']), 0),
-      activo: this.read(row, ['activo', 'Activo']) ?? true
+      activo: this.read(row, ['activo', 'Activo']) ?? true,
+      idCatalogoPartida: this.toNumberOrNull(this.read(row, ['idCatalogoPartida', 'IdCatalogoPartida'])) ?? '',
+      codigoPartida: this.read(row, ['codigoPartida', 'CodigoPartida']) ?? '',
+      nombrePartida: this.read(row, ['nombrePartida', 'NombrePartida']) ?? ''
     };
   }
 

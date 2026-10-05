@@ -76,7 +76,12 @@ export class MaestraService {
       stockMinimo: dto.stockMinimo != null && dto.stockMinimo !== ''
         ? Number(dto.stockMinimo)
         : 0,
-      activo: !!dto.activo
+      activo: !!dto.activo,
+      // Partida presupuestal por defecto. El PUT reemplaza el material completo:
+      // quien edite debe reenviarla o se quita.
+      idCatalogoPartida: dto.idCatalogoPartida != null && dto.idCatalogoPartida !== ''
+        ? Number(dto.idCatalogoPartida)
+        : null
     };
 
     return payload.idMaterial

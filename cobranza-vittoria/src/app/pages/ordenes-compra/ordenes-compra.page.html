@@ -64,6 +64,7 @@
             <th>Especialidades</th>
             <th>Proveedor</th>
             <th>Proyecto</th>
+            <th class="table-number">Total</th>
             <th>Estado</th>
             <th class="actions-col actions-col--select">Acciones</th>
           </tr>
@@ -76,11 +77,18 @@
             <td>{{ row.especialidades || row.especialidad || '-' }}</td>
             <td>{{ row.proveedor || '-' }}</td>
             <td>{{ row.nombreProyecto || '-' }}</td>
-            <td><span class="badge badge--pending">{{ row.estado }}</span></td>
+            <td class="table-number" [class.sin-precio]="!(+row.total > 0)">{{ textoTotalOc(row) }}</td>
+            <td>
+              <span class="badge" [class.badge--pending]="estadoOc(row) === 'REGISTRADA'"
+                [class.badge--ok]="estadoOc(row) === 'APROBADA' || estadoOc(row) === 'ATENDIDA'"
+                [class.badge--danger]="estadoOc(row) === 'ANULADA'"
+                [class.badge--neutral]="estadoOc(row) === 'CERRADA'">{{ row.estado }}</span>
+            </td>
             <td class="actions-col--select">
               <select class="actions-select" (change)="onAccionOrdenGenerada($event, row)">
                 <option value="">Acciones</option>
                 <option value="detalle">Detalle</option>
+                <option *ngFor="let a of accionesEstado(row)" [value]="a">{{ etiquetaAccion[a] }}</option>
                 <option value="pdf">Exportar PDF</option>
                 <option value="excel">Exportar Excel</option>
               </select>
@@ -130,6 +138,8 @@
               <th>Unidad</th>
               <th>Cantidad</th>
               <th class="provider-column">Proveedor</th>
+              <th class="precio-column">Precio unit. (opcional)</th>
+              <th class="table-number">Subtotal</th>
             </tr>
           </thead>
           <tbody>
@@ -144,9 +154,25 @@
                   <option *ngFor="let p of proveedores" [ngValue]="p.idProveedor">{{ p.razonSocial }}</option>
                 </select>
               </td>
+              <td class="precio-cell">
+                <input type="number" min="0" step="0.01" class="precio-input" [(ngModel)]="x.precioUnitario"
+                  placeholder="Sin precio" [attr.aria-label]="'Precio unitario de ' + x.material" />
+              </td>
+              <td class="table-number">{{ subtotalItem(x) > 0 ? (subtotalItem(x) | number:'1.2-2') : '—' }}</td>
             </tr>
           </tbody>
+          <tfoot *ngIf="totalFormulario > 0">
+            <tr>
+              <th colspan="6">Total estimado</th>
+              <th class="table-number">{{ totalFormulario | number:'1.2-2' }}</th>
+            </tr>
+          </tfoot>
         </table>
+      </div>
+      <div class="oc-form-note" style="margin-top:10px;">
+        El precio es opcional y va en la moneda del presupuesto de las partidas. Con precio, al aprobar la O.C. el monto
+        queda <strong>comprometido</strong> en el presupuesto; al aceptar la Compra se libera y se ejecuta el monto real.
+        Sin precio, el presupuesto se afecta recién al aceptar la Compra.
       </div>
     </div>
 
@@ -169,6 +195,10 @@
     <div class="toolbar" style="margin-bottom:14px;">
       <span class="list-chip">{{ detalleOc.ordenCompra?.numeroOrdenCompra }}</span>
       <span class="list-chip">{{ detalleOc.ordenCompra?.estado }}</span>
+      <button *ngFor="let a of accionesEstado(detalleOc.ordenCompra)" type="button" class="btn btn-sm"
+        [class.btn-success]="a === 'APROBADA'" [class.btn-danger]="a === 'ANULADA'"
+        [class.btn-secondary]="a === 'CERRADA'" (click)="pedirCambioEstado(detalleOc.ordenCompra, a)">
+        {{ etiquetaAccion[a] }}</button>
       <button class="btn btn-secondary btn-sm" type="button" (click)="exportarExcelDetalleOc()">Exportar Excel
         proveedor</button>
       <button class="btn btn-primary btn-sm" type="button" (click)="exportarPdfDetalleOc()">Exportar PDF
@@ -194,6 +224,8 @@
             <th>Unidad</th>
             <th>Cantidad</th>
             <th>Proveedor</th>
+            <th class="table-number">Precio unit.</th>
+            <th class="table-number">Subtotal</th>
           </tr>
         </thead>
         <tbody>
@@ -204,11 +236,19 @@
             <td>{{ item.unidadMedida }}</td>
             <td>{{ item.cantidad }}</td>
             <td>{{ item.proveedor || '-' }}</td>
+            <td class="table-number">{{ +item.precioUnitario > 0 ? (item.precioUnitario | number:'1.2-2') : '—' }}</td>
+            <td class="table-number">{{ +item.subtotal > 0 ? (item.subtotal | number:'1.2-2') : '—' }}</td>
           </tr>
           <tr *ngIf="!itemsDetalleOcFiltrados.length">
-            <td colspan="5" class="empty-row">No hay ítems para el proveedor seleccionado.</td>
+            <td colspan="7" class="empty-row">No hay ítems para el proveedor seleccionado.</td>
           </tr>
         </tbody>
+        <tfoot>
+          <tr>
+            <th colspan="6">Total</th>
+            <th class="table-number">{{ textoTotalOc(detalleOc.ordenCompra) }}</th>
+          </tr>
+        </tfoot>
       </table>
     </div>
   </div>
@@ -240,5 +280,31 @@
   <div class="toolbar toolbar--compact">
     <button class="btn btn-primary" (click)="guardarNuevoProveedor()">Guardar proveedor</button>
     <button class="btn btn-ghost" (click)="cerrarProveedorModal()">Cancelar</button>
+  </div>
+</section>
+<!-- Cambio de estado de la O.C.: aprobar, anular o cerrar -->
+<div class="design-modal-backdrop oc-estado-backdrop" *ngIf="cambioEstado" (click)="cerrarCambioEstado()"></div>
+<section class="panel panel--form design-modal-card oc-estado-card" *ngIf="cambioEstado" role="alertdialog"
+  aria-labelledby="titulo-estado-oc" (click)="$event.stopPropagation()">
+  <button type="button" class="modal-close" (click)="cerrarCambioEstado()" aria-label="Cerrar"
+    [disabled]="cambiandoEstado">×</button>
+  <div class="panel-title" id="titulo-estado-oc">
+    {{ etiquetaAccion[cambioEstado.estadoNuevo] }} O.C. {{ cambioEstado.oc.numeroOrdenCompra }}
+  </div>
+  <p class="oc-estado-nota">{{ notaCambioEstado }}</p>
+
+  <div class="field">
+    <label>Observación (opcional)</label>
+    <textarea rows="2" maxlength="500" [(ngModel)]="cambioEstado.observacion" [disabled]="cambiandoEstado"></textarea>
+  </div>
+
+  <div class="toolbar" style="margin-top:14px;">
+    <button type="button" class="btn" [class.btn-success]="cambioEstado.estadoNuevo === 'APROBADA'"
+      [class.btn-danger]="cambioEstado.estadoNuevo === 'ANULADA'"
+      [class.btn-primary]="cambioEstado.estadoNuevo === 'CERRADA'" [disabled]="cambiandoEstado"
+      (click)="confirmarCambioEstado()">
+      {{ cambiandoEstado ? 'Procesando…' : etiquetaAccion[cambioEstado.estadoNuevo] + ' O.C.' }}
+    </button>
+    <button type="button" class="btn btn-ghost" [disabled]="cambiandoEstado" (click)="cerrarCambioEstado()">Volver</button>
   </div>
 </section>

@@ -1,13 +1,17 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { catchError, forkJoin, of } from 'rxjs';
+import { Observable, catchError, forkJoin, map, of, switchMap } from 'rxjs';
 import { ComprasService } from '../../core/services/compras.service';
-import { GastosAdministrativosService } from '../../core/services/gastos-administrativos.service';
 import { ValorizacionesService } from '../../core/services/valorizaciones.service';
 import { MaestraService } from '../../core/services/maestra.service';
-import { GastoProyectoService } from '../../core/services/gasto-proyecto.service';
 import { CotizacionMaterialesService } from '../../core/services/cotizacion-materiales.service';
+import { GastosDirectosService } from '../../core/services/gastos-directos.service';
+import { ControlPresupuestarioService } from '../../core/services/control-presupuestario.service';
+
+/** Secciones de Gastos del proyecto; todas son gasto directo filtrado por sección. */
+const SECCIONES_GASTO = ['ADMINISTRATIVO', 'TERRENO', 'MARKETING_VENTAS', 'OTROS', 'MUNICIPAL'] as const;
+type SeccionGasto = typeof SECCIONES_GASTO[number];
 
 type CompraResumenRow = { especialidad: string; cotizacion: number; facturado: number; saldo: number; };
 type ValResumenRow = { especialidad: string; cotizacion: number; garantia: number; transferido: number; facturado: number; saldo: number; };
@@ -43,20 +47,23 @@ export class ResumenTotalPage implements OnInit {
   totalOtrosGastos = 0;
   totalMunicipales = 0;
   totalCotizacionMateriales = 0; // suma de subcotizaciones por especialidad
+  /** False si el backend no expone la cotización de materiales: se muestra "No disponible", no 0. */
+  cotizacionMaterialesDisponible = true;
+  /** El proyecto no tiene centro de costo: sus gastos del proyecto no se pueden consultar. */
+  sinCentroCosto = false;
   totalGeneral = 0;
   saldo = 0;
 
   private comprasSource: any[] = [];
   private valorizacionesSource: any[] = [];
-  private gastosSource: any[] = [];
 
   constructor(
     private comprasService: ComprasService,
-    private gastosService: GastosAdministrativosService,
     private valorizacionesService: ValorizacionesService,
     private maestraService: MaestraService,
-    private gastoProyectoService: GastoProyectoService,
     private cotizacionMaterialesService: CotizacionMaterialesService,
+    private gastosDirectosService: GastosDirectosService,
+    private controlPresupuestario: ControlPresupuestarioService,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -66,15 +73,15 @@ export class ResumenTotalPage implements OnInit {
     this.loading = true;
     this.msg = '';
 
+    // Cada fuente falla por separado: una que no responde no deja al resumen sin proyectos.
     forkJoin({
-      compras: this.comprasService.compras(),
-      gastos: this.gastosService.gastos(),
-      valorizaciones: this.valorizacionesService.valorizaciones(),
-      proyectos: this.maestraService.proyectos(true)
+      compras: this.comprasService.compras().pipe(catchError(() => of([]))),
+      valorizaciones: this.valorizacionesService.valorizaciones().pipe(catchError(() => of([]))),
+      proyectos: this.maestraService.proyectos(true).pipe(catchError(() => of(null)))
     }).subscribe({
-      next: ({ compras, gastos, valorizaciones, proyectos }) => {
+      next: ({ compras, valorizaciones, proyectos }) => {
+        if (proyectos === null) this.msg = 'No se pudieron cargar los proyectos.';
         this.comprasSource = Array.isArray(compras) ? compras : [];
-        this.gastosSource = Array.isArray(gastos) ? gastos : [];
         this.valorizacionesSource = Array.isArray(valorizaciones) ? valorizaciones : [];
         this.proyectos = (Array.isArray(proyectos) ? proyectos : []).map((row: any) => ({
           ...row,
@@ -131,7 +138,8 @@ export class ResumenTotalPage implements OnInit {
     lines.push([]);
     lines.push(['Concepto', 'Monto']);
     lines.push(['Cotización general', this.formatNumber(this.cotizacionGeneral)]);
-    lines.push(['Cotización de materiales', this.formatNumber(this.totalCotizacionMateriales)]);
+    lines.push(['Cotización de materiales', this.cotizacionMaterialesDisponible
+      ? this.formatNumber(this.totalCotizacionMateriales) : 'No disponible']);
     lines.push(['Valorizaciones', this.formatNumber(this.totalValorizaciones)]);
     lines.push(['Gastos administrativos', this.formatNumber(this.totalGastos)]);
     lines.push(['Terreno', this.formatNumber(this.totalTerreno)]);
@@ -167,7 +175,8 @@ export class ResumenTotalPage implements OnInit {
 
     const rowsKpi = [
       ['Cotización general', this.formatMoney(this.cotizacionGeneral)],
-      ['Cotización de materiales', this.formatMoney(this.totalCotizacionMateriales)],
+      ['Cotización de materiales', this.cotizacionMaterialesDisponible
+        ? this.formatMoney(this.totalCotizacionMateriales) : 'No disponible'],
       ['Valorizaciones', this.formatMoney(this.totalValorizaciones)],
       ['Gastos administrativos', this.formatMoney(this.totalGastos)],
       ['Terreno', this.formatMoney(this.totalTerreno)],
@@ -226,7 +235,6 @@ export class ResumenTotalPage implements OnInit {
 
     const comprasFiltradas = this.filterByDate(this.filterByProject(this.comprasSource, idProyecto, nombreProyecto));
     const valorizacionesFiltradas = this.filterByDate(this.filterByProject(this.valorizacionesSource, idProyecto, nombreProyecto));
-    const gastosFiltrados = this.filterByDate(this.filterByProjectStrict(this.gastosSource, idProyecto, nombreProyecto));
 
     if (!idProyecto) {
       this.comprasRows = [];
@@ -234,6 +242,8 @@ export class ResumenTotalPage implements OnInit {
       this.gastosRows = [];
       this.totalMateriales = 0;
       this.totalCotizacionMateriales = 0;
+      this.cotizacionMaterialesDisponible = true;
+      this.sinCentroCosto = false;
       this.totalValorizaciones = 0;
       this.totalGastos = 0;
       this.totalTerreno = 0;
@@ -251,63 +261,72 @@ export class ResumenTotalPage implements OnInit {
     forkJoin({
       resumenMateriales: this.cotizacionMaterialesService.getResumenByProyecto(idProyecto).pipe(catchError(() => of(null))),
       cotizacionMateriales: this.cotizacionMaterialesService.getByProyecto(idProyecto).pipe(catchError(() => of(null))),
-      terreno: this.gastoProyectoService.listar('terreno', { idProyecto, estado: 'Activo' }).pipe(catchError(() => of([]))),
-      marketing: this.gastoProyectoService.listar('marketing-publicidad', { idProyecto, estado: 'Activo' }).pipe(catchError(() => of([]))),
-      otros: this.gastoProyectoService.listar('otros-gastos', { idProyecto, estado: 'Activo' }).pipe(catchError(() => of([]))),
-      municipales: this.gastoProyectoService.listar('gastos-municipales-distritales', { idProyecto, estado: 'Activo' }).pipe(catchError(() => of([])))
-    }).subscribe({
-      next: ({ resumenMateriales, cotizacionMateriales, terreno, marketing, otros, municipales }) => {
-        const resumenItems = Array.isArray(resumenMateriales?.items) ? resumenMateriales.items : [];
-        const cotizaciones = Array.isArray(cotizacionMateriales?.items) ? cotizacionMateriales.items : [];
+      gastos: this.gastosDelProyecto(idProyecto)
+    }).subscribe(({ resumenMateriales, cotizacionMateriales, gastos }) => {
+      const resumenItems = Array.isArray(resumenMateriales?.items) ? resumenMateriales.items : [];
+      const cotizaciones = Array.isArray(cotizacionMateriales?.items) ? cotizacionMateriales.items : [];
+      this.cotizacionMaterialesDisponible = resumenMateriales !== null || cotizacionMateriales !== null;
 
-        if (resumenItems.length && !this.hasDateFilter()) {
-          this.buildComprasFromResumen(resumenMateriales);
-        } else {
-          this.totalCotizacionMateriales = this.toNumber(cotizacionMateriales?.totalCotizacionMateriales ?? cotizacionMateriales?.TotalCotizacionMateriales);
-          this.buildComprasFallback(comprasFiltradas, cotizaciones);
+      if (resumenItems.length && !this.hasDateFilter()) {
+        this.buildComprasFromResumen(resumenMateriales);
+      } else {
+        this.buildComprasFallback(comprasFiltradas, cotizaciones);
+        if (cotizacionMateriales) {
+          this.totalCotizacionMateriales = this.toNumber(
+            cotizacionMateriales?.totalCotizacionMateriales ?? cotizacionMateriales?.TotalCotizacionMateriales);
         }
-
-        this.buildValorizaciones(valorizacionesFiltradas);
-        this.buildGastos(gastosFiltrados);
-        const terrenoFiltrado = this.filterByDate(Array.isArray(terreno) ? terreno : []);
-        const marketingFiltrado = this.filterByDate(Array.isArray(marketing) ? marketing : []);
-        const otrosFiltrado = this.filterByDate(Array.isArray(otros) ? otros : []);
-        const municipalesFiltrado = this.filterByDate(Array.isArray(municipales) ? municipales : []);
-
-        this.buildTerrenoTotals(terrenoFiltrado);
-        this.totalMarketing = this.sumGastoProyecto(marketingFiltrado);
-        this.totalOtrosGastos = this.sumGastoProyecto(otrosFiltrado);
-        this.totalMunicipales = this.sumGastoProyecto(municipalesFiltrado);
-
-        this.totalGeneral = this.round(
-          this.totalMateriales +
-          this.totalValorizaciones +
-          this.totalGastos +
-          this.totalTerreno +
-          this.totalAlcabala +
-          this.totalMarketing +
-          this.totalOtrosGastos +
-          this.totalMunicipales
-        );
-        this.saldo = this.round(this.cotizacionGeneral - this.totalGeneral);
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.buildComprasFallback(comprasFiltradas, []);
-        this.buildValorizaciones(valorizacionesFiltradas);
-        this.buildGastos(gastosFiltrados);
-        this.totalTerreno = 0;
-        this.totalAlcabala = 0;
-        this.totalMarketing = 0;
-        this.totalOtrosGastos = 0;
-        this.totalMunicipales = 0;
-        this.totalGeneral = this.round(this.totalMateriales + this.totalValorizaciones + this.totalGastos);
-        this.saldo = this.round(this.cotizacionGeneral - this.totalGeneral);
-        this.loading = false;
-        this.cdr.detectChanges();
       }
+
+      this.buildValorizaciones(valorizacionesFiltradas);
+
+      this.sinCentroCosto = gastos === null;
+      const porSeccion = (seccion: SeccionGasto) => this.filterByDate(gastos?.[seccion] ?? []);
+      this.buildGastos(porSeccion('ADMINISTRATIVO'));
+      this.buildTerrenoTotals(porSeccion('TERRENO'));
+      this.totalMarketing = this.sumGastoDirecto(porSeccion('MARKETING_VENTAS'));
+      this.totalOtrosGastos = this.sumGastoDirecto(porSeccion('OTROS'));
+      this.totalMunicipales = this.sumGastoDirecto(porSeccion('MUNICIPAL'));
+
+      this.totalGeneral = this.round(
+        this.totalMateriales +
+        this.totalValorizaciones +
+        this.totalGastos +
+        this.totalTerreno +
+        this.totalAlcabala +
+        this.totalMarketing +
+        this.totalOtrosGastos +
+        this.totalMunicipales
+      );
+      this.saldo = this.round(this.cotizacionGeneral - this.totalGeneral);
+      this.loading = false;
+      this.cdr.detectChanges();
     });
+  }
+
+  /**
+   * Gastos directos vigentes (no anulados) del proyecto, agrupados por sección. El proyecto se
+   * resuelve a su centro de costo; null si no tiene ninguno.
+   */
+  private gastosDelProyecto(idProyecto: number): Observable<Record<SeccionGasto, any[]> | null> {
+    return this.controlPresupuestario.centrosCosto(null, null, null, idProyecto).pipe(
+      catchError(() => of([] as any[])),
+      switchMap(centros => {
+        const ids = (centros ?? []).map((c: any) => Number(c.idCentroCosto)).filter(id => !!id);
+        if (!ids.length) return of(null);
+
+        const peticiones = SECCIONES_GASTO.flatMap(seccion => ids.map(idCentroCosto =>
+          this.gastosDirectosService.listar({ seccion, idCentroCosto }).pipe(
+            catchError(() => of([] as any[])),
+            map(rows => ({ seccion, rows: Array.isArray(rows) ? rows : [] })))));
+
+        return forkJoin(peticiones).pipe(map(resultados => {
+          const agrupado = Object.fromEntries(SECCIONES_GASTO.map(s => [s, [] as any[]])) as Record<SeccionGasto, any[]>;
+          resultados.forEach(r => agrupado[r.seccion].push(
+            ...r.rows.filter(row => String(row.estado ?? '').toUpperCase() !== 'ANULADO')));
+          return agrupado;
+        }));
+      })
+    );
   }
 
   private buildComprasFromResumen(resumen: any): void {
@@ -406,11 +425,12 @@ export class ResumenTotalPage implements OnInit {
     this.totalValorizaciones = this.round(this.valorizacionesRows.reduce((a, x) => a + x.facturado, 0));
   }
 
+  /** Gastos administrativos agrupados por partida presupuestal. */
   private buildGastos(rows: any[]): void {
     const map = new Map<string, GastoResumenRow>();
     for (const row of rows) {
-      const categoria = String(this.readValue(row, 'categoria', 'Categoria') || 'Sin categoría').trim();
-      const facturado = this.toNumber(this.readValue(row, 'monto', 'Monto', 'total', 'Total'));
+      const categoria = String(this.readValue(row, 'partida', 'Partida', 'categoria', 'Categoria') || 'Sin categoría').trim();
+      const facturado = this.readGastoDirectoMontoSoles(row);
       const item = map.get(categoria) || { categoria, facturado: 0 };
       item.facturado += facturado;
       map.set(categoria, item);
@@ -419,18 +439,16 @@ export class ResumenTotalPage implements OnInit {
     this.totalGastos = this.round(this.gastosRows.reduce((a, x) => a + x.facturado, 0));
   }
 
+  /** La sección Terreno se separa en Alcabala (por partida o concepto) y el resto. */
   private buildTerrenoTotals(rows: any[]): void {
-    this.totalTerreno = this.round(rows
-      .filter((x: any) => String(this.readValue(x, 'concepto', 'Concepto') || '').trim().toUpperCase() === 'TERRENO')
-      .reduce((a: number, x: any) => a + this.readGastoProyectoMontoSoles(x), 0));
-
-    this.totalAlcabala = this.round(rows
-      .filter((x: any) => String(this.readValue(x, 'concepto', 'Concepto') || '').trim().toUpperCase() === 'ALCABALA')
-      .reduce((a: number, x: any) => a + this.readGastoProyectoMontoSoles(x), 0));
+    const esAlcabala = (x: any) => this.normalizeKey(
+      `${this.readValue(x, 'partida', 'Partida') || ''} ${this.readValue(x, 'concepto', 'Concepto') || ''}`).includes('ALCABALA');
+    this.totalAlcabala = this.sumGastoDirecto(rows.filter(esAlcabala));
+    this.totalTerreno = this.sumGastoDirecto(rows.filter(x => !esAlcabala(x)));
   }
 
-  private sumGastoProyecto(rows: any[]): number {
-    return this.round((rows || []).reduce((acc: number, row: any) => acc + this.readGastoProyectoMontoSoles(row), 0));
+  private sumGastoDirecto(rows: any[]): number {
+    return this.round((rows || []).reduce((acc: number, row: any) => acc + this.readGastoDirectoMontoSoles(row), 0));
   }
 
   private filterByProject(rows: any[], idProyecto: number, nombreProyecto: string): any[] {
@@ -442,30 +460,18 @@ export class ResumenTotalPage implements OnInit {
     });
   }
 
-  private filterByProjectStrict(rows: any[], idProyecto: number, nombreProyecto: string): any[] {
-    const proyectoNombre = String(nombreProyecto || '').trim().toLowerCase();
-    return rows.filter((row: any) => {
-      const rawId = this.readValue(row, 'idProyecto', 'IdProyecto');
-      const rawName = this.readValue(row, 'nombreProyecto', 'NombreProyecto', 'proyecto', 'Proyecto');
-      const hasProjectData = rawId !== null || (rawName !== null && String(rawName).trim() !== '');
-      if (!hasProjectData) return false;
-
-      const sameId = Number(rawId) === idProyecto;
-      const sameName = String(rawName || '').trim().toLowerCase() === proyectoNombre;
-      return sameId || (!!proyectoNombre && sameName);
-    });
-  }
-
-  private readGastoProyectoMontoSoles(row: any): number {
-    const montoSoles = Number(this.readValue(row, 'montoSoles', 'MontoSoles') ?? 0);
-    if (montoSoles > 0) return montoSoles;
-
+  /**
+   * El gasto directo está en la moneda del presupuesto y el resumen es en soles: se usa el monto
+   * original si se pagó en soles y, si no, se convierte con el tipo de cambio registrado.
+   */
+  private readGastoDirectoMontoSoles(row: any): number {
     const monto = Number(this.readValue(row, 'monto', 'Monto') ?? 0);
-    const montoDolares = Number(this.readValue(row, 'montoDolares', 'MontoDolares') ?? 0);
-    const moneda = String(this.readValue(row, 'moneda', 'Moneda') || '').trim().toUpperCase();
-    if (montoDolares > 0) return this.round(montoDolares * Number(this.readValue(row, 'tipoCambio', 'TipoCambio') || 3.41));
-    if (moneda === 'USD') return this.round(monto * Number(this.readValue(row, 'tipoCambio', 'TipoCambio') || 3.41));
-    return monto;
+    const moneda = String(this.readValue(row, 'moneda', 'Moneda') || 'PEN').trim().toUpperCase();
+    if (moneda === 'PEN') return this.round(monto);
+
+    const monedaOriginal = String(this.readValue(row, 'monedaOriginal', 'MonedaOriginal') || '').trim().toUpperCase();
+    if (monedaOriginal === 'PEN') return this.round(Number(this.readValue(row, 'montoOriginal', 'MontoOriginal') ?? 0));
+    return this.round(monto * Number(this.readValue(row, 'tipoCambio', 'TipoCambio') || 3.41));
   }
 
 

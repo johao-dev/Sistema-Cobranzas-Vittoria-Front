@@ -48,6 +48,7 @@
             <th>Código proveedor</th>
             <th>Descripción</th>
             <th>Unidad</th>
+            <th>Partida</th>
             <th>Stock mínimo</th>
             <th class="actions-col">Acciones</th>
           </tr>
@@ -59,6 +60,7 @@
             <td>{{ row.codigoProveedor || '-' }}</td>
             <td>{{ row.descripcion }}</td>
             <td>{{ row.unidadMedida }}</td>
+            <td [title]="row.nombrePartida || ''">{{ row.codigoPartida ? row.codigoPartida + ' — ' + row.nombrePartida : '-' }}</td>
             <td>{{ row.stockMinimo }}</td>
             <td>
               <div class="actions actions--end"><button class="btn btn-secondary btn-sm action-btn"
@@ -110,6 +112,19 @@
             {{ (u.codigo || u.nombre) + ' - ' + u.nombre }}
           </option>
         </select>
+      </div>
+
+      <div class="field" style="grid-column: 1 / -1;">
+        <label>Partida presupuestal por defecto</label>
+        <select [(ngModel)]="form.idCatalogoPartida">
+          <option value="">Sin partida (se elige en cada requerimiento)</option>
+          <option *ngFor="let p of partidasOpciones" [ngValue]="p.idCatalogoPartida">
+            {{ p.codigo }} — {{ p.nombre }}
+          </option>
+        </select>
+        <small class="form-hint">
+          Al agregar este material a un requerimiento, la partida se asigna sola. El residente puede cambiarla.
+        </small>
       </div>
 
       <div class="field">

@@ -90,6 +90,11 @@ export class ComprasService {
     return this.api.http.post<any>(`${this.api.baseUrl}/api/compras/compras`, dto);
   }
 
+  /** Acepta la Compra: libera lo comprometido y ejecuta el gasto en el presupuesto; la OC pasa a ATENDIDA. */
+  aceptarCompra(idCompra: number, dto: { idUsuario: number; observacion: string | null }) {
+    return this.api.http.post<any>(`${this.api.baseUrl}/api/compras/compras/${idCompra}/aceptar`, dto);
+  }
+
   documentosCompra(idCompra: number) {
     return this.api.http.get<any[]>(`${this.api.baseUrl}/api/compras/compras/${idCompra}/documentos`);
   }

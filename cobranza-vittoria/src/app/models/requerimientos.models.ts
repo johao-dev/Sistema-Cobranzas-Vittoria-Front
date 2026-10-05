@@ -20,6 +20,8 @@ export interface RequerimientoItemRequest {
   idMaterial: number;
   cantidad: number;
   observacion?: string | null;
+  /** Partida presupuestal a la que se imputa la línea. Null = sin imputar. */
+  idPresupuestoDetalle?: number | null;
 }
 
 /** Ajuste de stock permitido a almacén, sin modificar la cabecera ni los materiales del RQ. */
@@ -71,6 +73,9 @@ export interface RequerimientoDetalleItem {
   unidad?: string | null;
   cantidad: number;
   observacion?: string | null;
+  idPresupuestoDetalle?: number | null;
+  codigoPartida?: string | null;
+  nombrePartida?: string | null;
 }
 
 export interface ValidacionRequerimiento {

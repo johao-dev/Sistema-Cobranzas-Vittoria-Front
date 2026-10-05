@@ -1,0 +1,305 @@
+.panel-title-row {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.maintenance-search {
+  flex: 1 1 220px;
+  min-width: 200px;
+  margin: 0;
+}
+
+.field-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.toolbar--compact {
+  margin-top: 16px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.row--selected td {
+  background: #eef2ff;
+}
+
+/* Selector de versiones */
+.version-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+
+.version-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  line-height: 1.2;
+  transition: border-color .15s ease, background .15s ease;
+}
+
+.version-chip:hover {
+  border-color: #9ca3af;
+}
+
+.version-chip--active {
+  border-color: #1f3864;
+  background: #eef2ff;
+}
+
+.version-chip__num {
+  font-weight: 600;
+  font-size: 13px;
+  color: #1f2937;
+}
+
+.version-chip__estado {
+  font-size: 10px;
+  letter-spacing: .04em;
+  color: #6b7280;
+}
+
+.version-detalle {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.version-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 12px;
+  color: #4b5563;
+  margin-bottom: 4px;
+}
+
+.alerta-info {
+  margin: 12px 0;
+  padding: 10px 14px;
+  border-left: 4px solid #b26b00;
+  background: #fff8ec;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #6b4b00;
+}
+
+.modal-nota {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.field--full {
+  grid-column: 1 / -1;
+}
+
+.design-modal-card--wide {
+  max-width: 960px;
+  width: 92vw;
+}
+
+.badge--warn {
+  background: #fff4e0;
+  color: #92500a;
+}
+
+.badge--danger {
+  background: #fde8e8;
+  color: #9b1c1c;
+}
+
+.alerta-ok,
+.alerta-error {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.alerta-ok {
+  border-left: 4px solid #1f7a4d;
+  background: #ecf8f1;
+  color: #145235;
+}
+
+.alerta-error {
+  border-left: 4px solid #b42318;
+  background: #fef1f0;
+  color: #7a1a12;
+}
+
+.check-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+/* Los estilos globales de input (ancho completo, alto fijo) no aplican a una casilla. */
+.check-inline input[type="checkbox"] {
+  width: auto;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  flex: 0 0 auto;
+}
+
+.carga-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.carga-busqueda {
+  flex: 1 1 240px;
+  margin: 0;
+}
+
+.carga-total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.carga-total strong {
+  font-size: 15px;
+  color: #111827;
+}
+
+.carga-tabla,
+.import-errores__tabla {
+  max-height: 55vh;
+  overflow: auto;
+}
+
+.carga-grupo td {
+  background: #f3f4f6;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #4b5563;
+}
+
+.carga-monto {
+  width: 140px;
+  text-align: right;
+}
+
+.carga-obs {
+  width: 100%;
+  min-width: 160px;
+}
+
+.import-errores__tabla {
+  max-height: 260px;
+  margin-top: 8px;
+}
+
+@media (max-width: 720px) {
+  .carga-total {
+    align-items: flex-start;
+  }
+
+  .carga-monto {
+    width: 110px;
+  }
+
+  .panel-title-row {
+    align-items: stretch;
+  }
+
+  .maintenance-search {
+    flex-basis: 100%;
+  }
+
+  .version-meta {
+    gap: 8px;
+  }
+}
+
+/* Selector lista / árbol de la versión */
+.vista-toggle {
+  display: inline-flex;
+  margin: 12px 0;
+  border: 1px solid #d5dbe5;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.vista-toggle__btn {
+  border: none;
+  background: #fff;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: #4b5563;
+  cursor: pointer;
+}
+
+.vista-toggle__btn + .vista-toggle__btn {
+  border-left: 1px solid #d5dbe5;
+}
+
+.vista-toggle__btn--activo {
+  background: #1f3864;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Ayuda de la importación de estructura */
+.estructura-ayuda {
+  font-size: 12px;
+  color: #374151;
+  background: #f7f9fc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.estructura-ayuda ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.estructura-ayuda li + li {
+  margin-top: 4px;
+}
+
+/* Confirmación sobre el formulario del presupuesto */
+.design-modal-backdrop--top {
+  z-index: 92;
+}
+
+.design-modal-card--top {
+  z-index: 93;
+  max-width: 520px;
+}
+
+.modal-nota--aviso {
+  font-size: 13px;
+  color: #374151;
+  white-space: pre-line;
+}

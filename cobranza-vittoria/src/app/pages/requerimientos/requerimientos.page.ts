@@ -5,6 +5,7 @@ import { MaestraService } from '../../core/services/maestra.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { AuthService } from '../../core/services/auth.service';
 import { RequerimientosService } from '../../core/services/requerimientos.service';
+import { ControlPresupuestarioService } from '../../core/services/control-presupuestario.service';
 import { extraerMensajeError } from '../../core/utils/api-error.util';
 import {
   RequerimientoFilters,
@@ -31,6 +32,20 @@ export class RequerimientosPage implements OnInit {
   proyectos: any[] = [];
   materiales: any[] = [];
   unidadesMedida: any[] = [];
+  /** Centros de costo activos, para resolver el que corresponde al proyecto del RQ. */
+  centrosCosto: any[] = [];
+  /** Filas de vw_Saldo de la versión aprobada: partida, saldo disponible y moneda. */
+  partidasPresupuesto: any[] = [];
+  cargandoPartidas = false;
+  /** Partidas hoja activas del catálogo, para la partida por defecto de un material nuevo. */
+  partidasCatalogo: any[] = [];
+  /** Aviso cuando la partida del material no pudo asignarse sola. */
+  avisoPartidaMaterial = '';
+  /**
+   * Detalle que el sistema asignó solo por el material. Si al cambiar de material
+   * la partida sigue siendo esa, se reemplaza; si el residente la cambió a mano, se respeta.
+   */
+  private partidaAutoAsignada: number | null = null;
   detalle: RequerimientoGetResponse | null = null;
   formModalOpen = false;
   detalleModalOpen = false;
@@ -60,6 +75,7 @@ export class RequerimientosPage implements OnInit {
   modalItem = {
     idEspecialidad: null as number | null,
     idMaterial: null as number | null,
+    idPresupuestoDetalle: null as number | null,
     cantidad: 1,
     observacion: ''
   };
@@ -71,7 +87,8 @@ export class RequerimientosPage implements OnInit {
     descripcion: '',
     unidadMedida: '',
     stockMinimo: 0,
-    activo: true
+    activo: true,
+    idCatalogoPartida: null as number | null
   };
 
   form: any = {
@@ -102,6 +119,7 @@ export class RequerimientosPage implements OnInit {
   constructor(
     private requerimientos: RequerimientosService,
     private maestra: MaestraService,
+    private controlPresupuestario: ControlPresupuestarioService,
     public readonly auth: AuthService,
     private notifyService: NotificationService,
     private cdr: ChangeDetectorRef
@@ -194,6 +212,63 @@ export class RequerimientosPage implements OnInit {
     this.setFormDefaults(true);
     this.load();
     this.loadCatalogos();
+    this.cargarPartidasCatalogo();
+  }
+
+  /** Sin permiso sobre Control Presupuestario el material nuevo se crea sin partida, como antes. */
+  private cargarPartidasCatalogo(): void {
+    this.controlPresupuestario.partidas({ activo: true, esHoja: true }).subscribe({
+      next: (x: any) => {
+        this.partidasCatalogo = x ?? [];
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.partidasCatalogo = [];
+      }
+    });
+  }
+
+  /**
+   * Al elegir un material, su partida por defecto se busca en la versión aprobada
+   * del presupuesto del proyecto y se asigna sola. El residente puede cambiarla.
+   */
+  onModalMaterialChange(): void {
+    this.avisoPartidaMaterial = '';
+    if (this.partidaAutoAsignada !== null && this.modalItem.idPresupuestoDetalle === this.partidaAutoAsignada) {
+      this.modalItem.idPresupuestoDetalle = null;
+    }
+    this.partidaAutoAsignada = null;
+    const material = (this.materiales || [])
+      .find((m: any) => Number(this.getIdMaterial(m)) === Number(this.modalItem.idMaterial));
+    if (!material) return;
+    this.aplicarPartidaDelMaterial(material);
+  }
+
+  private aplicarPartidaDelMaterial(material: any): void {
+    const idPartida = Number(material?.idCatalogoPartida ?? material?.IdCatalogoPartida ?? 0);
+    if (!idPartida) {
+      this.avisoPartidaMaterial = 'Este material no tiene partida por defecto: elígela manualmente.';
+      return;
+    }
+    const etiqueta = material?.codigoPartida
+      ? `${material.codigoPartida} — ${material.nombrePartida ?? ''}`.trim()
+      : 'del material';
+    if (!this.form?.idProyecto) {
+      this.avisoPartidaMaterial = `Selecciona el proyecto para asignar la partida ${etiqueta}.`;
+      return;
+    }
+    const coincidencias = (this.partidasPresupuesto || [])
+      .filter((p: any) => Number(p.idCatalogoPartida) === idPartida);
+    if (coincidencias.length === 1) {
+      this.modalItem.idPresupuestoDetalle = coincidencias[0].idPresupuestoDetalle;
+      this.partidaAutoAsignada = coincidencias[0].idPresupuestoDetalle;
+    } else if (coincidencias.length > 1) {
+      this.avisoPartidaMaterial =
+        `La partida ${etiqueta} está en más de un presupuesto aprobado del proyecto: elige cuál.`;
+    } else {
+      this.avisoPartidaMaterial =
+        `La partida ${etiqueta} no está en el presupuesto aprobado del proyecto: elige otra partida.`;
+    }
   }
 
   load(): void {
@@ -221,10 +296,85 @@ export class RequerimientosPage implements OnInit {
     this.maestra.proyectos(true).subscribe({ next: (x: any) => { this.proyectos = x ?? []; this.cdr.detectChanges(); }, error: () => { this.proyectos = []; this.cdr.detectChanges(); } });
     this.maestra.materiales(true).subscribe({ next: (x: any) => { this.materiales = x ?? []; this.cdr.detectChanges(); }, error: () => { this.materiales = []; this.cdr.detectChanges(); } });
     this.maestra.unidadesMedida(true).subscribe({ next: (x: any) => { this.unidadesMedida = x ?? []; this.cdr.detectChanges(); }, error: () => { this.unidadesMedida = []; this.cdr.detectChanges(); } });
+    this.controlPresupuestario.centrosCosto(true, null, null).subscribe({
+      next: (x: any) => { this.centrosCosto = x ?? []; this.cdr.detectChanges(); },
+      error: () => { this.centrosCosto = []; this.cdr.detectChanges(); }
+    });
+  }
+
+  /**
+   * El presupuesto se alcanza por proyecto: Proyecto -> CentroCosto (1:1) ->
+   * presupuesto -> versión aprobada -> partidas con saldo. Si el proyecto no
+   * tiene centro de costo, el RQ se sigue registrando sin imputación.
+   */
+  get centroCostoDelProyecto(): any | null {
+    const idProyecto = this.form?.idProyecto;
+    if (!idProyecto) return null;
+    return (this.centrosCosto || []).find((c: any) => Number(c.idProyecto) === Number(idProyecto)) ?? null;
+  }
+
+  get proyectoSinCentroCosto(): boolean {
+    return !!this.form?.idProyecto && !this.centroCostoDelProyecto;
+  }
+
+  onProyectoChange(): void {
+    // Las partidas dependen del proyecto: al cambiarlo, la imputación anterior deja de ser válida.
+    (this.form.items || []).forEach((item: any) => {
+      item.idPresupuestoDetalle = null;
+      item.codigoPartida = null;
+      item.nombrePartida = null;
+    });
+    this.cargarPartidasPresupuesto();
+  }
+
+  cargarPartidasPresupuesto(): void {
+    const centro = this.centroCostoDelProyecto;
+    if (!centro) {
+      this.partidasPresupuesto = [];
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.cargandoPartidas = true;
+    this.controlPresupuestario.saldos({
+      idCentroCosto: centro.idCentroCosto,
+      estadoPresupuesto: 'APROBADO'
+    }).subscribe({
+      next: (x: any) => {
+        this.partidasPresupuesto = x ?? [];
+        this.cargandoPartidas = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.partidasPresupuesto = [];
+        this.cargandoPartidas = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  partidaPorDetalle(idPresupuestoDetalle: any): any | null {
+    if (idPresupuestoDetalle === null || idPresupuestoDetalle === undefined) return null;
+    return (this.partidasPresupuesto || [])
+      .find((p: any) => Number(p.idPresupuestoDetalle) === Number(idPresupuestoDetalle)) ?? null;
+  }
+
+  /** Etiqueta de la partida imputada a una línea, para tabla y detalle. */
+  etiquetaPartida(item: any): string {
+    if (!item?.idPresupuestoDetalle) return 'Sin imputar';
+    if (item.codigoPartida) return `${item.codigoPartida} — ${item.nombrePartida ?? ''}`.trim();
+    const partida = this.partidaPorDetalle(item.idPresupuestoDetalle);
+    return partida ? `${partida.codigoPartida} — ${partida.partida}` : 'Partida no disponible';
+  }
+
+  get partidaSeleccionadaModal(): any | null {
+    return this.partidaPorDetalle(this.modalItem.idPresupuestoDetalle);
   }
 
   abrirModalEspecialidades(index?: number): void {
     this.msg = '';
+    this.avisoPartidaMaterial = '';
+    this.partidaAutoAsignada = null;
     this.modalEspecialidades = true;
 
     if (index !== undefined && index !== null && index >= 0) {
@@ -233,6 +383,7 @@ export class RequerimientosPage implements OnInit {
       this.modalItem = {
         idEspecialidad: item?.idEspecialidad ?? null,
         idMaterial: item?.idMaterial ?? null,
+        idPresupuestoDetalle: item?.idPresupuestoDetalle ?? null,
         cantidad: Number(item?.cantidad ?? 1),
         observacion: item?.observacion ?? ''
       };
@@ -243,12 +394,15 @@ export class RequerimientosPage implements OnInit {
     this.modalItem = {
       idEspecialidad: null,
       idMaterial: null,
+      idPresupuestoDetalle: null,
       cantidad: 1,
       observacion: ''
     };
   }
 
   cerrarModalEspecialidades(): void {
+    this.avisoPartidaMaterial = '';
+    this.partidaAutoAsignada = null;
     this.modalEspecialidades = false;
     this.materialFormOpen = false;
     this.msgMaterial = '';
@@ -256,6 +410,7 @@ export class RequerimientosPage implements OnInit {
     this.modalItem = {
       idEspecialidad: null,
       idMaterial: null,
+      idPresupuestoDetalle: null,
       cantidad: 1,
       observacion: ''
     };
@@ -263,6 +418,11 @@ export class RequerimientosPage implements OnInit {
 
   onModalEspecialidadChange(): void {
     this.modalItem.idMaterial = null;
+    this.avisoPartidaMaterial = '';
+    if (this.partidaAutoAsignada !== null && this.modalItem.idPresupuestoDetalle === this.partidaAutoAsignada) {
+      this.modalItem.idPresupuestoDetalle = null;
+    }
+    this.partidaAutoAsignada = null;
     if (this.materialFormOpen) {
       this.nuevoMaterial.idEspecialidad = this.modalItem.idEspecialidad;
     }
@@ -279,7 +439,9 @@ export class RequerimientosPage implements OnInit {
       descripcion: '',
       unidadMedida: '',
       stockMinimo: 0,
-      activo: true
+      activo: true,
+      // Propone la partida que el ítem ya tiene elegida, si la hay.
+      idCatalogoPartida: this.partidaSeleccionadaModal?.idCatalogoPartida ?? null
     };
   }
 
@@ -299,7 +461,8 @@ export class RequerimientosPage implements OnInit {
       descripcion: (this.nuevoMaterial.descripcion ?? '').toString().trim(),
       unidadMedida: (this.nuevoMaterial.unidadMedida ?? '').toString().trim(),
       stockMinimo: Number(this.nuevoMaterial.stockMinimo ?? 0) || 0,
-      activo: true
+      activo: true,
+      idCatalogoPartida: this.nuevoMaterial.idCatalogoPartida ?? null
     };
 
     if (!payload.idEspecialidad || payload.idEspecialidad <= 0) {
@@ -339,6 +502,7 @@ export class RequerimientosPage implements OnInit {
             this.modalItem.idEspecialidad = payload.idEspecialidad;
             if (materialCreado) {
               this.modalItem.idMaterial = this.getIdMaterial(materialCreado);
+              this.onModalMaterialChange();
             }
 
             this.cerrarFormNuevoMaterial();
@@ -392,7 +556,10 @@ export class RequerimientosPage implements OnInit {
       material: this.getDescripcionMaterial(material),
       unidadMedida: this.getUnidadMaterial(material),
       cantidad: Number(this.modalItem.cantidad),
-      observacion: this.modalItem.observacion ?? ''
+      observacion: this.modalItem.observacion ?? '',
+      idPresupuestoDetalle: this.modalItem.idPresupuestoDetalle ?? null,
+      codigoPartida: this.partidaSeleccionadaModal?.codigoPartida ?? null,
+      nombrePartida: this.partidaSeleccionadaModal?.partida ?? null
     };
 
     if (this.editingItemIndex !== null && this.editingItemIndex >= 0) {
@@ -460,10 +627,14 @@ export class RequerimientosPage implements OnInit {
         material: x.material,
         unidadMedida: x.unidadMedida ?? x.unidad ?? '-',
         cantidad: Number(x.cantidad),
-        observacion: x.observacion ?? ''
+        observacion: x.observacion ?? '',
+        idPresupuestoDetalle: x.idPresupuestoDetalle ?? null,
+        codigoPartida: x.codigoPartida ?? null,
+        nombrePartida: x.nombrePartida ?? null
       }))
     };
 
+    this.cargarPartidasPresupuesto();
     this.msg = 'Editando requerimiento.';
     this.formModalOpen = true;
     this.detalleModalOpen = false;
@@ -663,7 +834,8 @@ export class RequerimientosPage implements OnInit {
       items: this.form.items.map((x: any) => ({
         idMaterial: Number(x.idMaterial),
         cantidad: Number(x.cantidad),
-        observacion: x.observacion ?? ''
+        observacion: x.observacion ?? '',
+        idPresupuestoDetalle: x.idPresupuestoDetalle != null ? Number(x.idPresupuestoDetalle) : null
       }))
     };
 
@@ -733,9 +905,11 @@ export class RequerimientosPage implements OnInit {
     this.modalItem = {
       idEspecialidad: null,
       idMaterial: null,
+      idPresupuestoDetalle: null,
       cantidad: 1,
       observacion: ''
     };
+    this.partidasPresupuesto = [];
 
     this.setFormDefaults(true);
   }

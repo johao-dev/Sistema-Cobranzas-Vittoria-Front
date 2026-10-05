@@ -17,13 +17,11 @@ import { StockActualPage } from './pages/stock-actual/stock-actual.page';
 import { ValorizacionesPage } from './pages/valorizaciones/valorizaciones.page';
 import { CategoriasGastoPage } from './pages/categorias-gasto/categorias-gasto.page';
 import { ProveedoresGastoPage } from './pages/proveedores-gasto/proveedores-gasto.page';
-import { GastosAdministrativosPage } from './pages/gastos-administrativos/gastos-administrativos.page';
 import { ResumenTotalPage } from './pages/resumen-total/resumen-total.page';
 import { LoginPage } from './pages/login/login.page';
 import { PresupuestoPage } from './pages/presupuesto/presupuesto.page';
-import { TerrenoPage } from './pages/terreno/terreno.page';
 import { ProveedoresTerrenoPage } from './pages/proveedores-terreno/proveedores-terreno.page';
-import { GastosProyectoPage } from './pages/gastos-proyecto/gastos-proyecto.page';
+import { GastosSeccionPage } from './pages/gastos-seccion/gastos-seccion.page';
 import { authGuard } from './core/guards/auth.guard';
 import { PermisosPage } from './pages/permisos/permisos.page';
 import { ACCESS_RULES } from './core/auth/access-control.util';
@@ -34,10 +32,12 @@ export const routes: Routes = [
   { path: 'dashboard', component: DashboardPage, canActivate: [authGuard] },
   { path: 'resumen-total', canActivate: [authGuard], component: ResumenTotalPage },
   { path: 'presupuesto', canActivate: [authGuard], component: PresupuestoPage },
-  { path: 'terreno', canActivate: [authGuard], component: TerrenoPage },
-  { path: 'marketing-publicidad', canActivate: [authGuard], component: GastosProyectoPage, data: { tipoModulo: 'marketing-publicidad', titulo: 'Marketing / Ventas', subtitulo: 'Registro de publicidad y comisión por ventas por proyecto.', conceptos: ['PUBLICIDAD', 'COMISION POR VENTAS', 'MARKETING'], conceptoLabel: 'Categoría' } },
-  { path: 'otros-gastos', canActivate: [authGuard], component: GastosProyectoPage, data: { tipoModulo: 'otros-gastos', titulo: 'Otros Gastos', subtitulo: 'Registro de otros gastos por proyecto.', conceptos: ['OTROS GASTOS'], conceptoLabel: 'Categoría' } },
-  { path: 'gastos-municipales-distritales', canActivate: [authGuard], component: GastosProyectoPage, data: { tipoModulo: 'gastos-municipales-distritales', titulo: 'Gastos municipales y distritales', subtitulo: 'Registro de independización, declaratoria, conformidad e instalaciones por proyecto.', conceptos: ['INDEPENDIZACION', 'DECLARATORIA', 'CONFORMIDAD', 'INSTALACIONES'], conceptoLabel: 'Categoría' } },
+  // Operaciones → Gastos del proyecto: las cinco secciones son gasto directo filtrado por sección.
+  { path: 'gastos-administrativos', canActivate: [authGuard], component: GastosSeccionPage, data: { seccion: 'ADMINISTRATIVO', titulo: 'Gastos administrativos', subtitulo: 'Gastos de oficina y áreas de la empresa: alquiler, servicios, planilla y bancos.' } },
+  { path: 'terreno', canActivate: [authGuard], component: GastosSeccionPage, data: { seccion: 'TERRENO', titulo: 'Terreno - Anteproyecto - Proyecto', subtitulo: 'Compra de terreno, alcabala, estudios previos y desarrollo del proyecto.' } },
+  { path: 'marketing-publicidad', canActivate: [authGuard], component: GastosSeccionPage, data: { seccion: 'MARKETING_VENTAS', titulo: 'Marketing / Ventas', subtitulo: 'Publicidad, marketing, comisiones por ventas y sala de ventas.' } },
+  { path: 'otros-gastos', canActivate: [authGuard], component: GastosSeccionPage, data: { seccion: 'OTROS', titulo: 'Otros gastos', subtitulo: 'Gastos del proyecto que no pertenecen a otra sección.' } },
+  { path: 'gastos-municipales-distritales', canActivate: [authGuard], component: GastosSeccionPage, data: { seccion: 'MUNICIPAL', titulo: 'Gastos municipales y distritales', subtitulo: 'Licencias, independización, declaratoria de fábrica, conformidad de obra e instalaciones.' } },
   { path: 'especialidades', canActivate: [authGuard], component: EspecialidadesPage },
   { path: 'proveedores', canActivate: [authGuard], component: ProveedoresPage },
   { path: 'materiales', canActivate: [authGuard], component: MaterialesPage },
@@ -73,10 +73,44 @@ export const routes: Routes = [
       { path: 'acciones', component: PermisosPage }
     ]
   },
+  {
+    path: 'control-presupuestario',
+    canActivate: [authGuard],
+    data: { access: ACCESS_RULES.controlPresupuestario },
+    children: [
+      { path: '', redirectTo: 'panel', pathMatch: 'full' },
+      {
+        path: 'panel',
+        canActivate: [authGuard],
+        loadComponent: () => import('./pages/control-presupuestario/control-presupuestario.page')
+          .then(m => m.ControlPresupuestarioPage),
+        data: { access: ACCESS_RULES.controlPresupuestarioReportes }
+      },
+      {
+        path: 'presupuestos',
+        canActivate: [authGuard],
+        loadComponent: () => import('./pages/presupuestos/presupuestos.page').then(m => m.PresupuestosPage),
+        data: { access: ACCESS_RULES.controlPresupuestarioPresupuestos }
+      },
+      // Gasto directo ya no es una sección propia: vive en Operaciones → Gastos del proyecto.
+      { path: 'gastos-directos', redirectTo: '/gastos-administrativos', pathMatch: 'full' },
+      {
+        path: 'centros-costo',
+        canActivate: [authGuard],
+        loadComponent: () => import('./pages/centros-costo/centros-costo.page').then(m => m.CentrosCostoPage),
+        data: { access: ACCESS_RULES.controlPresupuestarioCentrosCosto }
+      },
+      {
+        path: 'partidas',
+        canActivate: [authGuard],
+        loadComponent: () => import('./pages/partidas/partidas.page').then(m => m.PartidasPage),
+        data: { access: ACCESS_RULES.controlPresupuestarioPartidas }
+      }
+    ]
+  },
   { path: 'valorizaciones', canActivate: [authGuard], component: ValorizacionesPage },
   { path: 'proveedores-gasto', canActivate: [authGuard], component: ProveedoresGastoPage },
   { path: 'proveedores-terreno', canActivate: [authGuard], component: ProveedoresTerrenoPage },
   { path: 'categorias-gasto', canActivate: [authGuard], component: CategoriasGastoPage },
-  { path: 'gastos-administrativos', canActivate: [authGuard], component: GastosAdministrativosPage },
   { path: '**', redirectTo: 'dashboard' }
 ];

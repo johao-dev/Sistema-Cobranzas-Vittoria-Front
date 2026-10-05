@@ -79,3 +79,34 @@
 .provider-select {
   min-width: 220px;
 }
+/* Confirmación de cambio de estado: va sobre el modal de detalle */
+.oc-estado-backdrop {
+  z-index: 92;
+}
+
+.oc-estado-card {
+  z-index: 93;
+  max-width: 520px;
+}
+
+.oc-estado-nota {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #374151;
+}
+
+/* Precio opcional por ítem */
+.precio-column {
+  min-width: 130px;
+}
+
+.precio-input {
+  width: 110px;
+  text-align: right;
+}
+
+.sin-precio {
+  color: #6b7280;
+  font-size: 12px;
+  white-space: normal;
+}

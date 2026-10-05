@@ -1,0 +1,680 @@
+<div class="page-header">
+  <div>
+    <div class="page-title">Presupuestos</div>
+    <div class="page-subtitle">Creación, versionado y asignación de montos por partida. Solo una versión aprobada
+      afecta saldos.</div>
+  </div>
+</div>
+
+<section class="panel">
+  <div class="panel-title-row">
+    <div class="panel-title">Listado de presupuestos</div>
+    <div class="filters maintenance-search">
+      <div class="field">
+        <label>Buscar</label>
+        <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Código, nombre o centro de costo" />
+      </div>
+    </div>
+    <button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">+ Nuevo presupuesto</button>
+  </div>
+
+  <div class="filters filters--two">
+    <div class="field">
+      <label>Estado</label>
+      <select [(ngModel)]="filtroActivo" (change)="load()">
+        <option value="">Todos</option>
+        <option value="true">Activo</option>
+        <option value="false">Inactivo</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Centro de costo</label>
+      <select [(ngModel)]="filtroCentroCosto" (change)="load()">
+        <option value="">Todos</option>
+        <option *ngFor="let c of centrosCosto" [value]="c.idCentroCosto">{{ c.codigo }} — {{ c.nombre }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="empty-state">Cargando presupuestos...</div>
+  <div *ngIf="!loading && !presupuestosFiltrados.length" class="empty-state">No hay presupuestos registrados.</div>
+
+  <div *ngIf="!loading && presupuestosFiltrados.length" class="table-wrap table-wrap--sticky-actions">
+    <table>
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Presupuesto</th>
+          <th>Centro de costo</th>
+          <th>Moneda</th>
+          <th>Situación</th>
+          <th>Estado</th>
+          <th class="actions-col">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of presupuestosFiltrados"
+          [class.row--selected]="seleccionado?.idPresupuesto === row.idPresupuesto">
+          <td>{{ row.codigo }}</td>
+          <td>{{ row.nombre }}</td>
+          <td>{{ row.centroCosto }}</td>
+          <td>{{ row.moneda }}</td>
+          <td>
+            <span class="badge" [class.badge--ok]="row.estadoElaboracion === 'APROBADO'"
+              [class.badge--warn]="row.estadoElaboracion === 'EN_REVISION' || row.estadoElaboracion === 'EN_ELABORACION'"
+              [class.badge--danger]="row.estadoElaboracion === 'INCONSISTENTE'"
+              [class.badge--neutral]="row.estadoElaboracion === 'SIN_VERSION_VIGENTE'">
+              {{ etiquetaEstado(row.estadoElaboracion) }}
+            </span>
+          </td>
+          <td>
+            <span class="badge" [class.badge--ok]="row.activo" [class.badge--neutral]="!row.activo">
+              {{ row.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td class="actions-col">
+            <button type="button" class="btn btn-secondary btn-sm" (click)="seleccionar(row)">Gestionar</button>
+            <button type="button" class="btn btn-ghost btn-sm" (click)="editarPresupuesto(row)">Editar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel" *ngIf="seleccionado">
+  <div class="panel-title-row">
+    <div>
+      <div class="panel-title">{{ seleccionado.codigo }} — {{ seleccionado.nombre }}</div>
+      <div class="page-subtitle">{{ seleccionado.centroCosto }} · Moneda {{ seleccionado.moneda }}</div>
+    </div>
+    <button type="button" class="btn btn-primary btn-sm" (click)="abrirModalVersion()">+ Nueva versión</button>
+    <button type="button" class="btn btn-ghost btn-sm" (click)="limpiarSeleccion()">Cerrar</button>
+  </div>
+
+  <div *ngIf="cargandoVersiones" class="empty-state">Cargando versiones...</div>
+  <div *ngIf="!cargandoVersiones && !versiones.length" class="empty-state">Este presupuesto no tiene versiones.</div>
+
+  <div class="version-chips" *ngIf="!cargandoVersiones && versiones.length">
+    <button type="button" class="version-chip" *ngFor="let v of versiones"
+      [class.version-chip--active]="versionSeleccionada?.idPresupuestoVersion === v.idPresupuestoVersion"
+      (click)="seleccionarVersion(v)">
+      <span class="version-chip__num">v{{ v.numeroVersion }}</span>
+      <span class="version-chip__estado">{{ v.estado }}</span>
+    </button>
+  </div>
+
+  <div *ngIf="versionSeleccionada" class="version-detalle">
+    <div class="version-meta">
+      <div><strong>Versión {{ versionSeleccionada.numeroVersion }}</strong> ·
+        {{ versionSeleccionada.estado }}</div>
+      <div *ngIf="versionSeleccionada.motivoCambio">Motivo: {{ versionSeleccionada.motivoCambio }}</div>
+      <div *ngIf="versionSeleccionada.usuarioCreacion">Creada por {{ versionSeleccionada.usuarioCreacion }}</div>
+      <div *ngIf="versionSeleccionada.usuarioAprobacion">Aprobada por {{ versionSeleccionada.usuarioAprobacion }}</div>
+    </div>
+
+    <div class="toolbar toolbar--compact">
+      <button type="button" class="btn btn-secondary btn-sm" [disabled]="!versionEditable"
+        (click)="abrirModalDetalle()">+ Asignar partida</button>
+      <button type="button" class="btn btn-secondary btn-sm" [disabled]="!versionEditable"
+        (click)="abrirCargaCompleta()">Carga completa</button>
+      <button type="button" class="btn btn-secondary btn-sm" [disabled]="!versionEditable"
+        (click)="abrirImportar()">Importar CSV/XLSX</button>
+      <button type="button" class="btn btn-secondary btn-sm" [disabled]="!versionEditable"
+        (click)="abrirImportarEstructura()">Importar estructura (Excel)</button>
+      <button type="button" class="btn btn-success btn-sm" [disabled]="!versionAprobable"
+        (click)="aprobarVersion()">Aprobar versión</button>
+      <button type="button" class="btn btn-danger btn-sm" [disabled]="!versionEditable"
+        (click)="anularVersion()">Anular borrador</button>
+    </div>
+
+    <div class="alerta-info" *ngIf="!versionEditable">
+      Esta versión ya no es editable. Crea una nueva versión para modificar montos.
+    </div>
+
+    <div class="vista-toggle" role="group" aria-label="Vista de los montos">
+      <button type="button" class="vista-toggle__btn" [class.vista-toggle__btn--activo]="vistaVersion === 'tabla'"
+        [attr.aria-pressed]="vistaVersion === 'tabla'" (click)="cambiarVistaVersion('tabla')">Lista</button>
+      <button type="button" class="vista-toggle__btn" [class.vista-toggle__btn--activo]="vistaVersion === 'arbol'"
+        [attr.aria-pressed]="vistaVersion === 'arbol'" (click)="cambiarVistaVersion('arbol')">Árbol con subtotales</button>
+    </div>
+
+    <div *ngIf="resumenEstructura" class="alerta-ok">
+      Estructura importada: {{ resumenEstructura.partidasCreadas }} partida(s) nueva(s) en el catálogo,
+      {{ resumenEstructura.agregados }} agregada(s) y {{ resumenEstructura.actualizados }} actualizada(s)<span
+        *ngIf="resumenEstructura.eliminados">, {{ resumenEstructura.eliminados }} quitada(s)</span>.
+      La versión tiene {{ resumenEstructura.partidasEnVersion }} partidas por un total de
+      {{ simbolo }} {{ resumenEstructura.montoTotal | number:'1.2-2' }}. Revisa el árbol antes de aprobar.
+    </div>
+
+    <app-arbol-presupuestario *ngIf="vistaVersion === 'arbol'" modo="version"
+      [idPresupuesto]="seleccionado.idPresupuesto" [idVersion]="versionSeleccionada.idPresupuestoVersion"
+      [recarga]="recargaArbol" (abrirHoja)="verMovimientosNodo($event)"></app-arbol-presupuestario>
+
+    <div *ngIf="vistaVersion === 'tabla' && cargandoDetalles" class="empty-state">Cargando montos...</div>
+    <div *ngIf="vistaVersion === 'tabla' && !cargandoDetalles && !detalles.length" class="empty-state">
+      Esta versión no tiene partidas asignadas.
+    </div>
+
+    <div *ngIf="vistaVersion === 'tabla' && !cargandoDetalles && detalles.length" class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Partida</th>
+            <th>Descripción</th>
+            <th class="num">Monto presupuestado</th>
+            <th>Observación</th>
+            <th class="actions-col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let d of detalles">
+            <td>{{ d.codigo }}</td>
+            <td>{{ d.nombre }}</td>
+            <td class="num">{{ simbolo }} {{ d.montoPresupuestado | number:'1.2-2' }}</td>
+            <td>{{ d.observacion || '—' }}</td>
+            <td class="actions-col">
+              <button type="button" class="btn btn-ghost btn-sm" [disabled]="!versionEditable"
+                (click)="abrirModalDetalle(d)">Editar</button>
+              <button type="button" class="btn btn-ghost btn-sm" (click)="verMovimientos(d)">Historial</button>
+              <button type="button" class="btn btn-ghost btn-sm" (click)="abrirModalAjuste(d)">Ajuste</button>
+              <button type="button" class="btn btn-ghost btn-sm" [disabled]="!versionEditable"
+                (click)="eliminarDetalle(d)">Quitar</button>
+            </td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2"><strong>Total presupuestado</strong></td>
+            <td class="num"><strong>{{ simbolo }} {{ totalPresupuestado | number:'1.2-2' }}</strong></td>
+            <td colspan="2"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</section>
+
+<div class="design-modal-backdrop" *ngIf="modalPresupuesto" (click)="cerrarModales()"></div>
+<section class="panel panel--form design-modal-card" *ngIf="modalPresupuesto" (click)="$event.stopPropagation()">
+  <button type="button" class="modal-close" (click)="cerrarModales()" aria-label="Cerrar">&times;</button>
+  <div class="panel-title">{{ esEdicion ? 'Editar presupuesto' : 'Nuevo presupuesto' }}</div>
+
+  <div class="form-grid two">
+    <div class="field">
+      <label>Centro de costo</label>
+      <select [(ngModel)]="form.idCentroCosto" [disabled]="esEdicion">
+        <option value="">Seleccione&hellip;</option>
+        <option *ngFor="let c of centrosCosto" [value]="c.idCentroCosto">{{ c.codigo }} — {{ c.nombre }}</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Moneda</label>
+      <select [(ngModel)]="form.idMoneda" [disabled]="esEdicion">
+        <option value="">Seleccione&hellip;</option>
+        <option *ngFor="let m of monedas" [value]="m.idMoneda">{{ m.codigo }} — {{ m.nombre }}</option>
+      </select>
+      <small class="field-hint">Cada presupuesto opera en una sola moneda. No hay conversión automática.</small>
+    </div>
+
+    <div class="field">
+      <label>Código</label>
+      <input [(ngModel)]="form.codigo" [disabled]="esEdicion" placeholder="Ej. PRES-2026-001" />
+    </div>
+
+    <div class="field">
+      <label>Nombre</label>
+      <input [(ngModel)]="form.nombre" placeholder="Ej. Presupuesto de obra 2026" />
+    </div>
+
+    <div class="field">
+      <label>Fecha inicio</label>
+      <input type="date" [(ngModel)]="form.fechaInicio" />
+    </div>
+
+    <div class="field">
+      <label>Fecha fin</label>
+      <input type="date" [(ngModel)]="form.fechaFin" />
+    </div>
+
+    <div class="field" *ngIf="esEdicion">
+      <label>Estado</label>
+      <select [(ngModel)]="form.activo">
+        <option [ngValue]="true">Activo</option>
+        <option [ngValue]="false">Inactivo</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Descripción</label>
+      <input [(ngModel)]="form.descripcion" placeholder="Opcional" />
+    </div>
+  </div>
+
+  <div class="toolbar toolbar--compact">
+    <button class="btn btn-primary" [disabled]="guardando" (click)="guardarPresupuesto()">
+      {{ guardando ? 'Guardando…' : 'Guardar presupuesto' }}
+    </button>
+    <button class="btn btn-ghost" (click)="cerrarModales()">Cancelar</button>
+  </div>
+</section>
+
+<!-- Confirmación de inactivar un presupuesto con registros asociados -->
+<div class="design-modal-backdrop design-modal-backdrop--top" *ngIf="modalConfirmarInactivar"
+  (click)="cancelarInactivacion()"></div>
+<section class="panel panel--form design-modal-card design-modal-card--top" *ngIf="modalConfirmarInactivar"
+  role="alertdialog" aria-labelledby="titulo-inactivar" (click)="$event.stopPropagation()">
+  <button type="button" class="modal-close" (click)="cancelarInactivacion()" aria-label="Cerrar">&times;</button>
+  <div class="panel-title" id="titulo-inactivar">¿Inactivar el presupuesto?</div>
+  <p class="modal-nota modal-nota--aviso">{{ mensajeInactivar }}</p>
+  <div class="toolbar toolbar--compact">
+    <button class="btn btn-danger" [disabled]="guardando" (click)="confirmarInactivacion()">
+      {{ guardando ? 'Inactivando…' : 'Sí, inactivar' }}
+    </button>
+    <button class="btn btn-ghost" [disabled]="guardando" (click)="cancelarInactivacion()">Cancelar</button>
+  </div>
+</section>
+
+<div class="design-modal-backdrop" *ngIf="modalVersion" (click)="cerrarModales()"></div>
+<section class="panel panel--form design-modal-card" *ngIf="modalVersion" (click)="$event.stopPropagation()">
+  <button type="button" class="modal-close" (click)="cerrarModales()" aria-label="Cerrar">&times;</button>
+  <div class="panel-title">Nueva versión</div>
+  <p class="modal-nota">Se copian los montos de la versión vigente a un nuevo borrador. Las versiones anteriores se
+    conservan como historial.</p>
+
+  <div class="form-grid one">
+    <div class="field">
+      <label>Motivo del cambio</label>
+      <input [(ngModel)]="formVersion.motivoCambio" placeholder="Ej. Ampliación de metrados del bloque B" />
+    </div>
+    <div class="field">
+      <label>Descripción</label>
+      <input [(ngModel)]="formVersion.descripcion" placeholder="Opcional" />
+    </div>
+  </div>
+
+  <div class="toolbar toolbar--compact">
+    <button class="btn btn-primary" [disabled]="guardando" (click)="crearVersion()">
+      {{ guardando ? 'Creando…' : 'Crear versión' }}
+    </button>
+    <button class="btn btn-ghost" (click)="cerrarModales()">Cancelar</button>
+  </div>
+</section>
+
+<div class="design-modal-backdrop" *ngIf="modalAnular" (click)="cerrarModales()"></div>
+<section class="panel panel--form design-modal-card" *ngIf="modalAnular" (click)="$event.stopPropagation()">
+  <button type="button" class="modal-close" (click)="cerrarModales()" aria-label="Cerrar">&times;</button>
+  <div class="panel-title">Anular versión {{ versionSeleccionada?.numeroVersion }}</div>
+  <p class="modal-nota">El borrador queda anulado y no se puede reabrir. El motivo se guarda en el historial de la versión.</p>
+
+  <div class="form-grid one">
+    <div class="field">
+      <label>Motivo de la anulación</label>
+      <textarea rows="3" [(ngModel)]="motivoAnulacion" maxlength="500"
+        placeholder="Ej. Se descartó esta propuesta presupuestaria"></textarea>
+    </div>
+  </div>
+
+  <div class="toolbar toolbar--compact">
+    <button class="btn btn-danger" [disabled]="guardando" (click)="confirmarAnulacion()">
+      {{ guardando ? 'Anulando…' : 'Anular versión' }}
+    </button>
+    <button class="btn btn-ghost" (click)="cerrarModales()">Cancelar</button>
+  </div>
+</section>
+
+<div class="design-modal-backdrop" *ngIf="modalDetalle" (click)="cerrarModales()"></div>
+<section class="panel panel--form design-modal-card" *ngIf="modalDetalle" (click)="$event.stopPropagation()">
+  <button type="button" class="modal-close" (click)="cerrarModales()" aria-label="Cerrar">&times;</button>
+  <div class="panel-title">{{ esEdicionDetalle ? 'Editar monto' : 'Asignar partida' }}</div>
+
+  <div class="form-grid one">
+    <div class="field" *ngIf="!esEdicionDetalle">
+      <label>Partida</label>
+      <select [(ngModel)]="formDetalle.idCatalogoPartida">
+        <option value="">Seleccione&hellip;</option>
+        <option *ngFor="let p of partidasAsignables" [value]="p.idCatalogoPartida">
+          {{ p.codigo }} — {{ p.nombre }}
+        </option>
+      </select>
+      <small class="field-hint">Solo se listan partidas hoja activas que aún no están en esta versión.</small>
+    </div>
+
+    <div class="field">
+      <label>Monto presupuestado ({{ simbolo }})</label>
+      <input type="number" min="0" step="0.01" [(ngModel)]="formDetalle.montoPresupuestado" />
+    </div>
+
+    <div class="field">
+      <label>Observación</label>
+      <input [(ngModel)]="formDetalle.observacion" placeholder="Opcional" />
+    </div>
+  </div>
+
+  <div class="toolbar toolbar--compact">
+    <button class="btn btn-primary" [disabled]="guardando" (click)="guardarDetalle()">
+      {{ guardando ? 'Guardando…' : 'Guardar monto' }}
+    </button>
+    <button class="btn btn-ghost" (click)="cerrarModales()">Cancelar</button>
+  </div>
+</section>
+
+<div class="design-modal-backdrop" *ngIf="modalMovimientos" (click)="cerrarModales()"></div>
+<section class="panel panel--form design-modal-card design-modal-card--wide" *ngIf="modalMovimientos"
+  (click)="$event.stopPropagation()">
+  <button type="button" class="modal-close" (click)="cerrarModales()" aria-label="Cerrar">&times;</button>
+  <div class="panel-title">Historial de movimientos</div>
+  <p class="modal-nota" *ngIf="detalleSeleccionado">
+    {{ detalleSeleccionado.codigo }} — {{ detalleSeleccionado.nombre }}
+  </p>
+
+  <div *ngIf="cargandoMovimientos" class="empty-state">Cargando historial...</div>
+  <div *ngIf="!cargandoMovimientos && !movimientos.length" class="empty-state">
+    Esta partida no registra movimientos.
+  </div>
+
+  <div *ngIf="!cargandoMovimientos && movimientos.length" class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Tipo</th>
+          <th>Afectación</th>
+          <th>Dirección</th>
+          <th>Origen</th>
+          <th class="num">Monto</th>
+          <th>Observación</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let m of movimientos">
+          <td>{{ m.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>{{ m.tipo }}</td>
+          <td>{{ m.afectacion || '—' }}</td>
+          <td>{{ m.direccion || '—' }}</td>
+          <td>{{ m.origen }} #{{ m.idOrigen }}</td>
+          <td class="num">{{ m.simboloMoneda }} {{ m.monto | number:'1.2-2' }}</td>
+          <td>{{ m.observacion || '—' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="toolbar toolbar--compact">
+    <button class="btn btn-ghost" (click)="cerrarModales()">Cerrar</button>
+  </div>
+</section>
+
+<div class="design-modal-backdrop" *ngIf="modalAjuste" (click)="cerrarModales()"></div>
+<section class="panel panel--form design-modal-card" *ngIf="modalAjuste" (click)="$event.stopPropagation()">
+  <button type="button" class="modal-close" (click)="cerrarModales()" aria-label="Cerrar">&times;</button>
+  <div class="panel-title">Registrar ajuste</div>
+  <p class="modal-nota">Los movimientos no se borran ni se editan. Un error se corrige con un ajuste que queda
+    registrado en el historial.</p>
+
+  <div class="form-grid two">
+    <div class="field">
+      <label>Afectación</label>
+      <select [(ngModel)]="formAjuste.afectacion">
+        <option value="COMPROMISO">Comprometido</option>
+        <option value="EJECUCION">Ejecutado</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Dirección</label>
+      <select [(ngModel)]="formAjuste.direccion">
+        <option value="INCREMENTO">Incremento</option>
+        <option value="DECREMENTO">Decremento</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Monto</label>
+      <input type="number" min="0.01" step="0.01" [(ngModel)]="formAjuste.monto" />
+    </div>
+
+    <div class="field">
+      <label>Fecha</label>
+      <input type="date" [(ngModel)]="formAjuste.fecha" />
+    </div>
+
+    <div class="field field--full">
+      <label>Observación (requerida)</label>
+      <input [(ngModel)]="formAjuste.observacion" placeholder="Justifica el ajuste" />
+    </div>
+  </div>
+
+  <div class="toolbar toolbar--compact">
+    <button class="btn btn-primary" [disabled]="guardando" (click)="registrarAjuste()">
+      {{ guardando ? 'Registrando…' : 'Registrar ajuste' }}
+    </button>
+    <button class="btn btn-ghost" (click)="cerrarModales()">Cancelar</button>
+  </div>
+</section>
+
+<!-- Carga completa: todas las partidas hoja activas en una sola grilla -->
+<div class="design-modal-backdrop" *ngIf="modalCarga" (click)="cerrarModales()"></div>
+<section class="panel panel--form design-modal-card design-modal-card--wide" *ngIf="modalCarga"
+  (click)="$event.stopPropagation()">
+  <button type="button" class="modal-close" (click)="cerrarModales()" aria-label="Cerrar">&times;</button>
+  <div class="panel-title">Carga completa · versión {{ versionSeleccionada?.numeroVersion }}</div>
+  <p class="modal-nota">
+    Escribe el monto de cada partida. Si una partida no aplica, déjala en 0. Al guardar se cargan todas las
+    partidas de la lista en la versión.
+  </p>
+
+  <div class="carga-toolbar">
+    <div class="field carga-busqueda">
+      <label>Buscar</label>
+      <input type="text" [(ngModel)]="busquedaCarga" placeholder="Código, partida o grupo" />
+    </div>
+    <div class="carga-total">
+      <span>{{ partidasConMonto }} de {{ filasCarga.length }} partidas con monto</span>
+      <strong>Total: {{ simbolo }} {{ totalCarga | number:'1.2-2' }}</strong>
+    </div>
+  </div>
+
+  <div *ngIf="!filasCarga.length" class="empty-state">No hay partidas activas en el catálogo.</div>
+
+  <div *ngIf="filasCarga.length" class="table-wrap carga-tabla">
+    <table>
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Partida</th>
+          <th class="num">Monto ({{ simbolo }})</th>
+          <th>Observación</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let f of filasCargaVisibles; let i = index">
+          <tr *ngIf="iniciaGrupo(i)" class="carga-grupo">
+            <td colspan="4">{{ f.grupo }}</td>
+          </tr>
+          <tr>
+            <td>{{ f.codigo }}</td>
+            <td>{{ f.nombre }}</td>
+            <td class="num">
+              <input class="carga-monto" type="number" min="0" step="0.01" [(ngModel)]="f.monto"
+                [attr.aria-label]="'Monto de ' + f.nombre" />
+            </td>
+            <td>
+              <input class="carga-obs" [(ngModel)]="f.observacion" placeholder="Opcional"
+                [attr.aria-label]="'Observación de ' + f.nombre" />
+            </td>
+          </tr>
+        </ng-container>
+        <tr *ngIf="!filasCargaVisibles.length">
+          <td colspan="4" class="empty-state">Ninguna partida coincide con la búsqueda.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="toolbar toolbar--compact">
+    <button class="btn btn-primary" [disabled]="guardando || !filasCarga.length" (click)="guardarCargaCompleta()">
+      {{ guardando ? 'Guardando…' : 'Guardar montos' }}
+    </button>
+    <button class="btn btn-ghost" [disabled]="guardando" (click)="cerrarModales()">Cancelar</button>
+  </div>
+</section>
+
+<!-- Importación de montos por CSV/XLSX -->
+<div class="design-modal-backdrop" *ngIf="modalImportar" (click)="cerrarModales()"></div>
+<section class="panel panel--form design-modal-card design-modal-card--wide" *ngIf="modalImportar"
+  (click)="$event.stopPropagation()">
+  <button type="button" class="modal-close" (click)="cerrarModales()" aria-label="Cerrar">&times;</button>
+  <div class="panel-title">Importar montos · versión {{ versionSeleccionada?.numeroVersion }}</div>
+  <p class="modal-nota">
+    Descarga la plantilla: trae todas las partidas con el monto actual de esta versión. Completa la columna
+    <code>Monto</code> (0 si la partida no aplica) y súbela. Columnas: <code>CodigoPartida</code> y
+    <code>Monto</code> (obligatorias), <code>Observacion</code> (opcional); <code>Partida</code> es solo
+    informativa. Si una fila tiene un error, no se carga ningún monto.
+  </p>
+
+  <div class="toolbar toolbar--compact">
+    <button type="button" class="btn btn-secondary btn-sm" [disabled]="descargandoPlantilla || guardando"
+      (click)="descargarPlantilla('csv')">Descargar plantilla CSV</button>
+    <button type="button" class="btn btn-secondary btn-sm" [disabled]="descargandoPlantilla || guardando"
+      (click)="descargarPlantilla('xlsx')">Descargar plantilla Excel</button>
+  </div>
+
+  <div class="form-grid one">
+    <div class="field">
+      <label>Archivo (CSV, XLSX, XLS · máx. 5 MB)</label>
+      <input type="file" accept=".csv,.xlsx,.xls" [disabled]="guardando" (change)="onArchivoImportar($event)" />
+      <small class="field-hint">
+        CSV con <code>;</code> o <code>,</code> como separador. Los montos admiten punto o coma decimal
+        (15000.50 o 15000,50).
+      </small>
+    </div>
+    <label class="check-inline">
+      <input type="checkbox" [(ngModel)]="quitarAusentesImportar" [disabled]="guardando" />
+      Quitar de la versión las partidas que no vienen en el archivo
+    </label>
+  </div>
+
+  <div class="toolbar toolbar--compact">
+    <button class="btn btn-primary" [disabled]="!archivoImportar || guardando" (click)="importar()">
+      {{ guardando ? 'Importando…' : 'Importar' }}
+    </button>
+    <button class="btn btn-ghost" [disabled]="guardando" (click)="cerrarModales()">Cerrar</button>
+  </div>
+
+  <div *ngIf="resultadoImportar" class="alerta-ok">
+    Importación completa: {{ resultadoImportar.agregados }} agregada(s), {{ resultadoImportar.actualizados }}
+    actualizada(s)<span *ngIf="resultadoImportar.eliminados">, {{ resultadoImportar.eliminados }} quitada(s)</span>.
+    La versión tiene {{ resultadoImportar.partidasEnVersion }} partidas por un total de
+    {{ simbolo }} {{ resultadoImportar.montoTotal | number:'1.2-2' }}.
+  </div>
+
+  <div *ngIf="erroresImportar.length" class="import-errores">
+    <div class="alerta-error">{{ mensajeErrorImportar }}</div>
+    <div class="table-wrap import-errores__tabla">
+      <table>
+        <thead>
+          <tr>
+            <th title="Fila en la hoja de Excel, contando el encabezado">Fila Excel</th>
+            <th>Columna</th>
+            <th>Código</th>
+            <th>Error</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let e of erroresImportar">
+            <td>{{ filaExcel(e.fila) }}</td>
+            <td>{{ e.campo || '—' }}</td>
+            <td><code>{{ e.codigoError || '—' }}</code></td>
+            <td>{{ e.mensaje }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- Importación de estructura: Excel jerárquico de las áreas (niveles + montos de las hojas) -->
+<div class="design-modal-backdrop" *ngIf="modalEstructura" (click)="cerrarModales()"></div>
+<section class="panel panel--form design-modal-card design-modal-card--wide" *ngIf="modalEstructura"
+  (click)="$event.stopPropagation()">
+  <button type="button" class="modal-close" (click)="cerrarModales()" aria-label="Cerrar">&times;</button>
+  <div class="panel-title">Importar estructura · versión {{ versionSeleccionada?.numeroVersion }}</div>
+  <p class="modal-nota">
+    Sube el presupuesto con su jerarquía de partidas. Se crean en el catálogo las partidas que falten (categorías e
+    hijas) y se cargan los montos de las partidas finales en esta versión. Si una fila tiene un error, no se importa
+    nada.
+  </p>
+
+  <div class="estructura-ayuda">
+    <ul>
+      <li><strong>Código:</strong> una columna <code>Codigo</code> con texto (<code>1.1.3</code>) o columnas
+        <code>Nivel 1</code>, <code>Nivel 2</code>… <code>Nivel N</code>. Un 0 o una celda vacía cierran el código:
+        <code>1 | 1 | 3 | 0 | 0</code> → <code>1.1.3</code>.</li>
+      <li><strong>Nombre</strong> (o <code>Descripción</code>): obligatorio.</li>
+      <li><strong>Monto</strong> (o <code>Total</code>): obligatorio en las partidas finales (se acepta 0). Se redondea al céntimo, así que los
+        montos calculados con fórmulas se aceptan tal cual. En las
+        categorías que tienen hijas va vacío o en 0: su total se calcula con la suma de sus hijas.</li>
+      <li><strong>Tipo</strong> (opcional): si falta, se hereda del padre. Una categoría raíz nueva debe traerlo.</li>
+      <li><strong>Seccion</strong> (opcional, solo en partidas finales) y <strong>Observacion</strong> (opcional).
+        Las demás columnas (<code>Und.</code>, <code>Metrado</code>, <code>Precio</code>, <code>Subtotal</code>) se
+        ignoran.</li>
+      <li>Cada categoría debe venir en el archivo o existir ya en el catálogo. Un código existente se reutiliza si
+        tiene el mismo nombre y el mismo padre.</li>
+    </ul>
+  </div>
+
+  <div class="toolbar toolbar--compact">
+    <button type="button" class="btn btn-secondary btn-sm" [disabled]="descargandoPlantilla || guardando"
+      (click)="descargarPlantilla('xlsx', 'estructura')">Descargar plantilla Excel</button>
+    <button type="button" class="btn btn-ghost btn-sm" [disabled]="descargandoPlantilla || guardando"
+      (click)="descargarPlantilla('csv', 'estructura')">Plantilla CSV</button>
+  </div>
+
+  <div class="form-grid one">
+    <div class="field">
+      <label>Archivo (XLSX recomendado, CSV · máx. 5 MB)</label>
+      <input type="file" accept=".xlsx,.xls,.csv" [disabled]="guardando" (change)="onArchivoImportar($event)" />
+      <small class="field-hint">
+        En Excel usa las columnas de nivel o escribe el código como texto: Excel convierte <code>1.1.1</code> en
+        número o fecha.
+      </small>
+    </div>
+    <label class="check-inline">
+      <input type="checkbox" [(ngModel)]="quitarAusentesImportar" [disabled]="guardando" />
+      Quitar de la versión las partidas que no vienen en el archivo
+    </label>
+  </div>
+
+  <div class="toolbar toolbar--compact">
+    <button class="btn btn-primary" [disabled]="!archivoImportar || guardando" (click)="importarEstructura()">
+      {{ guardando ? 'Importando…' : 'Importar estructura' }}
+    </button>
+    <button class="btn btn-ghost" [disabled]="guardando" (click)="cerrarModales()">Cerrar</button>
+  </div>
+
+  <div *ngIf="erroresImportar.length" class="import-errores">
+    <div class="alerta-error">{{ mensajeErrorImportar }}</div>
+    <div class="table-wrap import-errores__tabla">
+      <table>
+        <thead>
+          <tr>
+            <th title="Fila en la hoja de Excel, contando el encabezado">Fila Excel</th>
+            <th>Columna</th>
+            <th>Código</th>
+            <th>Error</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let e of erroresImportar">
+            <td>{{ filaExcel(e.fila) }}</td>
+            <td>{{ e.campo || '—' }}</td>
+            <td><code>{{ e.codigoError || '—' }}</code></td>
+            <td>{{ e.mensaje }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

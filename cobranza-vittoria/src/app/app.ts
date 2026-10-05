@@ -30,6 +30,7 @@ export class App {
     gastosProyecto: false,
     mantenimiento: false,
     inventario: false,
+    controlPresupuestario: false,
     controlAccesos: false
   };
 

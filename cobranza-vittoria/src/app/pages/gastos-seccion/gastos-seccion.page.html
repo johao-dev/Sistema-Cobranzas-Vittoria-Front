@@ -1,0 +1,360 @@
+<div class="page-header">
+  <div>
+    <div class="page-title">{{ config.titulo }}</div>
+    <div class="page-subtitle">{{ config.subtitulo }}</div>
+  </div>
+</div>
+
+<section class="panel">
+  <div class="panel-title-row">
+    <div class="panel-title">Gastos</div>
+    <div class="filters maintenance-search">
+      <div class="field">
+        <label>Buscar</label>
+        <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Concepto, proveedor o partida" />
+      </div>
+    </div>
+    <button *ngIf="puedeOperar" type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">
+      + Nuevo gasto
+    </button>
+  </div>
+
+  <div class="resumen-cards" *ngIf="!loading">
+    <div class="resumen-card resumen-card--total">
+      <span>Total registrado</span>
+      <strong *ngIf="!totalesPorMoneda.length">0.00</strong>
+      <strong *ngFor="let t of totalesPorMoneda">{{ t.moneda }} {{ t.total | number:'1.2-2' }}</strong>
+      <small>{{ registrosVigentes }} gasto(s) sin anular</small>
+    </div>
+    <div class="resumen-card" *ngFor="let p of partidasSeccion">
+      <span [title]="p.codigo">{{ p.nombre }}</span>
+      <strong *ngIf="!totalesDePartida(p.idCatalogoPartida).length">0.00</strong>
+      <strong *ngFor="let t of totalesDePartida(p.idCatalogoPartida)">{{ t.moneda }} {{ t.total | number:'1.2-2' }}</strong>
+    </div>
+  </div>
+
+  <p class="ayuda-estados">
+    Un gasto <strong>registrado</strong> no afecta el saldo; al <strong>confirmarlo</strong> se descuenta de la partida
+    y al <strong>anularlo</strong> se devuelve.
+  </p>
+
+  <div class="filters">
+    <div class="field">
+      <label>Estado</label>
+      <select [(ngModel)]="filtroEstado" (change)="load()">
+        <option value="">Todos</option>
+        <option value="REGISTRADO">Registrado</option>
+        <option value="CONFIRMADO">Confirmado</option>
+        <option value="ANULADO">Anulado</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Centro de costo</label>
+      <select [(ngModel)]="filtroCentroCosto" (change)="load()">
+        <option value="">Todos</option>
+        <option *ngFor="let c of centrosCosto" [value]="c.idCentroCosto">{{ c.codigo }} — {{ c.nombre }}</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Desde</label>
+      <input type="date" [(ngModel)]="filtroDesde" (change)="load()" />
+    </div>
+    <div class="field">
+      <label>Hasta</label>
+      <input type="date" [(ngModel)]="filtroHasta" (change)="load()" />
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="empty-state">Cargando gastos...</div>
+  <div *ngIf="!loading && !rowsFiltradas.length" class="empty-state">No hay gastos registrados en esta sección.</div>
+
+  <div *ngIf="!loading && rowsFiltradas.length" class="table-wrap table-wrap--sticky-actions">
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Concepto</th>
+          <th>Proveedor</th>
+          <th>Centro de costo</th>
+          <th>Partida</th>
+          <th class="num">Soles</th>
+          <th class="num">Dólares</th>
+          <th class="num">TC</th>
+          <th>Fecha TC</th>
+          <th>Facturas</th>
+          <th>Estado</th>
+          <th class="actions-col actions-col--select">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rowsFiltradas" [class.fila-anulada]="row.estado === 'ANULADO'">
+          <td>{{ row.fecha | date:'dd/MM/yyyy' }}</td>
+          <td>{{ row.concepto }}</td>
+          <td>{{ row.proveedor || '—' }}</td>
+          <td>{{ row.centroCosto }}</td>
+          <td>{{ row.codigoPartida }} — {{ row.partida }}</td>
+          <td class="num" *ngFor="let mon of ['PEN', 'USD']">
+            <ng-container *ngIf="montoEn(row, $any(mon)) as m; else vacio">
+              <span [class.monto-referencia]="m.referencia"
+                [title]="m.referencia ? 'Monto de la factura, solo referencia' : 'Monto que se descuenta del presupuesto'">
+                {{ m.valor | number:'1.2-2' }}
+              </span>
+            </ng-container>
+            <ng-template #vacio>—</ng-template>
+          </td>
+          <td class="num">{{ row.tipoCambio ? (row.tipoCambio | number:'1.2-4') : '—' }}</td>
+          <td>{{ row.fechaTipoCambio ? (row.fechaTipoCambio | date:'dd/MM/yyyy') : '—' }}</td>
+          <td>{{ row.totalDocumentos }}</td>
+          <td>
+            <span class="badge" [class.badge--ok]="row.estado === 'CONFIRMADO'"
+              [class.badge--warn]="row.estado === 'REGISTRADO'" [class.badge--neutral]="row.estado === 'ANULADO'">
+              {{ row.estado }}
+            </span>
+          </td>
+          <td class="actions-col--select">
+            <select class="actions-select" (change)="onAccion($event, row)" aria-label="Acciones del gasto">
+              <option value="">Acciones</option>
+              <option *ngIf="puedeOperar" value="edit" [disabled]="row.estado !== 'REGISTRADO'">Editar</option>
+              <option *ngIf="puedeOperar && !esHistorico(row)" value="confirmar"
+                [disabled]="row.estado !== 'REGISTRADO'">Confirmar</option>
+              <option *ngIf="puedeOperar" value="anular" [disabled]="row.estado === 'ANULADO'">Anular</option>
+              <option value="documentos">Documentos</option>
+            </select>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="5"><strong>Total (sin anulados)</strong></td>
+          <td class="num"><strong>{{ hayMoneda.pen ? (totalColumna('PEN') | number:'1.2-2') : '—' }}</strong></td>
+          <td class="num"><strong>{{ hayMoneda.usd ? (totalColumna('USD') | number:'1.2-2') : '—' }}</strong></td>
+          <td colspan="5"></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</section>
+
+<!-- Alta y edición -->
+<div class="design-modal-backdrop" *ngIf="modalGasto" (click)="cerrarModales()"></div>
+<section class="panel panel--form design-modal-card" *ngIf="modalGasto" (click)="$event.stopPropagation()">
+  <button type="button" class="modal-close" (click)="cerrarModales()" aria-label="Cerrar">&times;</button>
+  <div class="panel-title">{{ esEdicion ? 'Editar gasto' : 'Nuevo gasto' }} · {{ config.titulo }}</div>
+
+  <div class="form-grid two">
+    <div class="field">
+      <label>Centro de costo</label>
+      <select [(ngModel)]="form.idCentroCosto" (change)="onCentroCostoFormChange()">
+        <option value="">{{ centrosCosto.length ? 'Seleccione…' : 'No hay centros de costo para esta sección' }}</option>
+        <option *ngFor="let c of centrosCosto" [value]="c.idCentroCosto">{{ c.codigo }} — {{ c.nombre }}</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Partida</label>
+      <select [(ngModel)]="form.idPresupuestoDetalle" (change)="onPartidaChange()"
+        [disabled]="!form.idCentroCosto || !partidas.length">
+        <option value="">{{ cargandoPartidas ? 'Cargando partidas…'
+          : (form.idCentroCosto
+            ? (partidas.length ? 'Seleccione…' : 'Sin partidas de esta sección en el presupuesto aprobado')
+            : 'Elige un centro de costo') }}</option>
+        <option *ngFor="let p of partidas" [value]="p.idPresupuestoDetalle">
+          {{ p.codigoPartida }} — {{ p.nombrePartida }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <div class="saldo-box" *ngIf="partidaSeleccionada">
+    <div class="saldo-box__row">
+      <span>Presupuestado</span>
+      <strong>{{ partidaSeleccionada.simboloMoneda }} {{ partidaSeleccionada.montoPresupuestado | number:'1.2-2' }}</strong>
+    </div>
+    <div class="saldo-box__row">
+      <span>Comprometido</span>
+      <strong>{{ partidaSeleccionada.montoComprometido | number:'1.2-2' }}</strong>
+    </div>
+    <div class="saldo-box__row">
+      <span>Ejecutado</span>
+      <strong>{{ partidaSeleccionada.montoEjecutado | number:'1.2-2' }}</strong>
+    </div>
+    <div class="saldo-box__row saldo-box__row--total"
+      [class.saldo-box__row--danger]="partidaSeleccionada.saldoDisponible <= 0">
+      <span>Saldo disponible</span>
+      <strong>{{ partidaSeleccionada.saldoDisponible | number:'1.2-2' }}</strong>
+    </div>
+  </div>
+
+  <div class="alerta-aviso" *ngIf="excedeSaldo">
+    El monto supera el saldo disponible de la partida. Puedes registrarlo, pero al confirmarlo el sistema lo rechazará.
+    Para ampliar la partida, aprueba una nueva versión del presupuesto.
+  </div>
+
+  <div class="form-grid two">
+    <div class="field">
+      <label>Monto ({{ monedaPresupuesto?.codigo || 'moneda del presupuesto' }})</label>
+      <input type="number" min="0.01" step="0.01" [(ngModel)]="form.monto" [disabled]="!partidaSeleccionada" />
+      <small class="field-hint">Se registra en la moneda del presupuesto de la partida.</small>
+    </div>
+
+    <div class="field">
+      <label>Fecha</label>
+      <input type="date" [(ngModel)]="form.fecha" />
+    </div>
+
+    <div class="field field--full">
+      <label>Concepto</label>
+      <input [(ngModel)]="form.concepto" placeholder="Ej. Licencia de edificación" />
+    </div>
+
+    <div class="field">
+      <label>Proveedor</label>
+      <select [(ngModel)]="form.idProveedor">
+        <option value="">Sin proveedor</option>
+        <optgroup *ngIf="proveedoresDeLaSeccion.length" label="Proveedores de esta sección">
+          <option *ngFor="let p of proveedoresDeLaSeccion" [value]="p.idProveedor">{{ p.razonSocial }}</option>
+        </optgroup>
+        <optgroup [label]="proveedoresDeLaSeccion.length ? 'Otros proveedores' : 'Proveedores'">
+          <option *ngFor="let p of otrosProveedores" [value]="p.idProveedor">{{ p.razonSocial }}</option>
+        </optgroup>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Descripción</label>
+      <input [(ngModel)]="form.descripcion" placeholder="Opcional" />
+    </div>
+  </div>
+
+  <!-- Factura en otra moneda: solo referencia -->
+  <label class="check-inline">
+    <input type="checkbox" [(ngModel)]="form.facturaOtraMoneda" (ngModelChange)="onFacturaOtraMonedaChange()"
+      [disabled]="!partidaSeleccionada" />
+    La factura está en otra moneda
+  </label>
+  <div class="referencia-box" *ngIf="form.facturaOtraMoneda">
+    <p class="modal-nota">
+      Datos solo de referencia: el gasto se descuenta por el monto en {{ monedaPresupuesto?.codigo }}.
+      El módulo no convierte monedas.
+    </p>
+    <div class="form-grid two">
+      <div class="field">
+        <label>Moneda de la factura</label>
+        <select [(ngModel)]="form.idMonedaOriginal">
+          <option value="">Seleccione…</option>
+          <option *ngFor="let m of monedasOriginales" [value]="m.idMoneda">{{ m.codigo }} — {{ m.nombre }}</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Monto de la factura</label>
+        <input type="number" min="0.01" step="0.01" [(ngModel)]="form.montoOriginal" />
+      </div>
+      <div class="field">
+        <label>Tipo de cambio</label>
+        <input type="number" min="0.000001" step="0.001" [(ngModel)]="form.tipoCambio" />
+      </div>
+      <div class="field">
+        <label>Fecha del tipo de cambio</label>
+        <input type="date" [(ngModel)]="form.fechaTipoCambio" />
+      </div>
+    </div>
+    <div class="sugerido" *ngIf="montoSugerido !== null">
+      Equivale a {{ monedaPresupuesto?.codigo }} {{ montoSugerido | number:'1.2-2' }}.
+      <button type="button" class="btn btn-ghost btn-sm" (click)="usarMontoSugerido()">Usar como monto</button>
+    </div>
+  </div>
+
+  <div class="toolbar toolbar--compact">
+    <button class="btn btn-primary" [disabled]="guardando" (click)="guardar()">
+      {{ guardando ? 'Guardando…' : 'Guardar gasto' }}
+    </button>
+    <button class="btn btn-ghost" [disabled]="guardando" (click)="cerrarModales()">Cancelar</button>
+  </div>
+</section>
+
+<!-- Confirmar / anular -->
+<div class="design-modal-backdrop" *ngIf="modalConfirmacion" (click)="cerrarModales()"></div>
+<section class="panel panel--form design-modal-card design-modal-card--sm" *ngIf="modalConfirmacion"
+  (click)="$event.stopPropagation()">
+  <div class="panel-title">{{ modalConfirmacion.accion === 'confirmar' ? 'Confirmar gasto' : 'Anular gasto' }}</div>
+  <p class="confirmacion-texto">
+    <strong>{{ modalConfirmacion.row.concepto }}</strong> ·
+    {{ modalConfirmacion.row.moneda }} {{ modalConfirmacion.row.monto | number:'1.2-2' }}
+  </p>
+  <p class="modal-nota" *ngIf="modalConfirmacion.accion === 'confirmar'">
+    El monto pasará a ejecutado y se descontará del saldo de la partida {{ modalConfirmacion.row.codigoPartida }}.
+  </p>
+  <p class="modal-nota" *ngIf="modalConfirmacion.accion === 'anular'">
+    {{ modalConfirmacion.row.estado === 'CONFIRMADO'
+      ? 'Se registrará un ajuste que devuelve el monto a la partida.'
+      : 'El gasto no se confirmó, así que no afecta el saldo de la partida.' }}
+    El gasto anulado no se puede reactivar.
+  </p>
+  <div class="toolbar toolbar--compact">
+    <button class="btn" [class.btn-primary]="modalConfirmacion.accion === 'confirmar'"
+      [class.btn-danger]="modalConfirmacion.accion === 'anular'" [disabled]="guardando" (click)="ejecutarConfirmacion()">
+      {{ guardando ? 'Procesando…' : (modalConfirmacion.accion === 'confirmar' ? 'Confirmar gasto' : 'Anular gasto') }}
+    </button>
+    <button class="btn btn-ghost" [disabled]="guardando" (click)="cerrarModales()">Volver</button>
+  </div>
+</section>
+
+<!-- Documentos de respaldo -->
+<div class="design-modal-backdrop" *ngIf="modalDocumentos" (click)="cerrarModales()"></div>
+<section class="panel panel--form design-modal-card" *ngIf="modalDocumentos" (click)="$event.stopPropagation()">
+  <button type="button" class="modal-close" (click)="cerrarModales()" aria-label="Cerrar">&times;</button>
+  <div class="panel-title">Documentos de respaldo</div>
+  <p class="modal-nota" *ngIf="gastoSeleccionado">{{ gastoSeleccionado.concepto }}</p>
+
+  <ng-container *ngIf="puedeOperar">
+    <div class="form-grid two">
+      <div class="field">
+        <label>Tipo de documento</label>
+        <select [(ngModel)]="tipoDocumento">
+          <option value="Factura">Factura</option>
+          <option value="Pago">Pago</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Archivos PDF</label>
+        <input type="file" accept="application/pdf" multiple (change)="onArchivosSeleccionados($event)" />
+      </div>
+    </div>
+
+    <div class="toolbar toolbar--compact">
+      <button class="btn btn-secondary btn-sm" [disabled]="subiendo || !archivos.length" (click)="subirDocumentos()">
+        {{ subiendo ? 'Subiendo…' : 'Adjuntar' }}
+      </button>
+    </div>
+  </ng-container>
+
+  <div *ngIf="cargandoDocumentos" class="empty-state">Cargando documentos...</div>
+  <div *ngIf="!cargandoDocumentos && !documentos.length" class="empty-state">Este gasto no tiene documentos.</div>
+
+  <div *ngIf="!cargandoDocumentos && documentos.length" class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Archivo</th>
+          <th>Fecha</th>
+          <th class="actions-col">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let d of documentos">
+          <td>{{ d.tipoDocumento }}</td>
+          <td>{{ d.nombreArchivo }}</td>
+          <td>{{ d.fechaCreacion | date:'dd/MM/yyyy' }}</td>
+          <td class="actions-col">
+            <button type="button" class="btn btn-ghost btn-sm" (click)="descargar(d)">Descargar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="toolbar toolbar--compact">
+    <button class="btn btn-ghost" (click)="cerrarModales()">Cerrar</button>
+  </div>
+</section>

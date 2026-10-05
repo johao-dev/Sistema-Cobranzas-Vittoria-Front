@@ -7,12 +7,15 @@
     Tamaño máx. 5 MB (~50.000 filas).
   </div>
 
+  <!-- Ayuda propia del módulo (columnas, códigos válidos, etc.). -->
+  <ng-content></ng-content>
+
   <div class="form-grid two">
     <div class="field" style="grid-column:1/-1;">
       <label>Archivo (CSV, XLSX, XLS)</label>
       <input type="file" accept=".csv,.xlsx,.xls" (change)="onFileSelected($event)"
         [disabled]="loading || descargandoPlantilla" />
-      <small class="form-hint" *ngIf="modulo === 'material'">
+      <small class="form-hint" *ngIf="modulo === 'material' || modulo === 'partida'">
         CSV: delimitador <code>;</code> preferido (coma como fallback). Encoding UTF-8 o Windows-1252.
       </small>
     </div>

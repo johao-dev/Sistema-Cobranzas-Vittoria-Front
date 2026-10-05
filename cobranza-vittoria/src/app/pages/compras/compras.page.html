@@ -77,12 +77,18 @@
               '-' }}</td>
             <td>{{ row.proveedor || row.Proveedor || '-' }}</td>
             <td>{{ row.nombreProyecto || row.NombreProyecto || '-' }}</td>
-            <td><span class="badge badge--pending">{{ row.estado || row.Estado || '-' }}</span></td>
+            <td>
+              <span class="badge" [class.badge--ok]="estadoCompra(row) === 'ACEPTADA'"
+                [class.badge--pending]="estadoCompra(row) !== 'ACEPTADA'">{{ row.estado || row.Estado || '-' }}</span>
+            </td>
             <td class="table-number">{{ (row.montoTotal || row.MontoTotal || row.total || row.Total || 0) |
               number:'1.2-2' }}</td>
             <td class="actions-col--button">
-              <div class="actions actions--center"><button class="btn btn-secondary btn-sm action-btn action-btn--small"
-                  (click)="verCompra(row)">Ver</button></div>
+              <div class="actions actions--center">
+                <button class="btn btn-secondary btn-sm action-btn action-btn--small" (click)="verCompra(row)">Ver</button>
+                <button *ngIf="esAceptable(row)" class="btn btn-success btn-sm action-btn action-btn--small"
+                  (click)="pedirAceptarCompra(row)">Aceptar</button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -342,3 +348,33 @@
     </div>
   </div>
 </div>
+<!-- Aceptar compra: libera lo comprometido y ejecuta el gasto en el presupuesto -->
+<div class="design-modal-backdrop aceptar-backdrop" *ngIf="compraPorAceptar" (click)="cerrarAceptarCompra()"></div>
+<section class="panel panel--form design-modal-card aceptar-card" *ngIf="compraPorAceptar" role="alertdialog"
+  aria-labelledby="titulo-aceptar-compra" (click)="$event.stopPropagation()">
+  <button type="button" class="modal-close" (click)="cerrarAceptarCompra()" aria-label="Cerrar"
+    [disabled]="aceptandoCompra">×</button>
+  <div class="panel-title" id="titulo-aceptar-compra">
+    Aceptar compra {{ compraPorAceptar.row.numeroCompra || compraPorAceptar.row.NumeroCompra }}
+  </div>
+  <p class="aceptar-nota">
+    Se ejecutará en el presupuesto el gasto de
+    <strong>{{ simboloCompra(compraPorAceptar.row) }} {{ montoCompra(compraPorAceptar.row) | number:'1.2-2' }}</strong>
+    en las partidas del requerimiento, y los materiales ingresarán al kardex. Si la O.C. tenía precios, se libera el
+    monto que había comprometido. La O.C. {{ compraPorAceptar.row.numeroOrdenCompra || compraPorAceptar.row.NumeroOrdenCompra }}
+    pasará a ATENDIDA.
+    Una compra aceptada no se puede revertir.
+  </p>
+
+  <div class="field">
+    <label>Observación (opcional)</label>
+    <textarea rows="2" maxlength="500" [(ngModel)]="compraPorAceptar.observacion" [disabled]="aceptandoCompra"></textarea>
+  </div>
+
+  <div class="toolbar" style="margin-top:14px;">
+    <button type="button" class="btn btn-success" [disabled]="aceptandoCompra" (click)="confirmarAceptarCompra()">
+      {{ aceptandoCompra ? 'Aceptando…' : 'Aceptar compra' }}
+    </button>
+    <button type="button" class="btn btn-ghost" [disabled]="aceptandoCompra" (click)="cerrarAceptarCompra()">Volver</button>
+  </div>
+</section>

@@ -1,0 +1,121 @@
+<div class="arbol">
+  <div class="arbol-controles">
+    <div class="field arbol-busqueda">
+      <label>Buscar partida</label>
+      <input type="text" [ngModel]="busqueda" (ngModelChange)="busqueda = $event; onBusqueda()" placeholder="Código o nombre" />
+    </div>
+    <div class="field">
+      <label>Nivel máximo</label>
+      <select [(ngModel)]="nivelMaximo" (change)="onNivelMaximo()">
+        <option value="">Todos</option>
+        <option *ngFor="let n of nivelesDisponibles" [value]="n">Nivel {{ n }}</option>
+      </select>
+    </div>
+    <label class="arbol-check">
+      <input type="checkbox" [(ngModel)]="soloDesviacion" (change)="onSoloDesviacion()" />
+      Solo con desviación
+    </label>
+    <div class="arbol-acciones">
+      <button type="button" class="btn btn-ghost btn-sm" (click)="expandirTodo()" [disabled]="!filas.length">
+        Expandir todo</button>
+      <button type="button" class="btn btn-ghost btn-sm" (click)="colapsarTodo()" [disabled]="!filas.length">
+        Colapsar todo</button>
+    </div>
+  </div>
+
+  <nav class="arbol-ruta" aria-label="Rama seleccionada" *ngIf="datos?.nodos?.length">
+    <button type="button" class="arbol-ruta__item" (click)="irA(null)">Todas las partidas</button>
+    <ng-container *ngFor="let n of ruta; let ultimo = last">
+      <span class="arbol-ruta__sep" aria-hidden="true">›</span>
+      <button type="button" class="arbol-ruta__item" [class.arbol-ruta__item--actual]="ultimo"
+        [attr.aria-current]="ultimo ? 'location' : null" (click)="irA(n)">{{ n.codigo }} {{ n.nombre }}</button>
+    </ng-container>
+  </nav>
+
+  <div *ngIf="cargando" class="empty-state">Cargando árbol de partidas...</div>
+  <div *ngIf="!cargando && error" class="empty-state">{{ error }}</div>
+  <div *ngIf="!cargando && !error && datos && !datos.nodos.length" class="empty-state">
+    No hay partidas con monto para mostrar.
+  </div>
+  <div *ngIf="!cargando && !error && datos?.nodos?.length && !filas.length" class="empty-state">
+    Ninguna partida coincide con los filtros.
+  </div>
+
+  <div *ngIf="!cargando && !error && filas.length" class="table-wrap arbol-tabla">
+    <table>
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Partida</th>
+          <th class="num">Presupuestado</th>
+          <th class="num">Comprometido</th>
+          <th class="num">Ejecutado</th>
+          <th class="num">Saldo</th>
+          <th class="barra-col">% ejecutado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let f of filas; trackBy: trackFila" class="arbol-fila"
+          [class.arbol-fila--padre]="!f.nodo.esHoja" [class.arbol-fila--excedida]="f.nodo.excedido"
+          [class.arbol-fila--seleccionada]="seleccionado?.idCatalogoPartida === f.nodo.idCatalogoPartida"
+          (click)="onClicFila(f)">
+          <td class="arbol-codigo">{{ f.nodo.codigo }}</td>
+          <td>
+            <div class="arbol-nombre" [style.padding-left]="sangria(f)">
+              <button *ngIf="f.tieneHijos" type="button" class="arbol-toggle"
+                [attr.aria-expanded]="estaExpandido(f.nodo)"
+                [attr.aria-label]="(estaExpandido(f.nodo) ? 'Colapsar ' : 'Expandir ') + f.nodo.nombre"
+                (click)="$event.stopPropagation(); alternar(f.nodo)">
+                <span [class.arbol-toggle__chev--abierto]="estaExpandido(f.nodo)">›</span>
+              </button>
+              <span *ngIf="!f.tieneHijos" class="arbol-toggle arbol-toggle--vacio" aria-hidden="true"></span>
+              <span class="arbol-nombre__texto">{{ f.nodo.nombre }}</span>
+              <span *ngIf="!f.nodo.esHoja" class="arbol-conteo">{{ f.nodo.cantidadHojas }} partidas</span>
+              <span *ngIf="!f.nodo.excedido && f.nodo.partidasExcedidas > 0" class="arbol-alerta"
+                [title]="f.nodo.partidasExcedidas + ' partida(s) excedida(s) en esta rama'">
+                {{ f.nodo.partidasExcedidas }} excedida(s)
+              </span>
+              <button *ngIf="f.nodo.esHoja" type="button" class="btn btn-ghost btn-sm arbol-movimientos"
+                (click)="$event.stopPropagation(); onClicFila(f)">Movimientos</button>
+            </div>
+          </td>
+          <td class="num">{{ simbolo }} {{ f.nodo.montoPresupuestado | number:'1.2-2' }}</td>
+          <td class="num">{{ f.nodo.montoComprometido | number:'1.2-2' }}</td>
+          <td class="num">{{ f.nodo.montoEjecutado | number:'1.2-2' }}</td>
+          <td class="num" [class.num--danger]="f.nodo.saldoDisponible < 0">
+            {{ f.nodo.saldoDisponible | number:'1.2-2' }}
+          </td>
+          <td class="barra-col">
+            <div class="barra">
+              <div class="barra__fill" [ngClass]="claseBarra(f.nodo.porcentajeEjecutado)"
+                [style.width]="anchoBarra(f.nodo.porcentajeEjecutado)"></div>
+            </div>
+            <span class="barra__label">{{ f.nodo.porcentajeEjecutado | number:'1.1-1' }}%</span>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot *ngIf="datos?.totales as t">
+        <tr>
+          <td colspan="2">
+            <strong>Total</strong>
+            <span class="arbol-conteo">{{ t.cantidadPartidas }} partidas<span *ngIf="t.partidasExcedidas">
+              · {{ t.partidasExcedidas }} excedida(s)</span></span>
+          </td>
+          <td class="num"><strong>{{ simbolo }} {{ t.montoPresupuestado | number:'1.2-2' }}</strong></td>
+          <td class="num"><strong>{{ t.montoComprometido | number:'1.2-2' }}</strong></td>
+          <td class="num"><strong>{{ t.montoEjecutado | number:'1.2-2' }}</strong></td>
+          <td class="num" [class.num--danger]="t.saldoDisponible < 0">
+            <strong>{{ t.saldoDisponible | number:'1.2-2' }}</strong>
+          </td>
+          <td class="barra-col">
+            <div class="barra">
+              <div class="barra__fill" [ngClass]="claseBarra(t.porcentajeEjecutado)"
+                [style.width]="anchoBarra(t.porcentajeEjecutado)"></div>
+            </div>
+            <span class="barra__label">{{ t.porcentajeEjecutado | number:'1.1-1' }}%</span>
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
