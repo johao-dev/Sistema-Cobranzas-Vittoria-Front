@@ -17,7 +17,6 @@ import { StockActualPage } from './pages/stock-actual/stock-actual.page';
 import { ValorizacionesPage } from './pages/valorizaciones/valorizaciones.page';
 import { CategoriasGastoPage } from './pages/categorias-gasto/categorias-gasto.page';
 import { ProveedoresGastoPage } from './pages/proveedores-gasto/proveedores-gasto.page';
-import { ResumenTotalPage } from './pages/resumen-total/resumen-total.page';
 import { LoginPage } from './pages/login/login.page';
 import { PresupuestoPage } from './pages/presupuesto/presupuesto.page';
 import { ProveedoresTerrenoPage } from './pages/proveedores-terreno/proveedores-terreno.page';
@@ -30,14 +29,13 @@ export const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   { path: 'login', component: LoginPage },
   { path: 'dashboard', component: DashboardPage, canActivate: [authGuard] },
-  { path: 'resumen-total', canActivate: [authGuard], component: ResumenTotalPage },
   { path: 'presupuesto', canActivate: [authGuard], component: PresupuestoPage },
-  // Operaciones → Gastos del proyecto: las cinco secciones son gasto directo filtrado por sección.
-  { path: 'gastos-administrativos', canActivate: [authGuard], component: GastosSeccionPage, data: { seccion: 'ADMINISTRATIVO', titulo: 'Gastos administrativos', subtitulo: 'Gastos de oficina y áreas de la empresa: alquiler, servicios, planilla y bancos.' } },
-  { path: 'terreno', canActivate: [authGuard], component: GastosSeccionPage, data: { seccion: 'TERRENO', titulo: 'Terreno - Anteproyecto - Proyecto', subtitulo: 'Compra de terreno, alcabala, estudios previos y desarrollo del proyecto.' } },
-  { path: 'marketing-publicidad', canActivate: [authGuard], component: GastosSeccionPage, data: { seccion: 'MARKETING_VENTAS', titulo: 'Marketing / Ventas', subtitulo: 'Publicidad, marketing, comisiones por ventas y sala de ventas.' } },
-  { path: 'otros-gastos', canActivate: [authGuard], component: GastosSeccionPage, data: { seccion: 'OTROS', titulo: 'Otros gastos', subtitulo: 'Gastos del proyecto que no pertenecen a otra sección.' } },
-  { path: 'gastos-municipales-distritales', canActivate: [authGuard], component: GastosSeccionPage, data: { seccion: 'MUNICIPAL', titulo: 'Gastos municipales y distritales', subtitulo: 'Licencias, independización, declaratoria de fábrica, conformidad de obra e instalaciones.' } },
+  // Operaciones → Gastos del proyecto: cada vista declara únicamente sus categorías descriptivas.
+  { path: 'gastos-administrativos', canActivate: [authGuard], component: GastosSeccionPage, data: { codigosCategoria: ['ADMINISTRATIVO'], permiteSeleccionCategoria: false, titulo: 'Gastos administrativos', subtitulo: 'Gastos de oficina y áreas de la empresa: alquiler, servicios, planilla y bancos.' } },
+  { path: 'terreno', canActivate: [authGuard], component: GastosSeccionPage, data: { codigosCategoria: ['TERRENO', 'ANTEPROYECTO', 'PROYECTO'], permiteSeleccionCategoria: true, titulo: 'Terreno - Anteproyecto - Proyecto', subtitulo: 'Compra de terreno, alcabala, estudios previos y desarrollo del proyecto.' } },
+  { path: 'marketing-publicidad', canActivate: [authGuard], component: GastosSeccionPage, data: { codigosCategoria: ['MARKETING_VENTAS'], permiteSeleccionCategoria: false, titulo: 'Marketing / Ventas', subtitulo: 'Publicidad, marketing, comisiones por ventas y sala de ventas.' } },
+  { path: 'otros-gastos', canActivate: [authGuard], component: GastosSeccionPage, data: { codigosCategoria: ['OTROS'], permiteSeleccionCategoria: false, titulo: 'Otros gastos', subtitulo: 'Gastos del proyecto que no pertenecen a otra categoría.' } },
+  { path: 'gastos-municipales-distritales', canActivate: [authGuard], component: GastosSeccionPage, data: { codigosCategoria: ['MUNICIPAL'], permiteSeleccionCategoria: false, titulo: 'Gastos municipales y distritales', subtitulo: 'Licencias, independización, declaratoria de fábrica, conformidad de obra e instalaciones.' } },
   { path: 'especialidades', canActivate: [authGuard], component: EspecialidadesPage },
   { path: 'proveedores', canActivate: [authGuard], component: ProveedoresPage },
   { path: 'materiales', canActivate: [authGuard], component: MaterialesPage },
@@ -92,7 +90,7 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/presupuestos/presupuestos.page').then(m => m.PresupuestosPage),
         data: { access: ACCESS_RULES.controlPresupuestarioPresupuestos }
       },
-      // Gasto directo ya no es una sección propia: vive en Operaciones → Gastos del proyecto.
+      // Gasto directo vive en Operaciones → Gastos del proyecto.
       { path: 'gastos-directos', redirectTo: '/gastos-administrativos', pathMatch: 'full' },
       {
         path: 'centros-costo',

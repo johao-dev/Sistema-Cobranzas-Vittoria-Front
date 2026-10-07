@@ -44,14 +44,6 @@
           <option *ngFor="let n of nivelesDisponibles" [value]="n">Nivel {{ n }}</option>
         </select>
       </div>
-      <div class="field">
-        <label>Sección de gasto</label>
-        <select [(ngModel)]="filtroSeccion">
-          <option value="">Todas</option>
-          <option value="sin">Sin sección (obra)</option>
-          <option *ngFor="let s of secciones" [value]="s.idSeccionGasto">{{ s.nombre }}</option>
-        </select>
-      </div>
     </div>
 
     <div *ngIf="loading" class="empty-state">Cargando partidas...</div>
@@ -65,7 +57,6 @@
             <th>Partida</th>
             <th>Tipo</th>
             <th>Partida padre</th>
-            <th>Sección de gasto</th>
             <th>Nivel</th>
             <th>Hoja</th>
             <th>Estado</th>
@@ -78,7 +69,6 @@
             <td><span [style.padding-left]="sangria(row.nivel)">{{ row.nombre }}</span></td>
             <td>{{ row.nombreTipoPartida }}</td>
             <td>{{ row.nombrePartidaPadre || '—' }}</td>
-            <td>{{ row.nombreSeccionGasto || '—' }}</td>
             <td>{{ row.nivel }}</td>
             <td>
               <span class="badge" [class.badge--ok]="row.esHoja" [class.badge--neutral]="!row.esHoja">
@@ -137,22 +127,7 @@
           </option>
         </select>
         <small class="field-hint">
-          Una partida con montos asignados no puede convertirse en agrupadora. Las partidas con sección
-          de gasto no aparecen aquí porque no pueden tener hijas.
-        </small>
-      </div>
-
-      <div class="field">
-        <label>Sección de gasto</label>
-        <select [(ngModel)]="form.idSeccionGasto" [disabled]="!seccionHabilitada">
-          <option value="">Sin sección (se ejecuta por requerimiento)</option>
-          <option *ngFor="let s of secciones" [value]="s.idSeccionGasto">{{ s.nombre }}</option>
-        </select>
-        <small class="field-hint" *ngIf="seccionHabilitada">
-          Define en qué pantalla de Gastos del proyecto se registra el gasto directo de esta partida.
-        </small>
-        <small class="field-hint" *ngIf="!seccionHabilitada">
-          Solo una partida sin hijas puede pertenecer a una sección de gasto.
+          Una partida con montos asignados no puede convertirse en agrupadora.
         </small>
       </div>
 
@@ -183,7 +158,7 @@
     <div class="import-ayuda">
       <p>
         Columnas: <code>Codigo</code>, <code>Nombre</code> y <code>Tipo</code> (obligatorias);
-        <code>CodigoPadre</code>, <code>Seccion</code> y <code>Descripcion</code> (opcionales).
+        <code>CodigoPadre</code> y <code>Descripcion</code> (opcionales).
         Las partidas hijas pueden ir antes que su padre. Si una fila tiene un error, no se importa ninguna.
       </p>
       <p>
@@ -194,10 +169,6 @@
       <p>
         <strong>Tipo</strong> (código o nombre):
         <span *ngFor="let t of tipos; let ultimo = last"><code>{{ t.codigo }}</code>{{ ultimo ? '' : ', ' }}</span>
-      </p>
-      <p>
-        <strong>Seccion</strong> (código o nombre, solo en partidas sin hijas):
-        <span *ngFor="let s of secciones; let ultimo = last"><code>{{ s.codigo }}</code>{{ ultimo ? '' : ', ' }}</span>
       </p>
     </div>
   </app-import-modal>

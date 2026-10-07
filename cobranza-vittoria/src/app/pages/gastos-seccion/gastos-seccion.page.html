@@ -5,6 +5,10 @@
   </div>
 </div>
 
+<div class="alerta-bloqueo" *ngIf="errorCategorias">
+  {{ errorCategorias }} No se cargarán ni guardarán gastos hasta corregir el catálogo.
+</div>
+
 <section class="panel">
   <div class="panel-title-row">
     <div class="panel-title">Gastos</div>
@@ -14,7 +18,8 @@
         <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Concepto, proveedor o partida" />
       </div>
     </div>
-    <button *ngIf="puedeOperar" type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">
+    <button *ngIf="puedeOperar" type="button" class="btn btn-primary btn-sm"
+      [disabled]="!categoriasResueltas" (click)="abrirModalNuevo()">
       + Nuevo gasto
     </button>
   </div>
@@ -25,11 +30,6 @@
       <strong *ngIf="!totalesPorMoneda.length">0.00</strong>
       <strong *ngFor="let t of totalesPorMoneda">{{ t.moneda }} {{ t.total | number:'1.2-2' }}</strong>
       <small>{{ registrosVigentes }} gasto(s) sin anular</small>
-    </div>
-    <div class="resumen-card" *ngFor="let p of partidasSeccion">
-      <span [title]="p.codigo">{{ p.nombre }}</span>
-      <strong *ngIf="!totalesDePartida(p.idCatalogoPartida).length">0.00</strong>
-      <strong *ngFor="let t of totalesDePartida(p.idCatalogoPartida)">{{ t.moneda }} {{ t.total | number:'1.2-2' }}</strong>
     </div>
   </div>
 
@@ -66,13 +66,14 @@
   </div>
 
   <div *ngIf="loading" class="empty-state">Cargando gastos...</div>
-  <div *ngIf="!loading && !rowsFiltradas.length" class="empty-state">No hay gastos registrados en esta sección.</div>
+  <div *ngIf="!loading && !errorCategorias && !rowsFiltradas.length" class="empty-state">No hay gastos registrados en esta vista.</div>
 
   <div *ngIf="!loading && rowsFiltradas.length" class="table-wrap table-wrap--sticky-actions">
     <table>
       <thead>
         <tr>
           <th>Fecha</th>
+          <th>Categoría</th>
           <th>Concepto</th>
           <th>Proveedor</th>
           <th>Centro de costo</th>
@@ -89,6 +90,7 @@
       <tbody>
         <tr *ngFor="let row of rowsFiltradas" [class.fila-anulada]="row.estado === 'ANULADO'">
           <td>{{ row.fecha | date:'dd/MM/yyyy' }}</td>
+          <td>{{ row.nombreCategoriaGasto || '—' }}</td>
           <td>{{ row.concepto }}</td>
           <td>{{ row.proveedor || '—' }}</td>
           <td>{{ row.centroCosto }}</td>
@@ -125,7 +127,7 @@
       </tbody>
       <tfoot>
         <tr>
-          <td colspan="5"><strong>Total (sin anulados)</strong></td>
+          <td colspan="6"><strong>Total (sin anulados)</strong></td>
           <td class="num"><strong>{{ hayMoneda.pen ? (totalColumna('PEN') | number:'1.2-2') : '—' }}</strong></td>
           <td class="num"><strong>{{ hayMoneda.usd ? (totalColumna('USD') | number:'1.2-2') : '—' }}</strong></td>
           <td colspan="5"></td>
@@ -141,11 +143,22 @@
   <button type="button" class="modal-close" (click)="cerrarModales()" aria-label="Cerrar">&times;</button>
   <div class="panel-title">{{ esEdicion ? 'Editar gasto' : 'Nuevo gasto' }} · {{ config.titulo }}</div>
 
+  <div class="field" *ngIf="config.permiteSeleccionCategoria">
+    <label>Categoría</label>
+    <select [(ngModel)]="form.idCategoriaGasto">
+      <option value="">Seleccione…</option>
+      <option *ngFor="let categoria of categoriasVista" [ngValue]="categoria.idCategoriaGasto">
+        {{ categoria.nombre }}
+      </option>
+    </select>
+    <small class="field-hint">Elige si el gasto corresponde a terreno, anteproyecto o proyecto.</small>
+  </div>
+
   <div class="form-grid two">
     <div class="field">
       <label>Centro de costo</label>
       <select [(ngModel)]="form.idCentroCosto" (change)="onCentroCostoFormChange()">
-        <option value="">{{ centrosCosto.length ? 'Seleccione…' : 'No hay centros de costo para esta sección' }}</option>
+        <option value="">{{ centrosCosto.length ? 'Seleccione…' : 'No hay centros de costo disponibles' }}</option>
         <option *ngFor="let c of centrosCosto" [value]="c.idCentroCosto">{{ c.codigo }} — {{ c.nombre }}</option>
       </select>
     </div>
@@ -156,7 +169,7 @@
         [disabled]="!form.idCentroCosto || !partidas.length">
         <option value="">{{ cargandoPartidas ? 'Cargando partidas…'
           : (form.idCentroCosto
-            ? (partidas.length ? 'Seleccione…' : 'Sin partidas de esta sección en el presupuesto aprobado')
+            ? (partidas.length ? 'Seleccione…' : 'Sin partidas disponibles en el presupuesto aprobado')
             : 'Elige un centro de costo') }}</option>
         <option *ngFor="let p of partidas" [value]="p.idPresupuestoDetalle">
           {{ p.codigoPartida }} — {{ p.nombrePartida }}
@@ -211,12 +224,7 @@
       <label>Proveedor</label>
       <select [(ngModel)]="form.idProveedor">
         <option value="">Sin proveedor</option>
-        <optgroup *ngIf="proveedoresDeLaSeccion.length" label="Proveedores de esta sección">
-          <option *ngFor="let p of proveedoresDeLaSeccion" [value]="p.idProveedor">{{ p.razonSocial }}</option>
-        </optgroup>
-        <optgroup [label]="proveedoresDeLaSeccion.length ? 'Otros proveedores' : 'Proveedores'">
-          <option *ngFor="let p of otrosProveedores" [value]="p.idProveedor">{{ p.razonSocial }}</option>
-        </optgroup>
+        <option *ngFor="let p of proveedores" [value]="p.idProveedor">{{ p.razonSocial }}</option>
       </select>
     </div>
 

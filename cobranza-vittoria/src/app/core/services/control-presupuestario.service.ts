@@ -86,8 +86,7 @@ export class ControlPresupuestarioService {
       tiposPartida: this.api.http.get<any[]>(`${c}/tipos-partida`),
       estadosPresupuesto: this.api.http.get<any[]>(`${c}/estados-presupuesto`),
       tiposMovimiento: this.api.http.get<any[]>(`${c}/tipos-movimiento`),
-      monedas: this.api.http.get<any[]>(`${c}/monedas`),
-      seccionesGasto: this.api.http.get<any[]>(`${c}/secciones-gasto`)
+      monedas: this.api.http.get<any[]>(`${c}/monedas`)
     });
   }
 
@@ -130,7 +129,6 @@ export class ControlPresupuestarioService {
     soloRaices?: boolean | null;
     esHoja?: boolean | null;
     busqueda?: string | null;
-    idSeccionGasto?: number | null;
   } = {}) {
     return this.api.http.get<any[]>(`${this.base}/partidas${this.query(filtros)}`);
   }
@@ -141,23 +139,20 @@ export class ControlPresupuestarioService {
 
   guardarPartida(dto: any) {
     const padre = dto.idPartidaPadre != null && dto.idPartidaPadre !== '' ? Number(dto.idPartidaPadre) : null;
-    const seccion = dto.idSeccionGasto != null && dto.idSeccionGasto !== '' ? Number(dto.idSeccionGasto) : null;
     return dto.idCatalogoPartida
       ? this.api.http.put<any>(`${this.base}/partidas/${dto.idCatalogoPartida}`, {
         nombre: (dto.nombre ?? '').toString().trim(),
         idTipoPartida: Number(dto.idTipoPartida),
         activo: !!dto.activo,
         idPartidaPadre: padre,
-        descripcion: this.texto(dto.descripcion),
-        idSeccionGasto: seccion
+        descripcion: this.texto(dto.descripcion)
       })
       : this.api.http.post<any>(`${this.base}/partidas`, {
         codigo: (dto.codigo ?? '').toString().trim(),
         nombre: (dto.nombre ?? '').toString().trim(),
         idTipoPartida: Number(dto.idTipoPartida),
         idPartidaPadre: padre,
-        descripcion: this.texto(dto.descripcion),
-        idSeccionGasto: seccion
+        descripcion: this.texto(dto.descripcion)
       });
   }
 

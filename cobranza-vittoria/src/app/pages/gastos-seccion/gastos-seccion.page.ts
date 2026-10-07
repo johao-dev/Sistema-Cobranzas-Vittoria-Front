@@ -2,27 +2,56 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { GastosDirectosService } from '../../core/services/gastos-directos.service';
+import {
+  CategoriaGasto,
+  CentroCostoGastoDirecto,
+  GastoDirectoListado,
+  GastoDirectoRequest,
+  GastosDirectosService,
+  PartidaDisponibleGastoDirecto,
+  ProveedorGastoDirecto
+} from '../../core/services/gastos-directos.service';
 import { ControlPresupuestarioService } from '../../core/services/control-presupuestario.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { AuthService } from '../../core/services/auth.service';
 import { descargarArchivo } from '../../core/utils/file-download.util';
 
-/** Configuración de cada pantalla de Operaciones → Gastos del proyecto (viene en data de la ruta). */
-export interface SeccionGastoConfig {
-  seccion: 'ADMINISTRATIVO' | 'TERRENO' | 'MARKETING_VENTAS' | 'OTROS' | 'MUNICIPAL';
+/** Configuración visual de una ruta; sus códigos resuelven categorías descriptivas, no reglas económicas. */
+export interface GastoDirectoVistaConfig {
   titulo: string;
   subtitulo: string;
+  codigosCategoria: string[];
+  permiteSeleccionCategoria: boolean;
 }
 
-/**
- * Gasto directo de una sección de Gastos del proyecto. Las cinco secciones usan
- * este mismo componente: cada una lista solo sus gastos y ofrece solo sus
- * centros de costo y partidas. Todas escriben en la misma tabla de gastos
- * directos, así el Panel de control ve todo junto.
- *
- * REGISTRADO no afecta el saldo; CONFIRMADO lo ejecuta y ANULADO lo devuelve.
- */
+interface GastoDirectoForm {
+  idGastoDirecto: number | null;
+  idCategoriaGasto: number | '';
+  idCentroCosto: number | '';
+  idPresupuestoDetalle: number | '';
+  idProveedor: number | '';
+  idMoneda: number | '';
+  fecha: string;
+  concepto: string;
+  descripcion: string;
+  monto: number | null;
+  facturaOtraMoneda: boolean;
+  idMonedaOriginal: number | '';
+  montoOriginal: number | null;
+  tipoCambio: number | null;
+  fechaTipoCambio: string;
+}
+
+export function resolverCategoriasPorCodigo(catalogo: CategoriaGasto[], codigos: string[]) {
+  const porCodigo = new Map(catalogo.map(categoria => [categoria.codigo.trim().toUpperCase(), categoria]));
+  const normalizados = codigos.map(codigo => codigo.trim().toUpperCase());
+  return {
+    categorias: normalizados.map(codigo => porCodigo.get(codigo)).filter((item): item is CategoriaGasto => !!item),
+    faltantes: normalizados.filter(codigo => !porCodigo.has(codigo))
+  };
+}
+
+/** CRUD compartido de las cinco vistas de Gastos del proyecto. */
 @Component({
   standalone: true,
   selector: 'app-gastos-seccion-page',
@@ -31,19 +60,18 @@ export interface SeccionGastoConfig {
   styleUrl: './gastos-seccion.page.css'
 })
 export class GastosSeccionPage implements OnInit {
-  config!: SeccionGastoConfig;
+  config!: GastoDirectoVistaConfig;
 
-  rows: any[] = [];
-  centrosCosto: any[] = [];
-  proveedores: any[] = [];
+  rows: GastoDirectoListado[] = [];
+  centrosCosto: CentroCostoGastoDirecto[] = [];
+  proveedores: ProveedorGastoDirecto[] = [];
   monedas: any[] = [];
-  /** Partidas de la sección con su saldo vigente en el centro de costo elegido. */
-  partidas: any[] = [];
-  /** Partidas de la sección en el catálogo: una tarjeta de total por cada una (como las pantallas antiguas). */
-  partidasSeccion: any[] = [];
+  partidas: PartidaDisponibleGastoDirecto[] = [];
+  categoriasVista: CategoriaGasto[] = [];
+  errorCategorias = '';
 
   documentos: any[] = [];
-  gastoSeleccionado: any = null;
+  gastoSeleccionado: GastoDirectoListado | null = null;
 
   loading = false;
   guardando = false;
@@ -59,9 +87,9 @@ export class GastosSeccionPage implements OnInit {
 
   modalGasto = false;
   modalDocumentos = false;
-  modalConfirmacion: { accion: 'confirmar' | 'anular'; row: any } | null = null;
+  modalConfirmacion: { accion: 'confirmar' | 'anular'; row: GastoDirectoListado } | null = null;
 
-  form: any = this.formVacio();
+  form: GastoDirectoForm = this.formVacio();
   tipoDocumento: 'Factura' | 'Pago' = 'Factura';
   archivos: File[] = [];
 
@@ -75,16 +103,17 @@ export class GastosSeccionPage implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // El componente se reutiliza entre rutas: se recarga al cambiar de sección.
+    // El componente se reutiliza entre rutas y resuelve sus categorías desde el catálogo de la API.
     this.route.data.subscribe(data => {
-      this.config = data as SeccionGastoConfig;
+      this.config = data as GastoDirectoVistaConfig;
       this.filtroEstado = '';
       this.filtroCentroCosto = '';
       this.filtroBusqueda = '';
       this.rows = [];
+      this.categoriasVista = [];
+      this.errorCategorias = '';
       this.cerrarModales();
       this.cargarCatalogos();
-      this.load();
     });
   }
 
@@ -93,9 +122,10 @@ export class GastosSeccionPage implements OnInit {
     return this.auth.hasPermission('gasto_directo.operar');
   }
 
-  formVacio() {
+  formVacio(): GastoDirectoForm {
     return {
       idGastoDirecto: null,
+      idCategoriaGasto: this.categoriasVista?.length === 1 ? this.categoriasVista[0].idCategoriaGasto : '',
       idCentroCosto: '',
       idPresupuestoDetalle: '',
       idProveedor: '',
@@ -112,16 +142,14 @@ export class GastosSeccionPage implements OnInit {
     };
   }
 
-  get proveedoresDeLaSeccion(): any[] {
-    return this.proveedores.filter(p => p.deLaSeccion);
-  }
-
-  get otrosProveedores(): any[] {
-    return this.proveedores.filter(p => !p.deLaSeccion);
+  get categoriasResueltas(): boolean {
+    return !this.errorCategorias
+      && this.categoriasVista.length === this.config?.codigosCategoria?.length
+      && this.categoriasVista.length > 0;
   }
 
   /** Gastos vigentes del listado filtrado (los anulados no suman). */
-  private get vigentes(): any[] {
+  private get vigentes(): GastoDirectoListado[] {
     return this.rowsFiltradas.filter(r => r.estado !== 'ANULADO');
   }
 
@@ -129,14 +157,12 @@ export class GastosSeccionPage implements OnInit {
     return this.vigentes.length;
   }
 
-  /** Total por categoría (partida) y moneda, para las tarjetas de resumen. */
-  totalesDePartida(idCatalogoPartida: number): { moneda: string; total: number }[] {
-    return this.totalizar(this.vigentes.filter(r => Number(r.idCatalogoPartida) === Number(idCatalogoPartida)));
-  }
-
-  private totalizar(filas: any[]): { moneda: string; total: number }[] {
+  private totalizar(filas: GastoDirectoListado[]): { moneda: string; total: number }[] {
     const totales = new Map<string, number>();
-    for (const r of filas) totales.set(r.moneda, (totales.get(r.moneda) ?? 0) + Number(r.monto ?? 0));
+    for (const r of filas) {
+      const moneda = r.moneda ?? '';
+      totales.set(moneda, (totales.get(moneda) ?? 0) + Number(r.monto ?? 0));
+    }
     return Array.from(totales, ([moneda, total]) => ({ moneda, total }));
   }
 
@@ -145,7 +171,7 @@ export class GastosSeccionPage implements OnInit {
    * va en la columna de su moneda y, si la factura vino en la otra, su monto
    * original (referencia) en la otra columna.
    */
-  montoEn(row: any, moneda: 'PEN' | 'USD'): { valor: number; referencia: boolean } | null {
+  montoEn(row: GastoDirectoListado, moneda: 'PEN' | 'USD'): { valor: number; referencia: boolean } | null {
     if (row.moneda === moneda) return { valor: Number(row.monto), referencia: false };
     if (row.monedaOriginal === moneda) return { valor: Number(row.montoOriginal), referencia: true };
     return null;
@@ -163,7 +189,7 @@ export class GastosSeccionPage implements OnInit {
     return !!this.form.idGastoDirecto;
   }
 
-  get partidaSeleccionada(): any | null {
+  get partidaSeleccionada(): PartidaDisponibleGastoDirecto | null {
     if (!this.form.idPresupuestoDetalle) return null;
     return (this.partidas || [])
       .find(p => Number(p.idPresupuestoDetalle) === Number(this.form.idPresupuestoDetalle)) ?? null;
@@ -197,11 +223,11 @@ export class GastosSeccionPage implements OnInit {
     return original > 0 && tc > 0 ? Math.round(original * tc * 100) / 100 : null;
   }
 
-  private normalizar(valor: any): string {
+  private normalizar(valor: unknown): string {
     return (valor ?? '').toString().normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
   }
 
-  get rowsFiltradas(): any[] {
+  get rowsFiltradas(): GastoDirectoListado[] {
     const termino = this.normalizar(this.filtroBusqueda);
     if (!termino) return this.rows ?? [];
     return (this.rows ?? []).filter(r =>
@@ -220,7 +246,32 @@ export class GastosSeccionPage implements OnInit {
   // -------------------------------------------------------------------- carga
 
   cargarCatalogos(): void {
-    this.gastos.centrosCosto(this.config.seccion).subscribe({
+    this.gastos.categorias().subscribe({
+      next: catalogo => {
+        const resultado = resolverCategoriasPorCodigo(catalogo ?? [], this.config.codigosCategoria ?? []);
+        this.categoriasVista = resultado.categorias;
+        if (resultado.faltantes.length) {
+          this.errorCategorias = `No se encontraron categorías activas para: ${resultado.faltantes.join(', ')}.`;
+          this.notifications.show(this.errorCategorias, 'error');
+          this.rows = [];
+          this.loading = false;
+        } else {
+          this.errorCategorias = '';
+          this.form = this.formVacio();
+          this.load();
+        }
+        this.cdr.detectChanges();
+      },
+      error: err => {
+        this.errorCategorias = err?.error?.message || 'No se pudo cargar el catálogo de categorías de gasto.';
+        this.notifications.show(this.errorCategorias, 'error');
+        this.rows = [];
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
+    });
+
+    this.gastos.centrosCosto().subscribe({
       next: rows => { this.centrosCosto = rows ?? []; this.cdr.detectChanges(); },
       error: () => this.notifications.show('No se pudieron cargar los centros de costo.', 'error')
     });
@@ -228,30 +279,22 @@ export class GastosSeccionPage implements OnInit {
     this.cp.catalogos().subscribe({
       next: data => {
         this.monedas = data?.monedas ?? [];
-        const seccion = (data?.seccionesGasto ?? []).find((s: any) => s.codigo === this.config.seccion);
-        if (seccion) this.cargarPartidasSeccion(seccion.idSeccionGasto);
         this.cdr.detectChanges();
       },
       error: () => this.notifications.show('No se pudieron cargar las monedas.', 'error')
     });
 
-    this.gastos.proveedores(this.config.seccion).subscribe({
+    this.gastos.proveedores().subscribe({
       next: rows => { this.proveedores = rows ?? []; this.cdr.detectChanges(); },
       error: () => this.notifications.show('No se pudieron cargar los proveedores.', 'error')
     });
   }
 
-  private cargarPartidasSeccion(idSeccionGasto: number): void {
-    this.cp.partidas({ activo: true, esHoja: true, idSeccionGasto }).subscribe({
-      next: rows => { this.partidasSeccion = rows ?? []; this.cdr.detectChanges(); },
-      error: () => { this.partidasSeccion = []; }
-    });
-  }
-
   load(): void {
+    if (!this.categoriasResueltas) return;
     this.loading = true;
     this.gastos.listar({
-      seccion: this.config.seccion,
+      idCategoriaGasto: this.categoriasVista.map(categoria => categoria.idCategoriaGasto),
       estado: this.filtroEstado || null,
       idCentroCosto: this.filtroCentroCosto === '' ? null : Number(this.filtroCentroCosto),
       desde: this.filtroDesde || null,
@@ -284,7 +327,7 @@ export class GastosSeccionPage implements OnInit {
     }
 
     this.cargandoPartidas = true;
-    this.gastos.partidasDisponibles(this.config.seccion, Number(this.form.idCentroCosto)).subscribe({
+    this.gastos.partidasDisponibles(Number(this.form.idCentroCosto)).subscribe({
       next: rows => {
         this.partidas = rows ?? [];
         this.cargandoPartidas = false;
@@ -320,19 +363,30 @@ export class GastosSeccionPage implements OnInit {
   // ------------------------------------------------------------------ edición
 
   abrirModalNuevo(): void {
+    if (!this.categoriasResueltas) {
+      this.notifications.show(this.errorCategorias || 'No están disponibles las categorías de esta vista.', 'error');
+      return;
+    }
     this.form = this.formVacio();
     this.partidas = [];
     this.modalGasto = true;
     this.cdr.detectChanges();
   }
 
-  editar(row: any): void {
+  editar(row: GastoDirectoListado): void {
     if (row.estado !== 'REGISTRADO') {
       this.notifications.show('Solo se puede editar un gasto en estado REGISTRADO.', 'info');
       return;
     }
+    const categoriaPermitida = row.idCategoriaGasto != null
+      && this.categoriasVista.some(categoria => categoria.idCategoriaGasto === row.idCategoriaGasto);
+    if (!categoriaPermitida) {
+      this.notifications.show('La categoría del gasto no pertenece a esta vista y no puede editarse aquí.', 'error');
+      return;
+    }
     this.form = {
       idGastoDirecto: row.idGastoDirecto,
+      idCategoriaGasto: row.idCategoriaGasto as number,
       idCentroCosto: row.idCentroCosto,
       idPresupuestoDetalle: row.idPresupuestoDetalle,
       idProveedor: row.idProveedor ?? '',
@@ -352,6 +406,15 @@ export class GastosSeccionPage implements OnInit {
   }
 
   guardar(): void {
+    if (this.categoriasVista.length === 1) {
+      this.form.idCategoriaGasto = this.categoriasVista[0].idCategoriaGasto;
+    }
+    const idCategoriaGasto = Number(this.form.idCategoriaGasto || 0);
+    if (!idCategoriaGasto
+      || !this.categoriasVista.some(categoria => categoria.idCategoriaGasto === idCategoriaGasto)) {
+      this.notifications.show('Selecciona una categoría válida para esta vista.', 'info');
+      return;
+    }
     if (!this.form.idCentroCosto) {
       this.notifications.show('Selecciona el centro de costo.', 'info');
       return;
@@ -376,9 +439,23 @@ export class GastosSeccionPage implements OnInit {
     }
 
     this.guardando = true;
-    const dto = { ...this.form, seccion: this.config.seccion };
+    const dto: GastoDirectoRequest = {
+      idPresupuestoDetalle: Number(this.form.idPresupuestoDetalle),
+      idCategoriaGasto,
+      idProveedor: this.form.idProveedor === '' ? null : Number(this.form.idProveedor),
+      idMoneda: Number(this.form.idMoneda),
+      fecha: this.form.fecha,
+      concepto: this.form.concepto,
+      descripcion: this.form.descripcion.trim() || null,
+      monto,
+      idMonedaOriginal: this.form.facturaOtraMoneda && this.form.idMonedaOriginal !== ''
+        ? Number(this.form.idMonedaOriginal) : null,
+      montoOriginal: this.form.facturaOtraMoneda ? Number(this.form.montoOriginal) : null,
+      tipoCambio: this.form.facturaOtraMoneda ? Number(this.form.tipoCambio) : null,
+      fechaTipoCambio: this.form.facturaOtraMoneda ? (this.form.fechaTipoCambio || null) : null
+    };
     const peticion = this.esEdicion
-      ? this.gastos.actualizar(this.form.idGastoDirecto, dto)
+      ? this.gastos.actualizar(Number(this.form.idGastoDirecto), dto)
       : this.gastos.crear(dto);
 
     peticion.subscribe({
@@ -402,11 +479,11 @@ export class GastosSeccionPage implements OnInit {
    * Gasto histórico migrado: vive en un presupuesto HIST-… inactivo. Se puede anular,
    * pero confirmarlo daría 409 RECURSO_INACTIVO, así que no se ofrece.
    */
-  esHistorico(row: any): boolean {
+  esHistorico(row: GastoDirectoListado): boolean {
     return String(row?.codigoPresupuesto ?? '').toUpperCase().startsWith('HIST-');
   }
 
-  pedirConfirmacion(accion: 'confirmar' | 'anular', row: any): void {
+  pedirConfirmacion(accion: 'confirmar' | 'anular', row: GastoDirectoListado): void {
     this.modalConfirmacion = { accion, row };
     this.cdr.detectChanges();
   }
@@ -438,7 +515,7 @@ export class GastosSeccionPage implements OnInit {
     });
   }
 
-  onAccion(event: Event, row: any): void {
+  onAccion(event: Event, row: GastoDirectoListado): void {
     const select = event.target as HTMLSelectElement;
     const value = select.value;
     select.value = '';
@@ -450,7 +527,7 @@ export class GastosSeccionPage implements OnInit {
 
   // --------------------------------------------------------------- documentos
 
-  verDocumentos(row: any): void {
+  verDocumentos(row: GastoDirectoListado): void {
     this.gastoSeleccionado = row;
     this.modalDocumentos = true;
     this.cargandoDocumentos = true;
@@ -488,12 +565,13 @@ export class GastosSeccionPage implements OnInit {
       return;
     }
 
+    const gasto = this.gastoSeleccionado;
     this.subiendo = true;
-    this.gastos.subirDocumentos(this.gastoSeleccionado.idGastoDirecto, this.tipoDocumento, this.archivos).subscribe({
+    this.gastos.subirDocumentos(gasto.idGastoDirecto, this.tipoDocumento, this.archivos).subscribe({
       next: () => {
         this.subiendo = false;
         this.notifications.show('Documentos adjuntados.', 'success');
-        this.verDocumentos(this.gastoSeleccionado);
+        this.verDocumentos(gasto);
         this.load();
       },
       error: err => {
@@ -505,6 +583,7 @@ export class GastosSeccionPage implements OnInit {
   }
 
   descargar(documento: any): void {
+    if (!this.gastoSeleccionado) return;
     this.gastos.descargarDocumento(this.gastoSeleccionado.idGastoDirecto, documento.idGastoDirectoDocumento)
       .subscribe({
         next: blob => descargarArchivo(blob, documento.nombreArchivo || 'documento.pdf'),

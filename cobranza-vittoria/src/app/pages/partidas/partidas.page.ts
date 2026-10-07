@@ -15,7 +15,6 @@ import { ImportModalComponent } from '../../shared/components/import-modal/impor
 export class PartidasPage implements OnInit {
   rows: any[] = [];
   tipos: any[] = [];
-  secciones: any[] = [];
 
   loading = false;
   modalOpen = false;
@@ -25,8 +24,6 @@ export class PartidasPage implements OnInit {
   filtroActivo = 'true';
   filtroTipo = '';
   filtroNivel = '';
-  /** '' todas · 'sin' sin sección · id de sección. */
-  filtroSeccion = '';
   filtroBusqueda = '';
 
   form: any = this.formVacio();
@@ -50,7 +47,6 @@ export class PartidasPage implements OnInit {
       idTipoPartida: '',
       idPartidaPadre: '',
       descripcion: '',
-      idSeccionGasto: '',
       activo: true,
       esHoja: true
     };
@@ -58,11 +54,6 @@ export class PartidasPage implements OnInit {
 
   get esEdicion(): boolean {
     return !!this.form.idCatalogoPartida;
-  }
-
-  /** Solo una partida sin hijas puede pertenecer a una sección de gasto. */
-  get seccionHabilitada(): boolean {
-    return !!this.form.esHoja;
   }
 
   /**
@@ -73,8 +64,7 @@ export class PartidasPage implements OnInit {
    */
   get partidasPadreDisponibles(): any[] {
     const actual = this.form.idCatalogoPartida;
-    // Una partida con sección de gasto no puede tener hijas: no se ofrece como padre.
-    return (this.rows ?? []).filter(r => r.activo && r.idCatalogoPartida !== actual && !r.idSeccionGasto);
+    return (this.rows ?? []).filter(r => r.activo && r.idCatalogoPartida !== actual);
   }
 
   private normalizar(valor: any): string {
@@ -86,16 +76,10 @@ export class PartidasPage implements OnInit {
     if (this.filtroNivel !== '') {
       base = base.filter(r => String(r.nivel) === this.filtroNivel);
     }
-    if (this.filtroSeccion === 'sin') {
-      base = base.filter(r => !r.idSeccionGasto);
-    } else if (this.filtroSeccion !== '') {
-      base = base.filter(r => String(r.idSeccionGasto) === this.filtroSeccion);
-    }
     const termino = this.normalizar(this.filtroBusqueda);
     if (!termino) return base;
     return base.filter(row =>
-      this.normalizar([row.codigo, row.nombre, row.nombrePartidaPadre, row.nombreTipoPartida,
-        row.nombreSeccionGasto].join(' '))
+      this.normalizar([row.codigo, row.nombre, row.nombrePartidaPadre, row.nombreTipoPartida].join(' '))
         .includes(termino));
   }
 
@@ -108,7 +92,6 @@ export class PartidasPage implements OnInit {
     this.cp.catalogos().subscribe({
       next: data => {
         this.tipos = data?.tiposPartida ?? [];
-        this.secciones = data?.seccionesGasto ?? [];
         this.cdr.detectChanges();
       },
       error: () => this.notifications.show('No se pudieron cargar los catálogos del módulo.', 'error')
@@ -153,7 +136,6 @@ export class PartidasPage implements OnInit {
       idTipoPartida: row.idTipoPartida ?? '',
       idPartidaPadre: row.idPartidaPadre ?? '',
       descripcion: row.descripcion ?? '',
-      idSeccionGasto: row.idSeccionGasto ?? '',
       activo: row.activo ?? true,
       esHoja: row.esHoja
     };
@@ -176,8 +158,7 @@ export class PartidasPage implements OnInit {
     }
 
     this.guardando = true;
-    const dto = { ...this.form, idSeccionGasto: this.seccionHabilitada ? this.form.idSeccionGasto : null };
-    this.cp.guardarPartida(dto).subscribe({
+    this.cp.guardarPartida(this.form).subscribe({
       next: () => {
         this.guardando = false;
         this.notifications.show('Partida guardada correctamente.', 'success');
@@ -211,8 +192,6 @@ export class PartidasPage implements OnInit {
       idTipoPartida: row.idTipoPartida,
       idPartidaPadre: row.idPartidaPadre,
       descripcion: row.descripcion,
-      // Se reenvía la sección: el PUT reemplaza la partida completa.
-      idSeccionGasto: row.idSeccionGasto,
       activo: activar
     }).subscribe({
       next: () => {

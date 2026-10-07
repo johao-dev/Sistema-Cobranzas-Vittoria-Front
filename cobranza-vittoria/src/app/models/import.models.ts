@@ -156,7 +156,7 @@ export const IMPORT_MODULOS_META: Record<ImportModulo, ImportModuloMeta> = {
     titulo: 'Catálogo de partidas',
     tablaDestino: 'ControlPresupuestario.CatalogoPartida',
     columnasRequeridas: ['Codigo', 'Nombre', 'Tipo'],
-    columnasOpcionales: ['CodigoPadre', 'Seccion', 'Descripcion'],
+    columnasOpcionales: ['CodigoPadre', 'Descripcion'],
     urlImportar: '/api/control-presupuestario/partidas/importar',
     urlPlantilla: '/api/control-presupuestario/partidas/plantilla'
   },
