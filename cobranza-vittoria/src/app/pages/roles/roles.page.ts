@@ -126,12 +126,12 @@ export class RolesPage implements OnInit {
   save() {
     const payload = {
       idRol: this.form.idRol ? Number(this.form.idRol) : null,
-      nombreRol: (this.form.nombreRol ?? '').toString().trim(),
+      nombre: (this.form.nombreRol ?? '').toString().trim(),
       descripcion: (this.form.descripcion ?? '').toString().trim(),
       activo: !!this.form.activo
     };
 
-    if (!payload.nombreRol) {
+    if (!payload.nombre) {
       this.msg = 'Debes ingresar el nombre del rol.';
       this.notifyService.show(this.msg, 'error');
       return;
