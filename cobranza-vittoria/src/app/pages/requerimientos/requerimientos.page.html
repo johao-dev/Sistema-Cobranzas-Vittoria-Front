@@ -51,7 +51,8 @@
       <thead>
         <tr>
           <th>Número</th>
-          <th>Fecha</th>
+          <th>F. Solicitud</th>
+          <th>F. Entrega</th>
           <th>Especialidades</th>
           <th>Proyecto</th>
           <th>Solicitante</th>
@@ -63,6 +64,7 @@
         <tr *ngFor="let row of rows">
           <td>{{ row.numeroRequerimiento }}</td>
           <td>{{ row.fechaRequerimiento | date:'dd/MM/yyyy' }}</td>
+          <td>{{ row.fechaEntrega | date:'dd/MM/yyyy' }}</td>
           <td>{{ row.especialidades || '-' }}</td>
           <td>{{ row.nombreProyecto }}</td>
           <td>{{ normalizarNombreSolicitante(row.solicitante) }}</td>

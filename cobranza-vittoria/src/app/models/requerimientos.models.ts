@@ -47,6 +47,7 @@ export interface RequerimientoResumen {
   idRequerimiento: number;
   numeroRequerimiento: string;
   fechaRequerimiento: string;
+  fechaEntrega: string;
   especialidades?: string | null;
   idProyecto: number;
   nombreProyecto?: string | null;
