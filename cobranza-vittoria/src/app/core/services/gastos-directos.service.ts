@@ -62,6 +62,18 @@ export interface GastoDirectoListado {
   fechaTipoCambio?: string | null;
 }
 
+export interface GastoDirectoDocumento {
+  idGastoDirectoDocumento: number;
+  idGastoDirecto: number;
+  tipoDocumento: string;
+  nombreArchivo: string;
+  rutaArchivo: string | null;
+  extension: string | null;
+  fechaCreacion: string;
+  numeroFactura: string | null;
+  tieneArchivo: boolean;
+}
+
 export interface GastoDirectoRequest {
   idPresupuestoDetalle: number;
   idCategoriaGasto: number;
@@ -148,7 +160,7 @@ export class GastosDirectosService {
   }
 
   documentos(id: number) {
-    return this.api.http.get<any[]>(`${this.base}/${id}/documentos`);
+    return this.api.http.get<GastoDirectoDocumento[]>(`${this.base}/${id}/documentos`);
   }
 
   subirDocumentos(id: number, tipoDocumento: 'Factura' | 'Pago', files: File[]) {

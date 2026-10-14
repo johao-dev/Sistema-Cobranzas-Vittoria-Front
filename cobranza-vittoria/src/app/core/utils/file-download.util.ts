@@ -36,11 +36,19 @@ export function descargarArchivo(blob: Blob, filename: string): void {
  */
 export function extraerFilenameDeContentDisposition(
   header: string | null,
-  fallback: string
+  fallback: string,
 ): string {
   if (!header) return fallback;
+  const encoded = /filename\*\s*=\s*UTF-8''([^;]+)/i.exec(header);
+  if (encoded) {
+    try {
+      return decodeURIComponent(encoded[1].trim());
+    } catch {
+      // Un filename* inválido permite usar filename o el nombre de respaldo.
+    }
+  }
   const m = /filename\s*=\s*"?([^";]+)"?/i.exec(header);
-  return m ? m[1].trim() : fallback;
+  return m?.[1].trim() || fallback;
 }
 
 /**

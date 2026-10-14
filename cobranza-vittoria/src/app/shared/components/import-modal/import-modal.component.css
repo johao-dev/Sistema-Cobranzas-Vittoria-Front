@@ -16,3 +16,35 @@ code {
 .form-hint code {
   background: #eef2f7;
 }
+
+.import-error {
+  padding: 12px;
+  color: #a94442;
+}
+
+.import-errors {
+  max-height: 320px;
+  overflow: auto;
+}
+
+.import-errors th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface, #fff);
+}
+
+.import-errors td:last-child {
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  min-width: 240px;
+}
+
+.archivo-seleccionado {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.import-resumen {
+  flex-wrap: wrap;
+}

@@ -6,6 +6,7 @@ import {
   CategoriaGasto,
   CentroCostoGastoDirecto,
   GastoDirectoListado,
+  GastoDirectoDocumento,
   GastoDirectoRequest,
   GastosDirectosService,
   PartidaDisponibleGastoDirecto,
@@ -14,6 +15,7 @@ import {
 import { ControlPresupuestarioService } from '../../core/services/control-presupuestario.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ImportModalComponent } from '../../shared/components/import-modal/import-modal.component';
 import { descargarArchivo } from '../../core/utils/file-download.util';
 
 /** Configuración visual de una ruta; sus códigos resuelven categorías descriptivas, no reglas económicas. */
@@ -55,7 +57,7 @@ export function resolverCategoriasPorCodigo(catalogo: CategoriaGasto[], codigos:
 @Component({
   standalone: true,
   selector: 'app-gastos-seccion-page',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ImportModalComponent],
   templateUrl: './gastos-seccion.page.html',
   styleUrl: './gastos-seccion.page.css'
 })
@@ -70,7 +72,7 @@ export class GastosSeccionPage implements OnInit {
   categoriasVista: CategoriaGasto[] = [];
   errorCategorias = '';
 
-  documentos: any[] = [];
+  documentos: GastoDirectoDocumento[] = [];
   gastoSeleccionado: GastoDirectoListado | null = null;
 
   loading = false;
@@ -85,6 +87,7 @@ export class GastosSeccionPage implements OnInit {
   filtroHasta = '';
   filtroBusqueda = '';
 
+  importOpen = false;
   modalGasto = false;
   modalDocumentos = false;
   modalConfirmacion: { accion: 'confirmar' | 'anular'; row: GastoDirectoListado } | null = null;
@@ -120,6 +123,20 @@ export class GastosSeccionPage implements OnInit {
   /** Registrar, editar, confirmar, anular y adjuntar exige gasto_directo.operar. */
   get puedeOperar(): boolean {
     return this.auth.hasPermission('gasto_directo.operar');
+  }
+
+  abrirImportModal(): void {
+    if (!this.puedeOperar) return;
+    this.importOpen = true;
+  }
+
+  cerrarImportModal(): void {
+    this.importOpen = false;
+  }
+
+  onImportSuccess(): void {
+    // El resultado permanece en el diálogo; una sola recarga conserva los filtros de esta vista.
+    this.load();
   }
 
   formVacio(): GastoDirectoForm {
@@ -582,8 +599,8 @@ export class GastosSeccionPage implements OnInit {
     });
   }
 
-  descargar(documento: any): void {
-    if (!this.gastoSeleccionado) return;
+  descargar(documento: GastoDirectoDocumento): void {
+    if (!this.gastoSeleccionado || !documento.tieneArchivo) return;
     this.gastos.descargarDocumento(this.gastoSeleccionado.idGastoDirecto, documento.idGastoDirectoDocumento)
       .subscribe({
         next: blob => descargarArchivo(blob, documento.nombreArchivo || 'documento.pdf'),
@@ -593,6 +610,7 @@ export class GastosSeccionPage implements OnInit {
 
   cerrarModales(): void {
     if (this.guardando) return;
+    this.importOpen = false;
     this.modalGasto = false;
     this.modalDocumentos = false;
     this.modalConfirmacion = null;

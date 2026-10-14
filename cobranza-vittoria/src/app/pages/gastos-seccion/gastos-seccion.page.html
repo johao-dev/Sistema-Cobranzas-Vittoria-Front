@@ -18,6 +18,9 @@
         <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Concepto, proveedor o partida" />
       </div>
     </div>
+    <button *ngIf="puedeOperar" type="button" class="btn btn-secondary btn-sm" (click)="abrirImportModal()">
+      Importar gastos
+    </button>
     <button *ngIf="puedeOperar" type="button" class="btn btn-primary btn-sm"
       [disabled]="!categoriasResueltas" (click)="abrirModalNuevo()">
       + Nuevo gasto
@@ -344,7 +347,7 @@
       <thead>
         <tr>
           <th>Tipo</th>
-          <th>Archivo</th>
+          <th>Archivo / N.º factura</th>
           <th>Fecha</th>
           <th class="actions-col">Acciones</th>
         </tr>
@@ -352,10 +355,13 @@
       <tbody>
         <tr *ngFor="let d of documentos">
           <td>{{ d.tipoDocumento }}</td>
-          <td>{{ d.nombreArchivo }}</td>
+          <td>
+            {{ d.numeroFactura || d.nombreArchivo }}
+            <small *ngIf="!d.tieneArchivo" class="modal-nota">(Referencia de factura)</small>
+          </td>
           <td>{{ d.fechaCreacion | date:'dd/MM/yyyy' }}</td>
           <td class="actions-col">
-            <button type="button" class="btn btn-ghost btn-sm" (click)="descargar(d)">Descargar</button>
+            <button *ngIf="d.tieneArchivo" type="button" class="btn btn-ghost btn-sm" (click)="descargar(d)">Descargar</button>
           </td>
         </tr>
       </tbody>
@@ -366,3 +372,7 @@
     <button class="btn btn-ghost" (click)="cerrarModales()">Cerrar</button>
   </div>
 </section>
+
+<app-import-modal *ngIf="importOpen && puedeOperar" modulo="gastos-directos"
+  (onClose)="cerrarImportModal()" (onSuccess)="onImportSuccess()">
+</app-import-modal>
