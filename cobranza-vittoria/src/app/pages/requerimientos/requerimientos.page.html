@@ -99,7 +99,7 @@
           disponibles</span>
       </div>
       <div class="detail-actions">
-        <button class="btn btn-primary" *ngIf="puedeEditarDetalle" (click)="editarDesdeDetalle()">{{ puedeEditarCantidadesAlmacen ? 'Editar cantidades' : 'Editar' }}</button>
+        <button class="btn btn-primary" *ngIf="puedeEditarDetalle" (click)="editarDesdeDetalle()">{{ puedeGestionarItemsAlmacen ? 'Gestionar ítems' : 'Editar' }}</button>
         <button class="btn btn-secondary" (click)="descargarPdfRequerimiento()">Descargar PDF</button>
         <button class="btn btn-success" *ngIf="puedeEnviar" (click)="abrirAccion('enviar')">Enviar a almacén</button>
         <button class="btn btn-success" *ngIf="puedeProcesarStock" (click)="abrirAccion('validar-almacen')">Procesar
@@ -111,6 +111,10 @@
       </div>
     </div>
 
+    <div class="error-box" role="alert" *ngIf="detalleAlmacenDesactualizado && !recargandoItems">
+      Es necesario recargar el detalle antes de continuar.
+      <button class="btn btn-secondary" (click)="recargarItemsAlmacen()">Recargar detalle</button>
+    </div>
     <div class="table-wrap table-wrap--medium" *ngIf="detalle.items.length">
       <table>
         <thead>
@@ -193,8 +197,8 @@
   (click)="$event.stopPropagation()">
   <button type="button" class="modal-close" (click)="cerrarFormModal()" aria-label="Cerrar">×</button>
   <div class="panel-title">{{ editando ? 'Editar requerimiento' : 'Nuevo requerimiento' }}</div>
-  <div class="helper-text" *ngIf="!edicionSoloCantidadesAlmacen">Número se genera automáticamente. El solicitante se toma de la sesión actual.</div>
-  <div class="helper-text" *ngIf="edicionSoloCantidadesAlmacen">Puedes ajustar únicamente las cantidades solicitadas.</div>
+  <div class="helper-text" *ngIf="!gestionItemsAlmacen">Número se genera automáticamente. El solicitante se toma de la sesión actual.</div>
+  <div class="helper-text" *ngIf="gestionItemsAlmacen">Cada cambio de ítem se guarda por separado. Puedes agregar, editar o quitar ítems; la cabecera permanece bloqueada.</div>
 
   <div class="form-grid two requer-form-grid">
     <div class="field auto-field">
@@ -203,26 +207,26 @@
     </div>
     <div class="field auto-field">
       <label>Fecha</label>
-      <input type="date" [(ngModel)]="form.fechaRequerimiento" [disabled]="edicionSoloCantidadesAlmacen" />
+      <input type="date" [(ngModel)]="form.fechaRequerimiento" [disabled]="gestionItemsAlmacen" />
     </div>
     <div class="field">
       <label>Proyecto</label>
-      <select [(ngModel)]="form.idProyecto" [disabled]="edicionSoloCantidadesAlmacen" (change)="onProyectoChange()">
+      <select [(ngModel)]="form.idProyecto" [disabled]="gestionItemsAlmacen" (change)="onProyectoChange()">
         <option [ngValue]="null">Seleccionar</option>
         <option *ngFor="let p of proyectos" [ngValue]="p.idProyecto">{{ p.nombreProyecto }}</option>
       </select>
     </div>
     <div class="field compact-field">
       <label>Fecha entrega</label>
-      <input type="date" [(ngModel)]="form.fechaEntrega" [disabled]="edicionSoloCantidadesAlmacen" />
+      <input type="date" [(ngModel)]="form.fechaEntrega" [disabled]="gestionItemsAlmacen" />
     </div>
     <div class="field full-row">
       <label>Descripción</label>
-      <input [(ngModel)]="form.descripcion" placeholder="Descripción del requerimiento" [disabled]="edicionSoloCantidadesAlmacen" />
+      <input [(ngModel)]="form.descripcion" placeholder="Descripción del requerimiento" [disabled]="gestionItemsAlmacen" />
     </div>
     <div class="field full-row">
       <label>Observación</label>
-      <textarea rows="3" [(ngModel)]="form.observacion" placeholder="Observación general" [disabled]="edicionSoloCantidadesAlmacen"></textarea>
+      <textarea rows="3" [(ngModel)]="form.observacion" placeholder="Observación general" [disabled]="gestionItemsAlmacen"></textarea>
     </div>
   </div>
 
@@ -230,9 +234,9 @@
     <div class="detail-card__head">
       <div>
         <div class="panel-title detail-card__title">Detalle</div>
-        <div class="helper-text detail-card__text">{{ edicionSoloCantidadesAlmacen ? 'Ajusta las cantidades solicitadas.' : 'Agrega ítems por especialidad y ajusta cantidades.' }}</div>
+        <div class="helper-text detail-card__text">{{ gestionItemsAlmacen ? 'Guarda cada ítem antes de continuar con la validación de almacén.' : 'Agrega ítems por especialidad y ajusta cantidades.' }}</div>
       </div>
-      <button class="btn btn-secondary" type="button" (click)="abrirModalEspecialidades()" *ngIf="!edicionSoloCantidadesAlmacen">+ Agregar ítem</button>
+      <button class="btn btn-secondary" type="button" (click)="abrirModalEspecialidades()" [disabled]="gestionItemsAlmacen && (!puedeGestionarItemsAlmacen || operacionItemPendiente)">+ Agregar ítem</button>
     </div>
 
     <div class="alerta-presupuesto" *ngIf="proyectoSinCentroCosto">
@@ -270,18 +274,17 @@
             </td>
             <td>{{ x.unidadMedida || x.unidad || '-' }}</td>
             <td>
-              <input *ngIf="edicionSoloCantidadesAlmacen" type="number" min="0.01" step="0.01" [(ngModel)]="x.cantidad" />
-              <ng-container *ngIf="!edicionSoloCantidadesAlmacen">{{ x.cantidad }}</ng-container>
+              {{ x.cantidad }}
             </td>
             <td>{{ x.observacion || '-' }}</td>
-            <td class="actions-col--select" *ngIf="!edicionSoloCantidadesAlmacen">
-              <select class="actions-select" (change)="onAccionItem($event, i)">
+            <td class="actions-col--select">
+              <select class="actions-select" (change)="onAccionItem($event, i)"
+                [disabled]="gestionItemsAlmacen && (!puedeGestionarItemsAlmacen || operacionItemPendiente)">
                 <option value="">Acciones</option>
                 <option value="edit">Editar</option>
-                <option value="remove">Quitar</option>
+                <option value="remove" [disabled]="gestionItemsAlmacen && form.items.length <= 1">Quitar</option>
               </select>
             </td>
-            <td class="actions-col--select" *ngIf="edicionSoloCantidadesAlmacen">-</td>
           </tr>
         </tbody>
       </table>
@@ -292,31 +295,43 @@
     </div>
   </div>
 
-  <div class="toolbar form-actions">
+  <div *ngIf="gestionItemsAlmacen && recargandoItems" role="status" class="helper-text">Actualizando detalle…</div>
+  <div *ngIf="gestionItemsAlmacen && detalleAlmacenDesactualizado && !recargandoItems" role="alert" class="error-box">
+    No se pudo actualizar el detalle. Recárgalo antes de gestionar ítems o validar almacén.
+    <button class="btn btn-secondary" (click)="recargarItemsAlmacen()">Recargar detalle</button>
+  </div>
+
+  <div class="toolbar form-actions" *ngIf="gestionItemsAlmacen">
+    <button class="btn btn-primary" (click)="cerrarFormModal()" [disabled]="operacionItemPendiente">Volver al detalle</button>
+  </div>
+  <div class="toolbar form-actions" *ngIf="!gestionItemsAlmacen">
     <button class="btn btn-primary" (click)="save()" [disabled]="saving">{{ saving ? 'Guardando...' : (editando ?
       'Actualizar requerimiento' : 'Guardar requerimiento') }}</button>
-    <button class="btn btn-ghost" (click)="reset()">{{ edicionSoloCantidadesAlmacen ? 'Cancelar' : 'Limpiar' }}</button>
+    <button class="btn btn-ghost" (click)="reset()">Limpiar</button>
   </div>
 
   <div *ngIf="msg" class="success-box">{{ msg }}</div>
 </section>
 
 <div class="modal-backdrop" *ngIf="modalEspecialidades">
-  <div class="modal-card item-modal-card">
+  <div class="modal-card item-modal-card" role="dialog" aria-modal="true" aria-labelledby="titulo-item">
     <div class="modal-header">
       <div>
-        <div class="panel-title" style="margin:0;">{{ editingItemIndex !== null ? 'Editar ítem' : 'Agregar ítem' }}
+        <div id="titulo-item" class="panel-title" style="margin:0;">{{ editingItemIndex !== null ? 'Editar ítem' : 'Agregar ítem' }}
         </div>
-        <div class="helper-text" style="margin:6px 0 0 0;">Selecciona primero la especialidad y luego el material
-          correspondiente.</div>
+        <div class="helper-text" style="margin:6px 0 0 0;">{{ gestionItemsAlmacen && editingItemIndex !== null
+          ? 'El material no se puede cambiar. Para sustituirlo, agrega otro ítem y elimina el anterior.'
+          : 'Selecciona primero la especialidad y luego el material correspondiente.' }}</div>
       </div>
-      <button class="btn btn-ghost" (click)="cerrarModalEspecialidades()">Cerrar</button>
+      <button class="btn btn-ghost" (click)="cerrarModalEspecialidades()" [disabled]="guardandoItem">Cerrar</button>
     </div>
 
     <div class="form-grid two item-modal-grid" style="margin-top:12px;">
       <div class="field">
-        <label>Especialidad</label>
-        <select [(ngModel)]="modalItem.idEspecialidad" (change)="onModalEspecialidadChange()">
+        <label for="item-especialidad">Especialidad</label>
+        <input id="item-especialidad" *ngIf="gestionItemsAlmacen && editingItemIndex !== null"
+          [value]="form.items[editingItemIndex].especialidad || '-'" readonly aria-label="Especialidad del ítem" />
+        <select *ngIf="!gestionItemsAlmacen || editingItemIndex === null" id="item-especialidad" [disabled]="guardandoItem || (gestionItemsAlmacen && editingItemIndex !== null)" [(ngModel)]="modalItem.idEspecialidad" (change)="onModalEspecialidadChange()">
           <option [ngValue]="null">Seleccionar</option>
           <option *ngFor="let e of especialidades" [ngValue]="getIdEspecialidad(e)">{{ getNombreEspecialidad(e) }}
           </option>
@@ -325,12 +340,14 @@
 
       <div class="field material-picker-field">
         <div class="field-label-row">
-          <label>Material</label>
-          <button class="btn btn-secondary btn-xs" type="button" (click)="abrirFormNuevoMaterial()">+ Agregar
+          <label for="item-material">Material</label>
+          <button *ngIf="!gestionItemsAlmacen" class="btn btn-secondary btn-xs" type="button" (click)="abrirFormNuevoMaterial()">+ Agregar
             material</button>
         </div>
-        <select [(ngModel)]="modalItem.idMaterial" (ngModelChange)="onModalMaterialChange()"
-          [disabled]="!modalItem.idEspecialidad">
+        <input id="item-material" *ngIf="gestionItemsAlmacen && editingItemIndex !== null"
+          [value]="form.items[editingItemIndex].material" readonly aria-label="Material del ítem" />
+        <select *ngIf="!gestionItemsAlmacen || editingItemIndex === null" id="item-material" [(ngModel)]="modalItem.idMaterial" (ngModelChange)="onModalMaterialChange()"
+          [disabled]="!modalItem.idEspecialidad || guardandoItem || (gestionItemsAlmacen && editingItemIndex !== null)">
           <option [ngValue]="null">{{ modalItem.idEspecialidad ? 'Seleccionar' : 'Selecciona una especialidad primero'
             }}</option>
           <option *ngFor="let m of materialesFiltradosModal" [ngValue]="getIdMaterial(m)">{{ getDescripcionMaterial(m)
@@ -339,10 +356,13 @@
       </div>
 
       <div class="field">
-        <label>Partida presupuestal</label>
-        <select [(ngModel)]="modalItem.idPresupuestoDetalle" [disabled]="!partidasPresupuesto.length">
+        <label for="item-partida">Partida presupuestal</label>
+        <select id="item-partida" [(ngModel)]="modalItem.idPresupuestoDetalle"
+          [disabled]="guardandoItem || cargandoPartidas || (!gestionItemsAlmacen && !partidasPresupuesto.length)">
+          <option *ngIf="gestionItemsAlmacen && modalItem.idPresupuestoDetalle && !partidaSeleccionadaModal"
+            [ngValue]="modalItem.idPresupuestoDetalle">Partida actual (no disponible en el catálogo)</option>
           <option [ngValue]="null">{{ cargandoPartidas ? 'Cargando partidas…'
-            : (partidasPresupuesto.length ? 'Sin imputar' : 'No hay presupuesto aprobado para este proyecto') }}
+            : (gestionItemsAlmacen || partidasPresupuesto.length ? 'Sin imputar' : 'No hay presupuesto aprobado para este proyecto') }}
           </option>
           <option *ngFor="let p of partidasPresupuesto" [ngValue]="p.idPresupuestoDetalle">
             {{ p.codigoPartida }} — {{ p.partida }}
@@ -360,22 +380,25 @@
       </div>
 
       <div class="field">
-        <label>Cantidad</label>
-        <input type="number" [(ngModel)]="modalItem.cantidad" />
+        <label for="item-cantidad">Cantidad</label>
+        <input id="item-cantidad" type="number" min="0.01" step="0.01" required
+          [disabled]="guardandoItem" [(ngModel)]="modalItem.cantidad" />
       </div>
 
       <div class="field">
-        <label>Observación ítem</label>
-        <input [(ngModel)]="modalItem.observacion" />
+        <label for="item-observacion">Observación ítem</label>
+        <input id="item-observacion" maxlength="250" [disabled]="guardandoItem" [(ngModel)]="modalItem.observacion" />
       </div>
     </div>
 
 
 
+    <div *ngIf="msg" class="error-box" role="alert">{{ msg }}</div>
     <div class="toolbar" style="margin-top:14px; justify-content:flex-end;">
-      <button class="btn btn-ghost" (click)="cerrarModalEspecialidades()">Cancelar</button>
-      <button class="btn btn-primary" (click)="agregarItemDesdeModal()">{{ editingItemIndex !== null ? 'Guardar cambios'
-        : 'Agregar ítem' }}</button>
+      <button class="btn btn-ghost" (click)="cerrarModalEspecialidades()" [disabled]="guardandoItem">Cancelar</button>
+      <button class="btn btn-primary" (click)="agregarItemDesdeModal()"
+        [disabled]="guardandoItem || (gestionItemsAlmacen && (!puedeGestionarItemsAlmacen || recargandoItems))">
+        {{ guardandoItem ? 'Guardando…' : (editingItemIndex !== null ? 'Guardar cambios' : 'Agregar ítem') }}</button>
     </div>
   </div>
 </div>

@@ -9,13 +9,36 @@ import { ControlPresupuestarioService } from '../../core/services/control-presup
 import { extraerMensajeError } from '../../core/utils/api-error.util';
 import {
   RequerimientoFilters,
-  RequerimientoCantidadAlmacenRequest,
+  RequerimientoDetalleItem,
+  RequerimientoItemRequest,
+  RequerimientoItemPatchRequest,
+  RequerimientoItemResponse,
   RequerimientoGetResponse,
   RequerimientoRequest,
   RequerimientoResumen,
   ResultadoValidacionAlmacen
 } from '../../models/requerimientos.models';
-import { Observable } from 'rxjs';
+import { Observable, finalize } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Material } from '../../models/maestra.models';
+
+interface FormularioRequerimiento {
+  numeroRequerimiento: string;
+  fechaRequerimiento: string;
+  idProyecto: number | null;
+  descripcion: string;
+  fechaEntrega: string;
+  observacion: string;
+  items: RequerimientoDetalleItem[];
+}
+
+interface FormularioItem {
+  idEspecialidad: number | null;
+  idMaterial: number | null;
+  idPresupuestoDetalle: number | null;
+  cantidad: number | null;
+  observacion: string;
+}
 
 type AccionFlujo = 'enviar' | 'validar-almacen' | 'aprobar' | 'rechazar' | 'enviar-compras';
 
@@ -57,8 +80,11 @@ export class RequerimientosPage implements OnInit {
   };
 
   editando = false;
-  edicionSoloCantidadesAlmacen = false;
-  puedeEditarDetalle = false;
+  gestionItemsAlmacen = false;
+  guardandoItem = false;
+  recargandoItems = false;
+  detalleAlmacenDesactualizado = false;
+  private itemOriginal: RequerimientoDetalleItem | null = null;
   requerimientoEditandoId: number | null = null;
 
   accionModalOpen = false;
@@ -72,7 +98,7 @@ export class RequerimientosPage implements OnInit {
   savingMaterial = false;
   msgMaterial = '';
   editingItemIndex: number | null = null;
-  modalItem = {
+  modalItem: FormularioItem = {
     idEspecialidad: null as number | null,
     idMaterial: null as number | null,
     idPresupuestoDetalle: null as number | null,
@@ -91,7 +117,7 @@ export class RequerimientosPage implements OnInit {
     idCatalogoPartida: null as number | null
   };
 
-  form: any = {
+  form: FormularioRequerimiento = {
     numeroRequerimiento: '',
     fechaRequerimiento: '',
     idProyecto: null,
@@ -126,6 +152,15 @@ export class RequerimientosPage implements OnInit {
   ) { }
 
   // Los botones requieren simultáneamente el claim y el estado indicado por el contrato.
+  get puedeEditarDetalle(): boolean {
+    return (!!this.detalle?.puedeEditar && this.estadoDetalle === 'Registrado'
+      && this.auth.hasPermission('requerimientos.editar_borrador')) || this.puedeGestionarItemsAlmacen;
+  }
+
+  get operacionItemPendiente(): boolean {
+    return this.guardandoItem || this.recargandoItems;
+  }
+
   get puedeCrear(): boolean {
     return this.auth.hasPermission('requerimientos.crear');
   }
@@ -138,9 +173,10 @@ export class RequerimientosPage implements OnInit {
     return this.estadoDetalle === 'EnviadoAlmacen' && this.auth.hasPermission('requerimientos.procesar_stock');
   }
 
-  get puedeEditarCantidadesAlmacen(): boolean {
+  get puedeGestionarItemsAlmacen(): boolean {
     return this.estadoDetalle === 'EnviadoAlmacen'
-      && this.auth.hasPermission('requerimientos.editar_cantidades_almacen');
+      && !this.detalleAlmacenDesactualizado
+      && this.auth.hasPermission('requerimientos.gestionar_items_almacen');
   }
 
   get puedeAprobar(): boolean {
@@ -186,7 +222,11 @@ export class RequerimientosPage implements OnInit {
   }
 
   cerrarFormModal(): void {
+    if (this.operacionItemPendiente) return;
+    if (this.modalEspecialidades && !this.cerrarModalEspecialidades()) return;
+
     this.formModalOpen = false;
+    if (this.gestionItemsAlmacen) this.detalleModalOpen = true;
     this.cdr.detectChanges();
   }
 
@@ -372,6 +412,11 @@ export class RequerimientosPage implements OnInit {
   }
 
   abrirModalEspecialidades(index?: number): void {
+    if (this.gestionItemsAlmacen
+      && (!this.puedeGestionarItemsAlmacen || this.operacionItemPendiente || this.procesandoAccion)) return;
+    if (index !== undefined && !this.form.items[index]) return;
+
+    this.itemOriginal = index !== undefined ? { ...this.form.items[index] } : null;
     this.msg = '';
     this.avisoPartidaMaterial = '';
     this.partidaAutoAsignada = null;
@@ -400,7 +445,12 @@ export class RequerimientosPage implements OnInit {
     };
   }
 
-  cerrarModalEspecialidades(): void {
+  cerrarModalEspecialidades(descartar = false): boolean {
+    if (this.guardandoItem) return false;
+    if (this.gestionItemsAlmacen && !descartar && this.hayCambiosItemAlmacen
+      && !confirm('¿Descartar los cambios sin guardar de este ítem?')) return false;
+
+    this.itemOriginal = null;
     this.avisoPartidaMaterial = '';
     this.partidaAutoAsignada = null;
     this.modalEspecialidades = false;
@@ -414,6 +464,7 @@ export class RequerimientosPage implements OnInit {
       cantidad: 1,
       observacion: ''
     };
+    return true;
   }
 
   onModalEspecialidadChange(): void {
@@ -529,6 +580,11 @@ export class RequerimientosPage implements OnInit {
   }
 
   agregarItemDesdeModal(): void {
+    if (this.gestionItemsAlmacen) {
+      this.guardarItemAlmacen();
+      return;
+    }
+
     this.msg = '';
 
     if (!this.modalItem.idEspecialidad) {
@@ -574,24 +630,224 @@ export class RequerimientosPage implements OnInit {
   }
 
   removeItem(index: number): void {
+    if (this.gestionItemsAlmacen) {
+      this.eliminarItemAlmacen(this.form.items[index]);
+      return;
+    }
     this.form.items.splice(index, 1);
   }
 
+  get hayCambiosItemAlmacen(): boolean {
+    if (!this.modalEspecialidades) return false;
+    if (this.itemOriginal) {
+      return this.modalItem.cantidad !== this.itemOriginal.cantidad
+        || Object.keys(this.cambiosItemAlmacen()).length > 0;
+    }
+
+    return this.modalItem.idMaterial !== null || this.modalItem.idEspecialidad !== null
+      || this.modalItem.cantidad !== 1 || this.modalItem.idPresupuestoDetalle !== null
+      || this.modalItem.observacion !== '';
+  }
+
+  private cambiosItemAlmacen(): RequerimientoItemPatchRequest {
+    const cambios: RequerimientoItemPatchRequest = {};
+    if (!this.itemOriginal) return cambios;
+
+    if (this.modalItem.cantidad !== this.itemOriginal.cantidad && this.modalItem.cantidad !== null) {
+      cambios.cantidad = this.modalItem.cantidad;
+    }
+    if (this.modalItem.idPresupuestoDetalle !== (this.itemOriginal.idPresupuestoDetalle ?? null)) {
+      cambios.idPresupuestoDetalle = this.modalItem.idPresupuestoDetalle;
+    }
+    if (this.modalItem.observacion !== (this.itemOriginal.observacion ?? '')) {
+      cambios.observacion = this.modalItem.observacion || null;
+    }
+    return cambios;
+  }
+
+  private guardarItemAlmacen(): void {
+    if (!this.puedeGestionarItemsAlmacen || this.operacionItemPendiente || this.procesandoAccion) return;
+
+    const id: number | undefined = this.detalle?.requerimiento.idRequerimiento;
+    const cantidad: number | null = this.modalItem.cantidad;
+    this.msg = '';
+
+    if (!id || !this.modalItem.idMaterial) {
+      this.msg = 'Debes seleccionar un material.';
+      return;
+    }
+    if (cantidad === null || !Number.isFinite(cantidad) || cantidad <= 0
+      || cantidad !== Number(cantidad.toFixed(2))) {
+      this.msg = 'La cantidad es obligatoria, debe ser positiva y tener como máximo dos decimales.';
+      return;
+    }
+    if (this.modalItem.observacion.length > 250) {
+      this.msg = 'La observación admite hasta 250 caracteres.';
+      return;
+    }
+    if (this.itemOriginal && this.modalItem.idMaterial !== this.itemOriginal.idMaterial) {
+      this.msg = 'El material no puede modificarse. Agrega otro ítem y elimina el anterior.';
+      return;
+    }
+    if (this.form.items.some(item => item.idMaterial === this.modalItem.idMaterial
+      && (!this.itemOriginal || item.idRequerimientoDetalle !== this.itemOriginal.idRequerimientoDetalle))) {
+      this.msg = 'El material ya existe en el requerimiento.';
+      return;
+    }
+
+    let request: Observable<RequerimientoItemResponse>;
+    if (this.itemOriginal) {
+      const idDetalle: number | undefined = this.itemOriginal.idRequerimientoDetalle;
+      const cambios: RequerimientoItemPatchRequest = this.cambiosItemAlmacen();
+      if (!idDetalle) {
+        this.msg = 'No se pudo identificar el detalle. Vuelve a cargar el requerimiento.';
+        return;
+      }
+      if (!Object.keys(cambios).length) {
+        this.msg = 'No hay cambios para guardar.';
+        return;
+      }
+      request = this.requerimientos.actualizarItem(id, idDetalle, cambios);
+    } else {
+      const nuevoItem: RequerimientoItemRequest = {
+        idMaterial: this.modalItem.idMaterial,
+        cantidad,
+        idPresupuestoDetalle: this.modalItem.idPresupuestoDetalle,
+        observacion: this.modalItem.observacion || null
+      };
+      request = this.requerimientos.agregarItem(id, nuevoItem);
+    }
+
+    this.guardandoItem = true;
+    request.pipe(finalize(() => {
+      this.guardandoItem = false;
+      this.cdr.detectChanges();
+    })).subscribe({
+      next: (persistido: RequerimientoItemResponse) => {
+        // La respuesta no trae etiquetas. Se conservan hasta recuperar el detalle completo.
+        const anterior: RequerimientoDetalleItem | undefined = this.detalle?.items
+          .find(item => item.idRequerimientoDetalle === persistido.idRequerimientoDetalle);
+        const material: Material | undefined = this.materiales
+          .find(material => this.getIdMaterial(material) === persistido.idMaterial);
+        const item: RequerimientoDetalleItem = {
+          ...anterior,
+          ...persistido,
+          material: anterior?.material ?? this.getDescripcionMaterial(material),
+          idEspecialidad: anterior?.idEspecialidad ?? this.getIdEspecialidad(material),
+          especialidad: anterior?.especialidad ?? this.getNombreEspecialidad(material),
+          unidadMedida: anterior?.unidadMedida ?? this.getUnidadMaterial(material),
+          codigoPartida: persistido.idPresupuestoDetalle === anterior?.idPresupuestoDetalle
+            ? anterior?.codigoPartida : this.partidaPorDetalle(persistido.idPresupuestoDetalle)?.codigoPartida ?? null,
+          nombrePartida: persistido.idPresupuestoDetalle === anterior?.idPresupuestoDetalle
+            ? anterior?.nombrePartida : this.partidaPorDetalle(persistido.idPresupuestoDetalle)?.partida ?? null
+        };
+        if (this.detalle) {
+          this.detalle.items = anterior
+            ? this.detalle.items.map(fila => fila.idRequerimientoDetalle === item.idRequerimientoDetalle ? item : fila)
+            : [...this.detalle.items, item];
+          this.form.items = this.detalle.items.map(fila => ({ ...fila }));
+        }
+
+        this.guardandoItem = false;
+        this.cerrarModalEspecialidades(true);
+        this.notifyService.show('Ítem guardado correctamente.', 'success');
+        this.recargarItemsAlmacen();
+      },
+      error: (error: unknown) => this.manejarErrorItemAlmacen(error)
+    });
+  }
+
+  private eliminarItemAlmacen(item: RequerimientoDetalleItem | undefined): void {
+    const id: number | undefined = this.detalle?.requerimiento.idRequerimiento;
+    if (!id || !item?.idRequerimientoDetalle || !this.puedeGestionarItemsAlmacen
+      || this.operacionItemPendiente || this.modalEspecialidades || this.procesandoAccion) return;
+
+    if (this.form.items.length <= 1) {
+      this.notifyService.show('No se puede eliminar el último ítem del requerimiento.', 'error');
+      return;
+    }
+    if (!confirm(`¿Quitar el ítem ${item.material} del requerimiento?`)) return;
+
+    this.guardandoItem = true;
+    this.requerimientos.eliminarItem(id, item.idRequerimientoDetalle).pipe(finalize(() => {
+      this.guardandoItem = false;
+      this.cdr.detectChanges();
+    })).subscribe({
+      next: () => {
+        if (this.detalle) {
+          this.detalle.items = this.detalle.items.filter(fila => fila.idRequerimientoDetalle !== item.idRequerimientoDetalle);
+          this.form.items = this.detalle.items.map(fila => ({ ...fila }));
+        }
+        this.notifyService.show('Ítem eliminado correctamente.', 'success');
+        this.recargarItemsAlmacen();
+      },
+      error: (error: unknown) => this.manejarErrorItemAlmacen(error)
+    });
+  }
+
+  recargarItemsAlmacen(): void {
+    const id: number | undefined = this.detalle?.requerimiento.idRequerimiento;
+    if (!id || this.recargandoItems) return;
+
+    this.recargandoItems = true;
+    this.detalleAlmacenDesactualizado = true;
+    this.requerimientos.obtener(id).pipe(finalize(() => {
+      this.recargandoItems = false;
+      this.cdr.detectChanges();
+    })).subscribe({
+      next: (detalle: RequerimientoGetResponse) => {
+        this.detalle = detalle;
+        this.form.items = detalle.items.map(item => ({ ...item }));
+        this.detalleAlmacenDesactualizado = false;
+        this.msg = detalle.requerimiento.estado === 'EnviadoAlmacen'
+          ? '' : 'El requerimiento cambió de estado. Ya no se pueden gestionar sus ítems en almacén.';
+        this.load();
+      },
+      error: (error: unknown) => {
+        this.notifyService.show(extraerMensajeError(error,
+          'No se pudo actualizar el detalle. Recárgalo antes de continuar.'), 'error');
+      }
+    });
+  }
+
+  private manejarErrorItemAlmacen(error: unknown): void {
+    this.msg = extraerMensajeError(error, 'No se pudo guardar el cambio del ítem.');
+    if (error instanceof HttpErrorResponse && error.status === 403) {
+      this.msg += ' Verifica tu acceso con un administrador y vuelve a iniciar sesión.';
+    }
+    const requiereRecarga: boolean = error instanceof HttpErrorResponse && [404, 409].includes(error.status);
+    if (requiereRecarga) {
+      this.msg += ' No se aplicó este cambio. Se recargará el detalle; revisa los datos antes de reintentar.';
+    }
+    this.notifyService.show(this.msg, 'error');
+    if (requiereRecarga) {
+      this.guardandoItem = false;
+      this.cerrarModalEspecialidades(true);
+      this.recargarItemsAlmacen();
+    }
+  }
+
+  private itemsListosParaValidar(): boolean {
+    if (this.operacionItemPendiente || this.detalleAlmacenDesactualizado
+      || (this.gestionItemsAlmacen && this.modalEspecialidades)) {
+      this.notifyService.show('Guarda o descarta la edición del ítem y espera la recarga del detalle antes de validar almacén.', 'info');
+      return false;
+    }
+    return true;
+  }
+
   view(row: any): void {
+    if (this.operacionItemPendiente) return;
     this.requerimientos.obtener(row.idRequerimiento).subscribe({
       next: (x) => {
         this.detalle = x;
-        this.puedeEditarDetalle = (!!x?.puedeEditar
-          && x.requerimiento.estado === 'Registrado'
-          && this.auth.hasPermission('requerimientos.editar_borrador'))
-          || this.puedeEditarCantidadesAlmacen;
+        this.detalleAlmacenDesactualizado = false;
         this.detalleModalOpen = true;
         this.formModalOpen = false;
         this.cdr.detectChanges();
       },
       error: (error: unknown) => {
         this.detalle = null;
-        this.puedeEditarDetalle = false;
         this.notifyService.show(extraerMensajeError(error, 'No se pudo cargar el detalle.'), 'error');
         this.cdr.detectChanges();
       }
@@ -599,7 +855,7 @@ export class RequerimientosPage implements OnInit {
   }
 
   editarDesdeDetalle(): void {
-    if (!this.detalle?.requerimiento?.idRequerimiento) return;
+    if (!this.detalle?.requerimiento?.idRequerimiento || this.operacionItemPendiente) return;
     if (!this.puedeEditarDetalle) {
       this.msg = 'Este requerimiento ya no puede modificarse.';
       return;
@@ -609,7 +865,7 @@ export class RequerimientosPage implements OnInit {
     const items = this.detalle.items || [];
 
     this.editando = true;
-    this.edicionSoloCantidadesAlmacen = req.estado === 'EnviadoAlmacen';
+    this.gestionItemsAlmacen = req.estado === 'EnviadoAlmacen';
     this.requerimientoEditandoId = req.idRequerimiento;
 
     this.form = {
@@ -619,7 +875,7 @@ export class RequerimientosPage implements OnInit {
       descripcion: req.descripcion ?? '',
       fechaEntrega: this.toDateInput(req.fechaEntrega),
       observacion: req.observacion ?? '',
-      items: items.map((x: any) => ({
+      items: items.map((x: RequerimientoDetalleItem) => ({
         idRequerimientoDetalle: x.idRequerimientoDetalle,
         idMaterial: x.idMaterial,
         idEspecialidad: x.idEspecialidad ?? null,
@@ -716,6 +972,8 @@ export class RequerimientosPage implements OnInit {
   }
 
   abrirAccion(accion: AccionFlujo): void {
+    if (accion === 'validar-almacen' && !this.itemsListosParaValidar()) return;
+
     this.accionActual = accion;
     this.accionObservacion = '';
     this.accionResultado = 'Conforme';
@@ -732,6 +990,7 @@ export class RequerimientosPage implements OnInit {
     const id = this.detalle?.requerimiento?.idRequerimiento;
     const accion = this.accionActual;
     if (!id || !accion || this.procesandoAccion) return;
+    if (accion === 'validar-almacen' && !this.itemsListosParaValidar()) return;
 
     const permitida = accion === 'enviar' ? this.puedeEnviar
       : accion === 'validar-almacen' ? this.puedeProcesarStock
@@ -781,13 +1040,16 @@ export class RequerimientosPage implements OnInit {
   }
 
   save(): void {
+    if (this.gestionItemsAlmacen) {
+      this.cerrarFormModal();
+      return;
+    }
+    if (this.saving) return;
+
     this.msg = '';
 
     if ((!this.editando && !this.puedeCrear)
-      || (this.editando && !this.edicionSoloCantidadesAlmacen
-        && !this.auth.hasPermission('requerimientos.editar_borrador'))
-      || (this.editando && this.edicionSoloCantidadesAlmacen
-        && !this.auth.hasPermission('requerimientos.editar_cantidades_almacen'))) {
+      || (this.editando && !this.auth.hasPermission('requerimientos.editar_borrador'))) {
       this.msg = 'No tienes permiso para guardar este requerimiento.';
       return;
     }
@@ -808,12 +1070,6 @@ export class RequerimientosPage implements OnInit {
     }
     if (!this.form.items.length) {
       this.msg = 'Debes agregar al menos un ítem.';
-      return;
-    }
-
-    if (this.edicionSoloCantidadesAlmacen && this.form.items.some((x: any) =>
-      !Number.isFinite(Number(x.cantidad)) || Number(x.cantidad) <= 0 || !Number(x.idRequerimientoDetalle))) {
-      this.msg = 'Cada ítem debe conservar su detalle y tener una cantidad mayor a cero.';
       return;
     }
 
@@ -841,17 +1097,8 @@ export class RequerimientosPage implements OnInit {
 
     this.saving = true;
 
-    const cantidadesAlmacen: RequerimientoCantidadAlmacenRequest = {
-      items: this.form.items.map((x: any) => ({
-        idRequerimientoDetalle: Number(x.idRequerimientoDetalle),
-        cantidad: Number(x.cantidad)
-      }))
-    };
-
     const request: Observable<unknown> = this.editando && this.requerimientoEditandoId
-      ? this.edicionSoloCantidadesAlmacen
-        ? this.requerimientos.actualizarCantidadesAlmacen(this.requerimientoEditandoId, cantidadesAlmacen)
-        : this.requerimientos.actualizar(this.requerimientoEditandoId, dto)
+      ? this.requerimientos.actualizar(this.requerimientoEditandoId, dto)
       : this.requerimientos.crear(dto);
 
     request.subscribe({
@@ -883,10 +1130,11 @@ export class RequerimientosPage implements OnInit {
   }
 
   reset(): void {
+    if (this.operacionItemPendiente) return;
+    this.itemOriginal = null;
     this.editando = false;
-    this.edicionSoloCantidadesAlmacen = false;
+    this.gestionItemsAlmacen = false;
     this.requerimientoEditandoId = null;
-    this.puedeEditarDetalle = false;
     this.modalEspecialidades = false;
     this.materialFormOpen = false;
     this.msgMaterial = '';

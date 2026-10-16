@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 import {
   RequerimientoActionResponse,
@@ -7,6 +8,9 @@ import {
   RequerimientoCreadoResponse,
   RequerimientoFilters,
   RequerimientoGetResponse,
+  RequerimientoItemRequest,
+  RequerimientoItemPatchRequest,
+  RequerimientoItemResponse,
   RequerimientoObservacionRequest,
   RequerimientoRequest,
   RequerimientoResumen,
@@ -43,6 +47,18 @@ export class RequerimientosService {
 
   actualizarCantidadesAlmacen(id: number, dto: RequerimientoCantidadAlmacenRequest) {
     return this.api.http.patch<RequerimientoActionResponse>(`${this.endpoint}/${id}/cantidades-almacen`, dto);
+  }
+
+  agregarItem(id: number, dto: RequerimientoItemRequest): Observable<RequerimientoItemResponse> {
+    return this.api.http.post<RequerimientoItemResponse>(`${this.endpoint}/${id}/items`, dto);
+  }
+
+  actualizarItem(id: number, idDetalle: number, dto: RequerimientoItemPatchRequest): Observable<RequerimientoItemResponse> {
+    return this.api.http.patch<RequerimientoItemResponse>(`${this.endpoint}/${id}/items/${idDetalle}`, dto);
+  }
+
+  eliminarItem(id: number, idDetalle: number): Observable<void> {
+    return this.api.http.delete<void>(`${this.endpoint}/${id}/items/${idDetalle}`);
   }
 
   enviar(id: number, dto: RequerimientoObservacionRequest) {

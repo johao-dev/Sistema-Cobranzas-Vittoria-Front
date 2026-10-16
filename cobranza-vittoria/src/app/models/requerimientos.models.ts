@@ -24,6 +24,22 @@ export interface RequerimientoItemRequest {
   idPresupuestoDetalle?: number | null;
 }
 
+/** Omitir conserva; null limpia partida u observación. El material es inmutable. */
+export interface RequerimientoItemPatchRequest {
+  cantidad?: number;
+  idPresupuestoDetalle?: number | null;
+  observacion?: string | null;
+}
+
+export interface RequerimientoItemResponse {
+  idRequerimientoDetalle: number;
+  idRequerimiento: number;
+  idMaterial: number;
+  cantidad: number;
+  idPresupuestoDetalle: number | null;
+  observacion: string | null;
+}
+
 /** Ajuste de stock permitido a almacén, sin modificar la cabecera ni los materiales del RQ. */
 export interface RequerimientoCantidadAlmacenRequest {
   items: Array<{
@@ -67,7 +83,7 @@ export interface Requerimiento extends RequerimientoResumen {
 export interface RequerimientoDetalleItem {
   idRequerimientoDetalle?: number;
   idMaterial: number;
-  idEspecialidad?: number;
+  idEspecialidad?: number | null;
   especialidad?: string | null;
   material: string;
   unidadMedida?: string | null;
