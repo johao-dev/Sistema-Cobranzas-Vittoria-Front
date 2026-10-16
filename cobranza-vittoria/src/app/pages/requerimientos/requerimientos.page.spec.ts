@@ -35,7 +35,6 @@ describe('RequerimientosPage — gestión de ítems en almacén', () => {
     eliminarItem: vi.fn<() => Observable<void>>(),
     validarAlmacen: vi.fn<() => Observable<RequerimientoActionResponse>>(),
     actualizar: vi.fn<() => Observable<RequerimientoActionResponse>>(),
-    actualizarCantidadesAlmacen: vi.fn(),
   };
   const notificaciones = { show: vi.fn() };
 
@@ -147,9 +146,9 @@ describe('RequerimientosPage — gestión de ítems en almacén', () => {
     expect(api.eliminarItem).not.toHaveBeenCalled();
   });
 
-  it('exige el permiso nuevo; el permiso anterior no habilita la gestión', () => {
+  it('exige el permiso de gestión de ítems aunque el usuario pueda procesar stock', () => {
     permisos.clear();
-    permisos.add('requerimientos.editar_cantidades_almacen');
+    permisos.add('requerimientos.procesar_stock');
     expect(page.puedeGestionarItemsAlmacen).toBe(false);
     expect(page.puedeEditarDetalle).toBe(false);
     abrirNuevoItem();
@@ -192,7 +191,6 @@ describe('RequerimientosPage — gestión de ítems en almacén', () => {
     expect(api.actualizarItem).toHaveBeenCalledWith(45, 710, { cantidad: 0.29 });
     expect(page.form.items[0].cantidad).toBe(0.29);
     expect(page.form.items[0].material).toBe('Cemento');
-    expect(api.actualizarCantidadesAlmacen).not.toHaveBeenCalled();
     expect(api.actualizar).not.toHaveBeenCalled();
   });
 
@@ -469,7 +467,6 @@ describe('RequerimientosPage — gestión de ítems en almacén', () => {
       }),
     );
     expect(api.actualizarItem).not.toHaveBeenCalled();
-    expect(api.actualizarCantidadesAlmacen).not.toHaveBeenCalled();
   });
 
   it('muestra el material inmutable, la cabecera bloqueada y el último ítem sin opción de quitar', () => {

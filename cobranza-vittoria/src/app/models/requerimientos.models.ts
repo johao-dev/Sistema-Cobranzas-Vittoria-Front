@@ -40,14 +40,6 @@ export interface RequerimientoItemResponse {
   observacion: string | null;
 }
 
-/** Ajuste de stock permitido a almacén, sin modificar la cabecera ni los materiales del RQ. */
-export interface RequerimientoCantidadAlmacenRequest {
-  items: Array<{
-    idRequerimientoDetalle: number;
-    cantidad: number;
-  }>;
-}
-
 export interface RequerimientoRequest {
   numeroRequerimiento: string;
   fechaRequerimiento: string;

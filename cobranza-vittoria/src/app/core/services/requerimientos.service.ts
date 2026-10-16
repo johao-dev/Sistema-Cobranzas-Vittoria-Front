@@ -4,7 +4,6 @@ import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 import {
   RequerimientoActionResponse,
-  RequerimientoCantidadAlmacenRequest,
   RequerimientoCreadoResponse,
   RequerimientoFilters,
   RequerimientoGetResponse,
@@ -43,10 +42,6 @@ export class RequerimientosService {
 
   actualizar(id: number, dto: RequerimientoRequest) {
     return this.api.http.put<RequerimientoActionResponse>(`${this.endpoint}/${id}`, dto);
-  }
-
-  actualizarCantidadesAlmacen(id: number, dto: RequerimientoCantidadAlmacenRequest) {
-    return this.api.http.patch<RequerimientoActionResponse>(`${this.endpoint}/${id}/cantidades-almacen`, dto);
   }
 
   agregarItem(id: number, dto: RequerimientoItemRequest): Observable<RequerimientoItemResponse> {
