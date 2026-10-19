@@ -1,0 +1,91 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Dashboard de compras</h1>
+    <div class="page-subtitle">Resumen ejecutivo de compras y valorizaciones del sistema.</div>
+  </div>
+  <button class="btn btn-secondary" type="button" (click)="actualizar()">Actualizar</button>
+</div>
+@if (cargando()) {
+  <div class="dashboard-status" role="status">{{ mensajeCarga() }}</div>
+} @else {
+  @if (datos().errores.length) {
+    <div class="dashboard-status" role="alert">
+      No se pudo cargar toda la información. Los importes y gráficos pueden estar incompletos.
+      <ul>
+        @for (error of datos().errores; track $index) {
+          <li>{{ error }}</li>
+        }
+      </ul>
+    </div>
+  }
+  <div class="dashboard-kpis">
+    @for (card of datos().tarjetas; track card.key) {
+      <article class="kpi-card">
+        <div class="kpi-card__label">{{ card.label }}</div>
+        <div class="kpi-card__value">{{ formatearImporte(card.value) }}</div>
+      </article>
+    }
+  </div>
+  @if (datos().cargandoMateriales || datos().materiales.length) {
+    <section
+      class="panel"
+      aria-labelledby="titulo-materiales"
+      [attr.aria-busy]="datos().cargandoMateriales"
+    >
+      <div class="panel-header panel-header--stack">
+        <div>
+          <h2 id="titulo-materiales" class="panel-title">Materiales que más se compran</h2>
+          <div class="panel-subtitle">
+            Vista completa por cantidad, monto y frecuencia de compra.
+          </div>
+        </div>
+        <div class="metric-chip-group">
+          <div class="metric-chip">
+            <span class="metric-chip__label">Materiales distintos</span
+            ><strong>{{ datos().materiales.length }}</strong>
+          </div>
+          <div class="metric-chip">
+            <span class="metric-chip__label">Top por cantidad</span
+            ><strong>{{ porCantidad()[0]?.label || '-' }}</strong>
+          </div>
+          <div class="metric-chip">
+            <span class="metric-chip__label">Top por monto</span
+            ><strong>{{ porMonto()[0]?.label || '-' }}</strong>
+          </div>
+          <div class="metric-chip">
+            <span class="metric-chip__label">Top por frecuencia</span
+            ><strong>{{ porFrecuencia()[0]?.label || '-' }}</strong>
+          </div>
+        </div>
+      </div>
+      @if (datos().cargandoMateriales) {
+        <div class="dashboard-status" role="status">Cargando materiales...</div>
+      } @else {
+        <div class="material-panels">
+          <grafico-materiales
+            titulo="Por cantidad comprada"
+            metrica="cantidad"
+            [filas]="porCantidad()"
+          />
+          <grafico-materiales
+            titulo="Por monto total comprado"
+            metrica="monto"
+            [filas]="porMonto()"
+          />
+          <grafico-materiales
+            titulo="Por número de veces comprado"
+            metrica="frecuencia"
+            [filas]="porFrecuencia()"
+          />
+        </div>
+      }
+    </section>
+  } @else if (!datos().errores.length) {
+    <div class="empty-state">
+      No se encontraron compras con materiales para construir el gráfico.
+    </div>
+  }
+  @if (!hayDatos() && !datos().errores.length) {
+    <div class="empty-state">No se encontraron datos para construir el dashboard todavía.</div>
+  }
+}

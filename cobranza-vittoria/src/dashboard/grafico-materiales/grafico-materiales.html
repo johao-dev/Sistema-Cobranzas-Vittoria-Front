@@ -1,0 +1,25 @@
+<h3 class="material-panel__title">{{ titulo() }}</h3>
+<div class="chart-list">
+  @for (item of filas(); track item.label) {
+    <div class="chart-row">
+      <div class="chart-row__label">{{ item.label }}</div>
+      <div class="chart-row__metric-line">
+        <div class="chart-row__track" aria-hidden="true">
+          <div
+            class="chart-row__bar"
+            [class.chart-row__bar--accent]="metrica() === 'monto'"
+            [class.chart-row__bar--success]="metrica() === 'frecuencia'"
+            [style.width.%]="item.width"
+          ></div>
+        </div>
+        <div class="chart-row__value">
+          @if (metrica() === 'monto') {
+            {{ formatearImporte(item.value) }}
+          } @else {
+            {{ item.value | number: (metrica() === 'frecuencia' ? '1.0-0' : '1.0-2') }}
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

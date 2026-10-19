@@ -1,4 +1,7 @@
 import { Injectable } from '@angular/core';
+import { HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { FiltrosValorizacion, ValorizacionListado } from '../../models/valorizaciones.models';
 import { ApiService } from './api.service';
 
 @Injectable({ providedIn: 'root' })
@@ -22,13 +25,21 @@ export class ValorizacionesService {
     return this.api.http.post<any>(`${this.api.baseUrl}/api/contable/valorizaciones/reglas-proveedor`, dto);
   }
 
-  valorizaciones(filters?: any) {
-    const params = new URLSearchParams();
-    if (filters?.idProyecto !== undefined && filters?.idProyecto !== null) params.append('idProyecto', String(filters.idProyecto));
-    if (filters?.idProveedor !== undefined && filters?.idProveedor !== null) params.append('idProveedor', String(filters.idProveedor));
-    if (filters?.idEspecialidad !== undefined && filters?.idEspecialidad !== null) params.append('idEspecialidad', String(filters.idEspecialidad));
-    const qs = params.toString();
-    return this.api.http.get<any[]>(`${this.api.baseUrl}/api/contable/valorizaciones${qs ? '?' + qs : ''}`);
+  valorizaciones(filters?: FiltrosValorizacion): Observable<ValorizacionListado[]> {
+    let params = new HttpParams();
+    if (filters?.idProyecto !== undefined && filters.idProyecto !== null) {
+      params = params.set('idProyecto', filters.idProyecto);
+    }
+    if (filters?.idProveedor !== undefined && filters.idProveedor !== null) {
+      params = params.set('idProveedor', filters.idProveedor);
+    }
+    if (filters?.idEspecialidad !== undefined && filters.idEspecialidad !== null) {
+      params = params.set('idEspecialidad', filters.idEspecialidad);
+    }
+    return this.api.http.get<ValorizacionListado[]>(
+      `${this.api.baseUrl}/api/contable/valorizaciones`,
+      { params },
+    );
   }
 
   valorizacion(id: number) {

@@ -4,7 +4,7 @@
 
 - **Fecha del acuerdo:** 2026-10-16.
 - **Contrato para agentes:** [AGENTS.md](../AGENTS.md).
-- **Estado:** preparación técnica y migración de autenticación realizadas el 2026-10-19. Autenticación queda pendiente de validación funcional con backend; las demás funcionalidades continúan pendientes de migración.
+- **Estado:** preparación técnica y migración de autenticación realizadas el 2026-10-19. Autenticación verificada funcionalmente con backend por el usuario. Dashboard migrado y validado con backend y navegador por el usuario; las demás funcionalidades continúan pendientes de migración.
 - **Alcance:** refactor progresivo del frontend manteniendo comportamiento, contratos, permisos, importes y apariencia, con mejoras locales de accesibilidad y adaptación móvil. No incluye cambios de negocio en backend o base de datos ni pruebas automatizadas de navegador por ahora.
 
 Las rutas de la aplicación de este documento son relativas a `cobranza-vittoria/`, salvo indicación contraria. `AGENTS.md` contiene las reglas; este registro conserva decisiones, avance y evidencias sin sustituir ese contrato.
@@ -71,8 +71,8 @@ Las ubicaciones actuales indican el punto de partida; no prueban que todos sus a
 
 | Funcionalidad | Ubicación actual de referencia | Destino | Estado | Evidencias |
 | --- | --- | --- | --- | --- |
-| Autenticación | `src/autenticacion`, `src/core/sesion` y `src/core/config` | `src/autenticacion`; infraestructura transversal en `src/core` | Pendiente de validación funcional | Código y consumidores migrados; 202 pruebas pasan en total. Login sin Zone.js comprobado en jsdom; validación humana contra backend pendiente |
-| Dashboard | `src/app/pages/dashboard` | `src/dashboard` | Pendiente | Sin entrega de migración registrada |
+| Autenticación | `src/autenticacion`, `src/core/sesion` y `src/core/config` | `src/autenticacion`; infraestructura transversal en `src/core` | Verificada | Código y consumidores migrados; 202 pruebas pasan en total. Login sin Zone.js comprobado en jsdom; el usuario confirmó el flujo completo con backend el 2026-10-19 |
+| Dashboard | `src/dashboard`, agrupado por concepto | `src/dashboard` | Verificada | El usuario confirmó validación con backend y revisión en navegador. Vista, gráficos, carga e indicadores agrupados en subdirectorios; retirada futura prevista, sin fecha definida |
 | Catálogos | Páginas de especialidades, materiales, proveedores, proyectos, unidades de medida y catálogos de gasto | `src/catalogos` | Pendiente | Confirmar qué conceptos pertenecen a catálogos y cuáles a un dominio específico al delimitar la entrega |
 | Requerimientos | `src/app/pages/requerimientos` | `src/requerimientos` | Pendiente | Sin entrega de migración registrada |
 | Órdenes de compra | `src/app/pages/ordenes-compra` | `src/ordenes-compra` | Pendiente | Sin entrega de migración registrada |
@@ -101,6 +101,9 @@ Estados de seguimiento: **Pendiente**, **En curso**, **Pendiente de validación 
 | 2026-10-19 | Preparación técnica | Línea base, instalación de ESLint y angular-eslint, configuración progresiva y actualización de comandos | Producción y staging compilan con advertencias previas; 125 pruebas pasan en 13 archivos; lint termina con 0 errores y 2013 advertencias del código pendiente. Sin migración funcional ni comprobación en navegador. |
 | 2026-10-19 | Pruebas base de autenticación | Cuatro archivos de pruebas junto al servicio, interceptor, guard y login actuales; sin cambios de producción | 182 pruebas pasan en 17 archivos (57 nuevas); compilación de producción satisfactoria con advertencias previas; ESLint sin errores ni advertencias en los cuatro archivos nuevos. Migración y validación funcional pendientes. |
 | 2026-10-19 | Migración de autenticación | Login, sesión, contratos, claims, guard, interceptor y ambientes migrados; consumidores y herramientas actualizados | 202 pruebas pasan en 17 archivos; código migrado sin errores ni advertencias de lint. Producción y staging comprobados según las evidencias de esta entrega. Pendiente de validación funcional con backend. |
+| 2026-10-19 | Validación funcional de autenticación | Estado actualizado a Verificada | El usuario confirmó haber comprobado el flujo completo con backend y que todo está correcto. No se modificó código ni se repitieron verificaciones técnicas en esta actualización documental. |
+| 2026-10-19 | Migración de dashboard | Pruebas de caracterización, tipado de tres consultas públicas, separación de cálculos/carga/gráficos, nueva ubicación y ruta diferida | Verificaciones técnicas y limitaciones en las evidencias de esta entrega. Pendiente de validación funcional; intención de retirada futura documentada. |
+| 2026-10-19 | Validación y organización por conceptos de dashboard | Validación funcional registrada y archivos agrupados con sus pruebas | El usuario confirmó backend y navegador correctos. Reorganización de rutas de archivos sin cambios de lógica; verificaciones técnicas registradas al cierre. |
 
 En cada entrega futura registrar:
 
@@ -146,7 +149,7 @@ Referencias: [estructura y estilo de Angular](https://angular.dev/style-guide), 
 
 ## Entrega de autenticación — 2026-10-19
 
-**Estado: Pendiente de validación funcional.** La migración del código está implementada; la validación humana del flujo con backend no se ha realizado. No hay commit ni PR creado en esta entrega.
+**Estado: Verificada.** El usuario confirmó el 2026-10-19 que comprobó el flujo completo con backend y que todo funciona correctamente. Esta confirmación completa la validación funcional pendiente de la entrega. No hay commit ni PR creado por el agente en esta entrega.
 
 ### Archivos y consumidores
 
@@ -184,4 +187,74 @@ Referencias: [estructura y estilo de Angular](https://angular.dev/style-guide), 
 - ESLint del alcance migrado (`src/autenticacion`, `src/core` y `src/app/reglas-acceso.ts`) con `--max-warnings=0`: correcto. `npm run lint`: **0 errores y 2005 advertencias** del código pendiente, frente a 2013 en la línea base.
 - El chequeo TypeScript de `eslint.config.js`, Prettier de los archivos migrados y `git diff --check` son correctos. No se cambiaron dependencias ni lockfile.
 - `npm run build` y `npm run build -- --configuration staging`: ambas correctas, con bundle inicial de 898.01 kB y chunk diferido de login de 6.89 kB. Se conservan la advertencia del umbral inicial de 500 kB y las siete advertencias previas de CSS; no se supera el máximo de error de 1 MB ni se cambiaron presupuestos. El primer intento de producción encontró el bloqueo de Google Fonts (`EAI_AGAIN`); ambas compilaciones definitivas se completaron con acceso autorizado a las fuentes.
-- Pendiente del desarrollador responsable: validar login válido e inválido, restauración al recargar, navegación y acciones por rol, expiración/refresh, logout y acceso denegado contra el backend, además de apariencia y teclado en escritorio/móvil. No se ejecutaron pruebas manuales en navegador ni llamadas a la API real. Por eso la funcionalidad no se marca **Verificada**.
+- Validación funcional posterior, 2026-10-19: el usuario informó que comprobó el flujo completo con backend y que todo está correcto. Se marca autenticación **Verificada** con esa evidencia. No se aportó un desglose por navegador, dispositivo o escenario; el agente no realizó llamadas a la API real ni pruebas manuales adicionales.
+
+## Entrega de dashboard — 2026-10-19
+
+**Estado: Verificada.** Se realizaron las cinco fases en una entrega: caracterización, tipado, separación de responsabilidades, migración y registro. Posteriormente, el usuario confirmó validación con backend y revisión en navegador correctas para el dashboard.
+
+### Alcance y decisión del desarrollador responsable
+
+- El desarrollador responsable considera estas pantallas poco útiles y prevé que desaparecerán. Se registra la intención de retirada futura, sin fecha ni sustitución definida. El dashboard y su acceso continúan operativos; una retirada posterior deberá revisar ruta, redirecciones y consumidores.
+- Se conservan los indicadores existentes y su significado: «Compras registradas» muestra una suma monetaria, los materiales se agrupan por nombre recortado sensible a mayúsculas y la frecuencia cuenta líneas de detalle, incluso repetidas dentro de la misma compra.
+- Se conserva la deuda funcional monetaria: se suman importes nominales sin agrupar por moneda y se presentan como PEN, aunque compras y valorizaciones incluyen moneda. No se incorporan conversiones, tipos de cambio ni una redefinición de métricas. Este comportamiento está documentado y cubierto por pruebas; la migración no lo valida como criterio de negocio.
+
+### Archivos, contratos y responsabilidades
+
+- Se retiraron `src/app/pages/dashboard/dashboard.page.ts`, `.html` y `.css` tras actualizar la ruta y comprobar consumidores. No se mantuvieron duplicados ni puentes de la página anterior.
+- `src/dashboard/resumen-compras/resumen-compras.*`: componente coordinador `ResumenCompras`, selector `resumen-compras`, estado con signals y derivados con `computed`. La URL `/dashboard` y `protegerRuta` se conservan; el componente se carga de forma diferida. La suscripción al router se retira para evitar una segunda carga al entrar.
+- `src/dashboard/carga-dashboard/cargar-dashboard.*`: servicio `CargarDashboard`, responsable de coordinar las consultas, emitir primero indicadores y luego materiales, comunicar fallos parciales y limitar a cuatro las consultas simultáneas de detalles. Conserva el timeout de 12 segundos por detalle. Deduplica IDs de compra y restablece el orden original antes de agregar, aunque las respuestas lleguen fuera de orden.
+- `src/dashboard/indicadores/calculos-dashboard.*`: funciones de suma, agrupación, redondeo, orden y formato. Conservan el redondeo acumulativo de dos decimales, el cálculo cantidad × precio cuando el subtotal es cero y el orden de entrada ante empates. No dependen de componentes ni servicios HTTP.
+- `src/dashboard/grafico-materiales/grafico-materiales.*`: componente con entradas tipadas y `input.required`, reutilizado para cantidad, monto y frecuencia. Se trasladan los estilos locales; se mantienen colores, disposición y adaptación móvil. Las barras son decorativas y los valores continúan accesibles como texto; se añaden títulos semánticos y estados de carga/error accesibles.
+- `src/dashboard/contratos-dashboard.ts` contiene los modelos de presentación. `src/dashboard/pruebas/muestras-dashboard.ts` reúne muestras tipadas usadas solo por las pruebas del dashboard.
+- Contrato de API consultado de forma acotada: convenciones JSON, GET `/api/compras/compras`, GET `/api/compras/compras/{id}` y GET `/api/contable/valorizaciones`, con sus esquemas de filas, ítems, documentos y listado de valorizaciones. Se respeta PascalCase de las filas Dapper de compras y camelCase de valorizaciones, sin inventar envoltorios alternativos.
+- Se tiparon las respuestas, retornos `Observable` y filtros de `ComprasService.compras`, `ComprasService.compra` y `ValorizacionesService.valorizaciones`, usando `HttpParams`. Los DTO confirmados se añadieron a los modelos actuales de esos dominios pendientes (`app/models/compras.models.ts` y `app/models/valorizaciones.models.ts`). Se reutilizan sus servicios públicos; no se migra incidentalmente compras o valorizaciones, ni se duplican endpoints. Sus otros consumidores siguen compilando.
+
+### Carga, errores y pruebas
+
+- Las recargas se componen con `switchMap`: una actualización cancela las peticiones activas y las encoladas de la carga anterior. `takeUntilDestroyed` cancela al salir de la vista. No hay suscripciones anidadas ni `detectChanges` manuales.
+- Cambio explícito del manejo de fallos: se conservan los datos parciales disponibles, pero se muestra que los indicadores pueden estar incompletos junto con las fuentes fallidas. Los fallos ya no aparecen como un estado vacío exitoso. Al comenzar una nueva respuesta de indicadores se reinician los materiales, evitando mezclar datos de dos cargas.
+- Antes de modificar la página se ejecutaron cuatro pruebas de caracterización: totales y agrupación/frecuencia, listas vacías sin detalles, conservación de valorizaciones ante fallo de compras y descarte de respuestas anteriores. Las cuatro pasaron con la implementación original; sus comportamientos quedan cubiertos por las pruebas definitivas junto a los conceptos migrados.
+- Las pruebas definitivas cubren cálculos y redondeo, semántica histórica de frecuencia/moneda, orden estable, contratos y filtros HTTP, emisión de las dos etapas, fallos parciales, concurrencia y orden invertido, deduplicación, timeout, cancelación de peticiones activas y encoladas, recargas, destrucción y vista sin Zone.js. Se usa `HttpTestingController`, sin llamar al backend real. Los tests del DOM usan `provideZonelessChangeDetection()` y `whenStable()` sin detección manual.
+- No se añadieron dependencias ni se modificó el lockfile. `AGENTS.md` refleja la ubicación migrada. `git diff --check` y Prettier del alcance nuevo son correctos. No se creó commit ni PR en esta entrega.
+- El usuario confirmó posteriormente validación con backend y revisión en navegador correctas. No se aportó un desglose por dispositivo. No se ejecutaron pruebas automatizadas de navegador ni se instaló un framework e2e.
+
+### Resultados técnicos de cierre
+
+- Caracterización de la implementación previa: **4 pruebas correctas** en un archivo temporal, reemplazado por las pruebas definitivas al retirar la página anterior.
+- `npm test -- --watch=false`: **230 pruebas correctas en 20 archivos**, incluidas **28 nuevas** del dashboard y de los contratos HTTP que consume; las 202 pruebas previas siguen pasando.
+- ESLint de `src/dashboard` con `--max-warnings=0`: sin errores ni advertencias. `npm run lint` global: **0 errores y 1977 advertencias**, frente a 2005 antes de esta entrega. No se relajaron reglas.
+- `npm run build` y `npm run build -- --configuration staging`: ambas compilaciones correctas con acceso autorizado a Google Fonts. Conservan el aviso del bundle inicial de 500 kB y las siete advertencias de CSS previas; respetan los presupuestos máximos de error. Dashboard queda como chunk diferido.
+- No quedan referencias a `DashboardPage`, `app-dashboard-page` o `dashboard.page` en la aplicación ni en `angular.json`. La configuración de autenticación y sus reglas de acceso permanecen operativas según sus pruebas; el dashboard conserva su guard.
+
+## Organización por conceptos de dashboard — 2026-10-19
+
+A petición del usuario, la separación de responsabilidades se refleja también en carpetas. Cada componente o concepto conserva juntos su implementación, plantilla, estilos y pruebas cuando corresponden:
+
+```text
+src/dashboard/
+├─ resumen-compras/
+│  ├─ resumen-compras.ts
+│  ├─ resumen-compras.html
+│  ├─ resumen-compras.css
+│  └─ resumen-compras.spec.ts
+├─ grafico-materiales/
+│  ├─ grafico-materiales.ts
+│  ├─ grafico-materiales.html
+│  └─ grafico-materiales.css
+├─ carga-dashboard/
+│  ├─ cargar-dashboard.ts
+│  └─ cargar-dashboard.spec.ts
+├─ indicadores/
+│  ├─ calculos-dashboard.ts
+│  └─ calculos-dashboard.spec.ts
+├─ pruebas/
+│  └─ muestras-dashboard.ts
+└─ contratos-dashboard.ts
+```
+
+- El contrato de presentación compartido permanece en la raíz del dashboard y las muestras compartidas en `pruebas`. No se crean capas ni carpetas globales por tipo de archivo.
+- Se actualizaron imports, la carga diferida en `app.routes.ts` y las referencias documentales. Las plantillas y estilos permanecen junto a su componente; no se cambiaron selectores, cálculos, consultas, estados ni comportamiento.
+- El usuario confirmó la validación funcional con backend y navegador antes de esta reorganización. Autenticación y dashboard permanecen **Verificadas**; la intención de retirada futura y las limitaciones de moneda/frecuencia se conservan.
+
+- Verificaciones de la reorganización: **230 pruebas correctas en 20 archivos**, ESLint de `src/dashboard` con `--max-warnings=0` correcto, formato aplicado y `git diff --check` correcto. Producción y staging compilan con las advertencias previas de tamaño y acceso autorizado a Google Fonts. No se añadieron pruebas nuevas porque el cambio solo mueve archivos y ajusta referencias.

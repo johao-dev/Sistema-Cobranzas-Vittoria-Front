@@ -1,4 +1,7 @@
 import { Injectable } from '@angular/core';
+import { HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { CompraDetalleResponse, CompraFilaSql, FiltrosCompra } from '../../models/compras.models';
 import { ApiService } from './api.service';
 
 @Injectable({ providedIn: 'root' })
@@ -65,21 +68,19 @@ export class ComprasService {
     return this.api.http.patch<any>(`${this.api.baseUrl}/api/compras/ordenes-compra/${id}/estado`, dto);
   }
 
-  compras(filters?: any) {
-    const params = new URLSearchParams();
-
-    if (filters?.aceptada !== undefined && filters?.aceptada !== null)
-      params.append('aceptada', String(filters.aceptada));
-
-    if (filters?.idProveedor !== undefined && filters?.idProveedor !== null)
-      params.append('idProveedor', String(filters.idProveedor));
-
-    const qs = params.toString();
-    return this.api.http.get<any[]>(`${this.api.baseUrl}/api/compras/compras${qs ? '?' + qs : ''}`);
+  compras(filters?: FiltrosCompra): Observable<CompraFilaSql[]> {
+    let params = new HttpParams();
+    if (filters?.aceptada !== undefined && filters.aceptada !== null) {
+      params = params.set('aceptada', filters.aceptada);
+    }
+    if (filters?.idProveedor !== undefined && filters.idProveedor !== null) {
+      params = params.set('idProveedor', filters.idProveedor);
+    }
+    return this.api.http.get<CompraFilaSql[]>(`${this.api.baseUrl}/api/compras/compras`, { params });
   }
 
-  compra(id: number) {
-    return this.api.http.get<any>(`${this.api.baseUrl}/api/compras/compras/${id}`);
+  compra(id: number): Observable<CompraDetalleResponse> {
+    return this.api.http.get<CompraDetalleResponse>(`${this.api.baseUrl}/api/compras/compras/${id}`);
   }
 
   pendientesCompra() {

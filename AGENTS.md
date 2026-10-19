@@ -23,7 +23,7 @@
 
 ## 3. Arquitectura y responsabilidades
 
-**Arquitectura actual:** en transición: autenticación está en `src/autenticacion`, con sesión en `src/core/sesion` y ambientes en `src/core/config`. El código pendiente conserva páginas en `src/app/pages`, servicios en `src/app/core/services` y modelos en `src/app/models`. No asumir que ya implementa un monolito modular o todas las capas de arquitectura limpia.
+**Arquitectura actual:** en transición: autenticación está en `src/autenticacion`, el dashboard en `src/dashboard`, la sesión en `src/core/sesion` y los ambientes en `src/core/config`. El código pendiente conserva páginas en `src/app/pages`, servicios en `src/app/core/services` y modelos en `src/app/models`. No asumir que ya implementa un monolito modular o todas las capas de arquitectura limpia.
 
 **Futura migración:** arquitectura por funcionalidades directamente en `src/<funcionalidad>/`, sin la carpeta `app/` ni una carpeta contenedora `features/`. La tabla siguiente describe las ubicaciones actuales, que siguen vigentes para el código no migrado; no representa la estructura objetivo.
 
@@ -38,6 +38,7 @@ Todas las rutas de esta sección son relativas a `cobranza-vittoria/src/`:
 | `app/shared/components/` | Componentes reutilizables, como notificaciones, importación y tipo de cambio. |
 | `app/core/services/` | Acceso a API por dominio y notificaciones pendientes de migración. |
 | `autenticacion/` | Inicio de sesión, plantilla, estilos y pruebas migrados. |
+| `dashboard/` | Conceptos en `resumen-compras/`, `grafico-materiales/`, `carga-dashboard/` e `indicadores/`, con sus pruebas colocadas junto al concepto. Contratos compartidos en la raíz del dashboard. |
 | `core/sesion/` | Sesión y contratos públicos, claims, reglas genéricas de acceso, protección de rutas e interceptor HTTP. |
 | `core/config/` | Configuración de API por ambiente; consumidores y reemplazos de compilación actualizados. |
 | `app/reglas-acceso.ts` | Reglas concretas compartidas por rutas y menú del contenedor pendiente de migración. |

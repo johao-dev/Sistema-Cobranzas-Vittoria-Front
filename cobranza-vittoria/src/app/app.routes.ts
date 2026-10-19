@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { DashboardPage } from './pages/dashboard/dashboard.page';
 import { EspecialidadesPage } from './pages/especialidades/especialidades.page';
 import { ProveedoresPage } from './pages/proveedores/proveedores.page';
 import { MaterialesPage } from './pages/materiales/materiales.page';
@@ -27,7 +26,7 @@ import { ACCESS_RULES } from './reglas-acceso';
 export const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   { path: 'login', loadComponent: () => import('../autenticacion/inicio-sesion').then(m => m.InicioSesion) },
-  { path: 'dashboard', component: DashboardPage, canActivate: [protegerRuta] },
+  { path: 'dashboard', loadComponent: () => import('../dashboard/resumen-compras/resumen-compras').then(m => m.ResumenCompras), canActivate: [protegerRuta] },
   { path: 'presupuesto', canActivate: [protegerRuta], component: PresupuestoPage },
   // Operaciones → Gastos del proyecto: cada vista declara únicamente sus categorías descriptivas.
   { path: 'gastos-administrativos', canActivate: [protegerRuta], component: GastosSeccionPage, data: { codigosCategoria: ['ADMINISTRATIVO'], permiteSeleccionCategoria: false, titulo: 'Gastos administrativos', subtitulo: 'Gastos de oficina y áreas de la empresa: alquiler, servicios, planilla y bancos.' } },

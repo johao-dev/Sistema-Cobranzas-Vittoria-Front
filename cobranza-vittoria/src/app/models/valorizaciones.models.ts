@@ -61,3 +61,27 @@ export interface ValorizacionResumen {
   resta?: number;
   liquidar?: number;
 }
+
+export interface ValorizacionListado {
+  idValorizacion: number | null;
+  periodo: string | null;
+  proyecto: string | null;
+  proveedor: string | null;
+  especialidad: string | null;
+  empresa: string | null;
+  servicio: string | null;
+  moneda: string | null;
+  cotizacion: number;
+  facturado: number;
+  transferido: number;
+  garantia: number;
+  detraccion: number;
+  resta: number;
+  liquidar: number;
+}
+
+export interface FiltrosValorizacion {
+  idProyecto?: number | null;
+  idProveedor?: number | null;
+  idEspecialidad?: number | null;
+}
