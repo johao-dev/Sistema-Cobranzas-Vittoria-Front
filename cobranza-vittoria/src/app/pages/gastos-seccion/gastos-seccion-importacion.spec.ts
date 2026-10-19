@@ -3,7 +3,7 @@ import { By } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { EMPTY, of, Subject } from 'rxjs';
 import { routes } from '../../app.routes';
-import { AuthService } from '../../core/services/auth.service';
+import { SesionUsuario } from '../../../core/sesion/sesion-usuario';
 import { ControlPresupuestarioService } from '../../core/services/control-presupuestario.service';
 import {
   GastosDirectosService,
@@ -73,7 +73,7 @@ describe('integración compartida de importación en las cinco vistas de gastos'
         { provide: ControlPresupuestarioService, useValue: {} },
         { provide: NotificationService, useValue: { show: vi.fn() } },
         {
-          provide: AuthService,
+          provide: SesionUsuario,
           useValue: {
             session: { usuarioLogin: 'operador' },
             hasPermission: (p: string) => p === 'gasto_directo.operar' && permiso,

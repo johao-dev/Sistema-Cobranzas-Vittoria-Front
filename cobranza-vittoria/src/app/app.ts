@@ -4,9 +4,9 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } fro
 import { filter } from 'rxjs/operators';
 import { NotificationComponent } from './shared/components/notification/notification.component';
 import { TipoCambioComponent } from './shared/components/tipo-cambio/tipo-cambio.component';
-import { AuthService } from './core/services/auth.service';
-import { ACCESS_RULES } from './core/auth/access-control.util';
-import { AccessRule } from './core/auth/session.models';
+import { SesionUsuario } from '../core/sesion/sesion-usuario';
+import { ACCESS_RULES } from './reglas-acceso';
+import { AccessRule } from '../core/sesion/contratos-sesion';
 
 @Component({
   selector: 'app-root',
@@ -16,7 +16,7 @@ import { AccessRule } from './core/auth/session.models';
 })
 export class App {
   private readonly router = inject(Router);
-  private readonly auth = inject(AuthService);
+  private readonly auth = inject(SesionUsuario);
   private readonly cdr = inject(ChangeDetectorRef);
   readonly accessRules = ACCESS_RULES;
 

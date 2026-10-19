@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ComprasService } from '../../core/services/compras.service';
 import { MaestraService } from '../../core/services/maestra.service';
-import { AuthService } from '../../core/services/auth.service';
+import { SesionUsuario } from '../../../core/sesion/sesion-usuario';
 import { NotificationService } from '../../core/services/notification.service';
 
 type PrecioItem = {
@@ -68,7 +68,7 @@ export class ComprasPage implements OnInit {
   constructor(
     private compras: ComprasService,
     private maestra: MaestraService,
-    private auth: AuthService,
+    private auth: SesionUsuario,
     private notifications: NotificationService,
     private cdr: ChangeDetectorRef
   ) { }

@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { firstValueFrom } from 'rxjs';
-import { environment } from '../config/environment';
+import { environment } from '../../../core/config/environment';
 import { ImportService } from './import.service';
 import { ImportResultado, ResultadoImportacionGastosDirectos } from '../../models/import.models';
 

@@ -5,7 +5,7 @@ import { ComprasService } from '../../core/services/compras.service';
 import { MaestraService } from '../../core/services/maestra.service';
 import { SeguridadService } from '../../core/services/seguridad.service';
 import { NotificationService } from '../../core/services/notification.service';
-import { AuthService } from '../../core/services/auth.service';
+import { SesionUsuario } from '../../../core/sesion/sesion-usuario';
 
 type EstadoOcDestino = 'APROBADA' | 'ANULADA' | 'CERRADA';
 
@@ -61,7 +61,7 @@ export class OrdenesCompraPage implements OnInit {
     private maestra: MaestraService,
     private seguridad: SeguridadService,
     private notifyService: NotificationService,
-    private auth: AuthService,
+    private auth: SesionUsuario,
     private cdr: ChangeDetectorRef
   ) { }
 

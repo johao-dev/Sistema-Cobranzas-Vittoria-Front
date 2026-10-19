@@ -5,13 +5,12 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { authGuard } from './auth.guard';
-import { AccessRule } from '../auth/session.models';
+import { protegerRuta } from './proteger-ruta';
 
-@Component({ selector: 'app-vista-prueba', template: '' })
+@Component({ selector: 'vista-prueba', template: '' })
 class VistaPrueba {}
 
-describe('authGuard', () => {
+describe('protegerRuta', () => {
   beforeEach(() => localStorage.clear());
   afterEach(() => localStorage.clear());
 
@@ -25,7 +24,7 @@ describe('authGuard', () => {
     localStorage.setItem('vittoria.auth.expiration', '2099-01-01T00:00:00Z');
   }
 
-  async function navegar(regla?: AccessRule, url = '/privada'): Promise<Router> {
+  async function navegar(regla: unknown = undefined, url = '/privada'): Promise<Router> {
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
@@ -36,7 +35,7 @@ describe('authGuard', () => {
           {
             path: 'privada',
             component: VistaPrueba,
-            canActivate: [authGuard],
+            canActivate: [protegerRuta],
             data: { access: regla },
           },
         ]),
@@ -90,4 +89,12 @@ describe('authGuard', () => {
     localStorage.setItem('vittoria.auth.expiration', '2000-01-01T00:00:00Z');
     expect((await navegar()).url).toBe('/privada');
   });
+  it.each([null, 'permiso', { anyPermission: 'requerimientos.ver' }, { anyRole: [123] }])(
+    'deniega una regla de ruta con formato inválido: %s',
+    async (regla: unknown) => {
+      guardarSesion();
+      const router: Router = await navegar(regla);
+      expect(router.url).toBe('/dashboard?accesoDenegado=true');
+    },
+  );
 });

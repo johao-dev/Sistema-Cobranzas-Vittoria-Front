@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { canAccess } from './access-control.util';
-import { Session } from './session.models';
+import { canAccess } from './control-acceso';
+import { Session } from './contratos-sesion';
 
 const session: Session = {
   accessToken: 'token',
   refreshToken: 'refresh',
   expiration: '2099-01-01T00:00:00Z',
   roles: ['Residente'],
-  permisos: ['requerimientos.ver', 'requerimientos.crear']
+  permisos: ['requerimientos.ver', 'requerimientos.crear'],
 };
 
 describe('canAccess', () => {
@@ -16,10 +16,12 @@ describe('canAccess', () => {
   });
 
   it('aplica OR cuando se declaran roles y permisos', () => {
-    expect(canAccess(session, {
-      anyRole: ['Administrador'],
-      anyPermission: ['requerimientos.crear']
-    })).toBe(true);
+    expect(
+      canAccess(session, {
+        anyRole: ['Administrador'],
+        anyPermission: ['requerimientos.crear'],
+      }),
+    ).toBe(true);
   });
 
   it('rechaza sesiones ausentes o sin coincidencias', () => {

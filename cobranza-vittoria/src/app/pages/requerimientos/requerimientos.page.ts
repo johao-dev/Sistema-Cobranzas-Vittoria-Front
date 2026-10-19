@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MaestraService } from '../../core/services/maestra.service';
 import { NotificationService } from '../../core/services/notification.service';
-import { AuthService } from '../../core/services/auth.service';
+import { SesionUsuario } from '../../../core/sesion/sesion-usuario';
 import { RequerimientosService } from '../../core/services/requerimientos.service';
 import { ControlPresupuestarioService } from '../../core/services/control-presupuestario.service';
 import { extraerMensajeError } from '../../core/utils/api-error.util';
@@ -146,7 +146,7 @@ export class RequerimientosPage implements OnInit {
     private requerimientos: RequerimientosService,
     private maestra: MaestraService,
     private controlPresupuestario: ControlPresupuestarioService,
-    public readonly auth: AuthService,
+    public readonly auth: SesionUsuario,
     private notifyService: NotificationService,
     private cdr: ChangeDetectorRef
   ) { }

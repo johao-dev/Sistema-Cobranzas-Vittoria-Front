@@ -1,3 +1,8 @@
+export interface LoginPayload {
+  usernameOrEmail: string;
+  password: string;
+}
+
 export interface AuthTokensResponse {
   token: string;
   expiration: string;
@@ -19,4 +24,3 @@ export interface AccessRule {
   anyRole?: string[];
   anyPermission?: string[];
 }
-

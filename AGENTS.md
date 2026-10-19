@@ -23,7 +23,7 @@
 
 ## 3. Arquitectura y responsabilidades
 
-**Arquitectura actual:** basada en componentes, parcialmente organizada por funcionalidad, con páginas en `src/app/pages`, servicios en `src/app/core/services` y modelos en `src/app/models`. No asumir que ya implementa un monolito modular o todas las capas de arquitectura limpia.
+**Arquitectura actual:** en transición: autenticación está en `src/autenticacion`, con sesión en `src/core/sesion` y ambientes en `src/core/config`. El código pendiente conserva páginas en `src/app/pages`, servicios en `src/app/core/services` y modelos en `src/app/models`. No asumir que ya implementa un monolito modular o todas las capas de arquitectura limpia.
 
 **Futura migración:** arquitectura por funcionalidades directamente en `src/<funcionalidad>/`, sin la carpeta `app/` ni una carpeta contenedora `features/`. La tabla siguiente describe las ubicaciones actuales, que siguen vigentes para el código no migrado; no representa la estructura objetivo.
 
@@ -36,9 +36,11 @@ Todas las rutas de esta sección son relativas a `cobranza-vittoria/src/`:
 | `app/app.routes.ts` | Rutas, redirecciones, carga de páginas y reglas de acceso. |
 | `app/pages/<funcionalidad>/` | Páginas y componentes específicos de cada funcionalidad. |
 | `app/shared/components/` | Componentes reutilizables, como notificaciones, importación y tipo de cambio. |
-| `app/core/services/` | Acceso a API por dominio y servicios transversales de sesión y notificación. |
-| `app/core/auth/`, `app/core/guards/`, `app/core/interceptors/` | Sesión, claims, permisos, protección de rutas y autenticación HTTP. |
-| `app/core/config/` | Configuración de API por ambiente. |
+| `app/core/services/` | Acceso a API por dominio y notificaciones pendientes de migración. |
+| `autenticacion/` | Inicio de sesión, plantilla, estilos y pruebas migrados. |
+| `core/sesion/` | Sesión y contratos públicos, claims, reglas genéricas de acceso, protección de rutas e interceptor HTTP. |
+| `core/config/` | Configuración de API por ambiente; consumidores y reemplazos de compilación actualizados. |
+| `app/reglas-acceso.ts` | Reglas concretas compartidas por rutas y menú del contenedor pendiente de migración. |
 | `app/core/utils/` | Utilidades compartidas de errores y descarga de archivos. |
 | `app/models/` | Contratos de petición, respuesta y tipos compartidos. |
 | `styles.css` | Variables de diseño y estilos globales reutilizables. |
@@ -123,7 +125,7 @@ Todas las rutas de esta sección son relativas a `cobranza-vittoria/src/`:
 
 ### Autenticación y permisos
 
-- Reutilizar `AuthService`, `authInterceptor`, `authGuard` y las reglas de `core/auth/access-control.util.ts`.
+- Reutilizar `SesionUsuario`, `interceptarSesion` y `protegerRuta` de `src/core/sesion/`. Las reglas genéricas de acceso están en `control-acceso.ts`; las reglas concretas del menú y rutas se conservan en `src/app/reglas-acceso.ts` hasta migrar sus conceptos.
 - Mantener coherencia entre rutas (`data.access`), menú y acciones visibles usando `canAccess`, `hasPermission` o `hasRole` según la regla existente. El backend conserva la decisión final de autorización.
 - No enviar tokens a servicios externos ni duplicar manualmente cabeceras Bearer en los componentes. Preservar la renovación compartida de sesión y el control de reintentos del interceptor.
 - No alterar el almacenamiento o el flujo de tokens como parte incidental de otros cambios; cualquier modificación debe considerar login, refresh y logout.

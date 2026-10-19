@@ -3,8 +3,8 @@ import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter, Router } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AuthService, LoginPayload } from './auth.service';
-import { AuthTokensResponse, Session } from '../auth/session.models';
+import { SesionUsuario } from './sesion-usuario';
+import { AuthTokensResponse, LoginPayload, Session } from './contratos-sesion';
 import { environment } from '../config/environment';
 
 const CREDENCIALES: LoginPayload = { usernameOrEmail: 'residente', password: 'clave de prueba' };
@@ -21,7 +21,7 @@ function guardarTokens(respuesta: AuthTokensResponse): void {
   localStorage.setItem('vittoria.auth.expiration', respuesta.expiration);
 }
 
-describe('AuthService', () => {
+describe('SesionUsuario', () => {
   let http: HttpTestingController;
   let router: Router;
 
@@ -42,7 +42,7 @@ describe('AuthService', () => {
   });
 
   it('inicia sin sesión cuando no hay tokens almacenados', () => {
-    const servicio = TestBed.inject(AuthService);
+    const servicio = TestBed.inject(SesionUsuario);
     expect(servicio.currentSession()).toBeNull();
     expect(servicio.isAuthenticated()).toBe(false);
     expect(servicio.isAccessTokenExpired()).toBe(true);
@@ -53,13 +53,13 @@ describe('AuthService', () => {
     (clave: string) => {
       guardarTokens(RESPUESTA);
       localStorage.removeItem(clave);
-      expect(TestBed.inject(AuthService).session).toBeNull();
+      expect(TestBed.inject(SesionUsuario).session).toBeNull();
     },
   );
 
   it('restaura los tokens y reconstruye roles y permisos desde los claims', () => {
     guardarTokens(RESPUESTA);
-    const servicio = TestBed.inject(AuthService);
+    const servicio = TestBed.inject(SesionUsuario);
 
     expect(servicio.session).toMatchObject({
       accessToken: RESPUESTA.token,
@@ -77,7 +77,7 @@ describe('AuthService', () => {
   });
 
   it('envía las credenciales y persiste la respuesta completa del login', () => {
-    const servicio = TestBed.inject(AuthService);
+    const servicio = TestBed.inject(SesionUsuario);
     const recibido = vi.fn<(sesion: Session) => void>();
     servicio.login(CREDENCIALES).subscribe(recibido);
 
@@ -93,7 +93,7 @@ describe('AuthService', () => {
   });
 
   it('propaga credenciales inválidas sin crear una sesión', () => {
-    const servicio = TestBed.inject(AuthService);
+    const servicio = TestBed.inject(SesionUsuario);
     const fallo = vi.fn<(error: HttpErrorResponse) => void>();
     servicio.login(CREDENCIALES).subscribe({ error: fallo });
     http
@@ -107,7 +107,7 @@ describe('AuthService', () => {
 
   it('rota los tres valores usando el refresh vigente', () => {
     guardarTokens(RESPUESTA);
-    const servicio = TestBed.inject(AuthService);
+    const servicio = TestBed.inject(SesionUsuario);
     const renovada: AuthTokensResponse = {
       ...RESPUESTA,
       token: 'otro-token',
@@ -130,7 +130,7 @@ describe('AuthService', () => {
     'rechaza una renovación sin %s y conserva la sesión anterior',
     (campo: keyof AuthTokensResponse) => {
       guardarTokens(RESPUESTA);
-      const servicio = TestBed.inject(AuthService);
+      const servicio = TestBed.inject(SesionUsuario);
       const anterior: Session | null = servicio.session;
       const fallo = vi.fn<(error: Error) => void>();
       servicio.refresh().subscribe({ error: fallo });
@@ -143,13 +143,13 @@ describe('AuthService', () => {
   );
 
   it('impide renovar sin refresh token y no envía una petición', () => {
-    expect(() => TestBed.inject(AuthService).refresh()).toThrow('No existe un refresh token');
+    expect(() => TestBed.inject(SesionUsuario).refresh()).toThrow('No existe un refresh token');
     http.expectNone(`${BASE_AUTH}/refresh`);
   });
 
   it.each([204, 500])('cierra la sesión local aunque logout responda %s', (estado: number) => {
     guardarTokens(RESPUESTA);
-    const servicio = TestBed.inject(AuthService);
+    const servicio = TestBed.inject(SesionUsuario);
     servicio.logout();
 
     const peticion = http.expectOne(`${BASE_AUTH}/logout`);
@@ -165,7 +165,7 @@ describe('AuthService', () => {
   });
 
   it('cierra sin petición cuando no hay sesión', () => {
-    TestBed.inject(AuthService).logout();
+    TestBed.inject(SesionUsuario).logout();
     http.expectNone(`${BASE_AUTH}/logout`);
     expect(router.navigate).toHaveBeenCalledWith(['/login'], undefined);
   });
@@ -181,7 +181,7 @@ describe('AuthService', () => {
     clavesAntiguas.forEach((clave: string) => localStorage.setItem(clave, 'obsoleto'));
     localStorage.setItem('preferencia-ajena', 'conservar');
 
-    TestBed.inject(AuthService).clearLocalSession('/requerimientos');
+    TestBed.inject(SesionUsuario).clearLocalSession('/requerimientos');
 
     clavesAntiguas.forEach((clave: string) => expect(localStorage.getItem(clave)).toBeNull());
     expect(localStorage.getItem('preferencia-ajena')).toBe('conservar');
@@ -202,7 +202,32 @@ describe('AuthService', () => {
     (expiration: string, margen: number, vencido: boolean) => {
       vi.spyOn(Date, 'now').mockReturnValue(Date.parse('2026-10-19T12:00:00Z'));
       guardarTokens({ ...RESPUESTA, expiration });
-      expect(TestBed.inject(AuthService).isAccessTokenExpired(margen)).toBe(vencido);
+      expect(TestBed.inject(SesionUsuario).isAccessTokenExpired(margen)).toBe(vencido);
+    },
+  );
+  it('comparte el refresh entre consumidores del servicio y permite renovar después de un fallo', () => {
+    guardarTokens(RESPUESTA);
+    const servicio: SesionUsuario = TestBed.inject(SesionUsuario);
+    const fallo = vi.fn<(error: HttpErrorResponse) => void>();
+    servicio.refresh().subscribe({ error: fallo });
+    servicio.refresh().subscribe({ error: fallo });
+    http.expectOne(`${BASE_AUTH}/refresh`).flush(null, { status: 401, statusText: 'Unauthorized' });
+    expect(fallo).toHaveBeenCalledTimes(2);
+    servicio.refresh().subscribe();
+    http.expectOne(`${BASE_AUTH}/refresh`).flush(RESPUESTA);
+    expect(servicio.session?.refreshToken).toBe(RESPUESTA.refreshToken);
+  });
+
+  it.each(['token', 'refreshToken', 'expiration'] as const)(
+    'rechaza un campo %s de tipo incorrecto sin persistirlo',
+    (campo: keyof AuthTokensResponse) => {
+      const servicio: SesionUsuario = TestBed.inject(SesionUsuario);
+      const fallo = vi.fn<(error: Error) => void>();
+      servicio.login(CREDENCIALES).subscribe({ error: fallo });
+      http.expectOne(`${BASE_AUTH}/login`).flush({ ...RESPUESTA, [campo]: 123 });
+      expect(fallo).toHaveBeenCalledWith(expect.any(Error));
+      expect(servicio.session).toBeNull();
+      expect(localStorage.getItem('vittoria.auth.accessToken')).toBeNull();
     },
   );
 });

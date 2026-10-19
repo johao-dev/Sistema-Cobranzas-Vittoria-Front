@@ -5,7 +5,7 @@ import { RequerimientosPage } from './requerimientos.page';
 import { RequerimientosService } from '../../core/services/requerimientos.service';
 import { MaestraService } from '../../core/services/maestra.service';
 import { ControlPresupuestarioService } from '../../core/services/control-presupuestario.service';
-import { AuthService } from '../../core/services/auth.service';
+import { SesionUsuario } from '../../../core/sesion/sesion-usuario';
 import { NotificationService } from '../../core/services/notification.service';
 import {
   EstadoRequerimiento,
@@ -81,7 +81,7 @@ describe('RequerimientosPage — gestión de ítems en almacén', () => {
       providers: [
         { provide: RequerimientosService, useValue: api },
         {
-          provide: AuthService,
+          provide: SesionUsuario,
           useValue: { hasPermission: (permiso: string) => permisos.has(permiso) },
         },
         { provide: NotificationService, useValue: notificaciones },

@@ -14,7 +14,7 @@ import {
 } from '../../core/services/gastos-directos.service';
 import { ControlPresupuestarioService } from '../../core/services/control-presupuestario.service';
 import { NotificationService } from '../../core/services/notification.service';
-import { AuthService } from '../../core/services/auth.service';
+import { SesionUsuario } from '../../../core/sesion/sesion-usuario';
 import { ImportModalComponent } from '../../shared/components/import-modal/import-modal.component';
 import { descargarArchivo } from '../../core/utils/file-download.util';
 
@@ -101,7 +101,7 @@ export class GastosSeccionPage implements OnInit {
     private gastos: GastosDirectosService,
     private cp: ControlPresupuestarioService,
     private notifications: NotificationService,
-    private auth: AuthService,
+    private auth: SesionUsuario,
     private cdr: ChangeDetectorRef
   ) { }
 

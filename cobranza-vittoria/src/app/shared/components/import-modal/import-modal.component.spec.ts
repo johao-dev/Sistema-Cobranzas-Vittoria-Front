@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, Subject } from 'rxjs';
 import { ImportModalComponent } from './import-modal.component';
 import { ImportService } from '../../../core/services/import.service';
-import { AuthService } from '../../../core/services/auth.service';
+import { SesionUsuario } from '../../../../core/sesion/sesion-usuario';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ImportModulo, ImportResultado } from '../../../models/import.models';
 
@@ -82,7 +82,7 @@ describe('ImportModalComponent compartido', () => {
       providers: [
         { provide: ImportService, useValue: imports },
         {
-          provide: AuthService,
+          provide: SesionUsuario,
           useValue: { session: { usuarioLogin: 'operador' }, hasPermission: () => puedeOperar },
         },
         { provide: NotificationService, useValue: notify },

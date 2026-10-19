@@ -12,9 +12,9 @@ import {
 } from '@angular/common/http/testing';
 import { provideRouter, Router } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { authInterceptor } from './auth.interceptor';
-import { AuthService } from '../services/auth.service';
-import { AuthTokensResponse } from '../auth/session.models';
+import { interceptarSesion } from './interceptar-sesion';
+import { SesionUsuario } from './sesion-usuario';
+import { AuthTokensResponse } from './contratos-sesion';
 import { environment } from '../config/environment';
 
 const BASE_AUTH = `${environment.apiUrl}/api/seguridad/auth`;
@@ -25,7 +25,7 @@ const RENOVADA: AuthTokensResponse = {
   expiration: '2099-01-01T00:00:00Z',
 };
 
-describe('authInterceptor', () => {
+describe('interceptarSesion', () => {
   let cliente: HttpClient;
   let http: HttpTestingController;
   let router: Router;
@@ -37,7 +37,7 @@ describe('authInterceptor', () => {
     localStorage.setItem('vittoria.auth.expiration', '2099-01-01T00:00:00Z');
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(withInterceptors([authInterceptor])),
+        provideHttpClient(withInterceptors([interceptarSesion])),
         provideHttpClientTesting(),
         provideRouter([]),
       ],
@@ -114,7 +114,7 @@ describe('authInterceptor', () => {
 
     expect(fallo).toHaveBeenCalledWith(expect.objectContaining({ status: estado }));
     http.expectNone(`${BASE_AUTH}/refresh`);
-    expect(TestBed.inject(AuthService).isAuthenticated()).toBe(true);
+    expect(TestBed.inject(SesionUsuario).isAuthenticated()).toBe(true);
     expect(router.navigate).not.toHaveBeenCalled();
   });
 
@@ -205,7 +205,7 @@ describe('authInterceptor', () => {
         .flush(null, { status: 401, statusText: 'Unauthorized' });
 
       expect(fallo).toHaveBeenCalledWith(expect.objectContaining({ status: 401 }));
-      expect(TestBed.inject(AuthService).session).toBeNull();
+      expect(TestBed.inject(SesionUsuario).session).toBeNull();
       expect(localStorage.getItem('vittoria.auth.refreshToken')).toBeNull();
       expect(router.navigate).toHaveBeenCalledWith(['/login'], undefined);
       http.expectNone(RECURSO);

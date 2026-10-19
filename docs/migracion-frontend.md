@@ -4,7 +4,7 @@
 
 - **Fecha del acuerdo:** 2026-10-16.
 - **Contrato para agentes:** [AGENTS.md](../AGENTS.md).
-- **Estado:** preparación técnica realizada: línea base y ESLint registrados el 2026-10-19. La migración de funcionalidades y su validación funcional siguen pendientes.
+- **Estado:** preparación técnica y migración de autenticación realizadas el 2026-10-19. Autenticación queda pendiente de validación funcional con backend; las demás funcionalidades continúan pendientes de migración.
 - **Alcance:** refactor progresivo del frontend manteniendo comportamiento, contratos, permisos, importes y apariencia, con mejoras locales de accesibilidad y adaptación móvil. No incluye cambios de negocio en backend o base de datos ni pruebas automatizadas de navegador por ahora.
 
 Las rutas de la aplicación de este documento son relativas a `cobranza-vittoria/`, salvo indicación contraria. `AGENTS.md` contiene las reglas; este registro conserva decisiones, avance y evidencias sin sustituir ese contrato.
@@ -71,7 +71,7 @@ Las ubicaciones actuales indican el punto de partida; no prueban que todos sus a
 
 | Funcionalidad | Ubicación actual de referencia | Destino | Estado | Evidencias |
 | --- | --- | --- | --- | --- |
-| Autenticación | `src/app/pages/login`, sesión e infraestructura en `src/app/core` | `src/autenticacion`; infraestructura transversal en `src/core` | Pendiente | 2026-10-19: 57 pruebas base añadidas para servicio, interceptor, guard y login; migración de código pendiente |
+| Autenticación | `src/autenticacion`, `src/core/sesion` y `src/core/config` | `src/autenticacion`; infraestructura transversal en `src/core` | Pendiente de validación funcional | Código y consumidores migrados; 202 pruebas pasan en total. Login sin Zone.js comprobado en jsdom; validación humana contra backend pendiente |
 | Dashboard | `src/app/pages/dashboard` | `src/dashboard` | Pendiente | Sin entrega de migración registrada |
 | Catálogos | Páginas de especialidades, materiales, proveedores, proyectos, unidades de medida y catálogos de gasto | `src/catalogos` | Pendiente | Confirmar qué conceptos pertenecen a catálogos y cuáles a un dominio específico al delimitar la entrega |
 | Requerimientos | `src/app/pages/requerimientos` | `src/requerimientos` | Pendiente | Sin entrega de migración registrada |
@@ -82,7 +82,7 @@ Las ubicaciones actuales indican el punto de partida; no prueban que todos sus a
 | Presupuestos | Páginas `presupuesto`, `presupuestos`, `control-presupuestario`, `centros-costo` y `partidas` | `src/presupuestos` y sus subfuncionalidades | Pendiente | Sin entrega de migración registrada |
 | Valorizaciones | `src/app/pages/valorizaciones` | `src/valorizaciones` | Pendiente | Sin entrega de migración registrada |
 | Control de accesos | Páginas `usuarios`, `roles` y `permisos` | `src/control-accesos` | Pendiente | Sin entrega de migración registrada |
-| Infraestructura y elementos compartidos | `src/app/core`, `src/app/models`, `src/app/shared` y contenedor en `src/app` | Distribuir por propietario; conservar infraestructura en `src/core` y reutilización real en `src/shared` | Pendiente | Migrar con sus consumidores; retirar `src/app` al finalizar |
+| Infraestructura y elementos compartidos | Sesión y ambientes en `src/core`; servicios, modelos, compartidos y contenedor pendientes en `src/app` | Distribuir por propietario; conservar infraestructura en `src/core` y reutilización real en `src/shared` | En curso | Sesión y ambientes migrados con consumidores; notificaciones y utilidades compartidas se reutilizan desde su ubicación actual. Retirar `src/app` al finalizar |
 
 Estados de seguimiento: **Pendiente**, **En curso**, **Pendiente de validación funcional** y **Verificada**. Si existe una limitación o bloqueo, describirlo con su causa y siguiente paso; no marcar como verificada una entrega por haber movido archivos o por haber compilado únicamente.
 
@@ -100,6 +100,7 @@ Estados de seguimiento: **Pendiente**, **En curso**, **Pendiente de validación 
 | 2026-10-16 | Acuerdo documental | Actualización de `AGENTS.md` y creación de este registro | Entrega exclusivamente documental; no migra código ni acredita validación funcional. |
 | 2026-10-19 | Preparación técnica | Línea base, instalación de ESLint y angular-eslint, configuración progresiva y actualización de comandos | Producción y staging compilan con advertencias previas; 125 pruebas pasan en 13 archivos; lint termina con 0 errores y 2013 advertencias del código pendiente. Sin migración funcional ni comprobación en navegador. |
 | 2026-10-19 | Pruebas base de autenticación | Cuatro archivos de pruebas junto al servicio, interceptor, guard y login actuales; sin cambios de producción | 182 pruebas pasan en 17 archivos (57 nuevas); compilación de producción satisfactoria con advertencias previas; ESLint sin errores ni advertencias en los cuatro archivos nuevos. Migración y validación funcional pendientes. |
+| 2026-10-19 | Migración de autenticación | Login, sesión, contratos, claims, guard, interceptor y ambientes migrados; consumidores y herramientas actualizados | 202 pruebas pasan en 17 archivos; código migrado sin errores ni advertencias de lint. Producción y staging comprobados según las evidencias de esta entrega. Pendiente de validación funcional con backend. |
 
 En cada entrega futura registrar:
 
@@ -142,3 +143,45 @@ Referencias: [estructura y estilo de Angular](https://angular.dev/style-guide), 
 - ESLint de los cuatro archivos nuevos con `--max-warnings=0`: satisfactorio, sin errores ni advertencias. `npm run lint` global: 0 errores y las mismas 2013 advertencias previas. Prettier aplicado y diff revisado con `git diff --check`.
 - `npm run build`: satisfactorio al repetir con acceso autorizado a Google Fonts tras el fallo inicial `EAI_AGAIN`; conserva advertencias previas de tamaños. No se repitió staging en esta entrega, que solo añade pruebas y documentación; su resultado previo está registrado en la preparación técnica.
 - Siguiente entrega: migrar autenticación y la infraestructura asociada, adaptar estas pruebas a las nuevas ubicaciones y comprobar los flujos críticos con el responsable. Esta entrega deja la funcionalidad en estado **Pendiente** de migración.
+
+## Entrega de autenticación — 2026-10-19
+
+**Estado: Pendiente de validación funcional.** La migración del código está implementada; la validación humana del flujo con backend no se ha realizado. No hay commit ni PR creado en esta entrega.
+
+### Archivos y consumidores
+
+| Concepto anterior | Ubicación actual |
+| --- | --- |
+| `app/pages/login/login.page.*` | `autenticacion/inicio-sesion.*`, componente `InicioSesion`, selector `inicio-sesion` |
+| `app/core/services/auth.service.*` | `core/sesion/sesion-usuario.*`, servicio público `SesionUsuario` |
+| `app/core/auth/session.models.ts` y `LoginPayload` antes definido en el servicio | `core/sesion/contratos-sesion.ts` |
+| `app/core/auth/jwt-claims.util.*` | `core/sesion/claims-jwt.*` |
+| Funciones genéricas de `app/core/auth/access-control.util.*` | `core/sesion/control-acceso.*` |
+| Constantes `ACCESS_RULES` | `app/reglas-acceso.ts`, configuración compartida por menú y rutas del contenedor pendiente |
+| `app/core/guards/auth.guard.*` | `core/sesion/proteger-ruta.*`, función `protegerRuta` |
+| `app/core/interceptors/auth.interceptor.*` | `core/sesion/interceptar-sesion.*`, función `interceptarSesion` |
+| `app/core/config/environment*.ts` | `core/config/environment*.ts` |
+
+- Se actualizaron rutas y proveedores de arranque, contenedor, compras, órdenes de compra, requerimientos, gastos, modal de importación y sus pruebas. Los servicios y pruebas que usan ambientes apuntan a `src/core/config`; producción y staging usan los nuevos reemplazos de `angular.json`.
+- El login se carga de forma diferida en la misma URL `/login`. El contenedor, sus otras rutas y funcionalidades permanecen en `src/app`.
+- El nuevo `core` no importa desde funcionalidades ni desde el código pendiente en `app`. El login reutiliza las APIs públicas de `NotificationService` y `extraerMensajeError` desde sus ubicaciones actuales en `app/core`: esas herramientas transversales conservan sus otros consumidores y se migrarán como conceptos delimitados más adelante. No hay duplicados ni archivos puente de autenticación.
+- La búsqueda de consumidores, incluidas rutas dinámicas, no encuentra referencias a las ubicaciones retiradas dentro de la aplicación ni de `angular.json`. Las pruebas se movieron junto a cada concepto. Los registros anteriores conservan los nombres históricos de cada entrega.
+
+### Responsabilidades, tipado y comportamiento
+
+- `InicioSesion` conserva `ngModel` por tratarse de un formulario sencillo; coordina envío y navegación. Usa `inject()`, dependencias `readonly`, miembros de plantilla `protected`, contrato explícito `LoginPayload` y signals para carga y visibilidad de contraseña. `finalize` restaura la carga y `takeUntilDestroyed` libera la suscripción al abandonar la página.
+- El formulario es semántico, con `ngSubmit`, etiquetas asociadas, controles de autocompletado, estado `aria-busy` y botón de contraseña con estado accesible. Se conserva la presentación y se ajustan mínimos y espaciado local para pantallas pequeñas. La comprobación física de teclado/Enter y adaptación móvil en navegador sigue pendiente.
+- Sesión, restauración, persistencia y llamadas de autenticación siguen agrupadas en `SesionUsuario`; no se añadieron fachadas, repositorios ni dependencias. La renovación compartida pertenece a esa instancia del servicio, eliminando el estado mutable global del interceptor. Conserva una sola petición de refresh concurrente y un solo reintento de la petición original.
+- Los DTO y contratos se agrupan con la sesión transversal. Se validan los valores recibidos y los datos sin contrato estático del router y de JSON antes de usarlos; se retiraron las aserciones que asumían un payload JWT o una regla de acceso válidos. Un payload JWT no objeto o claims de roles/permisos ajenos a strings se descartan; una regla de ruta malformada deniega acceso. Las entradas válidas conservan su comportamiento.
+- Se conservan endpoints, métodos, nombres de campos, rotación, claves de localStorage y flujo login/refresh/logout. Las reglas de visibilidad mantienen sus valores y su alternativa OR entre roles y permisos; no se convierten en una garantía de autorización del backend. Se conserva la comparación actual de permisos en frontend, sensible a mayúsculas; su diferencia con el backend queda documentada para una entrega específica de coherencia de permisos.
+- El login usa la utilidad compartida de errores para mensajes y errores de modelo; si no hay cuerpo útil conserva el mensaje por defecto y evita mostrar la descripción técnica de HttpClient.
+- Angular CLI genera sin prefijo global mediante `prefix: ""`. ESLint declara explícitamente `prefix: []`: omitir esa opción hereda el valor `app` de angular-eslint. Los componentes pendientes mantienen sus selectores actuales. No se desactivaron reglas ni se cambió su severidad para el código migrado.
+
+### Verificaciones y pendientes
+
+- `npm test -- --watch=false`: **202 pruebas correctas en 17 archivos**. Las 182 previas continúan cubiertas; la entrega añade o refuerza casos de DOM asíncrono sin Zone.js, destrucción de la vista, errores de modelo, payloads JWT malformados/UTF-8, reglas de ruta inválidas, tipos incorrectos en respuestas y renovación compartida desde el servicio.
+- Las pruebas de login interactúan con controles y formulario, usan explícitamente `provideZonelessChangeDetection()` y verifican el DOM tras `whenStable()`, sin llamadas manuales a `detectChanges()`. Esto comprueba la actualización automática al cargar, completar o fallar la respuesta, dentro de jsdom.
+- ESLint del alcance migrado (`src/autenticacion`, `src/core` y `src/app/reglas-acceso.ts`) con `--max-warnings=0`: correcto. `npm run lint`: **0 errores y 2005 advertencias** del código pendiente, frente a 2013 en la línea base.
+- El chequeo TypeScript de `eslint.config.js`, Prettier de los archivos migrados y `git diff --check` son correctos. No se cambiaron dependencias ni lockfile.
+- `npm run build` y `npm run build -- --configuration staging`: ambas correctas, con bundle inicial de 898.01 kB y chunk diferido de login de 6.89 kB. Se conservan la advertencia del umbral inicial de 500 kB y las siete advertencias previas de CSS; no se supera el máximo de error de 1 MB ni se cambiaron presupuestos. El primer intento de producción encontró el bloqueo de Google Fonts (`EAI_AGAIN`); ambas compilaciones definitivas se completaron con acceso autorizado a las fuentes.
+- Pendiente del desarrollador responsable: validar login válido e inválido, restauración al recargar, navegación y acciones por rol, expiración/refresh, logout y acceso denegado contra el backend, además de apariencia y teclado en escritorio/móvil. No se ejecutaron pruebas manuales en navegador ni llamadas a la API real. Por eso la funcionalidad no se marca **Verificada**.

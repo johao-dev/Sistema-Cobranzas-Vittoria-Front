@@ -1,50 +1,64 @@
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, Signal, signal, WritableSignal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, finalize, map, tap } from 'rxjs';
+import { Observable, finalize, map, shareReplay, tap } from 'rxjs';
 import { environment } from '../config/environment';
-import { canAccess } from '../auth/access-control.util';
-import { sessionFromTokens } from '../auth/jwt-claims.util';
-import { AccessRule, AuthTokensResponse, Session } from '../auth/session.models';
-
-export interface LoginPayload {
-  usernameOrEmail: string;
-  password: string;
-}
+import { canAccess } from './control-acceso';
+import { sessionFromTokens } from './claims-jwt';
+import { AccessRule, AuthTokensResponse, LoginPayload, Session } from './contratos-sesion';
 
 @Injectable({ providedIn: 'root' })
-export class AuthService {
-  // Almacenamiento temporal aceptado por el contrato; la siguiente iteración debe migrar
-  // el refresh token a cookie HttpOnly para reducir exposición ante XSS.
+export class SesionUsuario {
+  private readonly http: HttpClient = inject(HttpClient);
+  private readonly router: Router = inject(Router);
+  private refreshInFlight$: Observable<Session> | null = null;
+
+  // Se conservan las claves y el almacenamiento actuales; adoptar cookies HttpOnly
+  // requiere un cambio coordinado del contrato con el backend.
   private readonly accessTokenKey = 'vittoria.auth.accessToken';
   private readonly refreshTokenKey = 'vittoria.auth.refreshToken';
   private readonly expirationKey = 'vittoria.auth.expiration';
-  private readonly sessionState = signal<Session | null>(this.restoreSession());
+  private readonly sessionState: WritableSignal<Session | null> = signal<Session | null>(
+    this.restoreSession(),
+  );
 
-  readonly currentSession = this.sessionState.asReadonly();
-
-  constructor(private http: HttpClient, private router: Router) { }
+  readonly currentSession: Signal<Session | null> = this.sessionState.asReadonly();
 
   get session(): Session | null {
     return this.sessionState();
   }
 
   login(payload: LoginPayload): Observable<Session> {
-    return this.http.post<AuthTokensResponse>(`${environment.apiUrl}/api/seguridad/auth/login`, payload).pipe(
-      map(response => this.normalizeResponse(response)),
-      tap(session => this.persist(session))
-    );
+    return this.http
+      .post<AuthTokensResponse>(`${environment.apiUrl}/api/seguridad/auth/login`, payload)
+      .pipe(
+        map((response) => this.normalizeResponse(response)),
+        tap((session) => this.persist(session)),
+      );
   }
 
   refresh(): Observable<Session> {
+    if (this.refreshInFlight$) return this.refreshInFlight$;
+
     const refreshToken = this.session?.refreshToken;
     if (!refreshToken) throw new Error('No existe un refresh token para renovar la sesión.');
 
-    return this.http.post<AuthTokensResponse>(`${environment.apiUrl}/api/seguridad/auth/refresh`, { refreshToken }).pipe(
-      map(response => this.normalizeResponse(response)),
-      // La respuesta se valida completa antes de reemplazar los tres valores rotados.
-      tap(session => this.persist(session))
-    );
+    this.refreshInFlight$ = this.http
+      .post<AuthTokensResponse>(`${environment.apiUrl}/api/seguridad/auth/refresh`, {
+        refreshToken,
+      })
+      .pipe(
+        map((response) => this.normalizeResponse(response)),
+        // La respuesta se valida completa antes de reemplazar los tres valores rotados.
+        tap((session: Session) => this.persist(session)),
+        finalize(() => {
+          this.refreshInFlight$ = null;
+        }),
+        // Todas las peticiones del mismo inyector comparten una única rotación.
+        shareReplay({ bufferSize: 1, refCount: false }),
+      );
+
+    return this.refreshInFlight$;
   }
 
   logout(): void {
@@ -54,10 +68,13 @@ export class AuthService {
       return;
     }
 
-    this.http.post<void>(`${environment.apiUrl}/api/seguridad/auth/logout`, { refreshToken }).pipe(
-      // La intención local de cerrar sesión prevalece incluso si el servidor no responde.
-      finalize(() => this.clearLocalSession())
-    ).subscribe({ error: () => undefined });
+    this.http
+      .post<void>(`${environment.apiUrl}/api/seguridad/auth/logout`, { refreshToken })
+      .pipe(
+        // La intención local de cerrar sesión prevalece incluso si el servidor no responde.
+        finalize(() => this.clearLocalSession()),
+      )
+      .subscribe({ error: () => undefined });
   }
 
   clearLocalSession(returnUrl?: string): void {
@@ -81,7 +98,7 @@ export class AuthService {
     return !!session?.accessToken && !!session.refreshToken;
   }
 
-  isAccessTokenExpired(leewaySeconds = 0): boolean {
+  isAccessTokenExpired(leewaySeconds: number = 0): boolean {
     const expiration = this.session?.expiration;
     if (!expiration) return true;
     const expirationMs = Date.parse(expiration);
@@ -101,7 +118,14 @@ export class AuthService {
   }
 
   private normalizeResponse(response: AuthTokensResponse): Session {
-    if (!response?.token || !response?.refreshToken || !response?.expiration) {
+    if (
+      typeof response?.token !== 'string' ||
+      !response.token ||
+      typeof response.refreshToken !== 'string' ||
+      !response.refreshToken ||
+      typeof response.expiration !== 'string' ||
+      !response.expiration
+    ) {
       throw new Error('La respuesta de autenticación no contiene los tokens requeridos.');
     }
     return sessionFromTokens(response.token, response.refreshToken, response.expiration);

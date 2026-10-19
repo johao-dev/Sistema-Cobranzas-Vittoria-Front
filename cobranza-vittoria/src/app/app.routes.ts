@@ -17,42 +17,41 @@ import { StockActualPage } from './pages/stock-actual/stock-actual.page';
 import { ValorizacionesPage } from './pages/valorizaciones/valorizaciones.page';
 import { CategoriasGastoPage } from './pages/categorias-gasto/categorias-gasto.page';
 import { ProveedoresGastoPage } from './pages/proveedores-gasto/proveedores-gasto.page';
-import { LoginPage } from './pages/login/login.page';
 import { PresupuestoPage } from './pages/presupuesto/presupuesto.page';
 import { ProveedoresTerrenoPage } from './pages/proveedores-terreno/proveedores-terreno.page';
 import { GastosSeccionPage } from './pages/gastos-seccion/gastos-seccion.page';
-import { authGuard } from './core/guards/auth.guard';
+import { protegerRuta } from '../core/sesion/proteger-ruta';
 import { PermisosPage } from './pages/permisos/permisos.page';
-import { ACCESS_RULES } from './core/auth/access-control.util';
+import { ACCESS_RULES } from './reglas-acceso';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  { path: 'login', component: LoginPage },
-  { path: 'dashboard', component: DashboardPage, canActivate: [authGuard] },
-  { path: 'presupuesto', canActivate: [authGuard], component: PresupuestoPage },
+  { path: 'login', loadComponent: () => import('../autenticacion/inicio-sesion').then(m => m.InicioSesion) },
+  { path: 'dashboard', component: DashboardPage, canActivate: [protegerRuta] },
+  { path: 'presupuesto', canActivate: [protegerRuta], component: PresupuestoPage },
   // Operaciones → Gastos del proyecto: cada vista declara únicamente sus categorías descriptivas.
-  { path: 'gastos-administrativos', canActivate: [authGuard], component: GastosSeccionPage, data: { codigosCategoria: ['ADMINISTRATIVO'], permiteSeleccionCategoria: false, titulo: 'Gastos administrativos', subtitulo: 'Gastos de oficina y áreas de la empresa: alquiler, servicios, planilla y bancos.' } },
-  { path: 'terreno', canActivate: [authGuard], component: GastosSeccionPage, data: { codigosCategoria: ['TERRENO', 'ANTEPROYECTO', 'PROYECTO'], permiteSeleccionCategoria: true, titulo: 'Terreno - Anteproyecto - Proyecto', subtitulo: 'Compra de terreno, alcabala, estudios previos y desarrollo del proyecto.' } },
-  { path: 'marketing-publicidad', canActivate: [authGuard], component: GastosSeccionPage, data: { codigosCategoria: ['MARKETING_VENTAS'], permiteSeleccionCategoria: false, titulo: 'Marketing / Ventas', subtitulo: 'Publicidad, marketing, comisiones por ventas y sala de ventas.' } },
-  { path: 'otros-gastos', canActivate: [authGuard], component: GastosSeccionPage, data: { codigosCategoria: ['OTROS'], permiteSeleccionCategoria: false, titulo: 'Otros gastos', subtitulo: 'Gastos del proyecto que no pertenecen a otra categoría.' } },
-  { path: 'gastos-municipales-distritales', canActivate: [authGuard], component: GastosSeccionPage, data: { codigosCategoria: ['MUNICIPAL'], permiteSeleccionCategoria: false, titulo: 'Gastos municipales y distritales', subtitulo: 'Licencias, independización, declaratoria de fábrica, conformidad de obra e instalaciones.' } },
-  { path: 'especialidades', canActivate: [authGuard], component: EspecialidadesPage },
-  { path: 'proveedores', canActivate: [authGuard], component: ProveedoresPage },
-  { path: 'materiales', canActivate: [authGuard], component: MaterialesPage },
-  { path: 'proyectos', canActivate: [authGuard], component: ProyectosPage },
-  { path: 'unidades-medida', canActivate: [authGuard], component: UnidadesMedidaPage },
+  { path: 'gastos-administrativos', canActivate: [protegerRuta], component: GastosSeccionPage, data: { codigosCategoria: ['ADMINISTRATIVO'], permiteSeleccionCategoria: false, titulo: 'Gastos administrativos', subtitulo: 'Gastos de oficina y áreas de la empresa: alquiler, servicios, planilla y bancos.' } },
+  { path: 'terreno', canActivate: [protegerRuta], component: GastosSeccionPage, data: { codigosCategoria: ['TERRENO', 'ANTEPROYECTO', 'PROYECTO'], permiteSeleccionCategoria: true, titulo: 'Terreno - Anteproyecto - Proyecto', subtitulo: 'Compra de terreno, alcabala, estudios previos y desarrollo del proyecto.' } },
+  { path: 'marketing-publicidad', canActivate: [protegerRuta], component: GastosSeccionPage, data: { codigosCategoria: ['MARKETING_VENTAS'], permiteSeleccionCategoria: false, titulo: 'Marketing / Ventas', subtitulo: 'Publicidad, marketing, comisiones por ventas y sala de ventas.' } },
+  { path: 'otros-gastos', canActivate: [protegerRuta], component: GastosSeccionPage, data: { codigosCategoria: ['OTROS'], permiteSeleccionCategoria: false, titulo: 'Otros gastos', subtitulo: 'Gastos del proyecto que no pertenecen a otra categoría.' } },
+  { path: 'gastos-municipales-distritales', canActivate: [protegerRuta], component: GastosSeccionPage, data: { codigosCategoria: ['MUNICIPAL'], permiteSeleccionCategoria: false, titulo: 'Gastos municipales y distritales', subtitulo: 'Licencias, independización, declaratoria de fábrica, conformidad de obra e instalaciones.' } },
+  { path: 'especialidades', canActivate: [protegerRuta], component: EspecialidadesPage },
+  { path: 'proveedores', canActivate: [protegerRuta], component: ProveedoresPage },
+  { path: 'materiales', canActivate: [protegerRuta], component: MaterialesPage },
+  { path: 'proyectos', canActivate: [protegerRuta], component: ProyectosPage },
+  { path: 'unidades-medida', canActivate: [protegerRuta], component: UnidadesMedidaPage },
   {
     path: 'requerimientos',
-    canActivate: [authGuard],
+    canActivate: [protegerRuta],
     component: RequerimientosPage,
     data: { access: ACCESS_RULES.requerimientos }
   },
-  { path: 'ordenes-compra', canActivate: [authGuard], component: OrdenesCompraPage },
-  { path: 'compras', canActivate: [authGuard], component: ComprasPage },
-  { path: 'kardex', canActivate: [authGuard], component: KardexPage },
+  { path: 'ordenes-compra', canActivate: [protegerRuta], component: OrdenesCompraPage },
+  { path: 'compras', canActivate: [protegerRuta], component: ComprasPage },
+  { path: 'kardex', canActivate: [protegerRuta], component: KardexPage },
   {
     path: 'inventario',
-    canActivate: [authGuard],
+    canActivate: [protegerRuta],
     children: [
       { path: '', redirectTo: 'kardex-entradas', pathMatch: 'full' },
       { path: 'kardex-entradas', component: KardexEntradasPage },
@@ -62,7 +61,7 @@ export const routes: Routes = [
   },
   {
     path: 'control-accesos',
-    canActivate: [authGuard],
+    canActivate: [protegerRuta],
     data: { access: ACCESS_RULES.controlAccesos },
     children: [
       { path: '', redirectTo: 'usuarios', pathMatch: 'full' },
@@ -73,20 +72,20 @@ export const routes: Routes = [
   },
   {
     path: 'control-presupuestario',
-    canActivate: [authGuard],
+    canActivate: [protegerRuta],
     data: { access: ACCESS_RULES.controlPresupuestario },
     children: [
       { path: '', redirectTo: 'panel', pathMatch: 'full' },
       {
         path: 'panel',
-        canActivate: [authGuard],
+        canActivate: [protegerRuta],
         loadComponent: () => import('./pages/control-presupuestario/control-presupuestario.page')
           .then(m => m.ControlPresupuestarioPage),
         data: { access: ACCESS_RULES.controlPresupuestarioReportes }
       },
       {
         path: 'presupuestos',
-        canActivate: [authGuard],
+        canActivate: [protegerRuta],
         loadComponent: () => import('./pages/presupuestos/presupuestos.page').then(m => m.PresupuestosPage),
         data: { access: ACCESS_RULES.controlPresupuestarioPresupuestos }
       },
@@ -94,21 +93,21 @@ export const routes: Routes = [
       { path: 'gastos-directos', redirectTo: '/gastos-administrativos', pathMatch: 'full' },
       {
         path: 'centros-costo',
-        canActivate: [authGuard],
+        canActivate: [protegerRuta],
         loadComponent: () => import('./pages/centros-costo/centros-costo.page').then(m => m.CentrosCostoPage),
         data: { access: ACCESS_RULES.controlPresupuestarioCentrosCosto }
       },
       {
         path: 'partidas',
-        canActivate: [authGuard],
+        canActivate: [protegerRuta],
         loadComponent: () => import('./pages/partidas/partidas.page').then(m => m.PartidasPage),
         data: { access: ACCESS_RULES.controlPresupuestarioPartidas }
       }
     ]
   },
-  { path: 'valorizaciones', canActivate: [authGuard], component: ValorizacionesPage },
-  { path: 'proveedores-gasto', canActivate: [authGuard], component: ProveedoresGastoPage },
-  { path: 'proveedores-terreno', canActivate: [authGuard], component: ProveedoresTerrenoPage },
-  { path: 'categorias-gasto', canActivate: [authGuard], component: CategoriasGastoPage },
+  { path: 'valorizaciones', canActivate: [protegerRuta], component: ValorizacionesPage },
+  { path: 'proveedores-gasto', canActivate: [protegerRuta], component: ProveedoresGastoPage },
+  { path: 'proveedores-terreno', canActivate: [protegerRuta], component: ProveedoresTerrenoPage },
+  { path: 'categorias-gasto', canActivate: [protegerRuta], component: CategoriasGastoPage },
   { path: '**', redirectTo: 'dashboard' }
 ];

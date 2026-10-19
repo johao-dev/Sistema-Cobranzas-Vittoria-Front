@@ -14,7 +14,7 @@ import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ImportService } from '../../../core/services/import.service';
 import { NotificationService } from '../../../core/services/notification.service';
-import { AuthService } from '../../../core/services/auth.service';
+import { SesionUsuario } from '../../../../core/sesion/sesion-usuario';
 import {
   ImportModulo,
   ImportResumen,
@@ -51,7 +51,7 @@ export class ImportModalComponent implements OnInit {
   readonly meta = signal<ImportModuloMeta | null>(null);
 
   private importsSvc = inject(ImportService);
-  private auth = inject(AuthService);
+  private auth = inject(SesionUsuario);
   private notify = inject(NotificationService);
   private cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);

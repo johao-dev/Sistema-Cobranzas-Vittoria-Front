@@ -13,7 +13,7 @@
       "schematics": {},
       "root": "",
       "sourceRoot": "src",
-      "prefix": "app",
+      "prefix": "",
       "architect": {
         "build": {
           "builder": "@angular/build:application",
@@ -34,8 +34,8 @@
             "production": {
               "fileReplacements": [
                 {
-                  "replace": "src/app/core/config/environment.ts",
-                  "with": "src/app/core/config/environment.production.ts"
+                  "replace": "src/core/config/environment.ts",
+                  "with": "src/core/config/environment.production.ts"
                 }
               ],
               "budgets": [
@@ -55,8 +55,8 @@
             "staging": {
               "fileReplacements": [
                 {
-                  "replace": "src/app/core/config/environment.ts",
-                  "with": "src/app/core/config/environment.staging.ts"
+                  "replace": "src/core/config/environment.ts",
+                  "with": "src/core/config/environment.staging.ts"
                 }
               ],
               "optimization": true,

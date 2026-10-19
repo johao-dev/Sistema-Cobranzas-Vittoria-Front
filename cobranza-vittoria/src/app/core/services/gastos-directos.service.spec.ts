@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { environment } from '../config/environment';
+import { environment } from '../../../core/config/environment';
 import { GastoDirectoRequest, GastosDirectosService } from './gastos-directos.service';
 
 describe('GastosDirectosService', () => {
