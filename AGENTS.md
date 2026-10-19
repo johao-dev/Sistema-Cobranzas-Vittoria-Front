@@ -23,7 +23,7 @@
 
 ## 3. Arquitectura y responsabilidades
 
-**Arquitectura actual:** en transición: autenticación está en `src/autenticacion`, el dashboard en `src/dashboard`, la sesión en `src/core/sesion` y los ambientes en `src/core/config`. El código pendiente conserva páginas en `src/app/pages`, servicios en `src/app/core/services` y modelos en `src/app/models`. No asumir que ya implementa un monolito modular o todas las capas de arquitectura limpia.
+**Arquitectura actual:** en transición: autenticación está en `src/autenticacion`, el dashboard en `src/dashboard`, los cinco catálogos generales en `src/catalogos`, la sesión en `src/core/sesion` y los ambientes en `src/core/config`. El código pendiente conserva páginas en `src/app/pages`, servicios en `src/app/core/services` y modelos en `src/app/models`. No asumir que ya implementa un monolito modular o todas las capas de arquitectura limpia.
 
 **Futura migración:** arquitectura por funcionalidades directamente en `src/<funcionalidad>/`, sin la carpeta `app/` ni una carpeta contenedora `features/`. La tabla siguiente describe las ubicaciones actuales, que siguen vigentes para el código no migrado; no representa la estructura objetivo.
 
@@ -36,8 +36,9 @@ Todas las rutas de esta sección son relativas a `cobranza-vittoria/src/`:
 | `app/app.routes.ts` | Rutas, redirecciones, carga de páginas y reglas de acceso. |
 | `app/pages/<funcionalidad>/` | Páginas y componentes específicos de cada funcionalidad. |
 | `app/shared/components/` | Componentes reutilizables, como notificaciones, importación y tipo de cambio. |
-| `app/core/services/` | Acceso a API por dominio y notificaciones pendientes de migración. |
+| `app/core/services/` | Servicios de dominios pendientes e infraestructura reutilizada. `MaestraService` fue sustituido por los servicios públicos de cada concepto en `src/catalogos`. |
 | `autenticacion/` | Inicio de sesión, plantilla, estilos y pruebas migrados. |
+| `catalogos/<concepto>/` | Especialidades, materiales, proveedores generales, proyectos y unidades de medida; contratos y servicio público propios, con listas y formularios en sus subcarpetas. |
 | `dashboard/` | Conceptos en `resumen-compras/`, `grafico-materiales/`, `carga-dashboard/` e `indicadores/`, con sus pruebas colocadas junto al concepto. Contratos compartidos en la raíz del dashboard. |
 | `core/sesion/` | Sesión y contratos públicos, claims, reglas genéricas de acceso, protección de rutas e interceptor HTTP. |
 | `core/config/` | Configuración de API por ambiente; consumidores y reemplazos de compilación actualizados. |
@@ -48,7 +49,7 @@ Todas las rutas de esta sección son relativas a `cobranza-vittoria/src/`:
 
 - Las páginas coordinan interacción, formularios y estado visual; los servicios encapsulan las llamadas HTTP y la adaptación de datos de su dominio.
 - Los componentes reutilizables comunican eventos y datos mediante entradas y salidas; evitar acoplarlos a una página concreta.
-- Los modelos no deben depender de páginas o componentes. Los servicios de `core` no deben importar desde `pages`.
+- Los modelos no deben depender de páginas o componentes. Los servicios de `core` no deben importar desde `pages`. Los dominios pendientes consumen los servicios públicos `CatalogoEspecialidades`, `CatalogoMateriales`, `CatalogoProveedores`, `CatalogoProyectos` y `CatalogoUnidadesMedida` desde sus conceptos en `src/catalogos`; no recrear un servicio global de maestras.
 - Reutilizar servicios, modelos y utilidades existentes antes de crear otros. Mantener los componentes propios de una funcionalidad junto a su página.
 - Aplicar patrones GoF y principios SOLID cuando resuelvan una necesidad concreta. Evitar capas, repositorios, interfaces o dependencias nuevas sin justificación.
 - No reorganizar toda la aplicación ni migrar patrones como parte incidental de una corrección.

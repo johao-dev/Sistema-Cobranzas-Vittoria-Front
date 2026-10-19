@@ -1,0 +1,136 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Materiales</h1>
+    <div class="page-subtitle">Datos para las operaciones del sistema.</div>
+  </div>
+</div>
+<div class="split">
+  <section class="panel">
+    <div class="panel-title-row">
+      <div class="panel-title">Listado</div>
+      <div class="filters compact-filters maintenance-search">
+        <div class="field">
+          <label for="busqueda-materiales">Buscar</label
+          ><input
+            id="busqueda-materiales"
+            [ngModel]="busqueda()"
+            (ngModelChange)="busqueda.set($event)"
+            placeholder="Buscar materiales"
+          />
+        </div>
+      </div>
+      <button type="button" class="btn btn-primary btn-sm" (click)="nuevo()">
+        + Nuevo registro
+      </button>
+      <select
+        class="actions-select btn-sm"
+        [ngModel]="importFormato()"
+        (ngModelChange)="importFormato.set($event)"
+        aria-label="Formato de plantilla"
+      >
+        @for (formato of formatosPlantilla; track formato) {
+          <option [ngValue]="formato">{{ formato.toUpperCase() }}</option>
+        }
+      </select>
+      <button type="button" class="btn btn-secondary btn-sm" (click)="importAbierto.set(true)">
+        Importar
+      </button>
+    </div>
+    <div class="field">
+      <label for="filtro-materiales">Especialidad</label
+      ><select
+        id="filtro-materiales"
+        [ngModel]="filtroEspecialidad()"
+        (ngModelChange)="filtroEspecialidad.set($event); actualizar()"
+      >
+        <option [ngValue]="null">Todas</option>
+        @for (especialidad of especialidades(); track especialidad.idEspecialidad) {
+          <option [ngValue]="especialidad.idEspecialidad">{{ especialidad.nombre }}</option>
+        }
+      </select>
+    </div>
+    @if (cargando()) {
+      <p role="status">Cargando listado...</p>
+    }
+    @if (error() && !modalAbierto()) {
+      <p class="empty-state" role="alert">{{ error() }}</p>
+    }
+    @if (!cargando() && !error() && !filtradas().length) {
+      <div class="empty-state">No se encontraron registros.</div>
+    }
+    @if (filtradas().length) {
+      <div class="table-wrap table-wrap--sticky-actions materiales-table">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Especialidad</th>
+              <th scope="col">Código material</th>
+              <th scope="col">Código proveedor</th>
+              <th scope="col">Descripción</th>
+              <th scope="col">Unidad</th>
+              <th scope="col">Partida</th>
+              <th scope="col">Stock mínimo</th>
+              <th scope="col">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of filtradas(); track row.idMaterial) {
+              <tr>
+                <td>{{ row.especialidad }}</td>
+                <td>{{ row.codigo || '-' }}</td>
+                <td>{{ row.codigoProveedor || '-' }}</td>
+                <td>{{ row.descripcion }}</td>
+                <td>{{ row.unidadMedida }}</td>
+                <td>
+                  {{ row.codigoPartida ? row.codigoPartida + ' — ' + row.nombrePartida : '-' }}
+                </td>
+                <td>{{ row.stockMinimo }}</td>
+                <td>
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-sm"
+                    [attr.aria-label]="'Editar ' + row.descripcion"
+                    (click)="editar(row)"
+                  >
+                    Editar
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+  <dialogo-catalogo
+    [abierto]="modalAbierto()"
+    [titulo]="seleccionado() ? 'Editar registro' : 'Nuevo registro'"
+    (cerrar)="cerrar()"
+  >
+    @if (modalAbierto()) {
+      @if (cargandoDetalle()) {
+        <p role="status">Cargando detalle...</p>
+      }
+      <formulario-material
+        [valor]="seleccionado()"
+        [guardando]="guardando()"
+        [bloqueado]="!detalleListo()"
+        [especialidades]="especialidades()"
+        [unidades]="unidades()"
+        [partidas]="partidas()"
+        (guardar)="guardar($event)"
+      />
+      @if (error()) {
+        <p class="empty-state" role="alert">{{ error() }}</p>
+      }
+    }
+  </dialogo-catalogo>
+  @if (importAbierto()) {
+    <app-import-modal
+      modulo="material"
+      [plantillaFormato]="importFormato()"
+      (onClose)="importAbierto.set(false)"
+      (onSuccess)="importado()"
+    />
+  }
+</div>

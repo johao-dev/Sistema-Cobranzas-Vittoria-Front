@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ControlPresupuestarioService } from '../../core/services/control-presupuestario.service';
-import { MaestraService } from '../../core/services/maestra.service';
+import { CatalogoProyectos } from '../../../catalogos/proyectos/catalogo-proyectos';
 import { NotificationService } from '../../core/services/notification.service';
 import { ImportModalComponent } from '../../shared/components/import-modal/import-modal.component';
 
@@ -31,7 +31,7 @@ export class CentrosCostoPage implements OnInit {
 
   constructor(
     private cp: ControlPresupuestarioService,
-    private maestra: MaestraService,
+    private proyectosApi: CatalogoProyectos,
     private notifications: NotificationService,
     private cdr: ChangeDetectorRef
   ) { }
@@ -84,7 +84,7 @@ export class CentrosCostoPage implements OnInit {
       error: () => this.notifications.show('No se pudieron cargar los catálogos del módulo.', 'error')
     });
 
-    this.maestra.proyectos(true).subscribe({
+    this.proyectosApi.proyectos(true).subscribe({
       next: rows => {
         this.proyectos = rows ?? [];
         this.cdr.detectChanges();

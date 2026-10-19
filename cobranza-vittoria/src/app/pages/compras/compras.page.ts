@@ -2,7 +2,7 @@ import { Component, ElementRef, OnInit, ViewChild, ChangeDetectorRef } from '@an
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ComprasService } from '../../core/services/compras.service';
-import { MaestraService } from '../../core/services/maestra.service';
+import { CatalogoMateriales } from '../../../catalogos/materiales/catalogo-materiales';
 import { SesionUsuario } from '../../../core/sesion/sesion-usuario';
 import { NotificationService } from '../../core/services/notification.service';
 
@@ -67,7 +67,7 @@ export class ComprasPage implements OnInit {
 
   constructor(
     private compras: ComprasService,
-    private maestra: MaestraService,
+    private materialesApi: CatalogoMateriales,
     private auth: SesionUsuario,
     private notifications: NotificationService,
     private cdr: ChangeDetectorRef
@@ -157,7 +157,7 @@ export class ComprasPage implements OnInit {
   }
 
   loadCatalogos() {
-    this.maestra.materiales(true).subscribe({
+    this.materialesApi.materiales(true).subscribe({
       next: (x: any) => { this.materialesCatalogo = x || []; this.cdr.detectChanges(); },
       error: () => { this.materialesCatalogo = []; this.cdr.detectChanges(); }
     });

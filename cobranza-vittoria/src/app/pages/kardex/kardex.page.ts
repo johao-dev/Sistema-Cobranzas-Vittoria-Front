@@ -2,7 +2,8 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { KardexService } from '../../core/services/kardex.service';
-import { MaestraService } from '../../core/services/maestra.service';
+import { CatalogoEspecialidades } from '../../../catalogos/especialidades/catalogo-especialidades';
+import { CatalogoMateriales } from '../../../catalogos/materiales/catalogo-materiales';
 
 @Component({
   standalone: true,
@@ -40,13 +41,14 @@ export class KardexPage implements OnInit {
 
   constructor(
     private kardex: KardexService,
-    private maestra: MaestraService,
+    private especialidadesApi: CatalogoEspecialidades,
+    private materialesApi: CatalogoMateriales,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
-    this.maestra.materiales(true).subscribe({ next: (x: any) => { this.materiales = x ?? []; this.cdr.detectChanges(); }, error: () => { this.materiales = []; this.cdr.detectChanges(); } });
-    this.maestra.especialidades(true).subscribe({ next: (x: any) => { this.especialidades = x ?? []; this.cdr.detectChanges(); }, error: () => { this.especialidades = []; this.cdr.detectChanges(); } });
+    this.materialesApi.materiales(true).subscribe({ next: (x: any) => { this.materiales = x ?? []; this.cdr.detectChanges(); }, error: () => { this.materiales = []; this.cdr.detectChanges(); } });
+    this.especialidadesApi.especialidades(true).subscribe({ next: (x: any) => { this.especialidades = x ?? []; this.cdr.detectChanges(); }, error: () => { this.especialidades = []; this.cdr.detectChanges(); } });
     this.salida.fechaMovimiento = new Date().toISOString().slice(0, 10);
     this.load();
   }

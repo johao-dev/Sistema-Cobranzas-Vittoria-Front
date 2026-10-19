@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GastosAdministrativosService } from '../../core/services/gastos-administrativos.service';
 import { NotificationService } from '../../core/services/notification.service';
-import { MaestraService } from '../../core/services/maestra.service';
+import { CatalogoProveedores } from '../../../catalogos/proveedores/catalogo-proveedores';
 import { ImportModalComponent } from '../../shared/components/import-modal/import-modal.component';
 
 @Component({
@@ -74,7 +74,7 @@ export class ProveedoresGastoPage implements OnInit {
     private gastosService: GastosAdministrativosService,
     private notifications: NotificationService,
     private cdr: ChangeDetectorRef,
-    private maestra: MaestraService
+    private proveedoresApi: CatalogoProveedores
   ) { }
 
   ngOnInit(): void {
@@ -154,7 +154,7 @@ export class ProveedoresGastoPage implements OnInit {
       return;
     }
 
-    this.maestra.consultaRuc(this.form.ruc).subscribe({
+    this.proveedoresApi.consultaRuc(this.form.ruc).subscribe({
       next: (res: any) => {
         if (res && res.numero_documento) {
           this.form.razonSocial = res.razon_social || '';

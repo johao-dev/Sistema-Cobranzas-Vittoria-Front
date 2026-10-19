@@ -1,0 +1,103 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Proveedores</h1>
+    <div class="page-subtitle">Datos para las operaciones del sistema.</div>
+  </div>
+</div>
+<div class="split split--form providers-layout">
+  <section class="panel">
+    <div class="panel-title-row">
+      <div class="panel-title">Listado</div>
+      <div class="filters compact-filters maintenance-search">
+        <div class="field">
+          <label for="busqueda-proveedores">Buscar</label
+          ><input
+            id="busqueda-proveedores"
+            [ngModel]="busqueda()"
+            (ngModelChange)="busqueda.set($event)"
+            placeholder="Buscar proveedores"
+          />
+        </div>
+      </div>
+      <button type="button" class="btn btn-primary btn-sm" (click)="nuevo()">
+        + Nuevo registro
+      </button>
+      <button type="button" class="btn btn-secondary btn-sm" (click)="importAbierto.set(true)">
+        Importar
+      </button>
+    </div>
+    @if (cargando()) {
+      <p role="status">Cargando listado...</p>
+    }
+    @if (error() && !modalAbierto()) {
+      <p class="empty-state" role="alert">{{ error() }}</p>
+    }
+    @if (!cargando() && !error() && !filtradas().length) {
+      <div class="empty-state">No se encontraron registros.</div>
+    }
+    @if (filtradas().length) {
+      <div class="table-wrap table-wrap--sticky-actions">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Proveedor</th>
+              <th scope="col">RUC</th>
+              <th scope="col">Contacto</th>
+              <th scope="col">Teléfono</th>
+              <th scope="col">Correo</th>
+              <th scope="col">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of filtradas(); track row.idProveedor) {
+              <tr>
+                <td>{{ row.razonSocial }}</td>
+                <td>{{ row.ruc }}</td>
+                <td>{{ row.contacto || '-' }}</td>
+                <td>{{ row.telefono || '-' }}</td>
+                <td>{{ row.correo || '-' }}</td>
+                <td>
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-sm"
+                    [attr.aria-label]="'Editar ' + row.razonSocial"
+                    (click)="editar(row)"
+                  >
+                    Editar
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+  <dialogo-catalogo
+    [abierto]="modalAbierto()"
+    [titulo]="seleccionado() ? 'Editar registro' : 'Nuevo registro'"
+    (cerrar)="cerrar()"
+  >
+    @if (modalAbierto()) {
+      @if (cargandoDetalle()) {
+        <p role="status">Cargando detalle...</p>
+      }
+      <formulario-proveedor
+        [valor]="seleccionado()"
+        [guardando]="guardando()"
+        [bloqueado]="!detalleListo()"
+        (guardar)="guardar($event)"
+      />
+      @if (error()) {
+        <p class="empty-state" role="alert">{{ error() }}</p>
+      }
+    }
+  </dialogo-catalogo>
+  @if (importAbierto()) {
+    <app-import-modal
+      modulo="proveedor"
+      (onClose)="importAbierto.set(false)"
+      (onSuccess)="importado()"
+    />
+  }
+</div>

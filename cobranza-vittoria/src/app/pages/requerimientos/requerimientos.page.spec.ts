@@ -3,7 +3,10 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, Subject, of, throwError } from 'rxjs';
 import { RequerimientosPage } from './requerimientos.page';
 import { RequerimientosService } from '../../core/services/requerimientos.service';
-import { MaestraService } from '../../core/services/maestra.service';
+import { CatalogoEspecialidades } from '../../../catalogos/especialidades/catalogo-especialidades';
+import { CatalogoProyectos } from '../../../catalogos/proyectos/catalogo-proyectos';
+import { CatalogoMateriales } from '../../../catalogos/materiales/catalogo-materiales';
+import { CatalogoUnidadesMedida } from '../../../catalogos/unidades-medida/catalogo-unidades-medida';
 import { ControlPresupuestarioService } from '../../core/services/control-presupuestario.service';
 import { SesionUsuario } from '../../../core/sesion/sesion-usuario';
 import { NotificationService } from '../../core/services/notification.service';
@@ -85,8 +88,13 @@ describe('RequerimientosPage — gestión de ítems en almacén', () => {
           useValue: { hasPermission: (permiso: string) => permisos.has(permiso) },
         },
         { provide: NotificationService, useValue: notificaciones },
-        {
-          provide: MaestraService,
+        ...[
+          CatalogoEspecialidades,
+          CatalogoProyectos,
+          CatalogoMateriales,
+          CatalogoUnidadesMedida,
+        ].map((provide) => ({
+          provide,
           useValue: {
             especialidades: () => of([{ idEspecialidad: 4, nombre: 'Estructuras' }]),
             proyectos: () => of([]),
@@ -97,7 +105,7 @@ describe('RequerimientosPage — gestión de ítems en almacén', () => {
                 { idMaterial: 94, idEspecialidad: 4, descripcion: 'Acero', unidadMedida: 'KG' },
               ]),
           },
-        },
+        })),
         {
           provide: ControlPresupuestarioService,
           useValue: {

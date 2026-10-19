@@ -1,0 +1,51 @@
+<form (ngSubmit)="enviar()">
+  <div class="form-grid two">
+    <div class="field">
+      <label for="proyecto-nombreProyecto">Nombre del proyecto</label
+      ><input
+        id="proyecto-nombreProyecto"
+        name="nombreProyecto"
+        type="text"
+        [(ngModel)]="form().nombreProyecto"
+      />
+    </div>
+    <div class="field">
+      <label for="proyecto-descripcion">Descripción</label
+      ><input
+        id="proyecto-descripcion"
+        name="descripcion"
+        type="text"
+        [(ngModel)]="form().descripcion"
+      />
+    </div>
+    <div class="field">
+      <label for="proyecto-cotizacionGeneral">Cotización general</label
+      ><input
+        id="proyecto-cotizacionGeneral"
+        name="cotizacionGeneral"
+        type="number"
+        [(ngModel)]="form().cotizacionGeneral"
+        min="0"
+        step="0.01"
+      />
+    </div>
+    <div class="field">
+      <label for="proyecto-activo">Estado</label
+      ><select id="proyecto-activo" name="activo" [(ngModel)]="form().activo">
+        <option [ngValue]="true">Activo</option>
+        <option [ngValue]="false">Inactivo</option>
+      </select>
+    </div>
+  </div>
+  @if (error()) {
+    <p role="alert" class="empty-state">{{ error() }}</p>
+  }
+  <div class="toolbar" style="margin-top: 14px">
+    <button type="submit" class="btn btn-primary" [disabled]="guardando()">
+      {{ guardando() ? 'Guardando...' : 'Guardar' }}
+    </button>
+    <button type="button" class="btn btn-ghost" [disabled]="guardando()" (click)="limpiar()">
+      Limpiar
+    </button>
+  </div>
+</form>

@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { MaestraService } from '../../core/services/maestra.service';
+import { CatalogoProyectos } from '../../../catalogos/proyectos/catalogo-proyectos';
 import { SunatService } from '../../core/services/sunat.service';
 import { GastoProyectoService, TipoGastoProyecto } from '../../core/services/gasto-proyecto.service';
 import { ProveedoresTerrenoService } from '../../core/services/proveedores-terreno.service';
@@ -73,7 +73,7 @@ export class GastosProyectoPage implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private maestra: MaestraService,
+    private proyectosApi: CatalogoProyectos,
     private sunatService: SunatService,
     private gastoProyectoService: GastoProyectoService,
     private proveedoresService: ProveedoresTerrenoService,
@@ -129,7 +129,7 @@ export class GastosProyectoPage implements OnInit {
   }
 
   loadCatalogos(): void {
-    this.maestra.proyectos(true).subscribe({
+    this.proyectosApi.proyectos(true).subscribe({
       next: rows => { this.proyectos = rows || []; this.cdr.detectChanges(); },
       error: () => { this.proyectos = []; this.cdr.detectChanges(); }
     });

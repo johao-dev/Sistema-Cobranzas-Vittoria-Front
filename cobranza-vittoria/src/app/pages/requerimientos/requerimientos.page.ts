@@ -1,7 +1,10 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MaestraService } from '../../core/services/maestra.service';
+import { CatalogoEspecialidades } from '../../../catalogos/especialidades/catalogo-especialidades';
+import { CatalogoProyectos } from '../../../catalogos/proyectos/catalogo-proyectos';
+import { CatalogoMateriales } from '../../../catalogos/materiales/catalogo-materiales';
+import { CatalogoUnidadesMedida } from '../../../catalogos/unidades-medida/catalogo-unidades-medida';
 import { NotificationService } from '../../core/services/notification.service';
 import { SesionUsuario } from '../../../core/sesion/sesion-usuario';
 import { RequerimientosService } from '../../core/services/requerimientos.service';
@@ -20,7 +23,7 @@ import {
 } from '../../models/requerimientos.models';
 import { Observable, finalize } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Material } from '../../models/maestra.models';
+import { Material } from '../../../catalogos/materiales/contratos-materiales';
 
 interface FormularioRequerimiento {
   numeroRequerimiento: string;
@@ -144,7 +147,10 @@ export class RequerimientosPage implements OnInit {
 
   constructor(
     private requerimientos: RequerimientosService,
-    private maestra: MaestraService,
+    private especialidadesApi: CatalogoEspecialidades,
+    private proyectosApi: CatalogoProyectos,
+    private materialesApi: CatalogoMateriales,
+    private unidadesApi: CatalogoUnidadesMedida,
     private controlPresupuestario: ControlPresupuestarioService,
     public readonly auth: SesionUsuario,
     private notifyService: NotificationService,
@@ -332,10 +338,10 @@ export class RequerimientosPage implements OnInit {
   }
 
   loadCatalogos(): void {
-    this.maestra.especialidades(true).subscribe({ next: (x: any) => { this.especialidades = x ?? []; this.cdr.detectChanges(); }, error: () => { this.especialidades = []; this.cdr.detectChanges(); } });
-    this.maestra.proyectos(true).subscribe({ next: (x: any) => { this.proyectos = x ?? []; this.cdr.detectChanges(); }, error: () => { this.proyectos = []; this.cdr.detectChanges(); } });
-    this.maestra.materiales(true).subscribe({ next: (x: any) => { this.materiales = x ?? []; this.cdr.detectChanges(); }, error: () => { this.materiales = []; this.cdr.detectChanges(); } });
-    this.maestra.unidadesMedida(true).subscribe({ next: (x: any) => { this.unidadesMedida = x ?? []; this.cdr.detectChanges(); }, error: () => { this.unidadesMedida = []; this.cdr.detectChanges(); } });
+    this.especialidadesApi.especialidades(true).subscribe({ next: (x: any) => { this.especialidades = x ?? []; this.cdr.detectChanges(); }, error: () => { this.especialidades = []; this.cdr.detectChanges(); } });
+    this.proyectosApi.proyectos(true).subscribe({ next: (x: any) => { this.proyectos = x ?? []; this.cdr.detectChanges(); }, error: () => { this.proyectos = []; this.cdr.detectChanges(); } });
+    this.materialesApi.materiales(true).subscribe({ next: (x: any) => { this.materiales = x ?? []; this.cdr.detectChanges(); }, error: () => { this.materiales = []; this.cdr.detectChanges(); } });
+    this.unidadesApi.unidadesMedida(true).subscribe({ next: (x: any) => { this.unidadesMedida = x ?? []; this.cdr.detectChanges(); }, error: () => { this.unidadesMedida = []; this.cdr.detectChanges(); } });
     this.controlPresupuestario.centrosCosto(true, null, null).subscribe({
       next: (x: any) => { this.centrosCosto = x ?? []; this.cdr.detectChanges(); },
       error: () => { this.centrosCosto = []; this.cdr.detectChanges(); }
@@ -534,13 +540,13 @@ export class RequerimientosPage implements OnInit {
 
     this.savingMaterial = true;
 
-    this.maestra.guardarMaterial(payload).subscribe({
+    this.materialesApi.guardarMaterial(payload).subscribe({
       next: (resp: any) => {
         this.savingMaterial = false;
         this.msgMaterial = 'Material agregado correctamente.';
         this.notifyService.show(this.msgMaterial, 'success');
 
-        this.maestra.materiales(true).subscribe({
+        this.materialesApi.materiales(true).subscribe({
           next: (materiales: any) => {
             this.materiales = materiales ?? [];
             const nuevoId = Number(resp?.idMaterial ?? resp?.IdMaterial ?? 0);

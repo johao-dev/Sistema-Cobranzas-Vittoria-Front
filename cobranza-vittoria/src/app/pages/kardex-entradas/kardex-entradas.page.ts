@@ -2,7 +2,10 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NotificationService } from '../../core/services/notification.service';
-import { MaestraService } from '../../core/services/maestra.service';
+import { CatalogoEspecialidades } from '../../../catalogos/especialidades/catalogo-especialidades';
+import { CatalogoProyectos } from '../../../catalogos/proyectos/catalogo-proyectos';
+import { CatalogoMateriales } from '../../../catalogos/materiales/catalogo-materiales';
+import { CatalogoProveedores } from '../../../catalogos/proveedores/catalogo-proveedores';
 import { KardexInventarioService } from '../../core/services/kardex-inventario.service';
 import { KardexEntradaCreateDto, KardexFiltroInventarioDto } from '../../models/kardex-inventario.models';
 import { extraerMensajeError } from '../../core/utils/api-error.util';
@@ -90,29 +93,32 @@ export class KardexEntradasPage implements OnInit {
   }
 
   constructor(
-    private maestra: MaestraService,
+    private especialidadesApi: CatalogoEspecialidades,
+    private proyectosApi: CatalogoProyectos,
+    private materialesApi: CatalogoMateriales,
+    private proveedoresApi: CatalogoProveedores,
     private kardex: KardexInventarioService,
     private notifyService: NotificationService,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
-    this.maestra.especialidades(true).subscribe({
+    this.especialidadesApi.especialidades(true).subscribe({
       next: (x: any) => { this.especialidades = x ?? []; this.cdr.detectChanges(); },
       error: () => { this.especialidades = []; this.cdr.detectChanges(); }
     });
 
-    this.maestra.proveedores(true).subscribe({
+    this.proveedoresApi.proveedores(true).subscribe({
       next: (x: any) => { this.proveedores = x ?? []; this.cdr.detectChanges(); },
       error: () => { this.proveedores = []; this.cdr.detectChanges(); }
     });
 
-    this.maestra.proyectos(true).subscribe({
+    this.proyectosApi.proyectos(true).subscribe({
       next: (x: any) => { this.proyectos = x ?? []; this.cdr.detectChanges(); },
       error: () => { this.proyectos = []; this.cdr.detectChanges(); }
     });
 
-    this.maestra.materiales(true).subscribe({
+    this.materialesApi.materiales(true).subscribe({
       next: (x: any) => { this.materiales = x ?? []; this.actualizarMaterialesFiltrados(); this.cdr.detectChanges(); },
       error: () => { this.materiales = []; this.materialesFiltrados = []; this.cdr.detectChanges(); }
     });

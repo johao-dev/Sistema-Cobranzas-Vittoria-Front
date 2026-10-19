@@ -1,0 +1,11 @@
+<dialog
+  #dialogo
+  class="panel panel--form design-modal-card"
+  aria-labelledby="titulo-dialogo-catalogo"
+  (cancel)="cancelar($event)"
+  (pointerdown)="cerrarDesdeFondo($event)"
+>
+  <button type="button" class="modal-close" (click)="cerrar.emit()" aria-label="Cerrar">×</button>
+  <h2 class="panel-title" id="titulo-dialogo-catalogo">{{ titulo() }}</h2>
+  <ng-content />
+</dialog>

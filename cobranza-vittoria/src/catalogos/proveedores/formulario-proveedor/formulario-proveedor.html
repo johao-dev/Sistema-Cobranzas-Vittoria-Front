@@ -1,0 +1,88 @@
+<form [formGroup]="form" (ngSubmit)="enviar()">
+  <fieldset class="form-grid two" [disabled]="guardando() || bloqueado()">
+    <div class="field">
+      <label for="proveedor-razonSocial">Razón social</label
+      ><input id="proveedor-razonSocial" formControlName="razonSocial" />
+    </div>
+    <div class="field">
+      <label for="proveedor-ruc">RUC</label
+      ><input id="proveedor-ruc" formControlName="ruc" inputmode="numeric" (blur)="buscarRuc()" />
+    </div>
+    <div class="field">
+      <label for="proveedor-contacto">Contacto</label
+      ><input id="proveedor-contacto" formControlName="contacto" />
+    </div>
+    <div class="field">
+      <label for="proveedor-telefono">Teléfono</label
+      ><input id="proveedor-telefono" formControlName="telefono" />
+    </div>
+    <div class="field">
+      <label for="proveedor-correo">Correo</label
+      ><input id="proveedor-correo" formControlName="correo" type="email" />
+    </div>
+    <div class="field">
+      <label for="proveedor-direccion">Dirección</label
+      ><input id="proveedor-direccion" formControlName="direccion" />
+    </div>
+    <div class="field">
+      <label for="proveedor-banco">Banco</label
+      ><input id="proveedor-banco" formControlName="banco" />
+    </div>
+    <div class="field">
+      <label for="proveedor-cuentaCorriente">Cuenta corriente</label
+      ><input id="proveedor-cuentaCorriente" formControlName="cuentaCorriente" />
+    </div>
+    <div class="field">
+      <label for="proveedor-cci">CCI</label><input id="proveedor-cci" formControlName="cci" />
+    </div>
+    <div class="field">
+      <label for="proveedor-cuentaDetraccion">Cuenta detracción</label
+      ><input id="proveedor-cuentaDetraccion" formControlName="cuentaDetraccion" />
+    </div>
+    <div class="field">
+      <label for="proveedor-descripcionServicio">Descripción servicio</label
+      ><input id="proveedor-descripcionServicio" formControlName="descripcionServicio" />
+    </div>
+    <div class="field">
+      <label for="proveedor-observacion">Observación</label
+      ><input id="proveedor-observacion" formControlName="observacion" />
+    </div>
+    <div class="field">
+      <label for="proveedor-trabaja">Trabaja con proveedor</label
+      ><select id="proveedor-trabaja" formControlName="trabajamosConProveedor">
+        <option value="SI">Sí</option>
+        <option value="NO">No</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="proveedor-activo">Estado</label
+      ><select id="proveedor-activo" formControlName="activo">
+        <option [ngValue]="true">Activo</option>
+        <option [ngValue]="false">Inactivo</option>
+      </select>
+    </div>
+  </fieldset>
+  @if (consultando()) {
+    <p role="status">Consultando RUC...</p>
+  }
+  @if (mensaje()) {
+    <p role="status">{{ mensaje() }}</p>
+  }
+  <div class="toolbar providers-toolbar" style="margin-top: 14px">
+    <button
+      type="submit"
+      class="btn btn-primary"
+      [disabled]="guardando() || bloqueado() || consultando()"
+    >
+      {{ guardando() ? 'Guardando...' : 'Guardar proveedor' }}
+    </button>
+    <button
+      type="button"
+      class="btn btn-ghost"
+      [disabled]="guardando() || bloqueado()"
+      (click)="limpiar()"
+    >
+      Limpiar
+    </button>
+  </div>
+</form>

@@ -1,0 +1,35 @@
+<form (ngSubmit)="enviar()">
+  <div class="form-grid two">
+    <div class="field">
+      <label for="especialidad-nombre">Nombre</label
+      ><input id="especialidad-nombre" name="nombre" type="text" [(ngModel)]="form().nombre" />
+    </div>
+    <div class="field">
+      <label for="especialidad-descripcion">Descripción</label
+      ><input
+        id="especialidad-descripcion"
+        name="descripcion"
+        type="text"
+        [(ngModel)]="form().descripcion"
+      />
+    </div>
+    <div class="field">
+      <label for="especialidad-activo">Estado</label
+      ><select id="especialidad-activo" name="activo" [(ngModel)]="form().activo">
+        <option [ngValue]="true">Activo</option>
+        <option [ngValue]="false">Inactivo</option>
+      </select>
+    </div>
+  </div>
+  @if (error()) {
+    <p role="alert" class="empty-state">{{ error() }}</p>
+  }
+  <div class="toolbar" style="margin-top: 14px">
+    <button type="submit" class="btn btn-primary" [disabled]="guardando()">
+      {{ guardando() ? 'Guardando...' : 'Guardar' }}
+    </button>
+    <button type="button" class="btn btn-ghost" [disabled]="guardando()" (click)="limpiar()">
+      Limpiar
+    </button>
+  </div>
+</form>

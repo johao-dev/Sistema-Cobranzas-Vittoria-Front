@@ -28,7 +28,6 @@ export class App {
     operaciones: false,
     gestionObra: false,
     gastosProyecto: false,
-    mantenimiento: false,
     inventario: false,
     controlPresupuestario: false,
     controlAccesos: false

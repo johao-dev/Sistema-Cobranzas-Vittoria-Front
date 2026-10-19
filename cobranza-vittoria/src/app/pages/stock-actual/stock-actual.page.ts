@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MaestraService } from '../../core/services/maestra.service';
+import { CatalogoEspecialidades } from '../../../catalogos/especialidades/catalogo-especialidades';
 import { KardexInventarioService } from '../../core/services/kardex-inventario.service';
 import { KardexStockFiltroDto } from '../../models/kardex-inventario.models';
 import { extraerMensajeError } from '../../core/utils/api-error.util';
@@ -57,14 +57,14 @@ export class StockActualPage implements OnInit {
   }
 
   constructor(
-    private maestra: MaestraService,
+    private especialidadesApi: CatalogoEspecialidades,
     private kardex: KardexInventarioService,
     private notifyService: NotificationService,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
-    this.maestra.especialidades(true).subscribe({
+    this.especialidadesApi.especialidades(true).subscribe({
       next: (x: any) => { this.especialidades = x ?? []; this.cdr.detectChanges(); },
       error: () => { this.especialidades = []; this.cdr.detectChanges(); }
     });

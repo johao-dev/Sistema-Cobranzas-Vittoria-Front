@@ -1,11 +1,6 @@
 import { Routes } from '@angular/router';
-import { EspecialidadesPage } from './pages/especialidades/especialidades.page';
-import { ProveedoresPage } from './pages/proveedores/proveedores.page';
-import { MaterialesPage } from './pages/materiales/materiales.page';
-import { ProyectosPage } from './pages/proyectos/proyectos.page';
 import { UsuariosPage } from './pages/usuarios/usuarios.page';
 import { RolesPage } from './pages/roles/roles.page';
-import { UnidadesMedidaPage } from './pages/unidades-medida/unidades-medida.page';
 import { RequerimientosPage } from './pages/requerimientos/requerimientos.page';
 import { OrdenesCompraPage } from './pages/ordenes-compra/ordenes-compra.page';
 import { ComprasPage } from './pages/compras/compras.page';
@@ -34,11 +29,11 @@ export const routes: Routes = [
   { path: 'marketing-publicidad', canActivate: [protegerRuta], component: GastosSeccionPage, data: { codigosCategoria: ['MARKETING_VENTAS'], permiteSeleccionCategoria: false, titulo: 'Marketing / Ventas', subtitulo: 'Publicidad, marketing, comisiones por ventas y sala de ventas.' } },
   { path: 'otros-gastos', canActivate: [protegerRuta], component: GastosSeccionPage, data: { codigosCategoria: ['OTROS'], permiteSeleccionCategoria: false, titulo: 'Otros gastos', subtitulo: 'Gastos del proyecto que no pertenecen a otra categoría.' } },
   { path: 'gastos-municipales-distritales', canActivate: [protegerRuta], component: GastosSeccionPage, data: { codigosCategoria: ['MUNICIPAL'], permiteSeleccionCategoria: false, titulo: 'Gastos municipales y distritales', subtitulo: 'Licencias, independización, declaratoria de fábrica, conformidad de obra e instalaciones.' } },
-  { path: 'especialidades', canActivate: [protegerRuta], component: EspecialidadesPage },
-  { path: 'proveedores', canActivate: [protegerRuta], component: ProveedoresPage },
-  { path: 'materiales', canActivate: [protegerRuta], component: MaterialesPage },
-  { path: 'proyectos', canActivate: [protegerRuta], component: ProyectosPage },
-  { path: 'unidades-medida', canActivate: [protegerRuta], component: UnidadesMedidaPage },
+  { path: 'especialidades', canActivate: [protegerRuta], loadComponent: () => import('../catalogos/especialidades/lista-especialidades/lista-especialidades').then(m => m.ListaEspecialidades) },
+  { path: 'proveedores', canActivate: [protegerRuta], loadComponent: () => import('../catalogos/proveedores/lista-proveedores/lista-proveedores').then(m => m.ListaProveedores) },
+  { path: 'materiales', canActivate: [protegerRuta], loadComponent: () => import('../catalogos/materiales/lista-materiales/lista-materiales').then(m => m.ListaMateriales) },
+  { path: 'proyectos', canActivate: [protegerRuta], loadComponent: () => import('../catalogos/proyectos/lista-proyectos/lista-proyectos').then(m => m.ListaProyectos) },
+  { path: 'unidades-medida', canActivate: [protegerRuta], loadComponent: () => import('../catalogos/unidades-medida/lista-unidades-medida/lista-unidades-medida').then(m => m.ListaUnidadesMedida) },
   {
     path: 'requerimientos',
     canActivate: [protegerRuta],

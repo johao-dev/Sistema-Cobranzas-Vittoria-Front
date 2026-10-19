@@ -2,7 +2,8 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ComprasService } from '../../core/services/compras.service';
-import { MaestraService } from '../../core/services/maestra.service';
+import { CatalogoProyectos } from '../../../catalogos/proyectos/catalogo-proyectos';
+import { CatalogoProveedores } from '../../../catalogos/proveedores/catalogo-proveedores';
 import { SeguridadService } from '../../core/services/seguridad.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { SesionUsuario } from '../../../core/sesion/sesion-usuario';
@@ -58,7 +59,8 @@ export class OrdenesCompraPage implements OnInit {
 
   constructor(
     private compras: ComprasService,
-    private maestra: MaestraService,
+    private proyectosApi: CatalogoProyectos,
+    private proveedoresApi: CatalogoProveedores,
     private seguridad: SeguridadService,
     private notifyService: NotificationService,
     private auth: SesionUsuario,
@@ -200,10 +202,10 @@ export class OrdenesCompraPage implements OnInit {
       return;
     }
 
-    this.maestra.guardarProveedor(this.proveedorForm).subscribe({
+    this.proveedoresApi.guardarProveedor(this.proveedorForm).subscribe({
       next: (resp: any) => {
         const idCreado = Number(resp?.idProveedor ?? resp?.IdProveedor ?? 0);
-        this.maestra.proveedores(true).subscribe({
+        this.proveedoresApi.proveedores(true).subscribe({
           next: (proveedores: any) => {
             this.proveedores = proveedores || [];
             const proveedorCreado = this.proveedores.find((p: any) =>
@@ -242,7 +244,7 @@ export class OrdenesCompraPage implements OnInit {
       return;
     }
 
-    this.maestra.consultaRuc(this.proveedorForm.ruc).subscribe({
+    this.proveedoresApi.consultaRuc(this.proveedorForm.ruc).subscribe({
       next: (res: any) => {
         if (res && res.numero_documento) {
           this.proveedorForm.razonSocial = res.razon_social || '';
@@ -293,8 +295,8 @@ export class OrdenesCompraPage implements OnInit {
   }
 
   loadCatalogos() {
-    this.maestra.proveedores(true).subscribe({ next: (x: any) => { this.proveedores = x || []; this.cdr.detectChanges(); }, error: () => { this.proveedores = []; this.cdr.detectChanges(); } });
-    this.maestra.proyectos(true).subscribe({ next: (x: any) => { this.proyectos = x || []; this.cdr.detectChanges(); }, error: () => { this.proyectos = []; this.cdr.detectChanges(); } });
+    this.proveedoresApi.proveedores(true).subscribe({ next: (x: any) => { this.proveedores = x || []; this.cdr.detectChanges(); }, error: () => { this.proveedores = []; this.cdr.detectChanges(); } });
+    this.proyectosApi.proyectos(true).subscribe({ next: (x: any) => { this.proyectos = x || []; this.cdr.detectChanges(); }, error: () => { this.proyectos = []; this.cdr.detectChanges(); } });
     this.seguridad.usuarios().subscribe({ next: (x: any) => { this.usuarios = x || []; this.cdr.detectChanges(); }, error: () => { this.usuarios = []; this.cdr.detectChanges(); } });
   }
 

@@ -1,7 +1,9 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MaestraService } from '../../core/services/maestra.service';
+import { CatalogoEspecialidades } from '../../../catalogos/especialidades/catalogo-especialidades';
+import { CatalogoProyectos } from '../../../catalogos/proyectos/catalogo-proyectos';
+import { CatalogoProveedores } from '../../../catalogos/proveedores/catalogo-proveedores';
 import { ValorizacionesService } from '../../core/services/valorizaciones.service';
 
 type DetraccionOption = {
@@ -67,7 +69,10 @@ export class ValorizacionesPage implements OnInit {
   proveedorConfiguracionDropdownOpen = false;
   private proveedorConfiguracionBlurTimer: any = null;
 
-  constructor(private maestra: MaestraService, private valorizaciones: ValorizacionesService, private cdr: ChangeDetectorRef) { }
+  constructor(private especialidadesApi: CatalogoEspecialidades,
+    private proyectosApi: CatalogoProyectos,
+    private proveedoresApi: CatalogoProveedores,
+    private valorizaciones: ValorizacionesService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.cargarCatalogos();
@@ -144,13 +149,13 @@ export class ValorizacionesPage implements OnInit {
 
 
   cargarCatalogos(): void {
-    this.maestra.proyectos(true).subscribe(x => { this.proyectos = x || []; this.cdr.detectChanges(); });
-    this.maestra.proveedores(true).subscribe(x => {
+    this.proyectosApi.proyectos(true).subscribe(x => { this.proyectos = x || []; this.cdr.detectChanges(); });
+    this.proveedoresApi.proveedores(true).subscribe(x => {
       this.proveedores = x || [];
       this.sincronizarTextoProveedorSeleccionado();
       this.cdr.detectChanges();
     });
-    this.maestra.especialidades(true).subscribe(x => { this.especialidades = x || []; this.cdr.detectChanges(); });
+    this.especialidadesApi.especialidades(true).subscribe(x => { this.especialidades = x || []; this.cdr.detectChanges(); });
   }
 
   cargarConfiguraciones(): void {

@@ -3,7 +3,7 @@ import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GastosAdministrativosService } from '../../core/services/gastos-administrativos.service';
 import { NotificationService } from '../../core/services/notification.service';
-import { MaestraService } from '../../core/services/maestra.service';
+import { CatalogoProyectos } from '../../../catalogos/proyectos/catalogo-proyectos';
 
 @Component({
   standalone: true,
@@ -46,7 +46,7 @@ export class GastosAdministrativosPage implements OnInit {
 
   constructor(
     private gastosService: GastosAdministrativosService,
-    private maestraService: MaestraService,
+    private proyectosApi: CatalogoProyectos,
     private notifications: NotificationService,
     private cdr: ChangeDetectorRef
   ) { }
@@ -136,7 +136,7 @@ export class GastosAdministrativosPage implements OnInit {
   }
 
   loadCatalogos(): void {
-    this.maestraService.proyectos(true).subscribe({
+    this.proyectosApi.proyectos(true).subscribe({
       next: rows => {
         this.proyectos = rows ?? [];
         this.cdr.detectChanges();

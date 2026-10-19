@@ -2,7 +2,7 @@ import { Component, ChangeDetectorRef, DestroyRef, OnInit, inject } from '@angul
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MaestraService } from '../../core/services/maestra.service';
+import { CatalogoProyectos } from '../../../catalogos/proyectos/catalogo-proyectos';
 import { SunatService } from '../../core/services/sunat.service';
 import { GastoProyectoService, TipoGastoProyecto } from '../../core/services/gasto-proyecto.service';
 import { ProveedoresTerrenoService } from '../../core/services/proveedores-terreno.service';
@@ -74,7 +74,7 @@ export class TerrenoPage implements OnInit {
   form = this.createEmptyForm();
 
   constructor(
-    private maestra: MaestraService,
+    private proyectosApi: CatalogoProyectos,
     private sunatService: SunatService,
     private gastoProyectoService: GastoProyectoService,
     private proveedoresService: ProveedoresTerrenoService,
@@ -119,7 +119,7 @@ export class TerrenoPage implements OnInit {
   }
 
   loadCatalogos(): void {
-    this.maestra.proyectos(true).subscribe({
+    this.proyectosApi.proyectos(true).subscribe({
       next: (rows: any[]) => { this.proyectos = rows || []; this.cdr.detectChanges(); },
       error: () => { this.proyectos = []; this.cdr.detectChanges(); }
     });

@@ -4,7 +4,7 @@
 
 - **Fecha del acuerdo:** 2026-10-16.
 - **Contrato para agentes:** [AGENTS.md](../AGENTS.md).
-- **Estado:** preparación técnica y migración de autenticación realizadas el 2026-10-19. Autenticación verificada funcionalmente con backend por el usuario. Dashboard migrado y validado con backend y navegador por el usuario; las demás funcionalidades continúan pendientes de migración.
+- **Estado:** preparación técnica y migración de autenticación realizadas el 2026-10-19. Autenticación verificada funcionalmente con backend por el usuario. Dashboard y los cinco catálogos generales migrados y validados funcionalmente y en navegador por el usuario; las demás funcionalidades continúan pendientes de migración.
 - **Alcance:** refactor progresivo del frontend manteniendo comportamiento, contratos, permisos, importes y apariencia, con mejoras locales de accesibilidad y adaptación móvil. No incluye cambios de negocio en backend o base de datos ni pruebas automatizadas de navegador por ahora.
 
 Las rutas de la aplicación de este documento son relativas a `cobranza-vittoria/`, salvo indicación contraria. `AGENTS.md` contiene las reglas; este registro conserva decisiones, avance y evidencias sin sustituir ese contrato.
@@ -73,12 +73,12 @@ Las ubicaciones actuales indican el punto de partida; no prueban que todos sus a
 | --- | --- | --- | --- | --- |
 | Autenticación | `src/autenticacion`, `src/core/sesion` y `src/core/config` | `src/autenticacion`; infraestructura transversal en `src/core` | Verificada | Código y consumidores migrados; 202 pruebas pasan en total. Login sin Zone.js comprobado en jsdom; el usuario confirmó el flujo completo con backend el 2026-10-19 |
 | Dashboard | `src/dashboard`, agrupado por concepto | `src/dashboard` | Verificada | El usuario confirmó validación con backend y revisión en navegador. Vista, gráficos, carga e indicadores agrupados en subdirectorios; retirada futura prevista, sin fecha definida |
-| Catálogos | Páginas de especialidades, materiales, proveedores, proyectos, unidades de medida y catálogos de gasto | `src/catalogos` | Pendiente | Confirmar qué conceptos pertenecen a catálogos y cuáles a un dominio específico al delimitar la entrega |
+| Catálogos | `src/catalogos/{especialidades,materiales,proveedores,proyectos,unidades-medida}` | `src/catalogos`, por concepto | Verificada | Cinco catálogos generales migrados, servicios y consumidores actualizados. Validación funcional y en navegador confirmada por el usuario el 2026-10-19. Categorías y proveedores específicos de gasto/terreno se reservan para Gastos. Proveedor único y sus filtros dependen de la transición del backend |
 | Requerimientos | `src/app/pages/requerimientos` | `src/requerimientos` | Pendiente | Sin entrega de migración registrada |
 | Órdenes de compra | `src/app/pages/ordenes-compra` | `src/ordenes-compra` | Pendiente | Sin entrega de migración registrada |
 | Compras | `src/app/pages/compras` | `src/compras` | Pendiente | Sin entrega de migración registrada |
 | Inventario | Páginas `kardex`, `kardex-entradas`, `kardex-salidas` y `stock-actual` | `src/inventario` y sus subfuncionalidades | Pendiente | Sin entrega de migración registrada |
-| Gastos | Páginas `gastos-seccion`, `gastos-administrativos`, `gastos-proyecto` y `terreno` | `src/gastos` | Pendiente | Confirmar código activo y posibles implementaciones reemplazadas antes de retirar archivos |
+| Gastos | Páginas `gastos-seccion`, `gastos-administrativos`, `gastos-proyecto`, `terreno`, `categorias-gasto`, `proveedores-gasto` y `proveedores-terreno` | `src/gastos` | Pendiente | Los tres registros específicos de gastos pertenecen a esta entrega futura; conservar contratos hasta confirmar la unificación de proveedores. Confirmar código activo antes de retirar implementaciones |
 | Presupuestos | Páginas `presupuesto`, `presupuestos`, `control-presupuestario`, `centros-costo` y `partidas` | `src/presupuestos` y sus subfuncionalidades | Pendiente | Sin entrega de migración registrada |
 | Valorizaciones | `src/app/pages/valorizaciones` | `src/valorizaciones` | Pendiente | Sin entrega de migración registrada |
 | Control de accesos | Páginas `usuarios`, `roles` y `permisos` | `src/control-accesos` | Pendiente | Sin entrega de migración registrada |
@@ -104,6 +104,8 @@ Estados de seguimiento: **Pendiente**, **En curso**, **Pendiente de validación 
 | 2026-10-19 | Validación funcional de autenticación | Estado actualizado a Verificada | El usuario confirmó haber comprobado el flujo completo con backend y que todo está correcto. No se modificó código ni se repitieron verificaciones técnicas en esta actualización documental. |
 | 2026-10-19 | Migración de dashboard | Pruebas de caracterización, tipado de tres consultas públicas, separación de cálculos/carga/gráficos, nueva ubicación y ruta diferida | Verificaciones técnicas y limitaciones en las evidencias de esta entrega. Pendiente de validación funcional; intención de retirada futura documentada. |
 | 2026-10-19 | Validación y organización por conceptos de dashboard | Validación funcional registrada y archivos agrupados con sus pruebas | El usuario confirmó backend y navegador correctos. Reorganización de rutas de archivos sin cambios de lógica; verificaciones técnicas registradas al cierre. |
+| 2026-10-19 | Migración de catálogos generales | Cinco conceptos con servicios y contratos propios, listas/formularios separados y navegación contextual. Subcotizaciones de Proyectos retiradas por indicación del usuario | Verificaciones técnicas y pendientes en las evidencias de la entrega. Los catálogos siguen vigentes; los registros específicos de gastos y la unificación de proveedores quedan delimitados para sus próximas entregas. |
+| 2026-10-19 | Validación de catálogos generales | El usuario confirmó «Validación funcional y navegador OK» | Catálogos pasa a Verificada. La confirmación cierra la validación humana pendiente de esta entrega; los alcances futuros de Gastos y proveedor único se conservan. |
 
 En cada entrega futura registrar:
 
@@ -258,3 +260,57 @@ src/dashboard/
 - El usuario confirmó la validación funcional con backend y navegador antes de esta reorganización. Autenticación y dashboard permanecen **Verificadas**; la intención de retirada futura y las limitaciones de moneda/frecuencia se conservan.
 
 - Verificaciones de la reorganización: **230 pruebas correctas en 20 archivos**, ESLint de `src/dashboard` con `--max-warnings=0` correcto, formato aplicado y `git diff --check` correcto. Producción y staging compilan con las advertencias previas de tamaño y acceso autorizado a Google Fonts. No se añadieron pruebas nuevas porque el cambio solo mueve archivos y ajusta referencias.
+
+## Entrega de catálogos generales — 2026-10-19
+
+**Estado: Verificada.** El usuario confirmó el 2026-10-19 «Validación funcional y navegador OK», cerrando la validación humana pendiente de los cinco catálogos generales. Autenticación y dashboard conservan sus validaciones previas. La confirmación no amplía el alcance a la futura migración de Gastos ni a la unificación de proveedores.
+
+### Decisiones confirmadas y alcance
+
+- El desarrollador responsable confirmó que los mantenimientos son datos de referencia vigentes para compras, gastos, inventario y control presupuestario. Delegó la organización interna y la ubicación de sus accesos, considerando que un módulo de UI «Mantenimiento» no expresa el contexto de trabajo de un ERP.
+- Se migran cinco conceptos transversales: especialidades, materiales, proveedores generales, proyectos y unidades de medida. Permanecen juntos como propietarios de sus datos en `src/catalogos`, agrupados por concepto. Las categorías de gasto y los proveedores específicos de gasto y terreno se reservan para `src/gastos` al migrar ese dominio.
+- La separación actual de proveedores responde a un diseño histórico: proveedores generales para materiales y otros dos registros para gastos directos. El responsable confirmó que API y base de datos están transitando hacia un único proveedor. Este frontend conserva los endpoints e identificadores vigentes del contrato disponible; no mezcla IDs, agrega heurísticas de clasificación ni inventa filtros o campos del contrato unificado. Queda pendiente confirmar con backend cómo seleccionar proveedores por operación cuando esa transición esté lista. Las pantallas de referencia siguen siendo necesarias.
+- Se detectaron llamadas de Proyectos a `/api/contable/cotizacion-materiales`, ausentes del contrato consultado y del backend local revisado de forma acotada. El usuario indicó expresamente **retirar las subcotizaciones de esta pantalla**. Se retiraron tabla, edición, lecturas y guardados adicionales y su servicio sin otros consumidores. Proyecto conserva nombre, descripción, cotización general y estado. No se modificó el backend ni se implementó un reemplazo financiero.
+
+### Organización y contratos públicos
+
+```text
+src/catalogos/
+├─ especialidades/
+├─ materiales/
+├─ proveedores/
+├─ proyectos/
+├─ unidades-medida/
+├─ dialogo-catalogo/
+├─ pruebas/
+├─ busqueda-catalogo.ts
+├─ busqueda-catalogo.spec.ts
+└─ mensaje-catalogo.ts
+```
+
+Cada uno de los cinco conceptos contiene su contrato temático (`contratos-<concepto>.ts`), servicio público (`catalogo-<concepto>.ts`) y prueba HTTP, una subcarpeta `lista-<concepto>/` y otra `formulario-<entidad>/`, con TypeScript, HTML, estilos cuando corresponden y pruebas colocadas junto a cada concepto. No hay componentes internos importados por otros dominios.
+
+- Se sustituyó y retiró `MaestraService`: sus consumidores en compras, requerimientos, inventario, valorizaciones, gastos y presupuestos inyectan los servicios públicos concretos. También se actualizó el doble de prueba de Requerimientos. Se retiró `maestra.models.ts` al actualizar su consumidor real de `Material`; no hay reexports ni adaptadores puente permanentes.
+- Los contratos se consultaron únicamente en convenciones JSON, endpoints de los cinco catálogos y sus esquemas, detalle de proveedor con especialidades, consulta RUC y siguiente código de material. Se preservan rutas `/api/maestra/...`, filtros `activo` e `idEspecialidad`, métodos GET/POST/PUT, identificadores y campos. Los filtros usan `HttpParams`, incluidas las selecciones `false`.
+- Los tipos de respuesta describen los datos consumidos de esos contratos, incluidos los campos bancarios, de contacto y de partida. Los campos SUNAT consumidos mantienen sus nombres `razon_social`, `numero_documento`, `direccion` y `estado`. No se añadieron dependencias, librerías de estado ni generación OpenAPI.
+- Se reutilizan `ApiService`, notificaciones, la utilidad de errores y el modal de importación desde sus ubicaciones públicas actuales. Los servicios legacy de gastos y `/api/catalogos` que no pertenecen a estos cinco conceptos permanecen operativos en sus ubicaciones actuales; no se los presenta como migrados ni como parte de la unificación de proveedores.
+
+### Interfaz, asincronía y preservación del dato
+
+- Listas coordinadoras con `inject()`, dependencias `readonly`, estado visual con signals, derivados con `computed`, miembros de plantilla `protected`, recargas cancelables con RxJS y suscripciones liberadas mediante `takeUntilDestroyed`. Se muestran carga, vacío, fallo y éxito, y se impiden guardados duplicados con restauración de estado en éxito/error.
+- Formularios extraídos: especialidades, unidades y proyectos conservan `ngModel` con contratos explícitos y validación básica; materiales y proveedores usan formularios reactivos tipados por su coordinación de campos y operaciones asíncronas. No se creó un CRUD genérico configurable que mezcle las reglas de las entidades.
+- Se comparte la búsqueda sin distinguir tildes/mayúsculas y el diálogo nativo accesible, con título asociado, cancelación por Escape, cierre desde el fondo, foco y tabulación a cargo del navegador. Las etiquetas de los campos están asociadas a sus controles. Se mantienen estilos locales y tablas desplazables; Proyectos se adapta a sus cinco columnas vigentes tras retirar las subcotizaciones.
+- Materiales conserva formatos de importación, especialidad, unidad, código sugerido, stock mínimo y partida presupuestal por defecto. Si la partida ya no está disponible en el listado de hojas, sigue como opción para reenviarla en el PUT. Editar exige recuperar el detalle completo; si falla, el guardado queda bloqueado para no borrar campos por omisión. El código de alta definitivo sigue asignándolo el backend; respuestas antiguas de la previsualización no pisan un material editado.
+- El listado presupuestario de partidas sigue en un servicio legacy sin tipado. Su respuesta se trata como `unknown` y se valida antes de proyectarla a opciones estáticas del formulario; esta es una frontera real con código pendiente, no una aserción para ocultar incompatibilidades. Sin acceso a ese listado, una partida existente del material se conserva.
+- Proveedores conserva los datos bancarios y de contacto. La consulta RUC se compone con `switchMap`, libera su suscripción al cerrar y descarta respuestas que correspondan a otro RUC. Los mensajes de validación, errores HTTP y reintentos conservan el formulario.
+- Navegación: se retira el grupo «Mantenimiento». Proyectos, Especialidades y Proveedores quedan en Gestión de obra; Materiales y Unidades de medida, en Inventario; Categorías de gasto y proveedores específicos de gasto/terreno, en Gastos del proyecto. Se mantienen las URLs, guards y reglas de acceso existentes. Las cinco listas se cargan de forma diferida desde sus rutas actuales.
+
+### Verificaciones y pendientes
+
+- Antes de retirar MaestraService pasaron tres pruebas de caracterización: filtro `false`, PUT de material conservando su partida y alta de proveedor/consulta RUC. Sus casos quedan cubiertos por las pruebas definitivas por concepto.
+- Las pruebas nuevas cubren contratos HTTP, errores, filtros, altas y edición; validaciones y normalización; conservación de partida no disponible y bloqueo por detalle fallido; consulta RUC y respuesta tardía; código de material tardío; carga/búsqueda sin Zone.js; guardados duplicados, error y éxito con recarga; diálogo y navegación contextual. No llaman a la API real.
+- jsdom no implementa `HTMLDialogElement.showModal/close`: los tests simulan únicamente ese límite nativo. El usuario confirmó la validación funcional y en navegador de la entrega el 2026-10-19. No se dispone de un desglose individual de comprobaciones de foco, Escape, teclado o importaciones; la evidencia corresponde a su confirmación general, no a pruebas automatizadas de navegador.
+- La búsqueda de consumidores incluyó páginas sin menú y rutas diferidas. Se retiraron únicamente las cinco implementaciones sustituidas, el servicio global de maestras, su depósito de contratos y el servicio de subcotizaciones sin otros consumidores. No se retiraron otras páginas legacy por falta de un enlace en el menú.
+- Pruebas: **305 correctas en 37 archivos** en la suite completa. Después de los últimos ajustes de estilos y bloqueo de controles, se repitieron los casos afectados: **77 correctas en 18 archivos** (catálogos y contenedor de navegación).
+- ESLint de `src/catalogos` con `--max-warnings=0`: **sin errores ni advertencias**. Lint global: **0 errores y 1782 advertencias** de deuda pendiente, frente a las 1977 registradas antes de esta entrega. No se relajaron reglas para el código migrado. Formato aplicado y `git diff --check` correcto.
+- Producción y staging compilan correctamente sobre el código final, con acceso autorizado a Google Fonts. Persisten las advertencias de presupuesto del bundle inicial (849.92 kB frente al umbral de aviso de 500 kB) y de estilos de pantallas pendientes de migración; no se modificaron los presupuestos. No se creó commit ni PR.

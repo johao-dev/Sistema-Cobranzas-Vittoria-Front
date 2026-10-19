@@ -1,0 +1,79 @@
+<form [formGroup]="form" (ngSubmit)="enviar()">
+  <fieldset class="form-grid two" [disabled]="guardando() || bloqueado()">
+    <div class="field">
+      <label for="material-especialidad">Especialidad</label
+      ><select id="material-especialidad" formControlName="idEspecialidad">
+        <option [ngValue]="null">Seleccionar</option>
+        @for (opcion of especialidades(); track opcion.idEspecialidad) {
+          <option [ngValue]="opcion.idEspecialidad">{{ opcion.nombre }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label for="material-codigo">Código material</label
+      ><input
+        id="material-codigo"
+        [value]="cargandoCodigo() ? 'Calculando...' : codigo()"
+        readonly
+      />
+    </div>
+    <div class="field">
+      <label for="material-codigo-proveedor">Código proveedor</label
+      ><input id="material-codigo-proveedor" formControlName="codigoProveedor" />
+    </div>
+    <div class="field">
+      <label for="material-descripcion">Descripción</label
+      ><input id="material-descripcion" formControlName="descripcion" />
+    </div>
+    <div class="field">
+      <label for="material-unidad">Unidad de medida</label
+      ><select id="material-unidad" formControlName="unidadMedida">
+        <option value="">Seleccionar</option>
+        @for (opcion of unidades(); track opcion.idUnidadMedida) {
+          <option [value]="opcion.codigo || opcion.nombre">
+            {{ (opcion.codigo || opcion.nombre) + ' - ' + opcion.nombre }}
+          </option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label for="material-partida">Partida presupuestal por defecto</label
+      ><select id="material-partida" formControlName="idCatalogoPartida">
+        <option [ngValue]="null">Sin partida (se elige en cada requerimiento)</option>
+        @for (opcion of opcionesPartida(); track opcion.idCatalogoPartida) {
+          <option [ngValue]="opcion.idCatalogoPartida">
+            {{ opcion.codigo }} — {{ opcion.nombre }}
+          </option>
+        }</select
+      ><small class="form-hint"
+        >Se propone al agregar el material a un requerimiento; el residente puede cambiarla.</small
+      >
+    </div>
+    <div class="field">
+      <label for="material-stock">Stock mínimo</label
+      ><input id="material-stock" type="number" min="0" formControlName="stockMinimo" />
+    </div>
+    <div class="field">
+      <label for="material-activo">Estado</label
+      ><select id="material-activo" formControlName="activo">
+        <option [ngValue]="true">Activo</option>
+        <option [ngValue]="false">Inactivo</option>
+      </select>
+    </div>
+  </fieldset>
+  @if (error()) {
+    <p role="alert">{{ error() }}</p>
+  }
+  <div class="toolbar" style="margin-top: 14px">
+    <button type="submit" class="btn btn-primary" [disabled]="guardando() || bloqueado()">
+      {{ guardando() ? 'Guardando...' : 'Guardar' }}</button
+    ><button
+      type="button"
+      class="btn btn-ghost"
+      [disabled]="guardando() || bloqueado()"
+      (click)="limpiar()"
+    >
+      Limpiar
+    </button>
+  </div>
+</form>

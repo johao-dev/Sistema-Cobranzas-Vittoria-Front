@@ -1,0 +1,96 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Proyectos</h1>
+    <div class="page-subtitle">Datos para las operaciones del sistema.</div>
+  </div>
+</div>
+<div class="page-grid-2 split--form proyectos-layout">
+  <section class="panel proyectos-panel-list">
+    <div class="panel-title-row">
+      <div class="panel-title">Listado</div>
+      <div class="filters compact-filters maintenance-search">
+        <div class="field">
+          <label for="busqueda-proyectos">Buscar</label
+          ><input
+            id="busqueda-proyectos"
+            [ngModel]="busqueda()"
+            (ngModelChange)="busqueda.set($event)"
+            placeholder="Buscar proyectos"
+          />
+        </div>
+      </div>
+      <button type="button" class="btn btn-primary btn-sm" (click)="nuevo()">
+        + Nuevo registro
+      </button>
+    </div>
+    @if (cargando()) {
+      <p role="status">Cargando listado...</p>
+    }
+    @if (error() && !modalAbierto()) {
+      <p class="empty-state" role="alert">{{ error() }}</p>
+    }
+    @if (!cargando() && !error() && !filtradas().length) {
+      <div class="empty-state">No se encontraron registros.</div>
+    }
+    @if (filtradas().length) {
+      <div class="table-wrap table-wrap--sticky-actions proyectos-table-wrap">
+        <table class="proyectos-table">
+          <thead>
+            <tr>
+              <th scope="col">Proyecto</th>
+              <th scope="col">Descripción</th>
+              <th scope="col">Cotización general</th>
+              <th scope="col">Estado</th>
+              <th scope="col">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of filtradas(); track row.idProyecto) {
+              <tr>
+                <td class="proyectos-table__project">{{ row.nombreProyecto }}</td>
+                <td>{{ row.descripcion || '-' }}</td>
+                <td class="table-number proyectos-table__money">
+                  {{ formatMoney(row.cotizacionGeneral) }}
+                </td>
+                <td>
+                  <span
+                    class="badge"
+                    [class.badge--ok]="row.activo"
+                    [class.badge--neutral]="!row.activo"
+                    >{{ row.activo ? 'Activo' : 'Inactivo' }}</span
+                  >
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-sm"
+                    [attr.aria-label]="'Editar ' + row.nombreProyecto"
+                    (click)="editar(row)"
+                  >
+                    Editar
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+  <dialogo-catalogo
+    [abierto]="modalAbierto()"
+    [titulo]="seleccionado() ? 'Editar registro' : 'Nuevo registro'"
+    (cerrar)="cerrar()"
+  >
+    @if (modalAbierto()) {
+      <formulario-proyecto
+        [valor]="seleccionado()"
+        [guardando]="guardando()"
+        (guardar)="guardar($event)"
+      />
+      @if (error()) {
+        <p class="empty-state" role="alert">{{ error() }}</p>
+      }
+    }
+  </dialogo-catalogo>
+</div>

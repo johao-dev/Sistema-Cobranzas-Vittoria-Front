@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NotificationService } from '../../core/services/notification.service';
-import { MaestraService } from '../../core/services/maestra.service';
+import { CatalogoProveedores } from '../../../catalogos/proveedores/catalogo-proveedores';
 import { ProveedoresTerrenoService } from '../../core/services/proveedores-terreno.service';
 import { ImportModalComponent } from '../../shared/components/import-modal/import-modal.component';
 
@@ -72,7 +72,7 @@ export class ProveedoresTerrenoPage implements OnInit {
     private proveedoresService: ProveedoresTerrenoService,
     private notifications: NotificationService,
     private cdr: ChangeDetectorRef,
-    private maestra: MaestraService
+    private proveedoresApi: CatalogoProveedores
   ) { }
 
   ngOnInit(): void { this.load(); }
@@ -130,7 +130,7 @@ export class ProveedoresTerrenoPage implements OnInit {
 
   buscarRuc(): void {
     if (!this.form.ruc || this.form.ruc.toString().trim().length !== 11) return;
-    this.maestra.consultaRuc(this.form.ruc).subscribe({
+    this.proveedoresApi.consultaRuc(this.form.ruc).subscribe({
       next: (res: any) => {
         if (res && res.numero_documento) {
           this.form.razonSocial = res.razon_social || '';

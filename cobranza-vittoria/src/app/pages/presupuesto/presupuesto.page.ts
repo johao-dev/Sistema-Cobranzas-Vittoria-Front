@@ -3,7 +3,7 @@ import { Component, ChangeDetectorRef, DestroyRef, OnInit, inject } from '@angul
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MaestraService } from '../../core/services/maestra.service';
+import { CatalogoProyectos } from '../../../catalogos/proyectos/catalogo-proyectos';
 import { PresupuestoService } from '../../core/services/presupuesto.service';
 import { ComprasService } from '../../core/services/compras.service';
 import { SunatService } from '../../core/services/sunat.service';
@@ -61,7 +61,7 @@ export class PresupuestoPage implements OnInit {
   };
 
   constructor(
-    private maestra: MaestraService,
+    private proyectosApi: CatalogoProyectos,
     private presupuestoService: PresupuestoService,
     private comprasService: ComprasService,
     private sunatService: SunatService,
@@ -83,7 +83,7 @@ export class PresupuestoPage implements OnInit {
       });
     this.sunatService.consultarTipoCambio();
 
-    this.maestra.proyectos(true).subscribe({
+    this.proyectosApi.proyectos(true).subscribe({
       next: (rows: any[]) => {
         this.proyectos = rows || [];
         this.cdr.detectChanges();
