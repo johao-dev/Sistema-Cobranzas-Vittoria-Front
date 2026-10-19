@@ -149,11 +149,12 @@ npm start
 npm run build
 npm run build -- --configuration staging
 npm test -- --watch=false
+npm run lint
 ```
 
 - `npm start` sirve el frontend en `http://localhost:4200`; el entorno de desarrollo actual espera la API en `http://localhost:5000`.
 - `npm run build` usa producción por defecto. Usar la configuración correspondiente al cambio y respetar los presupuestos de tamaño de `angular.json`.
-- **Estado actual:** no hay script de lint ni framework e2e configurado. No presentar esos checks como existentes. **Objetivo:** incorporar ESLint con reglas de Angular y TypeScript y conservar Vitest; añadir el comando real de lint a esta guía cuando se configure. Las pruebas automatizadas de navegador no forman parte del alcance acordado por ahora.
+- **Estado actual:** ESLint configurado para TypeScript y plantillas Angular mediante `npm run lint`; Vitest se conserva. Los conjuntos recomendados y las reglas de accesibilidad reportan advertencias en `src/app/` mientras se migra; fuera de esa carpeta se aplican como errores. No añadir nuevas advertencias al código pendiente; corregir las del concepto migrado al moverlo. Prettier conserva la responsabilidad de formato. No hay framework e2e configurado; las pruebas automatizadas de navegador no forman parte del alcance acordado por ahora.
 
 Como alternativa, desde la raíz del repositorio:
 
