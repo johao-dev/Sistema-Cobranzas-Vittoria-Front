@@ -71,7 +71,7 @@ Las ubicaciones actuales indican el punto de partida; no prueban que todos sus a
 
 | Funcionalidad | Ubicación actual de referencia | Destino | Estado | Evidencias |
 | --- | --- | --- | --- | --- |
-| Autenticación | `src/app/pages/login`, sesión e infraestructura en `src/app/core` | `src/autenticacion`; infraestructura transversal en `src/core` | Pendiente | Sin entrega de migración registrada |
+| Autenticación | `src/app/pages/login`, sesión e infraestructura en `src/app/core` | `src/autenticacion`; infraestructura transversal en `src/core` | Pendiente | 2026-10-19: 57 pruebas base añadidas para servicio, interceptor, guard y login; migración de código pendiente |
 | Dashboard | `src/app/pages/dashboard` | `src/dashboard` | Pendiente | Sin entrega de migración registrada |
 | Catálogos | Páginas de especialidades, materiales, proveedores, proyectos, unidades de medida y catálogos de gasto | `src/catalogos` | Pendiente | Confirmar qué conceptos pertenecen a catálogos y cuáles a un dominio específico al delimitar la entrega |
 | Requerimientos | `src/app/pages/requerimientos` | `src/requerimientos` | Pendiente | Sin entrega de migración registrada |
@@ -99,6 +99,7 @@ Estados de seguimiento: **Pendiente**, **En curso**, **Pendiente de validación 
 | --- | --- | --- | --- |
 | 2026-10-16 | Acuerdo documental | Actualización de `AGENTS.md` y creación de este registro | Entrega exclusivamente documental; no migra código ni acredita validación funcional. |
 | 2026-10-19 | Preparación técnica | Línea base, instalación de ESLint y angular-eslint, configuración progresiva y actualización de comandos | Producción y staging compilan con advertencias previas; 125 pruebas pasan en 13 archivos; lint termina con 0 errores y 2013 advertencias del código pendiente. Sin migración funcional ni comprobación en navegador. |
+| 2026-10-19 | Pruebas base de autenticación | Cuatro archivos de pruebas junto al servicio, interceptor, guard y login actuales; sin cambios de producción | 182 pruebas pasan en 17 archivos (57 nuevas); compilación de producción satisfactoria con advertencias previas; ESLint sin errores ni advertencias en los cuatro archivos nuevos. Migración y validación funcional pendientes. |
 
 En cada entrega futura registrar:
 
@@ -127,3 +128,17 @@ Referencias: [estructura y estilo de Angular](https://angular.dev/style-guide), 
 - Después de instalar las herramientas, `npm test -- --watch=false` volvió a pasar: 125 pruebas en 13 archivos.
 - Corrección del tipado de la configuración: `comoAdvertencias` construye un acumulador y declara su retorno mediante `Linter.RulesRecord` en JSDoc, evitando que `Object.fromEntries` infiera arreglos genéricos incompatibles con las tuplas de ESLint. Verificación específica satisfactoria: `./node_modules/.bin/tsc --allowJs --checkJs --noEmit --skipLibCheck --module nodenext --target es2022 eslint.config.js`. No se cambiaron reglas ni severidades.
 - No se movieron archivos de aplicación ni se modificaron autenticación, contratos HTTP, almacenamiento de tokens o reglas de acceso. Autenticación continúa pendiente. La validación de flujos en navegador y contra backend no forma parte de esta comprobación técnica y sigue pendiente.
+
+## Evidencias de pruebas base de autenticación — 2026-10-19
+
+- Alcance: `auth.service.spec.ts`, `auth.interceptor.spec.ts`, `auth.guard.spec.ts` y `login.page.spec.ts`, junto a sus implementaciones actuales. Se conservan las pruebas previas de claims JWT y reglas de acceso. No se movieron archivos ni se cambiaron implementaciones, contratos, permisos o almacenamiento de tokens.
+- Contrato consultado de forma acotada: autenticación y permisos, login, refresh y logout de `docs/ContratoApi.md`. Las pruebas HTTP utilizan `HttpTestingController`; las de navegación, `RouterTestingHarness`; el login utiliza un `Subject<Session>` controlado. Ninguna prueba llama a la API real.
+- Servicio: credenciales y payloads, restauración completa o incompleta, claims, persistencia, rotación, rechazo de respuestas incompletas sin reemplazar la sesión anterior, errores de credenciales, expiración con margen, cierre incluso con fallo HTTP y limpieza de claves antiguas sin borrar preferencias ajenas.
+- Interceptor: Bearer restringido a la API, exclusión de endpoints públicos, ausencia de sesión, distinción entre 401 y otros errores, renovación compartida entre peticiones concurrentes, renovación preventiva, un solo reintento, conservación de método/cuerpo/parámetros/cabeceras, limpieza al fallar refresh y liberación de la renovación compartida para operaciones posteriores.
+- Guard: navegación real de prueba con restauración de sesión, ruta de retorno completa, reglas de rol o permiso, alternativa de `AccessRule` y redirección por acceso denegado. Se conserva el comportamiento actual que permite continuar con JWT vencido y refresh disponible, delegando la renovación al interceptor.
+- Login: campos vacíos, usuario recortado y contraseña exacta, bloqueo de duplicados, carga, retorno o dashboard, errores del servidor y mensaje por defecto, posibilidad de reenvío, alternancia de contraseña y envío con Enter. Los controles se prueban en jsdom; no equivale a validación manual en navegador. La comprobación del botón durante la carga usa `detectChanges`; la actualización automática del DOM tras respuestas asíncronas sin Zone.js sigue pendiente para la migración.
+- Contratos y dobles de prueba tipados mediante `LoginPayload`, `AuthTokensResponse`, `Session`, `AccessRule`, `Pick` y funciones de Vitest con firmas explícitas, sin introducir `any` ni aserciones que oculten incompatibilidades.
+- `npm test -- --watch=false`: **182 pruebas correctas en 17 archivos**, incluidas **57 nuevas**. Compila también las pruebas con la configuración estricta de Angular.
+- ESLint de los cuatro archivos nuevos con `--max-warnings=0`: satisfactorio, sin errores ni advertencias. `npm run lint` global: 0 errores y las mismas 2013 advertencias previas. Prettier aplicado y diff revisado con `git diff --check`.
+- `npm run build`: satisfactorio al repetir con acceso autorizado a Google Fonts tras el fallo inicial `EAI_AGAIN`; conserva advertencias previas de tamaños. No se repitió staging en esta entrega, que solo añade pruebas y documentación; su resultado previo está registrado en la preparación técnica.
+- Siguiente entrega: migrar autenticación y la infraestructura asociada, adaptar estas pruebas a las nuevas ubicaciones y comprobar los flujos críticos con el responsable. Esta entrega deja la funcionalidad en estado **Pendiente** de migración.
