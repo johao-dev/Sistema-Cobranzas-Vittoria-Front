@@ -1,11 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { EstadoRequerimientos } from '../estado-requerimientos';
-import { DialogoRequerimiento } from '../dialogo-requerimiento/dialogo-requerimiento';
+import { DialogoModal } from '../../shared/dialogos/dialogo-modal';
 
 @Component({
   selector: 'accion-requerimiento',
-  imports: [FormsModule, DialogoRequerimiento],
+  imports: [FormsModule, DialogoModal],
   templateUrl: './accion-requerimiento.html',
   styleUrls: ['../presentacion-requerimientos.css', './accion-requerimiento.css'],
 })

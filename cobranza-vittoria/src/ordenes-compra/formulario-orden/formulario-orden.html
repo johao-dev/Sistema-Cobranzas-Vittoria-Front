@@ -1,0 +1,178 @@
+<dialog
+  dialogoModal
+  (solicitarCierre)="solicitarCierre()"
+  class="panel panel--form design-modal-card design-modal-card--xl"
+  aria-labelledby="titulo-formulario-orden"
+>
+  <button
+    type="button"
+    class="modal-close"
+    (click)="solicitarCierre()"
+    [disabled]="guardando()"
+    aria-label="Cerrar"
+  >
+    ×
+  </button>
+  <h2 class="panel-title" id="titulo-formulario-orden">Continuar flujo de O.C.</h2>
+  @if (cargandoProveedores()) {
+    <p role="status">Cargando proveedores…</p>
+  }
+  @if (errorProveedores()) {
+    <p role="alert">{{ errorProveedores() }}</p>
+  }
+  @if (errorProveedores()) {
+    <button
+      type="button"
+      class="btn btn-secondary"
+      [disabled]="cargandoProveedores()"
+      (click)="cargarProveedores()"
+    >
+      Reintentar proveedores
+    </button>
+  }
+  <div>
+    <div class="toolbar" style="margin-bottom: 14px">
+      <span class="list-chip">RQ {{ detalle().requerimiento.numeroRequerimiento }}</span>
+      <span class="list-chip">{{ detalle().requerimiento.estado }}</span>
+    </div>
+
+    <div class="oc-form-note">
+      El número de O.C. se genera correlativamente y la fecha toma el día de hoy.
+    </div>
+
+    <div class="form-grid two oc-form-grid">
+      <div class="field auto-field">
+        <label for="oc-numero">Número O.C.</label>
+        <input id="oc-numero" [value]="numero()" readonly />
+      </div>
+      <div class="field auto-field">
+        <label for="oc-fecha">Fecha</label>
+        <input id="oc-fecha" type="date" [value]="fecha" readonly />
+      </div>
+      <div class="field auto-field">
+        <label for="oc-proyecto">Proyecto</label>
+        <input id="oc-proyecto" [value]="detalle().requerimiento.nombreProyecto || '-'" readonly />
+      </div>
+      <div class="field auto-field">
+        <label for="oc-usuario">Usuario creación</label>
+        <input
+          id="oc-usuario"
+          [value]="nombreSolicitante(detalle().requerimiento.solicitante) || '-'"
+          readonly
+        />
+      </div>
+    </div>
+
+    <div class="panel panel-embedded panel-compact">
+      <div class="panel-title-row">
+        <div class="panel-title panel-subtitle">Detalle jalado del requerimiento</div>
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          (click)="nuevoProveedor.set(true)"
+          [disabled]="guardando()"
+        >
+          + Nuevo proveedor
+        </button>
+      </div>
+      @if (items.length) {
+        <div class="table-wrap table-wrap--medium">
+          <table>
+            <thead>
+              <tr>
+                <th>Especialidad</th>
+                <th>Material</th>
+                <th>Unidad</th>
+                <th>Cantidad</th>
+                <th class="provider-column">Proveedor</th>
+                <th class="precio-column">Precio unit. (opcional)</th>
+                <th class="table-number">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (grupo of items.controls; track grupo) {
+                <tr [formGroup]="grupo">
+                  <td>{{ grupo.controls.especialidad.value }}</td>
+                  <td>{{ grupo.controls.material.value }}</td>
+                  <td>{{ grupo.controls.unidadMedida.value }}</td>
+                  <td>{{ grupo.controls.cantidad.value }}</td>
+                  <td class="provider-cell">
+                    <select
+                      formControlName="idProveedor"
+                      [attr.aria-label]="'Proveedor de ' + grupo.controls.material.value"
+                      class="provider-select"
+                    >
+                      <option [ngValue]="null">Seleccionar</option>
+                      @for (p of proveedores(); track p) {
+                        <option [ngValue]="p.idProveedor">{{ p.razonSocial }}</option>
+                      }
+                    </select>
+                  </td>
+                  <td class="precio-cell">
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      class="precio-input"
+                      formControlName="precioUnitario"
+                      placeholder="Sin precio"
+                      [attr.aria-label]="'Precio unitario de ' + grupo.controls.material.value"
+                    />
+                  </td>
+                  <td class="table-number">
+                    {{
+                      subtotal(grupo.controls.cantidad.value, grupo.controls.precioUnitario.value) >
+                      0
+                        ? (subtotal(
+                            grupo.controls.cantidad.value,
+                            grupo.controls.precioUnitario.value
+                          ) | number: '1.2-2')
+                        : '—'
+                    }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+            @if (total() > 0) {
+              <tfoot>
+                <tr>
+                  <th colspan="6">Total estimado</th>
+                  <th class="table-number">{{ total() | number: '1.2-2' }}</th>
+                </tr>
+              </tfoot>
+            }
+          </table>
+        </div>
+      }
+      <div class="oc-form-note" style="margin-top: 10px">
+        El precio es opcional y va en la moneda del presupuesto de las partidas. Con precio, al
+        aprobar la O.C. el monto queda <strong>comprometido</strong> en el presupuesto; al aceptar
+        la Compra se libera y se ejecuta el monto real. Sin precio, el presupuesto se afecta recién
+        al aceptar la Compra.
+      </div>
+    </div>
+
+    <div class="toolbar" style="margin-top: 14px">
+      <button
+        class="btn btn-primary"
+        (click)="guardar()"
+        [disabled]="guardando() || nuevoProveedor()"
+      >
+        Generar O.C.
+      </button>
+      <button class="btn btn-ghost" (click)="solicitarCierre()" [disabled]="guardando()">
+        Limpiar
+      </button>
+    </div>
+  </div>
+
+  @if (mensaje()) {
+    <div class="empty-state" style="margin-top: 14px; padding: 14px">{{ mensaje() }}</div>
+  }
+</dialog>
+@if (nuevoProveedor()) {
+  <nuevo-proveedor-orden
+    (cerrar)="nuevoProveedor.set(false)"
+    (guardado)="proveedorCreado($event)"
+  />
+}

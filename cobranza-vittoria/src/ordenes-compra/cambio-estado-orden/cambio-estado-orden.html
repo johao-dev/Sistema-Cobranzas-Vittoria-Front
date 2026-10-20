@@ -1,0 +1,55 @@
+<dialog
+  dialogoModal
+  (solicitarCierre)="solicitarCierre()"
+  class="panel panel--form design-modal-card oc-estado-card"
+  aria-labelledby="titulo-estado-oc"
+>
+  <button
+    type="button"
+    class="modal-close"
+    (click)="solicitarCierre()"
+    aria-label="Cerrar"
+    [disabled]="guardando()"
+  >
+    ×
+  </button>
+  <div class="panel-title" id="titulo-estado-oc">
+    {{ etiquetas[cambio().destino] }} O.C. {{ cambio().orden.numeroOrdenCompra }}
+  </div>
+  <p class="oc-estado-nota">{{ nota() }}</p>
+
+  <div class="field">
+    <label for="observacion-orden">Observación (opcional)</label>
+    <textarea
+      id="observacion-orden"
+      rows="2"
+      maxlength="500"
+      [ngModel]="observacion()"
+      (ngModelChange)="observacion.set($event)"
+      [disabled]="guardando()"
+    ></textarea>
+  </div>
+
+  <div class="toolbar" style="margin-top: 14px">
+    <button
+      type="button"
+      class="btn"
+      [class.btn-success]="cambio().destino === 'APROBADA'"
+      [class.btn-danger]="cambio().destino === 'ANULADA'"
+      [class.btn-primary]="cambio().destino === 'CERRADA'"
+      [disabled]="guardando()"
+      (click)="confirmar()"
+    >
+      {{ guardando() ? 'Procesando…' : etiquetas[cambio().destino] + ' O.C.' }}
+    </button>
+    <button
+      type="button"
+      class="btn btn-ghost"
+      [disabled]="guardando()"
+      (click)="solicitarCierre()"
+    >
+      Volver
+    </button>
+  </div>
+  <p role="alert">{{ mensaje() }}</p>
+</dialog>

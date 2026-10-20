@@ -1,10 +1,8 @@
 import { PartidasRequerimiento } from './partidas-requerimiento';
 import { ItemRequerimiento } from './contratos-formulario-requerimiento';
 import type { MaterialSeleccionado } from './contratos-formulario-requerimiento';
-import {
-  imprimirRequerimiento,
-  normalizarNombreSolicitante,
-} from './impresion-requerimiento/impresion-requerimiento';
+import { imprimirRequerimiento } from './impresion-requerimiento/impresion-requerimiento';
+import { normalizarNombreSolicitante } from '../shared/presentacion/nombre-solicitante';
 import { Especialidad } from '../catalogos/especialidades/contratos-especialidades';
 import { CentroCostoResumen, SaldoPartida } from '../app/models/consultas-presupuestarias.models';
 import { Injectable, inject, signal, DestroyRef } from '@angular/core';

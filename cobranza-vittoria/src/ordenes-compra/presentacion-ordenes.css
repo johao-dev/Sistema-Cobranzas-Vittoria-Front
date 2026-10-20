@@ -14,7 +14,7 @@
   background: #f8f9fc;
   border: 1px solid var(--border);
   color: var(--muted);
-  font-size: .9rem;
+  font-size: 0.9rem;
   line-height: 1.45;
 }
 
@@ -29,46 +29,6 @@
 }
 
 .provider-column {
-  min-width: 260px;
-}
-
-.provider-cell {
-  min-width: 300px;
-}
-
-.provider-select {
-  min-width: 280px;
-  width: 100%;
-  font-weight: 700;
-}
-
-.panel-subtitle {
-  font-size: 1rem;
-}
-
-@media (max-width: 1024px) {
-
-  .provider-column,
-  .provider-cell {
-    min-width: 220px;
-  }
-
-  .provider-select {
-    min-width: 220px;
-  }
-}
-
-
-/* HOTFIX DISEÑO V9 */
-.oc-list-panel {
-  margin-top: 0;
-}
-
-.oc-list-panel .panel-embedded {
-  margin-top: 22px;
-}
-
-.provider-column {
   min-width: 220px;
 }
 
@@ -78,15 +38,24 @@
 
 .provider-select {
   min-width: 220px;
-}
-/* Confirmación de cambio de estado: va sobre el modal de detalle */
-.oc-estado-backdrop {
-  z-index: 92;
+  width: 100%;
+  font-weight: 700;
 }
 
-.oc-estado-card {
-  z-index: 93;
-  max-width: 520px;
+.panel-title {
+  margin-top: 0;
+}
+
+.panel-subtitle {
+  font-size: 1rem;
+}
+
+.oc-list-panel {
+  margin-top: 0;
+}
+
+.oc-list-panel .panel-embedded {
+  margin-top: 22px;
 }
 
 .oc-estado-nota {
@@ -109,4 +78,22 @@
   color: #6b7280;
   font-size: 12px;
   white-space: normal;
+}
+
+:host {
+  display: contents;
+}
+dialog {
+  border: 1px solid var(--border);
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+}
+dialog.design-modal-card {
+  inset: auto;
+  top: 26px !important;
+  left: 50%;
+  transform: translateX(-50%) !important;
+}
+dialog::backdrop {
+  background: rgba(15, 23, 42, 0.45);
 }

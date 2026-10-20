@@ -1,3 +1,4 @@
+import { RegistroOrdenesCompra } from '../../../ordenes-compra/registro-ordenes-compra';
 import { Component, ElementRef, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -67,6 +68,7 @@ export class ComprasPage implements OnInit {
 
   constructor(
     private compras: ComprasService,
+    private ordenes: RegistroOrdenesCompra,
     private materialesApi: CatalogoMateriales,
     private auth: SesionUsuario,
     private notifications: NotificationService,
@@ -177,7 +179,7 @@ export class ComprasPage implements OnInit {
 
   procesarPendiente(row: any) {
     const idOrdenCompra = row.idOrdenCompra || row.IdOrdenCompra;
-    this.compras.orden(idOrdenCompra).subscribe({
+    this.ordenes.obtener(idOrdenCompra).subscribe({
       next: (x: any) => {
         this.detalleCompra = null;
         this.detalleOc = x;

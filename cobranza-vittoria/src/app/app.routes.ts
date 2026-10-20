@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 import { UsuariosPage } from './pages/usuarios/usuarios.page';
 import { RolesPage } from './pages/roles/roles.page';
-import { OrdenesCompraPage } from './pages/ordenes-compra/ordenes-compra.page';
 import { ComprasPage } from './pages/compras/compras.page';
 import { KardexPage } from './pages/kardex/kardex.page';
 import { KardexEntradasPage } from './pages/kardex-entradas/kardex-entradas.page';
@@ -39,7 +38,7 @@ export const routes: Routes = [
     loadComponent: () => import('../requerimientos/lista-requerimientos/lista-requerimientos').then(m => m.ListaRequerimientos),
     data: { access: ACCESS_RULES.requerimientos }
   },
-  { path: 'ordenes-compra', canActivate: [protegerRuta], component: OrdenesCompraPage },
+  { path: 'ordenes-compra', canActivate: [protegerRuta], loadComponent: () => import('../ordenes-compra/bandeja-ordenes/bandeja-ordenes').then(m => m.BandejaOrdenes) },
   { path: 'compras', canActivate: [protegerRuta], component: ComprasPage },
   { path: 'kardex', canActivate: [protegerRuta], component: KardexPage },
   {

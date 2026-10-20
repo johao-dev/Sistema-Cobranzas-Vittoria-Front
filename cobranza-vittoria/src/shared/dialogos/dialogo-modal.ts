@@ -2,13 +2,13 @@ import { afterNextRender, Directive, ElementRef, inject, output } from '@angular
 
 /** El navegador contiene el foco y lo restaura al cerrar, también en diálogos anidados. */
 @Directive({
-  selector: 'dialog[dialogoRequerimiento]',
+  selector: 'dialog[dialogoModal]',
   host: {
     '(cancel)': 'cancelar($event)',
     '(pointerdown)': 'cerrarDesdeFondo($event)',
   },
 })
-export class DialogoRequerimiento {
+export class DialogoModal {
   readonly solicitarCierre = output<void>();
 
   private readonly elemento = inject<ElementRef<HTMLDialogElement>>(ElementRef);

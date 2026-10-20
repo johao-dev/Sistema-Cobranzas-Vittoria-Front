@@ -10,11 +10,11 @@ import { MaterialUpsert } from '../../catalogos/materiales/contratos-materiales'
 import { PartidaCatalogo } from '../../app/models/consultas-presupuestarias.models';
 import { NotificationService } from '../../app/core/services/notification.service';
 import { mensajeRequerimiento } from '../mensaje-requerimiento';
-import { DialogoRequerimiento } from '../dialogo-requerimiento/dialogo-requerimiento';
+import { DialogoModal } from '../../shared/dialogos/dialogo-modal';
 
 @Component({
   selector: 'nuevo-material',
-  imports: [ReactiveFormsModule, DialogoRequerimiento],
+  imports: [ReactiveFormsModule, DialogoModal],
   templateUrl: './nuevo-material.html',
   styleUrls: ['../presentacion-requerimientos.css', './nuevo-material.css'],
 })

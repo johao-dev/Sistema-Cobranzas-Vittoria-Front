@@ -1,8 +1,5 @@
-import {
-  documentoRequerimiento,
-  imprimirRequerimiento,
-  normalizarNombreSolicitante,
-} from './impresion-requerimiento';
+import { documentoRequerimiento, imprimirRequerimiento } from './impresion-requerimiento';
+import { normalizarNombreSolicitante } from '../../shared/presentacion/nombre-solicitante';
 import { muestraRequerimiento } from '../pruebas/muestras-requerimientos';
 
 describe('Impresión de requerimientos', () => {

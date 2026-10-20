@@ -2,11 +2,11 @@ import { Component, DestroyRef, effect, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { EstadoRequerimientos } from '../estado-requerimientos';
-import { DialogoRequerimiento } from '../dialogo-requerimiento/dialogo-requerimiento';
+import { DialogoModal } from '../../shared/dialogos/dialogo-modal';
 
 @Component({
   selector: 'formulario-requerimiento',
-  imports: [ReactiveFormsModule, DialogoRequerimiento],
+  imports: [ReactiveFormsModule, DialogoModal],
   templateUrl: './formulario-requerimiento.html',
   styleUrls: ['../presentacion-requerimientos.css', './formulario-requerimiento.css'],
 })

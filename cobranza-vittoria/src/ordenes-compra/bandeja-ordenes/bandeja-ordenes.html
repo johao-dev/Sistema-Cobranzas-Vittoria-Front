@@ -1,0 +1,181 @@
+<div class="page-header">
+  <div>
+    <div class="page-title">Órdenes de compra</div>
+    <div class="page-subtitle">Bandeja de requerimientos enviados y listado de O.C. generadas.</div>
+  </div>
+</div>
+
+@if (consulta.cargando()) {
+  <p role="status">Cargando bandeja…</p>
+}
+@if (consulta.cargandoDetalle()) {
+  <p role="status">Cargando detalle…</p>
+}
+@if (exportando()) {
+  <p role="status">Preparando exportación…</p>
+}
+@if (consulta.mensaje()) {
+  <p role="status">{{ consulta.mensaje() }}</p>
+}
+<section class="panel oc-list-panel">
+  @if (consulta.errorPendientes()) {
+    <p role="alert">{{ consulta.errorPendientes() }}</p>
+  }
+  @if (consulta.errorOrdenes()) {
+    <p role="alert">{{ consulta.errorOrdenes() }}</p>
+  }
+  @if (consulta.errorPendientes() || consulta.errorOrdenes()) {
+    <button
+      type="button"
+      class="btn btn-secondary"
+      [disabled]="consulta.cargando()"
+      (click)="consulta.recargar()"
+    >
+      Reintentar carga
+    </button>
+  }
+  <div class="panel-title">Bandeja de RQ enviados a O.C.</div>
+
+  @if (!consulta.cargando() && !consulta.errorPendientes() && !consulta.pendientes().length) {
+    <div class="empty-state">No hay requerimientos enviados a O.C.</div>
+  }
+
+  @if (consulta.pendientes().length) {
+    <div class="table-wrap table-wrap--sticky-actions table-wrap--medium">
+      <table>
+        <thead>
+          <tr>
+            <th>RQ</th>
+            <th>Fecha</th>
+            <th>Especialidades</th>
+            <th>Proyecto</th>
+            <th>Solicitante</th>
+            <th>Estado</th>
+            <th class="actions-col actions-col--select">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of consulta.pendientes(); track row) {
+            <tr>
+              <td>{{ row.numeroRequerimiento }}</td>
+              <td>{{ row.fechaRequerimiento | date: 'dd/MM/yyyy' }}</td>
+              <td>{{ row.especialidades || '-' }}</td>
+              <td>{{ row.nombreProyecto }}</td>
+              <td>{{ nombreSolicitante(row.solicitante) }}</td>
+              <td>
+                <span class="badge badge--pending">{{ row.estado }}</span>
+              </td>
+              <td class="actions-col--select">
+                <button
+                  type="button"
+                  class="btn btn-secondary btn-sm"
+                  [disabled]="
+                    consulta.cargandoDetalle() || consulta.cargando() || !!consulta.errorOrdenes()
+                  "
+                  (click)="consulta.abrirRequerimiento(row.idRequerimiento)"
+                >
+                  Generar O.C.
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <div class="panel panel-embedded">
+    <div class="panel-title-row">
+      <div class="panel-title">Órdenes de compra generadas</div>
+    </div>
+
+    @if (!consulta.cargando() && !consulta.errorOrdenes() && !consulta.ordenes().length) {
+      <div class="empty-state">No hay órdenes de compra generadas.</div>
+    }
+
+    @if (consulta.ordenes().length) {
+      <div class="table-wrap table-wrap--sticky-actions table-wrap--medium">
+        <table id="tabla-ordenes-compra-generadas-export">
+          <thead>
+            <tr>
+              <th>N° O.C.</th>
+              <th>Fecha</th>
+              <th>RQ</th>
+              <th>Especialidades</th>
+              <th>Proveedor</th>
+              <th>Proyecto</th>
+              <th class="table-number">Total</th>
+              <th>Estado</th>
+              <th class="actions-col actions-col--select">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of consulta.ordenes(); track row) {
+              <tr>
+                <td>{{ row.numeroOrdenCompra }}</td>
+                <td>{{ row.fechaOrdenCompra | date: 'dd/MM/yyyy' }}</td>
+                <td>{{ row.numeroRequerimiento || '-' }}</td>
+                <td>{{ row.especialidades || '-' }}</td>
+                <td>{{ row.proveedores || '-' }}</td>
+                <td>{{ row.nombreProyecto || '-' }}</td>
+                <td class="table-number" [class.sin-precio]="!(+row.total > 0)">
+                  {{ textoTotal(row) }}
+                </td>
+                <td>
+                  <span
+                    class="badge"
+                    [class.badge--pending]="estado(row) === 'REGISTRADA'"
+                    [class.badge--ok]="estado(row) === 'APROBADA' || estado(row) === 'ATENDIDA'"
+                    [class.badge--danger]="estado(row) === 'ANULADA'"
+                    [class.badge--neutral]="estado(row) === 'CERRADA'"
+                    >{{ row.estado }}</span
+                  >
+                </td>
+                <td class="actions-col--select">
+                  <select
+                    class="actions-select"
+                    [attr.aria-label]="'Acciones de O.C. ' + row.numeroOrdenCompra"
+                    [disabled]="consulta.cargandoDetalle() || exportando()"
+                    (change)="accionOrden($event, row)"
+                  >
+                    <option value="">Acciones</option>
+                    <option value="detalle">Detalle</option>
+                    @for (a of acciones(row); track a) {
+                      <option [value]="a">{{ etiquetas[a] }}</option>
+                    }
+                    <option value="pdf">Exportar PDF</option>
+                    <option value="excel">Exportar Excel</option>
+                  </select>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</section>
+
+@if (consulta.seleccion(); as seleccion) {
+  @if (seleccion.tipo === 'requerimiento') {
+    <formulario-orden
+      [detalle]="seleccion.detalle"
+      [numero]="numeroSugerido()"
+      (cerrar)="consulta.cerrar()"
+      (creada)="ordenCreada()"
+    />
+  } @else {
+    <detalle-orden
+      [detalle]="seleccion.detalle"
+      (cerrar)="consulta.cerrar()"
+      (cambiarEstado)="solicitarCambio($event)"
+    />
+  }
+}
+@if (cambio(); as seleccion) {
+  <cambio-estado-orden
+    [cambio]="seleccion"
+    (cerrar)="cambio.set(null)"
+    (completada)="estadoCambiado($event)"
+  />
+}

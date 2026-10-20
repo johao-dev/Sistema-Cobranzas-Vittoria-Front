@@ -1,0 +1,71 @@
+<dialog
+  dialogoModal
+  (solicitarCierre)="solicitarCierre()"
+  class="panel design-modal-card"
+  aria-labelledby="titulo-nuevo-proveedor-orden"
+>
+  <button
+    type="button"
+    class="modal-close"
+    (click)="solicitarCierre()"
+    [disabled]="guardando()"
+    aria-label="Cerrar"
+  >
+    ×
+  </button>
+  <h2 class="panel-title" id="titulo-nuevo-proveedor-orden">Nuevo proveedor</h2>
+  <form [formGroup]="formulario" (ngSubmit)="guardar()">
+    <div class="form-grid two">
+      <div class="field full-width">
+        <label for="oc-proveedor-nombre">Razón social / Nombre comercial</label
+        ><input id="oc-proveedor-nombre" formControlName="razonSocial" />
+      </div>
+      <div class="field">
+        <label for="oc-proveedor-ruc">RUC</label
+        ><input
+          id="oc-proveedor-ruc"
+          formControlName="ruc"
+          (blur)="buscarRuc()"
+          (keydown.enter)="$event.preventDefault(); buscarRuc()"
+        />
+      </div>
+      <div class="field">
+        <label for="oc-proveedor-contacto">Contacto</label
+        ><input id="oc-proveedor-contacto" formControlName="contacto" />
+      </div>
+      <div class="field">
+        <label for="oc-proveedor-telefono">Teléfono</label
+        ><input id="oc-proveedor-telefono" formControlName="telefono" />
+      </div>
+      <div class="field">
+        <label for="oc-proveedor-correo">Correo</label
+        ><input id="oc-proveedor-correo" formControlName="correo" />
+      </div>
+      <div class="field full-width">
+        <label for="oc-proveedor-direccion">Dirección</label
+        ><input id="oc-proveedor-direccion" formControlName="direccion" />
+      </div>
+      <div class="field">
+        <label for="oc-proveedor-activo">Estado</label
+        ><select id="oc-proveedor-activo" formControlName="activo">
+          <option [ngValue]="true">Activo</option>
+          <option [ngValue]="false">Inactivo</option>
+        </select>
+      </div>
+    </div>
+    <p role="status">{{ buscandoRuc() ? 'Consultando RUC…' : mensaje() }}</p>
+    <div class="toolbar toolbar--compact">
+      <button type="submit" class="btn btn-primary" [disabled]="guardando() || buscandoRuc()">
+        {{ guardando() ? 'Guardando…' : idCreado() ? 'Actualizar catálogo' : 'Guardar proveedor' }}
+      </button>
+      <button
+        type="button"
+        class="btn btn-ghost"
+        [disabled]="guardando()"
+        (click)="solicitarCierre()"
+      >
+        Cancelar
+      </button>
+    </div>
+  </form>
+</dialog>

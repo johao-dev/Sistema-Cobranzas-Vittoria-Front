@@ -1,7 +1,7 @@
 @let detalle = vm.detalle();
 @if (vm.detalleModalOpen()) {
   <dialog
-    dialogoRequerimiento
+    dialogoModal
     aria-label="Detalle del requerimiento"
     (solicitarCierre)="vm.cerrarDetalleModal()"
     class="panel design-modal-card design-modal-card--xl"

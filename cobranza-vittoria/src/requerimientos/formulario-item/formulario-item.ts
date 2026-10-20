@@ -3,11 +3,11 @@ import { DecimalPipe } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { EstadoRequerimientos } from '../estado-requerimientos';
-import { DialogoRequerimiento } from '../dialogo-requerimiento/dialogo-requerimiento';
+import { DialogoModal } from '../../shared/dialogos/dialogo-modal';
 
 @Component({
   selector: 'formulario-item',
-  imports: [ReactiveFormsModule, DecimalPipe, DialogoRequerimiento],
+  imports: [ReactiveFormsModule, DecimalPipe, DialogoModal],
   templateUrl: './formulario-item.html',
   styleUrls: ['../presentacion-requerimientos.css', './formulario-item.css'],
 })

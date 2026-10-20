@@ -1,0 +1,102 @@
+<dialog
+  dialogoModal
+  (solicitarCierre)="cerrar.emit()"
+  class="panel design-modal-card design-modal-card--xl"
+  aria-labelledby="titulo-detalle-orden"
+>
+  <button type="button" class="modal-close" (click)="cerrar.emit()" aria-label="Cerrar">×</button>
+  <h2 class="panel-title" id="titulo-detalle-orden">Detalle de O.C. generada</h2>
+  <div class="panel panel-embedded panel-compact">
+    <div class="toolbar" style="margin-bottom: 14px">
+      <span class="list-chip">{{ detalle().ordenCompra.numeroOrdenCompra }}</span>
+      <span class="list-chip">{{ detalle().ordenCompra.estado }}</span>
+      @for (a of acciones(detalle().ordenCompra); track a) {
+        <button
+          type="button"
+          class="btn btn-sm"
+          [class.btn-success]="a === 'APROBADA'"
+          [class.btn-danger]="a === 'ANULADA'"
+          [class.btn-secondary]="a === 'CERRADA'"
+          (click)="solicitarEstado(a)"
+        >
+          {{ etiquetas[a] }}
+        </button>
+      }
+      <button class="btn btn-secondary btn-sm" type="button" (click)="exportar('excel')">
+        Exportar Excel proveedor
+      </button>
+      <button class="btn btn-primary btn-sm" type="button" (click)="exportar('pdf')">
+        Exportar PDF proveedor
+      </button>
+    </div>
+
+    <div class="toolbar filters-inline" style="margin-bottom: 14px">
+      <div class="field inline-field">
+        <label for="filtro-proveedor-orden">Proveedor para descargar</label>
+        <select
+          id="filtro-proveedor-orden"
+          [ngModel]="filtro()"
+          (ngModelChange)="filtro.set($event)"
+        >
+          <option value="TODOS">Todos</option>
+          @for (proveedor of proveedores(); track proveedor) {
+            <option [value]="proveedor">{{ proveedor }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    @if (detalle().items.length) {
+      <div class="table-wrap table-wrap--medium">
+        <table>
+          <thead>
+            <tr>
+              <th>Especialidad</th>
+              <th>Material</th>
+              <th>Unidad</th>
+              <th>Cantidad</th>
+              <th>Proveedor</th>
+              <th class="table-number">Precio unit.</th>
+              <th class="table-number">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of items(); track item) {
+              <tr>
+                <td>{{ item.especialidad || '-' }}</td>
+                <td>{{ item.material }}</td>
+                <td>{{ item.unidadMedida }}</td>
+                <td>{{ item.cantidad }}</td>
+                <td>{{ item.proveedor || '-' }}</td>
+                <td class="table-number">
+                  {{ +item.precioUnitario > 0 ? (item.precioUnitario | number: '1.2-2') : '—' }}
+                </td>
+                <td class="table-number">
+                  {{ +item.subtotal > 0 ? (item.subtotal | number: '1.2-2') : '—' }}
+                </td>
+              </tr>
+            }
+            @if (!items().length) {
+              <tr>
+                <td colspan="7" class="empty-row">No hay ítems para el proveedor seleccionado.</td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr>
+              <th colspan="6">Total</th>
+              <th class="table-number">{{ textoTotal(detalle().ordenCompra) }}</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    }
+  </div>
+
+  <div class="helper-strip">
+    Para registrar la compra, usa el módulo <strong>Compras</strong> con la O.C. correspondiente.
+  </div>
+  @if (mensaje()) {
+    <div class="empty-state" style="margin-top: 14px; padding: 14px">{{ mensaje() }}</div>
+  }
+</dialog>
