@@ -109,6 +109,8 @@ Estados de seguimiento: **Pendiente**, **En curso**, **Pendiente de validación 
 | 2026-10-20 | Migración de Requerimientos | Caracterización, contratos tipados, separación de estado/formularios/consultas/impresión y ruta diferida en `src/requerimientos` | Verificaciones técnicas y limitaciones detalladas en la entrega. Pendiente de validación funcional con backend y navegador. |
 | 2026-10-20 | Validación de Requerimientos | El usuario confirmó «Pruebas funcionales con backend y navegador OK» | Requerimientos pasa a Verificada. Confirmación general sin desglose de escenarios; revisión de responsabilidades del estado documentada, sin cambios de código en esta actualización. |
 | 2026-10-20 | Separación interna de Requerimientos | Coordinador reducido de 1164 a 309 líneas; borrador, editor, almacén, flujo, consultas y referencias con propietarios propios; transformaciones y validaciones independientes | 361 pruebas correctas en 43 archivos. Verificaciones técnicas y alcance de la validación humana en la entrega correspondiente. |
+| 2026-10-20 | Migración de Órdenes de compra | Contratos tipados, bandeja, consultas, formulario, proveedores, detalle, transiciones y exportaciones en `src/ordenes-compra`; consumidor de Compras actualizado | 400 pruebas correctas en 51 archivos; producción y staging compilan. Evidencias detalladas en la entrega correspondiente. |
+| 2026-10-20 | Validación de Órdenes de compra | El usuario confirmó «Validación funcional y navegador OK» | Órdenes de compra queda Verificada. Validación humana cerrada; confirmación general sin desglose de escenarios. |
 
 En cada entrega futura registrar:
 
@@ -422,7 +424,7 @@ A petición del usuario se completa la separación del estado compartido. La con
 - Estado visual con signals y derivados con `computed`, entradas/salidas explícitas y liberación de lecturas y escrituras con `takeUntilDestroyed`. `finalize` restaura cargas y guardados; se impiden envíos duplicados y cierre durante escritura. Los errores conservan los formularios y permiten reintentar; no se convierten fallos en listados vacíos aparentes.
 - Diálogos nativos con título asociado y cancelación por Escape/fondo, controles etiquetados y tablas desplazables. Estilos locales consolidados y variables globales conservadas, sin rediseño. El navegador contiene y restaura el foco; jsdom simula únicamente `showModal`. Foco real, teclado, adaptación móvil e impresión corresponden a revisión humana; la confirmación general del usuario no aporta un desglose individual de estas comprobaciones.
 
-### Verificaciones y pendientes
+### Verificaciones y cierre
 
 - Antes de modificar producción pasaron **14 pruebas de caracterización** de la página original. Sus casos se mantienen en las pruebas definitivas: carga EnviadoOC, cabecera y cantidades, precios y moneda, validaciones, proveedores por línea, seis estados, identidad/observación, filtro con total general y asignación del proveedor creado.
 - Las pruebas definitivas incluyen además contratos HTTP exactos y conflictos, fallos parciales, cancelación de selección y destrucción, recuperación sin duplicar alta, RUC tardío, bloqueo de guardados/cierre y actualización de interfaz sin Zone.js. No llaman al backend real ni fuerzan detección de cambios en las pruebas nuevas de interfaz.
