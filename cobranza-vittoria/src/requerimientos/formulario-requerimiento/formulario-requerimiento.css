@@ -1,0 +1,59 @@
+.full-row {
+  grid-column: 1/-1;
+}
+
+.resumen-especialidades {
+  margin: 14px 0;
+}
+
+.resumen-especialidades label {
+  display: block;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.requer-form-panel {
+  top: 92px;
+}
+
+.requer-form-grid {
+  gap: 14px;
+}
+
+.auto-field input {
+  background: #f8f9fc;
+  font-weight: 800;
+  color: #3f4760;
+}
+
+.compact-field {
+  max-width: 260px;
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 1320px) {
+  .page-grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .requer-form-panel {
+    position: static;
+  }
+}
+
+.requer-form-panel {
+  position: fixed !important;
+}
+
+/* Imputación presupuestal por línea */
+.alerta-presupuesto {
+  margin: 12px 0;
+  padding: 10px 14px;
+  border-left: 4px solid #b26b00;
+  background: #fff8ec;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #6b4b00;
+}

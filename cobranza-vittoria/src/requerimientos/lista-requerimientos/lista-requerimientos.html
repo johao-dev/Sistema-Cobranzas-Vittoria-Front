@@ -1,0 +1,165 @@
+@if (vm.errorCatalogos().length) {
+  <div class="error-box" role="alert">
+    @for (error of vm.errorCatalogos(); track $index) {
+      <p>{{ error }}</p>
+    }
+    <button
+      class="btn btn-secondary"
+      [disabled]="vm.cargandoCatalogos()"
+      (click)="vm.loadCatalogos()"
+    >
+      Reintentar catálogos
+    </button>
+  </div>
+}
+<div class="page-header">
+  <div>
+    <div class="page-title">Requerimientos</div>
+    <div class="page-subtitle">Registro, edición y envío a orden de compra en una sola vista.</div>
+  </div>
+</div>
+
+<section class="panel requer-list-panel">
+  <div class="panel-title-row">
+    <div class="panel-title">Listado</div>
+    @if (vm.puedeCrear) {
+      <button type="button" class="btn btn-primary btn-sm" (click)="vm.abrirModalNuevo()">
+        + Nuevo requerimiento
+      </button>
+    }
+  </div>
+
+  <div class="filters-grid">
+    <div class="field">
+      <label for="lista-requerimientos-campo-1">Estado</label>
+      <select
+        id="lista-requerimientos-campo-1"
+        [(ngModel)]="vm.filtros().estado"
+        (change)="vm.load()"
+      >
+        <option value="">Todos</option>
+        <option value="Registrado">Registrado</option>
+        <option value="EnviadoAlmacen">Enviado a almacén</option>
+        <option value="ValidadoAlmacen">Validado almacén</option>
+        <option value="AprobadoCoordinador">Aprobado por coordinador</option>
+        <option value="Rechazado">Rechazado</option>
+        <option value="EnviadoOC">Enviado a compras</option>
+        <option value="GeneradoOC">O.C. generada</option>
+        <option value="Anulado">Anulado</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="lista-requerimientos-campo-2">Especialidad</label>
+      <select
+        id="lista-requerimientos-campo-2"
+        [(ngModel)]="vm.filtros().idEspecialidad"
+        (change)="vm.load()"
+      >
+        <option [ngValue]="null">Todas</option>
+        @for (e of vm.especialidades(); track e) {
+          <option [ngValue]="e.idEspecialidad">{{ e.nombre }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="lista-requerimientos-campo-3">Proyecto</label>
+      <select
+        id="lista-requerimientos-campo-3"
+        [(ngModel)]="vm.filtros().idProyecto"
+        (change)="vm.load()"
+      >
+        <option [ngValue]="null">Todos</option>
+        @for (p of vm.proyectos(); track p) {
+          <option [ngValue]="p.idProyecto">{{ p.nombreProyecto }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  @if (vm.cargando()) {
+    <p role="status">Cargando requerimientos…</p>
+  }
+  @if (vm.cargandoDetalle()) {
+    <p role="status">Cargando detalle…</p>
+  }
+  @if (vm.errorListado()) {
+    <div class="error-box" role="alert">
+      {{ vm.errorListado() }}
+      <button class="btn btn-secondary" (click)="vm.load()">Reintentar</button>
+    </div>
+  }
+  @if (!vm.cargando() && !vm.errorListado() && !vm.rows().length) {
+    <div class="empty-state">No hay requerimientos registrados.</div>
+  }
+  @if (vm.rows().length) {
+    <div class="table-wrap table-wrap--sticky-actions table-wrap--medium requer-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>F. Solicitud</th>
+            <th>F. Entrega</th>
+            <th>Especialidades</th>
+            <th>Proyecto</th>
+            <th>Solicitante</th>
+            <th>Estado</th>
+            <th class="actions-col actions-col--select">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of vm.rows(); track row) {
+            <tr>
+              <td>{{ row.numeroRequerimiento }}</td>
+              <td>{{ row.fechaRequerimiento | date: 'dd/MM/yyyy' }}</td>
+              <td>{{ row.fechaEntrega | date: 'dd/MM/yyyy' }}</td>
+              <td>{{ row.especialidades || '-' }}</td>
+              <td>{{ row.nombreProyecto }}</td>
+              <td>{{ vm.normalizarNombreSolicitante(row.solicitante) }}</td>
+              <td>
+                <span class="badge badge--pending">{{ row.estado }}</span>
+              </td>
+              <td class="actions-col--select">
+                <select
+                  aria-label="Acciones del registro"
+                  class="actions-select"
+                  (change)="vm.onAccionListado($event, row)"
+                >
+                  <option value="">Acciones</option>
+                  <option value="ver">Ver detalle</option>
+                </select>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
+
+@if (vm.detalleModalOpen()) {
+  <detalle-requerimiento />
+}
+@if (vm.accionModalOpen()) {
+  <accion-requerimiento />
+}
+@if (vm.formModalOpen()) {
+  <formulario-requerimiento />
+}
+@if (vm.modalEspecialidades()) {
+  <formulario-item />
+}
+@if (vm.materialFormOpen()) {
+  <nuevo-material
+    [especialidades]="vm.especialidades()"
+    [unidades]="vm.unidadesMedida()"
+    [partidas]="vm.partidasCatalogo()"
+    [avisoPartidas]="vm.presupuesto.errorCatalogo()"
+    [especialidadInicial]="vm.modalItem().idEspecialidad"
+    [partidaInicial]="vm.partidaSeleccionadaModal?.idCatalogoPartida ?? null"
+    [(guardando)]="vm.savingMaterial"
+    (guardado)="vm.seleccionarMaterialCreado($event)"
+    (cerrar)="vm.cerrarFormNuevoMaterial()"
+  />
+}

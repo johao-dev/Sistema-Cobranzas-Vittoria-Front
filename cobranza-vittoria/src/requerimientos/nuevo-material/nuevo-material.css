@@ -1,0 +1,19 @@
+.inline-material-actions {
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.material-modal-card {
+  width: min(720px, 100%) !important;
+  padding: 22px !important;
+}
+
+.material-modal-grid {
+  margin-top: 14px !important;
+  gap: 14px 18px !important;
+}
+
+.inline-material-actions {
+  justify-content: flex-end !important;
+  margin-top: 16px !important;
+}

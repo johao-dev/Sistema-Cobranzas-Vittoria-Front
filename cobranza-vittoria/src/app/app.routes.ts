@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 import { UsuariosPage } from './pages/usuarios/usuarios.page';
 import { RolesPage } from './pages/roles/roles.page';
-import { RequerimientosPage } from './pages/requerimientos/requerimientos.page';
 import { OrdenesCompraPage } from './pages/ordenes-compra/ordenes-compra.page';
 import { ComprasPage } from './pages/compras/compras.page';
 import { KardexPage } from './pages/kardex/kardex.page';
@@ -37,7 +36,7 @@ export const routes: Routes = [
   {
     path: 'requerimientos',
     canActivate: [protegerRuta],
-    component: RequerimientosPage,
+    loadComponent: () => import('../requerimientos/lista-requerimientos/lista-requerimientos').then(m => m.ListaRequerimientos),
     data: { access: ACCESS_RULES.requerimientos }
   },
   { path: 'ordenes-compra', canActivate: [protegerRuta], component: OrdenesCompraPage },

@@ -1,0 +1,88 @@
+<dialog
+  dialogoRequerimiento
+  class="modal-card material-modal-card"
+  aria-labelledby="titulo-nuevo-material"
+  (solicitarCierre)="cancelar()"
+>
+  <div class="modal-header">
+    <div>
+      <h2 id="titulo-nuevo-material" class="panel-title">Nuevo material</h2>
+      <p class="helper-text">
+        Registra el material y quedará seleccionado automáticamente en el ítem.
+      </p>
+    </div>
+    <button class="btn btn-ghost" type="button" [disabled]="guardando()" (click)="cancelar()">
+      Cerrar
+    </button>
+  </div>
+  @if (avisoPartidas()) {
+    <p class="error-box" role="alert">
+      {{ avisoPartidas() }} Puedes crear el material sin partida por defecto.
+    </p>
+  }
+  <form [formGroup]="formulario" (ngSubmit)="guardar()">
+    <div class="form-grid two material-modal-grid">
+      <div class="field">
+        <label for="nuevo-material-especialidad">Especialidad</label>
+        <select id="nuevo-material-especialidad" formControlName="idEspecialidad">
+          <option [ngValue]="null">Seleccionar</option>
+          @for (e of especialidades(); track e.idEspecialidad) {
+            <option [ngValue]="e.idEspecialidad">{{ e.nombre }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="nuevo-material-unidad">Unidad</label>
+        <select id="nuevo-material-unidad" formControlName="unidadMedida">
+          <option value="">Seleccionar</option>
+          @for (u of unidades(); track u.idUnidadMedida) {
+            <option [ngValue]="u.codigo || u.nombre">{{ u.codigo || u.nombre }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="nuevo-material-descripcion">Material</label>
+        <input
+          id="nuevo-material-descripcion"
+          formControlName="descripcion"
+          placeholder="Nombre del material"
+        />
+      </div>
+      <div class="field">
+        <label for="nuevo-material-codigo">Código material</label>
+        <input id="nuevo-material-codigo" value="Automático" readonly />
+      </div>
+      <div class="field">
+        <label for="nuevo-material-proveedor">Código proveedor</label>
+        <input
+          id="nuevo-material-proveedor"
+          formControlName="codigoProveedor"
+          placeholder="Código proporcionado por el proveedor"
+        />
+      </div>
+      <div class="field full-row">
+        <label for="nuevo-material-partida">Partida presupuestal por defecto</label>
+        <select id="nuevo-material-partida" formControlName="idCatalogoPartida">
+          <option [ngValue]="null">Sin partida</option>
+          @for (p of partidas(); track p.idCatalogoPartida) {
+            <option [ngValue]="p.idCatalogoPartida">{{ p.codigo }} — {{ p.nombre }}</option>
+          }
+        </select>
+        <small class="helper-text"
+          >Se asignará sola cada vez que este material se agregue a un requerimiento.</small
+        >
+      </div>
+    </div>
+    @if (mensaje()) {
+      <div class="error-box" role="alert">{{ mensaje() }}</div>
+    }
+    <div class="toolbar inline-material-actions">
+      <button class="btn btn-ghost" type="button" [disabled]="guardando()" (click)="cancelar()">
+        Cancelar
+      </button>
+      <button class="btn btn-primary" type="submit" [disabled]="guardando()">
+        {{ guardando() ? 'Guardando...' : creado() ? 'Actualizar catálogo' : 'Guardar material' }}
+      </button>
+    </div>
+  </form>
+</dialog>

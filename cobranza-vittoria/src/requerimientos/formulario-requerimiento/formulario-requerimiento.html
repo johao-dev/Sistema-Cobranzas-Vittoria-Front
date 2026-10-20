@@ -1,0 +1,228 @@
+@if (vm.formModalOpen()) {
+  <dialog
+    dialogoRequerimiento
+    aria-label="Formulario de requerimiento"
+    (solicitarCierre)="vm.cerrarFormModal()"
+    class="panel panel--form requer-form-panel design-modal-card design-modal-card--xl"
+  >
+    <button
+      type="button"
+      class="modal-close"
+      (click)="vm.cerrarFormModal()"
+      [disabled]="vm.saving() || vm.operacionItemPendiente"
+      aria-label="Cerrar"
+    >
+      ×
+    </button>
+    <div class="panel-title">
+      {{ vm.editando() ? 'Editar requerimiento' : 'Nuevo requerimiento' }}
+    </div>
+    @if (!vm.gestionItemsAlmacen()) {
+      <div class="helper-text">
+        Número se genera automáticamente. El solicitante se toma de la sesión actual.
+      </div>
+    }
+    @if (vm.gestionItemsAlmacen()) {
+      <div class="helper-text">
+        Cada cambio de ítem se guarda por separado. Puedes agregar, editar o quitar ítems; la
+        cabecera permanece bloqueada.
+      </div>
+    }
+    <div class="form-grid two requer-form-grid" [formGroup]="cabecera">
+      <div class="field auto-field">
+        <label for="formulario-requerimiento-campo-1">Número</label>
+        <input
+          id="formulario-requerimiento-campo-1"
+          formControlName="numeroRequerimiento"
+          readonly
+        />
+      </div>
+      <div class="field auto-field">
+        <label for="formulario-requerimiento-campo-2">Fecha</label>
+        <input
+          id="formulario-requerimiento-campo-2"
+          type="date"
+          formControlName="fechaRequerimiento"
+        />
+      </div>
+      <div class="field">
+        <label for="formulario-requerimiento-campo-3">Proyecto</label>
+        <select id="formulario-requerimiento-campo-3" formControlName="idProyecto">
+          <option [ngValue]="null">Seleccionar</option>
+          @for (p of vm.proyectos(); track p) {
+            <option [ngValue]="p.idProyecto">{{ p.nombreProyecto }}</option>
+          }
+        </select>
+      </div>
+      <div class="field compact-field">
+        <label for="formulario-requerimiento-campo-4">Fecha entrega</label>
+        <input id="formulario-requerimiento-campo-4" type="date" formControlName="fechaEntrega" />
+      </div>
+      <div class="field full-row">
+        <label for="formulario-requerimiento-campo-5">Descripción</label>
+        <input
+          id="formulario-requerimiento-campo-5"
+          formControlName="descripcion"
+          placeholder="Descripción del requerimiento"
+        />
+      </div>
+      <div class="field full-row">
+        <label for="formulario-requerimiento-campo-6">Observación</label>
+        <textarea
+          id="formulario-requerimiento-campo-6"
+          rows="3"
+          formControlName="observacion"
+          placeholder="Observación general"
+        ></textarea>
+      </div>
+    </div>
+    @if (vm.presupuesto.errorCentros()) {
+      <p class="alerta-presupuesto" role="alert">
+        {{ vm.presupuesto.errorCentros() }} El requerimiento puede registrarse sin imputación.
+      </p>
+    }
+    <div class="detail-card">
+      <div class="detail-card__head">
+        <div>
+          <div class="panel-title detail-card__title">Detalle</div>
+          <div class="helper-text detail-card__text">
+            {{
+              vm.gestionItemsAlmacen()
+                ? 'Guarda cada ítem antes de continuar con la validación de almacén.'
+                : 'Agrega ítems por especialidad y ajusta cantidades.'
+            }}
+          </div>
+        </div>
+        <button
+          class="btn btn-secondary"
+          type="button"
+          (click)="vm.abrirModalEspecialidades()"
+          [disabled]="
+            vm.gestionItemsAlmacen() &&
+            (!vm.puedeGestionarItemsAlmacen || vm.operacionItemPendiente)
+          "
+        >
+          + Agregar ítem
+        </button>
+      </div>
+      @if (vm.proyectoSinCentroCosto) {
+        <div class="alerta-presupuesto">
+          Este proyecto no tiene centro de costo asociado, por lo que no hay partidas disponibles.
+          El requerimiento se puede registrar, pero no quedará imputado al presupuesto.
+        </div>
+      }
+      @if (vm.form().items.length) {
+        <div class="resumen-especialidades">
+          <span>Especialidades del requerimiento</span>
+          <div>
+            @for (esp of vm.especialidadesSeleccionadas(); track esp) {
+              <span class="list-chip">{{ esp }}</span>
+            }
+          </div>
+        </div>
+      }
+      @if (vm.form().items.length) {
+        <div class="table-wrap table-wrap--sticky-actions table-wrap--medium">
+          <table>
+            <thead>
+              <tr>
+                <th>Especialidad</th>
+                <th>Material</th>
+                <th>Partida presupuestal</th>
+                <th>Unidad</th>
+                <th>Cantidad</th>
+                <th>Observación</th>
+                <th class="actions-col actions-col--select">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (x of vm.form().items; track x; let i = $index) {
+                <tr>
+                  <td>{{ x.especialidad || '-' }}</td>
+                  <td>{{ x.material }}</td>
+                  <td>
+                    <span
+                      class="badge"
+                      [class.badge--ok]="x.idPresupuestoDetalle"
+                      [class.badge--neutral]="!x.idPresupuestoDetalle"
+                      >{{ vm.etiquetaPartida(x) }}</span
+                    >
+                  </td>
+                  <td>{{ x.unidadMedida || '-' }}</td>
+                  <td>
+                    {{ x.cantidad }}
+                  </td>
+                  <td>{{ x.observacion || '-' }}</td>
+                  <td class="actions-col--select">
+                    <select
+                      aria-label="Acciones del registro"
+                      class="actions-select"
+                      (change)="vm.onAccionItem($event, i)"
+                      [disabled]="
+                        vm.gestionItemsAlmacen() &&
+                        (!vm.puedeGestionarItemsAlmacen || vm.operacionItemPendiente)
+                      "
+                    >
+                      <option value="">Acciones</option>
+                      <option value="edit">Editar</option>
+                      <option
+                        value="remove"
+                        [disabled]="vm.gestionItemsAlmacen() && vm.form().items.length <= 1"
+                      >
+                        Quitar
+                      </option>
+                    </select>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+      @if (!vm.form().items.length) {
+        <div class="empty-state empty-state--tight">
+          Todavía no agregaste ítems al requerimiento.
+        </div>
+      }
+    </div>
+    @if (vm.gestionItemsAlmacen() && vm.recargandoItems()) {
+      <div role="status" class="helper-text">Actualizando detalle…</div>
+    }
+    @if (vm.gestionItemsAlmacen() && vm.detalleAlmacenDesactualizado() && !vm.recargandoItems()) {
+      <div role="alert" class="error-box">
+        No se pudo actualizar el detalle. Recárgalo antes de gestionar ítems o validar almacén.
+        <button class="btn btn-secondary" (click)="vm.recargarItemsAlmacen()">
+          Recargar detalle
+        </button>
+      </div>
+    }
+    @if (vm.gestionItemsAlmacen()) {
+      <div class="toolbar form-actions">
+        <button
+          class="btn btn-primary"
+          (click)="vm.cerrarFormModal()"
+          [disabled]="vm.operacionItemPendiente"
+        >
+          Volver al detalle
+        </button>
+      </div>
+    }
+    @if (!vm.gestionItemsAlmacen()) {
+      <div class="toolbar form-actions">
+        <button class="btn btn-primary" (click)="vm.save()" [disabled]="vm.saving()">
+          {{
+            vm.saving()
+              ? 'Guardando...'
+              : vm.editando()
+                ? 'Actualizar requerimiento'
+                : 'Guardar requerimiento'
+          }}
+        </button>
+        <button class="btn btn-ghost" (click)="vm.reset()" [disabled]="vm.saving()">Limpiar</button>
+      </div>
+    }
+    @if (vm.msg()) {
+      <div class="success-box">{{ vm.msg() }}</div>
+    }
+  </dialog>
+}

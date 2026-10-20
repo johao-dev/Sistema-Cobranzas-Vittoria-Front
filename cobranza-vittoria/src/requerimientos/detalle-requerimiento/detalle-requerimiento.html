@@ -1,0 +1,143 @@
+@let detalle = vm.detalle();
+@if (vm.detalleModalOpen()) {
+  <dialog
+    dialogoRequerimiento
+    aria-label="Detalle del requerimiento"
+    (solicitarCierre)="vm.cerrarDetalleModal()"
+    class="panel design-modal-card design-modal-card--xl"
+  >
+    <button type="button" class="modal-close" (click)="vm.cerrarDetalleModal()" aria-label="Cerrar">
+      ×
+    </button>
+    <div class="panel-title">Detalle del requerimiento</div>
+    @if (!detalle) {
+      <div class="empty-state">No se pudo cargar el detalle del requerimiento.</div>
+    }
+    @if (detalle) {
+      <div>
+        <div class="detail-modal-head">
+          <div class="detail-chips">
+            <span class="list-chip">N° {{ detalle.requerimiento.numeroRequerimiento }}</span>
+            <span class="list-chip">{{ detalle.requerimiento.estado }}</span>
+            <span class="list-chip">{{ detalle.requerimiento.especialidades || '-' }}</span>
+            @if (!vm.puedeEditarDetalle && !vm.tieneAccionesFlujo) {
+              <span class="list-chip blocked-chip">Sin acciones disponibles</span>
+            }
+          </div>
+          <div class="detail-actions">
+            @if (vm.puedeEditarDetalle) {
+              <button class="btn btn-primary" (click)="vm.editarDesdeDetalle()">
+                {{ vm.puedeGestionarItemsAlmacen ? 'Gestionar ítems' : 'Editar' }}
+              </button>
+            }
+            <button class="btn btn-secondary" (click)="vm.descargarPdfRequerimiento()">
+              Descargar PDF
+            </button>
+            @if (vm.puedeEnviar) {
+              <button class="btn btn-success" (click)="vm.abrirAccion('enviar')">
+                Enviar a almacén
+              </button>
+            }
+            @if (vm.puedeProcesarStock) {
+              <button class="btn btn-success" (click)="vm.abrirAccion('validar-almacen')">
+                Procesar stock
+              </button>
+            }
+            @if (vm.puedeAprobar) {
+              <button class="btn btn-success" (click)="vm.abrirAccion('aprobar')">Aprobar</button>
+            }
+            @if (vm.puedeRechazar) {
+              <button class="btn btn-danger" (click)="vm.abrirAccion('rechazar')">Rechazar</button>
+            }
+            @if (vm.puedeEnviarCompras) {
+              <button class="btn btn-success" (click)="vm.abrirAccion('enviar-compras')">
+                Enviar a compras
+              </button>
+            }
+          </div>
+        </div>
+        @if (vm.detalleAlmacenDesactualizado() && !vm.recargandoItems()) {
+          <div class="error-box" role="alert">
+            Es necesario recargar el detalle antes de continuar.
+            <button class="btn btn-secondary" (click)="vm.recargarItemsAlmacen()">
+              Recargar detalle
+            </button>
+          </div>
+        }
+        @if (detalle.items.length) {
+          <div class="table-wrap table-wrap--medium">
+            <table>
+              <thead>
+                <tr>
+                  <th>Especialidad</th>
+                  <th>Material</th>
+                  <th>Partida presupuestal</th>
+                  <th>Unidad</th>
+                  <th>Cantidad</th>
+                  <th>Observación</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (x of detalle.items; track x) {
+                  <tr>
+                    <td>{{ x.especialidad || '-' }}</td>
+                    <td>{{ x.material }}</td>
+                    <td>
+                      <span
+                        class="badge"
+                        [class.badge--ok]="x.idPresupuestoDetalle"
+                        [class.badge--neutral]="!x.idPresupuestoDetalle"
+                        >{{ vm.etiquetaPartida(x) }}</span
+                      >
+                    </td>
+                    <td>{{ x.unidadMedida || '-' }}</td>
+                    <td>{{ x.cantidad }}</td>
+                    <td>{{ x.observacion || '-' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+        @if (vm.auth.hasPermission('requerimientos.ver_depuracion_almacen')) {
+          <div class="detail-card">
+            <div class="panel-title detail-card__title">Validaciones de almacén</div>
+            @if (!detalle.validaciones.length) {
+              <div class="empty-state empty-state--tight">Sin validaciones registradas.</div>
+            }
+            @if (detalle.validaciones.length) {
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Resultado</th>
+                      <th>Observación</th>
+                      <th>Usuario</th>
+                      <th>Fecha</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (validacion of detalle.validaciones; track validacion) {
+                      <tr>
+                        <td>{{ validacion.resultado || '-' }}</td>
+                        <td>{{ validacion.observacion || '-' }}</td>
+                        <td>{{ validacion.usuario || '-' }}</td>
+                        <td>
+                          {{
+                            validacion.fechaValidacion
+                              ? (validacion.fechaValidacion | date: 'dd/MM/yyyy HH:mm')
+                              : '-'
+                          }}
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </dialog>
+}

@@ -43,10 +43,9 @@ export interface RequerimientoItemResponse {
 export interface RequerimientoRequest {
   numeroRequerimiento: string;
   fechaRequerimiento: string;
-  idEspecialidad: number;
   idProyecto: number;
   descripcion: string;
-  fechaEntrega: string;
+  fechaEntrega: string | null;
   observacion?: string | null;
   items: RequerimientoItemRequest[];
 }
@@ -55,7 +54,7 @@ export interface RequerimientoResumen {
   idRequerimiento: number;
   numeroRequerimiento: string;
   fechaRequerimiento: string;
-  fechaEntrega: string;
+  fechaEntrega: string | null;
   especialidades?: string | null;
   idProyecto: number;
   nombreProyecto?: string | null;
@@ -64,22 +63,20 @@ export interface RequerimientoResumen {
 }
 
 export interface Requerimiento extends RequerimientoResumen {
-  idEspecialidad: number;
-  especialidad?: string | null;
   descripcion?: string | null;
-  fechaEntrega: string;
+  fechaEntrega: string | null;
   observacion?: string | null;
   idUsuarioSolicitante?: number;
 }
 
 export interface RequerimientoDetalleItem {
-  idRequerimientoDetalle?: number;
+  idRequerimientoDetalle: number;
+  idRequerimiento: number;
   idMaterial: number;
   idEspecialidad?: number | null;
   especialidad?: string | null;
-  material: string;
+  material: string | null;
   unidadMedida?: string | null;
-  unidad?: string | null;
   cantidad: number;
   observacion?: string | null;
   idPresupuestoDetalle?: number | null;
@@ -88,10 +85,10 @@ export interface RequerimientoDetalleItem {
 }
 
 export interface ValidacionRequerimiento {
-  resultado?: ResultadoValidacionAlmacen | string;
+  resultado: string;
   observacion?: string | null;
-  fecha?: string;
-  usuario?: string;
+  fechaValidacion: string;
+  usuario?: string | null;
 }
 
 export interface RequerimientoGetResponse {

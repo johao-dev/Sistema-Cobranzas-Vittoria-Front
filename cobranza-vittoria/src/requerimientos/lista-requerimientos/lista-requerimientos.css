@@ -1,0 +1,20 @@
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.requer-table th:last-child,
+.requer-table td:last-child {
+  width: 122px;
+}
+
+/* HOTFIX DISEÑO V9 */
+.requer-list-panel {
+  margin-top: 0;
+}
+
+.requer-table table {
+  min-width: max(100%, 1040px) !important;
+}

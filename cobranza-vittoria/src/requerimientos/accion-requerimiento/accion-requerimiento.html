@@ -1,0 +1,64 @@
+<dialog
+  dialogoRequerimiento
+  [attr.aria-label]="vm.accionTitulo"
+  (solicitarCierre)="vm.cerrarAccion()"
+  class="modal-card action-modal-card"
+>
+  <div class="modal-header">
+    <div>
+      <div class="panel-title">{{ vm.accionTitulo }}</div>
+      <div class="helper-text">Confirma la acción para continuar con el requerimiento.</div>
+    </div>
+    <button
+      class="btn btn-ghost"
+      type="button"
+      [disabled]="vm.procesandoAccion()"
+      (click)="vm.cerrarAccion()"
+    >
+      Cerrar
+    </button>
+  </div>
+  @if (vm.accionActual() === 'validar-almacen') {
+    <div class="field">
+      <label for="accion-requerimiento-campo-1">Resultado</label>
+      <select id="accion-requerimiento-campo-1" [(ngModel)]="vm.accionResultado">
+        <option value="Conforme">Conforme</option>
+        <option value="Observado">Observado</option>
+      </select>
+    </div>
+  }
+  <div class="field">
+    <label for="accion-requerimiento-campo-2"
+      >Observación{{
+        vm.accionActual() === 'rechazar' ||
+        (vm.accionActual() === 'validar-almacen' && vm.accionResultado() === 'Observado')
+          ? ' *'
+          : ''
+      }}</label
+    >
+    <textarea
+      id="accion-requerimiento-campo-2"
+      rows="4"
+      [(ngModel)]="vm.accionObservacion"
+      placeholder="Describe el motivo o resultado"
+    ></textarea>
+  </div>
+  <div class="toolbar form-actions">
+    <button
+      class="btn btn-primary"
+      type="button"
+      [disabled]="vm.procesandoAccion()"
+      (click)="vm.ejecutarAccion()"
+    >
+      {{ vm.procesandoAccion() ? 'Procesando...' : 'Confirmar' }}
+    </button>
+    <button
+      class="btn btn-ghost"
+      type="button"
+      [disabled]="vm.procesandoAccion()"
+      (click)="vm.cerrarAccion()"
+    >
+      Cancelar
+    </button>
+  </div>
+</dialog>

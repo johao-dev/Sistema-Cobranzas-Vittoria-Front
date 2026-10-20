@@ -1,5 +1,11 @@
 import { Injectable } from '@angular/core';
-import { forkJoin } from 'rxjs';
+import { HttpParams } from '@angular/common/http';
+import {
+  CentroCostoResumen,
+  PartidaCatalogo,
+  SaldoPartida,
+} from '../../models/consultas-presupuestarias.models';
+import { forkJoin, Observable } from 'rxjs';
 import { ApiService } from './api.service';
 
 /** Filtros compartidos por las consultas presupuestarias. */
@@ -93,9 +99,9 @@ export class ControlPresupuestarioService {
   // ----------------------------------------------------------- centros de costo
 
   centrosCosto(activo?: boolean | null, idTipoCentroCosto?: number | null, busqueda?: string | null,
-    idProyecto?: number | null) {
-    const qs = this.query({ activo, idTipoCentroCosto, idProyecto, busqueda });
-    return this.api.http.get<any[]>(`${this.base}/centros-costo${qs}`);
+    idProyecto?: number | null): Observable<CentroCostoResumen[]> {
+    const params = this.parametrosConsulta({ activo, idTipoCentroCosto, idProyecto, busqueda });
+    return this.api.http.get<CentroCostoResumen[]>(`${this.base}/centros-costo`, { params });
   }
 
   centroCosto(id: number) {
@@ -129,8 +135,10 @@ export class ControlPresupuestarioService {
     soloRaices?: boolean | null;
     esHoja?: boolean | null;
     busqueda?: string | null;
-  } = {}) {
-    return this.api.http.get<any[]>(`${this.base}/partidas${this.query(filtros)}`);
+  } = {}): Observable<PartidaCatalogo[]> {
+    return this.api.http.get<PartidaCatalogo[]>(`${this.base}/partidas`, {
+      params: this.parametrosConsulta({ ...filtros }),
+    });
   }
 
   partida(id: number) {
@@ -329,8 +337,10 @@ export class ControlPresupuestarioService {
     return this.api.http.get<any>(`${this.base}/consultas/resumen${this.query(filtro)}`);
   }
 
-  saldos(filtro: ReporteFiltro = {}) {
-    return this.api.http.get<any[]>(`${this.base}/consultas/saldo${this.query(filtro)}`);
+  saldos(filtro: ReporteFiltro = {}): Observable<SaldoPartida[]> {
+    return this.api.http.get<SaldoPartida[]>(`${this.base}/consultas/saldo`, {
+      params: this.parametrosConsulta({ ...filtro }),
+    });
   }
 
   vigente(filtro: ReporteFiltro = {}) {
@@ -374,6 +384,16 @@ export class ControlPresupuestarioService {
 
   private rutaVersion(idPresupuesto: number, idVersion: number): string {
     return `${this.base}/presupuestos/${idPresupuesto}/versiones/${idVersion}`;
+  }
+
+  private parametrosConsulta(
+    filtros: Record<string, string | number | boolean | null | undefined>,
+  ): HttpParams {
+    let params = new HttpParams();
+    for (const [clave, valor] of Object.entries(filtros)) {
+      if (valor !== undefined && valor !== null && valor !== '') params = params.set(clave, valor);
+    }
+    return params;
   }
 
   private query(filtros: Record<string, any>): string {

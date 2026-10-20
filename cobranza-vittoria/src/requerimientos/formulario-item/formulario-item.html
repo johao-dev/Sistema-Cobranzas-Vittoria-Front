@@ -1,0 +1,176 @@
+@let partida = vm.partidaSeleccionadaModal;
+@let indiceEdicion = vm.editingItemIndex();
+<dialog
+  dialogoRequerimiento
+  (solicitarCierre)="vm.cerrarModalEspecialidades()"
+  class="modal-card item-modal-card"
+  role="dialog"
+  aria-labelledby="titulo-item"
+>
+  <div class="modal-header">
+    <div>
+      <div id="titulo-item" class="panel-title" style="margin: 0">
+        {{ indiceEdicion !== null ? 'Editar ítem' : 'Agregar ítem' }}
+      </div>
+      <div class="helper-text" style="margin: 6px 0 0 0">
+        {{
+          vm.gestionItemsAlmacen() && indiceEdicion !== null
+            ? 'El material no se puede cambiar. Para sustituirlo, agrega otro ítem y elimina el anterior.'
+            : 'Selecciona primero la especialidad y luego el material correspondiente.'
+        }}
+      </div>
+    </div>
+    <button
+      class="btn btn-ghost"
+      (click)="vm.cerrarModalEspecialidades()"
+      [disabled]="vm.guardandoItem()"
+    >
+      Cerrar
+    </button>
+  </div>
+
+  <div class="form-grid two item-modal-grid" [formGroup]="formulario" style="margin-top: 12px">
+    <div class="field">
+      <label for="item-especialidad">Especialidad</label>
+      @if (vm.gestionItemsAlmacen() && indiceEdicion !== null) {
+        <input
+          id="item-especialidad"
+          [value]="vm.form().items[indiceEdicion].especialidad || '-'"
+          readonly
+          aria-label="Especialidad del ítem"
+        />
+      }
+      @if (!vm.gestionItemsAlmacen() || indiceEdicion === null) {
+        <select id="item-especialidad" formControlName="idEspecialidad">
+          <option [ngValue]="null">Seleccionar</option>
+          @for (e of vm.especialidades(); track e) {
+            <option [ngValue]="vm.getIdEspecialidad(e)">{{ vm.getNombreEspecialidad(e) }}</option>
+          }
+        </select>
+      }
+    </div>
+
+    <div class="field material-picker-field">
+      <div class="field-label-row">
+        <label for="item-material">Material</label>
+        @if (!vm.gestionItemsAlmacen()) {
+          <button
+            class="btn btn-secondary btn-xs"
+            type="button"
+            (click)="vm.abrirFormNuevoMaterial()"
+          >
+            + Agregar material
+          </button>
+        }
+      </div>
+      @if (vm.gestionItemsAlmacen() && indiceEdicion !== null) {
+        <input
+          id="item-material"
+          [value]="vm.form().items[indiceEdicion].material"
+          readonly
+          aria-label="Material del ítem"
+        />
+      }
+      @if (!vm.gestionItemsAlmacen() || indiceEdicion === null) {
+        <select id="item-material" formControlName="idMaterial">
+          <option [ngValue]="null">
+            {{
+              vm.modalItem().idEspecialidad ? 'Seleccionar' : 'Selecciona una especialidad primero'
+            }}
+          </option>
+          @for (m of vm.materialesFiltradosModal; track m) {
+            <option [ngValue]="vm.getIdMaterial(m)">
+              {{ vm.getDescripcionMaterial(m) }} — {{ vm.getUnidadMaterial(m) }}
+            </option>
+          }
+        </select>
+      }
+    </div>
+
+    <div class="field">
+      <label for="item-partida">Partida presupuestal</label>
+      <select id="item-partida" formControlName="idPresupuestoDetalle">
+        @if (vm.gestionItemsAlmacen() && vm.modalItem().idPresupuestoDetalle && !partida) {
+          <option [ngValue]="vm.modalItem().idPresupuestoDetalle">
+            Partida actual (no disponible en el catálogo)
+          </option>
+        }
+        <option [ngValue]="null">
+          {{
+            vm.cargandoPartidas()
+              ? 'Cargando partidas…'
+              : vm.gestionItemsAlmacen() || vm.partidasPresupuesto().length
+                ? 'Sin imputar'
+                : 'No hay presupuesto aprobado para este proyecto'
+          }}
+        </option>
+        @for (p of vm.partidasPresupuesto(); track p) {
+          <option [ngValue]="p.idPresupuestoDetalle">
+            {{ p.codigoPartida }} — {{ p.partida }}
+          </option>
+        }
+      </select>
+      @if (partida) {
+        <small class="saldo-hint" [class.saldo-hint--danger]="partida.saldoDisponible <= 0">
+          Saldo disponible: {{ partida.simboloMoneda }}
+          {{ partida.saldoDisponible | number: '1.2-2' }}
+          · Presupuestado {{ partida.montoPresupuestado | number: '1.2-2' }} · Comprometido
+          {{ partida.comprometido | number: '1.2-2' }} · Ejecutado
+          {{ partida.ejecutado | number: '1.2-2' }}
+        </small>
+      }
+      @if (vm.errorPartidas()) {
+        <small class="partida-aviso" role="alert">{{ vm.errorPartidas() }}</small>
+      }
+      @if (vm.avisoPartidaMaterial()) {
+        <small class="partida-aviso">{{ vm.avisoPartidaMaterial() }}</small>
+      }
+    </div>
+
+    <div class="field">
+      <label for="item-cantidad">Cantidad</label>
+      <input
+        id="item-cantidad"
+        type="number"
+        min="0.01"
+        step="0.01"
+        required
+        formControlName="cantidad"
+      />
+    </div>
+
+    <div class="field">
+      <label for="item-observacion">Observación ítem</label>
+      <input id="item-observacion" maxlength="250" formControlName="observacion" />
+    </div>
+  </div>
+
+  @if (vm.msg()) {
+    <div class="error-box" role="alert">{{ vm.msg() }}</div>
+  }
+  <div class="toolbar" style="margin-top: 14px; justify-content: flex-end">
+    <button
+      class="btn btn-ghost"
+      (click)="vm.cerrarModalEspecialidades()"
+      [disabled]="vm.guardandoItem()"
+    >
+      Cancelar
+    </button>
+    <button
+      class="btn btn-primary"
+      (click)="vm.agregarItemDesdeModal()"
+      [disabled]="
+        vm.guardandoItem() ||
+        (vm.gestionItemsAlmacen() && (!vm.puedeGestionarItemsAlmacen || vm.recargandoItems()))
+      "
+    >
+      {{
+        vm.guardandoItem()
+          ? 'Guardando…'
+          : indiceEdicion !== null
+            ? 'Guardar cambios'
+            : 'Agregar ítem'
+      }}
+    </button>
+  </div>
+</dialog>

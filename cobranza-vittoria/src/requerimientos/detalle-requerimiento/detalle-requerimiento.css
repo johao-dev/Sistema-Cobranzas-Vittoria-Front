@@ -1,0 +1,29 @@
+.blocked-chip {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* HOTFIX V12 - Requerimientos: agregar material solo en nuevo requerimiento y detalle ordenado */
+.form-modal-head,
+.detail-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+  padding-right: 46px;
+}
+
+.detail-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
