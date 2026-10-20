@@ -1,0 +1,119 @@
+@if (borrador(); as item) {
+  <dialog
+    dialogoModal
+    (solicitarCierre)="cerrar.emit()"
+    class="modal-card purchase-modal"
+    aria-labelledby="titulo-editor-importe"
+  >
+    <div class="modal-header purchase-modal__header">
+      <div>
+        <div id="titulo-editor-importe" class="panel-title purchase-modal__title">
+          Monto total para {{ item.material }}
+        </div>
+        <div class="modal-sub">
+          Ingresa el monto total. El subtotal sin IGV y el IGV se calculan automáticamente.
+        </div>
+      </div>
+      <button
+        class="modal-close purchase-modal__close"
+        type="button"
+        (click)="cerrar.emit()"
+        aria-label="Cerrar"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="purchase-modal__meta">
+      <div class="meta-card">
+        <span class="meta-label">Especialidad</span>
+        <strong>{{ item.especialidad }}</strong>
+      </div>
+      <div class="meta-card">
+        <span class="meta-label">Proveedor</span>
+        <strong>{{ item.proveedor }}</strong>
+      </div>
+      <div class="meta-card">
+        <span class="meta-label">Unidad</span>
+        <strong>{{ item.unidadMedida }}</strong>
+      </div>
+      <div class="meta-card">
+        <span class="meta-label">Cantidad</span>
+        <strong>{{ item.cantidad }}</strong>
+      </div>
+    </div>
+
+    <div class="field full-width field-segmented">
+      <span>Incluye IGV</span>
+      <div class="segmented-control">
+        <button
+          type="button"
+          class="segmented-option"
+          [class.active]="item.incluyeIgv"
+          [attr.aria-pressed]="item.incluyeIgv"
+          (click)="cambiarIgv(true)"
+        >
+          Sí
+        </button>
+        <button
+          type="button"
+          class="segmented-option"
+          [class.active]="!item.incluyeIgv"
+          [attr.aria-pressed]="!item.incluyeIgv"
+          (click)="cambiarIgv(false)"
+        >
+          No
+        </button>
+      </div>
+    </div>
+
+    <div class="form-grid two purchase-modal__grid">
+      <div class="field">
+        <label for="editor-importe-campo-1">Subtotal sin IGV</label>
+        <input id="editor-importe-campo-1" type="number" [ngModel]="item.subtotalSinIgv" readonly />
+      </div>
+      <div class="field">
+        <label for="editor-importe-campo-2">Monto IGV</label>
+        <input id="editor-importe-campo-2" type="number" [ngModel]="item.montoIgv" readonly />
+      </div>
+      <div class="field">
+        <label for="editor-importe-campo-3">Monto total</label>
+        <input
+          id="editor-importe-campo-3"
+          type="number"
+          min="0.01"
+          step="0.01"
+          [ngModel]="monto()"
+          (ngModelChange)="cambiarMonto($event)"
+        />
+      </div>
+
+      <div class="field full-width">
+        <label for="editor-importe-campo-4">Observación del ítem</label>
+        <input id="editor-importe-campo-4" [(ngModel)]="item.observacion" />
+      </div>
+      <div class="field full-width">
+        <label for="editor-importe-campo-5">Adjuntar archivos (cotización / sustento)</label>
+        <input id="editor-importe-campo-5" type="file" multiple (change)="seleccionar($event)" />
+        @if (item.files.length) {
+          <div class="file-chip-list">
+            @for (file of item.files; track file; let i = $index) {
+              <div class="file-chip">
+                <span>{{ file.name }}</span>
+                <button type="button" class="file-chip__remove" (click)="quitar(i)">Quitar</button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    @if (error()) {
+      <p role="alert">{{ error() }}</p>
+    }
+    <div class="modal-footer">
+      <button type="button" class="btn btn-primary" (click)="confirmar()">Guardar monto</button>
+      <button type="button" class="btn btn-ghost" (click)="cerrar.emit()">Cancelar</button>
+    </div>
+  </dialog>
+}

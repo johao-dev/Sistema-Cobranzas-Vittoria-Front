@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CatalogoProyectos } from '../../../catalogos/proyectos/catalogo-proyectos';
 import { PresupuestoService } from '../../core/services/presupuesto.service';
-import { ComprasService } from '../../core/services/compras.service';
+import { RegistroCompras } from '../../../compras/registro-compras';
 import { SunatService } from '../../core/services/sunat.service';
 
 type PresupuestoItem = {
@@ -63,7 +63,7 @@ export class PresupuestoPage implements OnInit {
   constructor(
     private proyectosApi: CatalogoProyectos,
     private presupuestoService: PresupuestoService,
-    private comprasService: ComprasService,
+    private comprasService: RegistroCompras,
     private sunatService: SunatService,
     private cdr: ChangeDetectorRef
   ) {

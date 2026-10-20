@@ -1,0 +1,10 @@
+.aceptar-card {
+  z-index: 93;
+  max-width: 520px;
+}
+
+.aceptar-nota {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #374151;
+}

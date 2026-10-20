@@ -1,0 +1,58 @@
+<dialog
+  dialogoModal
+  (solicitarCierre)="solicitarCierre()"
+  class="panel panel--form design-modal-card aceptar-card"
+  aria-labelledby="titulo-aceptar-compra"
+>
+  <button
+    type="button"
+    class="modal-close"
+    (click)="solicitarCierre()"
+    aria-label="Cerrar"
+    [disabled]="aceptando()"
+  >
+    ×
+  </button>
+  <div class="panel-title" id="titulo-aceptar-compra">
+    Aceptar compra {{ compra().NumeroCompra }}
+  </div>
+  <p class="aceptar-nota">
+    Se ejecutará en el presupuesto el gasto de
+    <strong
+      >{{ compra().SimboloMoneda || compra().CodigoMoneda }}
+      {{ compra().MontoTotal | number: '1.2-2' }}</strong
+    >
+    en las partidas del requerimiento, y los materiales ingresarán al kardex. Si la O.C. tenía
+    precios, se libera el monto que había comprometido. La O.C. {{ compra().NumeroOrdenCompra }}
+    pasará a ATENDIDA. Una compra aceptada no se puede revertir.
+  </p>
+
+  <div class="field">
+    <label for="aceptacion-compra-campo-1">Observación (opcional)</label>
+    <textarea
+      id="aceptacion-compra-campo-1"
+      rows="2"
+      maxlength="500"
+      [ngModel]="observacion()"
+      (ngModelChange)="observacion.set($event)"
+      [disabled]="aceptando()"
+    ></textarea>
+  </div>
+
+  <div class="toolbar" style="margin-top: 14px">
+    <button type="button" class="btn btn-success" [disabled]="aceptando()" (click)="confirmar()">
+      {{ aceptando() ? 'Aceptando…' : 'Aceptar compra' }}
+    </button>
+    <button
+      type="button"
+      class="btn btn-ghost"
+      [disabled]="aceptando()"
+      (click)="solicitarCierre()"
+    >
+      Volver
+    </button>
+  </div>
+  @if (error()) {
+    <p role="alert">{{ error() }}</p>
+  }
+</dialog>

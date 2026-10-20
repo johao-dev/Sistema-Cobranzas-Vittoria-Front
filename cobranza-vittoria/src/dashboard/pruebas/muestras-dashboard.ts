@@ -2,7 +2,7 @@ import {
   CompraDetalleResponse,
   CompraFilaSql,
   CompraItemFilaSql,
-} from '../../app/models/compras.models';
+} from '../../compras/contratos-compras';
 import { ValorizacionListado } from '../../app/models/valorizaciones.models';
 
 export function crearCompra(cambios: Partial<CompraFilaSql> = {}): CompraFilaSql {

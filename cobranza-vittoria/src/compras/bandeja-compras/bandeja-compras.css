@@ -1,0 +1,11 @@
+.compras-list-panel {
+  margin-top: 0;
+}
+
+.compras-cerradas-panel {
+  margin-top: 22px;
+}
+
+.compras-cerradas-table table {
+  min-width: max(100%, 960px) !important;
+}

@@ -1,56 +1,3 @@
-
-export interface Requerimiento {
-  idRequerimiento: number;
-  numeroRequerimiento: string;
-  fechaRequerimiento: string;
-  especialidad?: string | null;
-  nombreProyecto?: string | null;
-  descripcion?: string | null;
-  fechaEntrega?: string | null;
-  solicitante?: string | null;
-  estado: string;
-  observacion?: string | null;
-}
-
-export interface RequerimientoCreate {
-  numeroRequerimiento: string;
-  fechaRequerimiento: string;
-  idEspecialidad: number;
-  idProyecto: number;
-  descripcion?: string | null;
-  fechaEntrega?: string | null;
-  // El backend deriva al solicitante desde el JWT; nunca debe enviarlo el formulario.
-  observacion?: string | null;
-  items: RequerimientoItemCreate[];
-}
-
-export interface RequerimientoItemCreate {
-  idMaterial: number;
-  cantidad: number;
-  observacion?: string | null;
-}
-
-export interface OrdenCompra {
-  idOrdenCompra: number;
-  numeroOrdenCompra: string;
-  numeroRequerimiento?: string | null;
-  proveedor?: string | null;
-  nombreProyecto?: string | null;
-  fechaOrdenCompra: string;
-  estado: string;
-  total: number;
-}
-
-export interface Compra {
-  idCompra: number;
-  numeroCompra: string;
-  numeroOrdenCompra?: string | null;
-  proveedor?: string | null;
-  fechaCompra: string;
-  aceptada: boolean;
-  montoTotal: number;
-}
-
 // DTO de las consultas legacy: las filas Dapper conservan los alias PascalCase.
 export interface CompraFilaSql {
   IdCompra: number;
@@ -105,4 +52,39 @@ export interface CompraDetalleResponse {
 export interface FiltrosCompra {
   aceptada?: boolean | null;
   idProveedor?: number | null;
+}
+
+export interface CompraPendienteOcFilaSql {
+  IdOrdenCompra: number;
+  NumeroOrdenCompra: string;
+  IdMoneda: number;
+  CodigoMoneda: string;
+  SimboloMoneda: string | null;
+  FechaOrdenCompra: string;
+  Estado: string;
+  Total: number;
+  Proveedores: string | null;
+  IdRequerimiento: number | null;
+  NumeroRequerimiento: string;
+  Especialidades: string;
+  NombreProyecto: string;
+}
+export interface CompraRequest {
+  numeroCompra: string;
+  idOrdenCompra: number;
+  fechaCompra: string;
+  incluyeIGV: boolean;
+  subtotalSinIGV: number;
+  montoIGV: number;
+  montoTotal: number;
+  observacion: string | null;
+  items: { idMaterial: number; cantidad: number; precioUnitario: number }[];
+}
+export interface CompraCreada {
+  idCompra: number;
+  montoTotal: number;
+}
+export interface AceptarCompraRequest {
+  idUsuario: number | null;
+  observacion: string | null;
 }

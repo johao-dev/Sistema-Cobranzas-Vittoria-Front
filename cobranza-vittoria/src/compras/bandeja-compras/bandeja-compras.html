@@ -1,0 +1,172 @@
+<div class="page-header">
+  <div>
+    <div class="page-title">Compras</div>
+    <div class="page-subtitle">
+      Pendientes desde O.C. y compras cerradas con carga opcional de archivos.
+    </div>
+  </div>
+</div>
+
+@if (msg()) {
+  <p role="status">{{ msg() }}</p>
+}
+<section class="panel compras-list-panel">
+  @if (cargandoPendientes()) {
+    <p role="status">Cargando órdenes pendientes…</p>
+  }
+  @if (errorPendientes()) {
+    <div role="alert">
+      {{ errorPendientes() }}
+      <button type="button" class="btn btn-secondary" (click)="cargar()">Reintentar</button>
+    </div>
+  }
+  <div class="panel-title">Órdenes de Compra pendientes de compra</div>
+
+  @if (!cargandoPendientes() && !errorPendientes() && !pendientes().length) {
+    <div class="empty-state">No hay Órdenes de Compra pendientes de compra.</div>
+  }
+
+  @if (pendientes().length) {
+    <div class="table-wrap table-wrap--sticky-actions table-wrap--medium">
+      <table>
+        <thead>
+          <tr>
+            <th>N° O.C.</th>
+            <th>Fecha</th>
+            <th>Proveedor</th>
+            <th>Proyecto</th>
+            <th>Estado</th>
+            <th class="actions-col actions-col--select">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of pendientes(); track row) {
+            <tr>
+              <td>{{ row.NumeroOrdenCompra || '-' }}</td>
+              <td>
+                {{ row.FechaOrdenCompra ? (row.FechaOrdenCompra | date: 'dd/MM/yyyy') : '-' }}
+              </td>
+              <td>{{ row.Proveedores || '-' }}</td>
+              <td>{{ row.NombreProyecto || '-' }}</td>
+              <td>
+                <span class="badge badge--pending">{{ row.Estado || '-' }}</span>
+              </td>
+              <td class="actions-col--select">
+                <select
+                  class="actions-select"
+                  aria-label="Acciones de orden de compra"
+                  (change)="accionPendiente($event, row)"
+                  [disabled]="cargandoCompras() || !!errorCompras()"
+                >
+                  <option value="">Acciones</option>
+                  <option value="procesar">Procesar</option>
+                </select>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <div class="panel panel-embedded compras-cerradas-panel">
+    @if (cargandoCompras()) {
+      <p role="status">Cargando compras…</p>
+    }
+    @if (errorCompras()) {
+      <div role="alert">
+        {{ errorCompras() }}
+        <button type="button" class="btn btn-secondary" (click)="cargar()">Reintentar</button>
+      </div>
+    }
+    <div class="panel-title-row">
+      <div class="panel-title">Compras cerradas</div>
+      @if (cerradas().length) {
+        <div class="toolbar toolbar--compact">
+          <button class="btn btn-secondary btn-sm" type="button" (click)="exportar('excel')">
+            Exportar Excel
+          </button>
+          <button class="btn btn-primary btn-sm" type="button" (click)="exportar('pdf')">
+            Exportar PDF
+          </button>
+        </div>
+      }
+    </div>
+
+    @if (!cargandoCompras() && !errorCompras() && !cerradas().length) {
+      <div class="empty-state">No hay compras cerradas.</div>
+    }
+
+    @if (cerradas().length) {
+      <div class="table-wrap table-wrap--sticky-actions table-wrap--compact compras-cerradas-table">
+        <table>
+          <thead>
+            <tr>
+              <th>N° Compra</th>
+              <th>Fecha</th>
+              <th>Proveedor</th>
+              <th>Proyecto</th>
+              <th>Estado</th>
+              <th>Total</th>
+              <th class="actions-col actions-col--button">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of cerradas(); track row) {
+              <tr>
+                <td>{{ row.NumeroCompra || '-' }}</td>
+                <td>{{ row.FechaCompra ? (row.FechaCompra | date: 'dd/MM/yyyy') : '-' }}</td>
+                <td>{{ row.Proveedores || '-' }}</td>
+                <td>{{ row.NombreProyecto || '-' }}</td>
+                <td>
+                  <span
+                    class="badge"
+                    [class.badge--ok]="row.Estado.trim().toUpperCase() === 'ACEPTADA'"
+                    [class.badge--pending]="row.Estado.trim().toUpperCase() !== 'ACEPTADA'"
+                    >{{ row.Estado || '-' }}</span
+                  >
+                </td>
+                <td class="table-number">{{ row.MontoTotal | number: '1.2-2' }}</td>
+                <td class="actions-col--button">
+                  <div class="actions actions--center">
+                    <button
+                      type="button"
+                      class="btn btn-secondary btn-sm action-btn action-btn--small"
+                      (click)="compraSeleccionada.set(row.IdCompra)"
+                    >
+                      Ver
+                    </button>
+                    @if (esAceptable(row)) {
+                      <button
+                        type="button"
+                        class="btn btn-success btn-sm action-btn action-btn--small"
+                        (click)="porAceptar.set(row)"
+                      >
+                        Aceptar
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</section>
+
+@if (ordenSeleccionada(); as idOrden) {
+  <compra-formulario
+    [idOrden]="idOrden"
+    [numero]="numeroSiguiente(cerradas())"
+    (cerrar)="ordenSeleccionada.set(null)"
+    (registrada)="registrada($event)"
+  />
+}
+@if (compraSeleccionada(); as idCompra) {
+  <compra-detalle [idCompra]="idCompra" (cerrar)="compraSeleccionada.set(null)" />
+}
+@if (porAceptar(); as compra) {
+  <compra-aceptacion [compra]="compra" (cerrar)="porAceptar.set(null)" (aceptada)="aceptada()" />
+}

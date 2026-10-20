@@ -12,9 +12,9 @@ import {
   timeout,
   toArray,
 } from 'rxjs';
-import { ComprasService } from '../../app/core/services/compras.service';
+import { RegistroCompras } from '../../compras/registro-compras';
 import { ValorizacionesService } from '../../app/core/services/valorizaciones.service';
-import { CompraDetalleResponse, CompraFilaSql } from '../../app/models/compras.models';
+import { CompraDetalleResponse, CompraFilaSql } from '../../compras/contratos-compras';
 import { ValorizacionListado } from '../../app/models/valorizaciones.models';
 import { agruparMateriales, calcularTarjetas } from '../indicadores/calculos-dashboard';
 import { DatosDashboard } from '../contratos-dashboard';
@@ -37,7 +37,7 @@ function consultar<T>(
 
 @Injectable({ providedIn: 'root' })
 export class CargarDashboard {
-  private readonly compras: ComprasService = inject(ComprasService);
+  private readonly compras: RegistroCompras = inject(RegistroCompras);
   private readonly valorizaciones: ValorizacionesService = inject(ValorizacionesService);
 
   cargar(): Observable<DatosDashboard> {

@@ -8,7 +8,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CargarDashboard } from './cargar-dashboard';
 import { DatosDashboard } from '../contratos-dashboard';
-import { ComprasService } from '../../app/core/services/compras.service';
+import { RegistroCompras } from '../../compras/registro-compras';
 import { ValorizacionesService } from '../../app/core/services/valorizaciones.service';
 import { environment } from '../../core/config/environment';
 import {
@@ -155,11 +155,11 @@ describe('CargarDashboard y contratos HTTP consumidos', () => {
   });
 
   it('preserva filtros false y cero, y omite filtros nulos en compras', () => {
-    TestBed.inject(ComprasService).compras({ aceptada: false, idProveedor: 0 }).subscribe();
+    TestBed.inject(RegistroCompras).compras({ aceptada: false, idProveedor: 0 }).subscribe();
     const peticion = http.expectOne(`${COMPRAS}?aceptada=false&idProveedor=0`);
     expect(peticion.request.method).toBe('GET');
     peticion.flush([]);
-    TestBed.inject(ComprasService).compras({ aceptada: null, idProveedor: null }).subscribe();
+    TestBed.inject(RegistroCompras).compras({ aceptada: null, idProveedor: null }).subscribe();
     http.expectOne(COMPRAS).flush([]);
   });
 

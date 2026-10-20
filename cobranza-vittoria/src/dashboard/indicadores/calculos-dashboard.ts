@@ -1,4 +1,4 @@
-import { CompraDetalleResponse, CompraFilaSql } from '../../app/models/compras.models';
+import { CompraDetalleResponse, CompraFilaSql } from '../../compras/contratos-compras';
 import { ValorizacionListado } from '../../app/models/valorizaciones.models';
 import {
   EstadisticaMaterial,

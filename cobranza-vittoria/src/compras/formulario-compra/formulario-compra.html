@@ -1,0 +1,182 @@
+<dialog
+  dialogoModal
+  (solicitarCierre)="solicitarCierre()"
+  class="panel panel--form design-modal-card design-modal-card--xl compra-flow-card"
+  aria-labelledby="titulo-formulario-compra"
+>
+  <button
+    type="button"
+    class="modal-close"
+    [disabled]="guardando()"
+    (click)="solicitarCierre()"
+    aria-label="Cerrar"
+  >
+    ×
+  </button>
+  <h2 class="panel-title" id="titulo-formulario-compra">Detalle / cierre de compra</h2>
+  @if (cargando()) {
+    <p role="status">Cargando O.C.…</p>
+  }
+  @if (avisoCatalogo()) {
+    <p role="status">{{ avisoCatalogo() }}</p>
+  }
+  @if (!cargando() && !detalleOc()) {
+    <button type="button" class="btn btn-secondary" (click)="cargar()">Reintentar</button>
+  }
+
+  @if (detalleOc(); as detalle) {
+    <div>
+      <div class="toolbar" style="margin-bottom: 14px">
+        <span class="list-chip">{{ detalle.ordenCompra.numeroOrdenCompra }}</span>
+        <span class="list-chip">{{ detalle.ordenCompra.estado }}</span>
+      </div>
+      <div class="toolbar filters-inline" style="margin-bottom: 14px">
+        <div class="field inline-field">
+          <label for="formulario-compra-campo-1">Especialidad</label>
+          <select
+            id="formulario-compra-campo-1"
+            [disabled]="guardando()"
+            [ngModel]="especialidad()"
+            (ngModelChange)="especialidad.set($event)"
+          >
+            <option value="TODAS">TODAS</option>
+            @for (e of especialidades(); track e) {
+              <option [value]="e">{{ e }}</option>
+            }
+          </select>
+        </div>
+        <div class="field inline-field">
+          <label for="formulario-compra-campo-2">Proveedor</label>
+          <select
+            id="formulario-compra-campo-2"
+            [disabled]="guardando()"
+            [ngModel]="proveedor()"
+            (ngModelChange)="proveedor.set($event)"
+          >
+            <option value="TODOS">TODOS</option>
+            @for (p of proveedores(); track p) {
+              <option [value]="p">{{ p }}</option>
+            }
+          </select>
+        </div>
+      </div>
+      @if (items().length) {
+        <div class="table-wrap table-wrap--sticky-actions table-wrap--medium purchase-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Especialidad</th>
+                <th>Material</th>
+                <th>Unidad</th>
+                <th>Cantidad</th>
+                <th>Proveedor</th>
+                <th class="actions-col purchase-action-col">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (x of filtrados(); track x) {
+                <tr>
+                  <td>{{ mostrarEspecialidad(x) }}</td>
+                  <td>{{ x.material }}</td>
+                  <td>{{ x.unidadMedida }}</td>
+                  <td>{{ x.cantidad }}</td>
+                  <td>{{ x.proveedor }}</td>
+                  <td class="purchase-action-col">
+                    <div class="actions actions--center">
+                      <button
+                        type="button"
+                        class="btn btn-secondary btn-sm action-btn action-btn--price"
+                        [disabled]="guardando()"
+                        (click)="editar(x)"
+                      >
+                        {{ x.total > 0 ? 'Editar precio' : 'Colocar precio' }}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+              @if (!filtrados().length) {
+                <tr>
+                  <td colspan="6" class="empty-row">No hay ítems con el filtro seleccionado.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+      @if (items().length) {
+        <div class="panel panel-embedded purchase-register">
+          <div class="panel-title purchase-register__title">Totales y Registro de la Compra</div>
+          <div class="helper-strip">
+            El número de compra y la fecha se generan automáticamente. Los montos se calculan dentro
+            de cada ítem.
+          </div>
+          <div class="form-grid two purchase-register-grid">
+            <div class="field auto-field">
+              <label for="formulario-compra-campo-3">Número compra</label
+              ><input id="formulario-compra-campo-3" [value]="numero()" readonly />
+            </div>
+            <div class="field auto-field">
+              <label for="formulario-compra-campo-4">Fecha compra</label
+              ><input id="formulario-compra-campo-4" type="date" [value]="fecha" readonly />
+            </div>
+            <div class="field auto-field">
+              <label for="formulario-compra-campo-5">Subtotal sin IGV</label
+              ><input
+                id="formulario-compra-campo-5"
+                [value]="totales().subtotal | number: '1.2-2'"
+                readonly
+              />
+            </div>
+            <div class="field auto-field">
+              <label for="formulario-compra-campo-6">Monto IGV</label
+              ><input
+                id="formulario-compra-campo-6"
+                [value]="totales().igv | number: '1.2-2'"
+                readonly
+              />
+            </div>
+            <div class="field auto-field">
+              <label for="formulario-compra-campo-7">Monto total</label
+              ><input
+                id="formulario-compra-campo-7"
+                [value]="totales().total | number: '1.2-2'"
+                readonly
+              />
+            </div>
+            <div class="field full-width">
+              <button
+                type="button"
+                class="btn btn-primary"
+                [disabled]="guardando()"
+                (click)="registrar()"
+              >
+                Registrar compra
+              </button>
+              <button
+                type="button"
+                class="btn btn-ghost"
+                [disabled]="guardando()"
+                (click)="solicitarCierre()"
+              >
+                Cancelar / Limpiar
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (msg()) {
+    <div class="empty-state" style="margin-top: 14px; padding: 14px">{{ msg() }}</div>
+  }
+</dialog>
+
+@if (itemEditor(); as item) {
+  <compra-editor-importe
+    [item]="item"
+    (guardar)="guardarItem($event)"
+    (cerrar)="indiceEditor.set(null)"
+  />
+}

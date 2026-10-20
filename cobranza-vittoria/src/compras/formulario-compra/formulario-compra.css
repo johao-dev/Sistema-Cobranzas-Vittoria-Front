@@ -1,0 +1,102 @@
+.purchase-table {
+  margin-bottom: 18px;
+}
+
+.empty-row {
+  text-align: center;
+  color: var(--muted);
+  padding: 18px;
+}
+
+.filters-inline {
+  align-items: end;
+}
+
+.inline-field {
+  min-width: 220px;
+}
+
+.purchase-register-grid {
+  gap: 14px;
+}
+
+.auto-field input {
+  background: #f8f9fc;
+  font-weight: 800;
+  color: #3f4760;
+}
+
+.purchase-register .toolbar .btn {
+  min-width: 220px;
+}
+
+.purchase-table table {
+  min-width: 820px !important;
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+.purchase-table th,
+.purchase-table td {
+  padding: 8px 10px !important;
+  font-size: 0.82rem !important;
+  line-height: 1.2 !important;
+  vertical-align: middle !important;
+}
+
+.purchase-table th:nth-child(1),
+.purchase-table td:nth-child(1) {
+  width: 15% !important;
+}
+
+.purchase-table th:nth-child(2),
+.purchase-table td:nth-child(2) {
+  width: 24% !important;
+}
+
+.purchase-table th:nth-child(3),
+.purchase-table td:nth-child(3) {
+  width: 11% !important;
+  text-align: center !important;
+}
+
+.purchase-table th:nth-child(4),
+.purchase-table td:nth-child(4) {
+  width: 10% !important;
+  text-align: center !important;
+}
+
+.purchase-table th:nth-child(5),
+.purchase-table td:nth-child(5) {
+  width: 25% !important;
+}
+
+.purchase-table th:nth-child(6),
+.purchase-table td:nth-child(6),
+.purchase-action-col {
+  width: 138px !important;
+  min-width: 138px !important;
+  max-width: 138px !important;
+  text-align: center !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+.purchase-table td:nth-child(6) .actions {
+  justify-content: center !important;
+}
+
+.action-btn--price {
+  width: 116px !important;
+  min-width: 116px !important;
+  max-width: 116px !important;
+  padding: 7px 8px !important;
+  font-size: 0.76rem !important;
+}
+
+@media (max-width: 900px) {
+  .inline-field {
+    min-width: 0;
+    width: 100%;
+  }
+}

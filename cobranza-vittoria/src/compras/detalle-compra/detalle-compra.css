@@ -1,0 +1,17 @@
+.docs-panel {
+  padding: 16px;
+}
+
+.docs-title {
+  font-size: 1rem;
+  margin-bottom: 12px;
+}
+
+.docs-table table {
+  min-width: max(100%, 760px) !important;
+}
+
+.docs-table th:last-child,
+.docs-table td:last-child {
+  text-align: center;
+}

@@ -1,0 +1,127 @@
+<dialog
+  dialogoModal
+  (solicitarCierre)="solicitarCierre()"
+  class="panel design-modal-card design-modal-card--xl"
+  aria-labelledby="titulo-detalle-compra"
+>
+  <button
+    type="button"
+    class="modal-close"
+    [disabled]="subiendo()"
+    (click)="solicitarCierre()"
+    aria-label="Cerrar"
+  >
+    ×
+  </button>
+  <h2 class="panel-title" id="titulo-detalle-compra">Detalle de compra</h2>
+  @if (cargando()) {
+    <p role="status">Cargando compra…</p>
+  }
+  @if (!cargando() && !detalle()) {
+    <button type="button" class="btn btn-secondary" (click)="cargar()">Reintentar</button>
+  }
+
+  @if (detalle(); as compra) {
+    <div>
+      <div class="toolbar" style="margin-bottom: 14px">
+        <span class="list-chip">{{ compra.compra.NumeroCompra }}</span>
+        <span class="list-chip">{{ compra.compra.Estado }}</span>
+      </div>
+      @if (compra.items.length) {
+        <div class="table-wrap table-wrap--medium">
+          <table>
+            <thead>
+              <tr>
+                <th>Material</th>
+                <th>Unidad</th>
+                <th>Cantidad</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of compra.items; track item) {
+                <tr>
+                  <td>{{ item.Material }}</td>
+                  <td>{{ item.UnidadMedida }}</td>
+                  <td>{{ item.Cantidad }}</td>
+                  <td class="table-number">{{ item.Subtotal | number: '1.2-2' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+      @if (!compra.documentos.length) {
+        <div class="panel panel-embedded docs-panel">
+          <div class="panel-title docs-title">Subir archivos pendientes</div>
+          <div class="helper-strip">
+            Como la compra se puede registrar sin adjuntos, aquí puedes subirlos después si no los
+            cargaste al inicio.
+          </div>
+          <div class="field full-width top-gap">
+            <label for="detalle-compra-campo-1">Archivos</label>
+            <input
+              id="detalle-compra-campo-1"
+              type="file"
+              [disabled]="subiendo()"
+              multiple
+              (change)="seleccionar($event)"
+            />
+            @if (archivos().length) {
+              <div class="hint">{{ archivos().length }} archivo(s) seleccionados.</div>
+            }
+          </div>
+          <div class="toolbar top-gap">
+            <button type="button" class="btn btn-primary" [disabled]="subiendo()" (click)="subir()">
+              Subir archivos
+            </button>
+          </div>
+        </div>
+      }
+      <div class="panel panel-embedded docs-panel">
+        <div class="panel-title docs-title">Documentos subidos</div>
+        @if (!compra.documentos.length) {
+          <div class="empty-state">No hay documentos adjuntos.</div>
+        }
+        @if (compra.documentos.length) {
+          <div class="table-wrap table-wrap--sticky-actions table-wrap--compact docs-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Archivo</th>
+                  <th>Extensión</th>
+                  <th>Fecha</th>
+                  <th class="actions-col actions-col--select">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (d of compra.documentos; track d) {
+                  <tr>
+                    <td>{{ d.NombreArchivo }}</td>
+                    <td>{{ d.Extension }}</td>
+                    <td>{{ d.FechaCreacion ? (d.FechaCreacion | date: 'dd/MM/yyyy') : '-' }}</td>
+                    <td class="actions-col--button">
+                      <div class="actions actions--center">
+                        <button
+                          type="button"
+                          class="btn btn-secondary btn-sm action-btn"
+                          (click)="descargar(d)"
+                        >
+                          Descargar
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (msg()) {
+    <div class="empty-state" style="margin-top: 14px; padding: 14px">{{ msg() }}</div>
+  }
+</dialog>
