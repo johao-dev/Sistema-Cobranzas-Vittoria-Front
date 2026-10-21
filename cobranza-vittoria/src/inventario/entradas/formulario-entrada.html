@@ -1,0 +1,156 @@
+<dialog
+  dialogoModal
+  (solicitarCierre)="solicitarCierre()"
+  class="panel panel--form design-modal-card"
+  aria-labelledby="titulo-entrada"
+>
+  <button
+    type="button"
+    class="modal-close"
+    (click)="solicitarCierre()"
+    aria-label="Cerrar"
+    [disabled]="guardando()"
+  >
+    ×
+  </button>
+  <h2 class="panel-title" id="titulo-entrada">Formulario</h2>
+
+  <fieldset [disabled]="guardando()" style="border: 0; padding: 0; margin: 0">
+    <div class="form-grid two">
+      <div class="field">
+        <label for="formulario-entrada-campo-1">Especialidad</label>
+        <select
+          id="formulario-entrada-campo-1"
+          [ngModel]="form().idEspecialidad"
+          (ngModelChange)="cambiarEspecialidad($event)"
+        >
+          <option [ngValue]="null">Seleccionar</option>
+          @for (e of especialidades(); track e) {
+            <option [ngValue]="e.idEspecialidad">
+              {{ e.nombre }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="formulario-entrada-campo-2">Nro. Documento</label>
+        <input
+          id="formulario-entrada-campo-2"
+          [ngModel]="form().numeroDocumento"
+          (ngModelChange)="actualizar('numeroDocumento', $event)"
+          placeholder="Ej. F001-12345"
+        />
+      </div>
+
+      <div class="field">
+        <label for="formulario-entrada-campo-3">Fecha</label>
+        <input
+          id="formulario-entrada-campo-3"
+          type="date"
+          [ngModel]="form().fecha"
+          (ngModelChange)="actualizar('fecha', $event)"
+        />
+      </div>
+
+      <div class="field">
+        <label for="formulario-entrada-campo-4">Proyecto</label>
+        <select
+          id="formulario-entrada-campo-4"
+          [ngModel]="form().idProyecto"
+          (ngModelChange)="actualizar('idProyecto', $event)"
+        >
+          <option [ngValue]="null">Seleccionar</option>
+          @for (p of proyectos(); track p) {
+            <option [ngValue]="p.idProyecto">
+              {{ p.nombreProyecto }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="field material-picker-field" style="grid-column: 1 / -1">
+        <label for="formulario-entrada-campo-5">Material</label>
+        <select
+          id="formulario-entrada-campo-5"
+          [ngModel]="form().idMaterial"
+          (ngModelChange)="actualizar('idMaterial', $event)"
+          [disabled]="!form().idEspecialidad"
+        >
+          <option [ngValue]="null">
+            {{ form().idEspecialidad ? 'Seleccionar' : 'Selecciona una especialidad primero' }}
+          </option>
+          @for (m of materialesFiltrados(); track m) {
+            <option [ngValue]="m.idMaterial">
+              {{ m.descripcion }} — {{ m.codigo }} — {{ m.unidadMedida }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="formulario-entrada-campo-6">Proveedor</label>
+        <select
+          id="formulario-entrada-campo-6"
+          [ngModel]="form().idProveedor"
+          (ngModelChange)="actualizar('idProveedor', $event)"
+        >
+          <option [ngValue]="null">Seleccionar</option>
+          @for (p of proveedores(); track p) {
+            <option [ngValue]="p.idProveedor">
+              {{ p.razonSocial }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="formulario-entrada-campo-7">Cantidad</label>
+        <input
+          id="formulario-entrada-campo-7"
+          type="number"
+          min="0"
+          step="0.01"
+          [ngModel]="form().cantidad"
+          (ngModelChange)="actualizar('cantidad', $event)"
+        />
+      </div>
+
+      <div class="field" style="grid-column: 1 / -1">
+        <label for="formulario-entrada-campo-8">Observación</label>
+        <input
+          id="formulario-entrada-campo-8"
+          [ngModel]="form().observacion"
+          (ngModelChange)="actualizar('observacion', $event)"
+          placeholder="Observación"
+        />
+      </div>
+    </div>
+  </fieldset>
+  <div class="toolbar" style="margin-top: 14px">
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="guardar()"
+      [disabled]="
+        guardando() ||
+        !form().idEspecialidad ||
+        !form().idMaterial ||
+        !form().idProyecto ||
+        !form().fecha ||
+        cantidadInvalida()
+      "
+    >
+      Guardar
+    </button>
+    <button type="button" class="btn btn-ghost" [disabled]="guardando()" (click)="reset()">
+      Limpiar
+    </button>
+  </div>
+
+  @if (msg()) {
+    <div class="empty-state" style="margin-top: 14px; padding: 14px">
+      {{ msg() }}
+    </div>
+  }
+</dialog>

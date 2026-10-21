@@ -1,0 +1,59 @@
+<section class="panel">
+  <div class="panel-title">Filtros</div>
+  <div class="form-grid four">
+    @if (mostrarProyecto()) {
+      <div class="field">
+        <label for="inventario-filtro-proyecto">Proyecto</label
+        ><select
+          id="inventario-filtro-proyecto"
+          [ngModel]="idProyecto()"
+          (ngModelChange)="idProyecto.set($event); cambio.emit(actuales())"
+        >
+          <option [ngValue]="null">Todos</option>
+          @for (p of proyectos(); track p.idProyecto) {
+            <option [ngValue]="p.idProyecto">{{ p.nombreProyecto }}</option>
+          }
+        </select>
+      </div>
+    }
+    <div class="field">
+      <label for="inventario-filtro-especialidad">Especialidad</label
+      ><select
+        id="inventario-filtro-especialidad"
+        [ngModel]="idEspecialidad()"
+        (ngModelChange)="idEspecialidad.set($event); cambio.emit(actuales())"
+      >
+        <option [ngValue]="null">Todas</option>
+        @for (e of especialidades(); track e.idEspecialidad) {
+          <option [ngValue]="e.idEspecialidad">{{ e.nombre }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label for="inventario-filtro-desde">Fecha desde</label
+      ><input
+        id="inventario-filtro-desde"
+        type="date"
+        [ngModel]="fechaDesde()"
+        (ngModelChange)="fechaDesde.set($event); cambio.emit(actuales())"
+      />
+    </div>
+    <div class="field">
+      <label for="inventario-filtro-hasta">Fecha hasta</label
+      ><input
+        id="inventario-filtro-hasta"
+        type="date"
+        [ngModel]="fechaHasta()"
+        (ngModelChange)="fechaHasta.set($event); cambio.emit(actuales())"
+      />
+    </div>
+  </div>
+  <div class="toolbar" style="margin-top: 14px">
+    <button type="button" class="btn btn-primary" (click)="aplicar()">Filtrar</button
+    ><button type="button" class="btn btn-ghost" (click)="limpiar()">Limpiar filtros</button
+    ><ng-content />
+  </div>
+  @if (error()) {
+    <p role="alert">{{ error() }}</p>
+  }
+</section>

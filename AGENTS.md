@@ -23,7 +23,7 @@
 
 ## 3. Arquitectura y responsabilidades
 
-**Arquitectura actual:** en transición: autenticación está en `src/autenticacion`, el dashboard en `src/dashboard`, los cinco catálogos generales en `src/catalogos`, Requerimientos en `src/requerimientos`, Órdenes de compra en `src/ordenes-compra`, Compras en `src/compras`, la sesión en `src/core/sesion` y los ambientes en `src/core/config`. El código pendiente conserva páginas en `src/app/pages`, servicios en `src/app/core/services` y modelos en `src/app/models`. No asumir que ya implementa un monolito modular o todas las capas de arquitectura limpia.
+**Arquitectura actual:** en transición: autenticación está en `src/autenticacion`, el dashboard en `src/dashboard`, los cinco catálogos generales en `src/catalogos`, Requerimientos en `src/requerimientos`, Órdenes de compra en `src/ordenes-compra`, Compras en `src/compras`, Inventario en `src/inventario`, la sesión en `src/core/sesion` y los ambientes en `src/core/config`. El código pendiente conserva páginas en `src/app/pages`, servicios en `src/app/core/services` y modelos en `src/app/models`. No asumir que ya implementa un monolito modular o todas las capas de arquitectura limpia.
 
 **Futura migración:** arquitectura por funcionalidades directamente en `src/<funcionalidad>/`, sin la carpeta `app/` ni una carpeta contenedora `features/`. La tabla siguiente describe las ubicaciones actuales, que siguen vigentes para el código no migrado; no representa la estructura objetivo.
 
@@ -43,7 +43,8 @@ Todas las rutas de esta sección son relativas a `cobranza-vittoria/src/`:
 | `requerimientos/` | Registro HTTP y contratos públicos; listado, detalle, formularios e impresión. Coordinador local con borrador, editor de ítem, operaciones de almacén, flujo, consultas y referencias separados por concepto; consultas presupuestarias propias del editor. |
 | `ordenes-compra/` | Registro HTTP y contratos públicos; bandeja y consultas, formulario con proveedores por línea, alta de proveedor, detalle, transiciones y documentos separados por concepto. Compras consume el registro público de órdenes. |
 | `compras/` | Registro HTTP y contratos públicos; bandeja, formulario de cierre, editor de importes, detalle/documentos, aceptación y exportación separados por concepto. Dashboard y Presupuesto consumen su registro público. |
-| `shared/dialogos/`, `shared/presentacion/` | Diálogo nativo reutilizado por Requerimientos, Órdenes de compra y Compras; presentación del solicitante compartida por Requerimientos y Órdenes de compra. |
+| `inventario/` | Registros HTTP y contratos del kardex manual y del historial ligado a Compras; entradas, salidas con ítems, stock/exportación, filtros, referencias y consultas separados por concepto. |
+| `shared/dialogos/`, `shared/presentacion/`, `shared/errores-api/` | Diálogo nativo reutilizado por Requerimientos, Órdenes de compra, Compras e Inventario; presentación del solicitante compartida por Requerimientos y Órdenes de compra; contratos genéricos de errores de validación. |
 | `core/sesion/` | Sesión y contratos públicos, claims, reglas genéricas de acceso, protección de rutas e interceptor HTTP. |
 | `core/config/` | Configuración de API por ambiente; consumidores y reemplazos de compilación actualizados. |
 | `app/reglas-acceso.ts` | Reglas concretas compartidas por rutas y menú del contenedor pendiente de migración. |

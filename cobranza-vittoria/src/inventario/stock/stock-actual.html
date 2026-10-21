@@ -1,0 +1,109 @@
+<div class="page-header">
+  <div>
+    <div class="page-title">Stock Actual</div>
+    <div class="page-subtitle">Consolidado de entradas y salidas por material.</div>
+  </div>
+</div>
+
+<inventario-filtros
+  [especialidades]="referencias.especialidades()"
+  [mostrarProyecto]="false"
+  (cambio)="filtros.set($event)"
+  (consultar)="filtrar($event)"
+>
+  <button
+    type="button"
+    class="btn btn-success"
+    [disabled]="exportacion.exportando()"
+    (click)="exportacion.exportar(filtros(), incluirTotales())"
+  >
+    {{ exportacion.exportando() ? 'Exportando…' : 'Exportar a Excel' }}
+  </button>
+  <label class="switch" [class.is-disabled]="exportacion.exportando()"
+    ><input
+      type="checkbox"
+      [ngModel]="incluirTotales()"
+      (ngModelChange)="incluirTotales.set($event)"
+      [disabled]="exportacion.exportando()"
+    /><span class="slider"></span><span class="switch-label">Incluir fila de totales</span></label
+  >
+</inventario-filtros>
+@for (error of referencias.errores(); track error) {
+  <p role="alert">{{ error }}</p>
+}
+@if (referencias.errores().length) {
+  <button
+    type="button"
+    class="btn btn-secondary"
+    [disabled]="!!referencias.pendientes()"
+    (click)="referencias.cargar('stock')"
+  >
+    Reintentar catálogos
+  </button>
+}
+@if (consulta.cargando()) {
+  <p role="status">Cargando stock…</p>
+}
+@if (consulta.error()) {
+  <p role="alert">
+    {{ consulta.error() }}
+    <button type="button" class="btn btn-secondary" (click)="cargar()">Reintentar</button>
+  </p>
+}
+
+<section class="panel" style="margin-top: 18px">
+  <div class="panel-title-row">
+    <div class="panel-title">Listado</div>
+    <div class="filters compact-filters maintenance-search">
+      <div class="field">
+        <label for="stock-actual-campo-1">Buscar</label>
+        <input
+          id="stock-actual-campo-1"
+          type="text"
+          [ngModel]="busqueda()"
+          (ngModelChange)="busqueda.set($event)"
+          placeholder="Buscar por ID, código o nombre"
+        />
+      </div>
+    </div>
+  </div>
+
+  @if (!consulta.cargando() && !consulta.error() && !filtradas().length) {
+    <div class="empty-state">No hay stock para los filtros aplicados.</div>
+  }
+
+  @if (filtradas().length) {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Especialidad</th>
+            <th>Cód. Material</th>
+            <th>Nombre</th>
+            <th>Unidad Medida</th>
+            <th class="num-col">Entrada</th>
+            <th class="num-col">Salida</th>
+            <th class="num-col">Stock</th>
+            <th>Fecha Últ. Movimiento</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of filtradas(); track row) {
+            <tr>
+              <td>{{ row.idKardexStock }}</td>
+              <td>{{ row.especialidad || '-' }}</td>
+              <td>{{ row.codigoMaterial || '-' }}</td>
+              <td>{{ row.nombre || '-' }}</td>
+              <td>{{ row.unidadMedida || '-' }}</td>
+              <td class="num-col">{{ cantidad(row.totalEntrada) }}</td>
+              <td class="num-col">{{ cantidad(row.totalSalida) }}</td>
+              <td class="num-col">{{ cantidad(row.stock) }}</td>
+              <td>{{ fecha(row.fechaUltimaMovimiento) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

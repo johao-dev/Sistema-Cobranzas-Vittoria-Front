@@ -1,0 +1,91 @@
+<section class="panel" style="margin-top: 18px">
+  <div class="panel-title">Actualizar salidas desde compra realizada</div>
+
+  <fieldset [disabled]="guardando()" style="border: 0; padding: 0; margin: 0">
+    <div class="form-grid four">
+      <div class="field">
+        <label for="salida-desde-compra-campo-1">Compra realizada</label>
+        <select
+          id="salida-desde-compra-campo-1"
+          [ngModel]="compraKey()"
+          (ngModelChange)="seleccionar($event)"
+        >
+          <option value="">Seleccionar</option>
+          @for (c of compras(); track c) {
+            <option [ngValue]="c.compraKey">
+              Compra {{ c.numeroCompra }} - RQ {{ c.numeroRequerimiento || '-' }} -
+              {{ c.material || '-' }}
+            </option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="salida-desde-compra-campo-2">Especialidad</label>
+        <select
+          id="salida-desde-compra-campo-2"
+          [ngModel]="idEspecialidad()"
+          (ngModelChange)="idEspecialidad.set($event)"
+        >
+          <option [ngValue]="null">Seleccionar</option>
+          @for (e of especialidades(); track e) {
+            <option [ngValue]="e.idEspecialidad">
+              {{ e.nombre }}
+            </option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="salida-desde-compra-campo-3">Material</label>
+        <select
+          id="salida-desde-compra-campo-3"
+          [ngModel]="idMaterial()"
+          (ngModelChange)="idMaterial.set($event)"
+        >
+          <option [ngValue]="null">Seleccionar</option>
+          @if (compra(); as m) {
+            <option [ngValue]="m.idMaterial">
+              {{ m.material }}
+            </option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="salida-desde-compra-campo-4">Fecha salida</label>
+        <input
+          id="salida-desde-compra-campo-4"
+          type="date"
+          [ngModel]="fecha()"
+          (ngModelChange)="fecha.set($event)"
+        />
+      </div>
+      <div class="field">
+        <label for="salida-desde-compra-campo-5">Cantidad salida</label>
+        <input
+          id="salida-desde-compra-campo-5"
+          type="number"
+          min="0.01"
+          step="0.01"
+          [ngModel]="cantidad()"
+          (ngModelChange)="cantidad.set($event)"
+        />
+      </div>
+      <div class="field observacion-salida-field">
+        <label for="salida-desde-compra-campo-6">Observación</label>
+        <input
+          id="salida-desde-compra-campo-6"
+          [ngModel]="observacion()"
+          (ngModelChange)="observacion.set($event)"
+          placeholder="Observación"
+        />
+      </div>
+    </div>
+  </fieldset>
+  <div class="toolbar" style="margin-top: 14px">
+    <button type="button" class="btn btn-primary" [disabled]="guardando()" (click)="guardar()">
+      Actualizar salidas
+    </button>
+  </div>
+  @if (msg()) {
+    <p role="alert">{{ msg() }}</p>
+  }
+</section>

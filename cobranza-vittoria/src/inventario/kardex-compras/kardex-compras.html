@@ -1,0 +1,169 @@
+<div class="page-header">
+  <div>
+    <div class="page-title">Kardex</div>
+    <div class="page-subtitle">
+      Kardex alimentado desde compras y actualizado con salidas de almacén.
+    </div>
+  </div>
+</div>
+
+@for (error of referencias.errores(); track error) {
+  <p role="alert">{{ error }}</p>
+}
+@if (referencias.errores().length) {
+  <button
+    type="button"
+    class="btn btn-secondary"
+    [disabled]="!!referencias.pendientes()"
+    (click)="referencias.cargar('compras')"
+  >
+    Reintentar catálogos
+  </button>
+}
+@if (consulta.cargando()) {
+  <p role="status">Cargando movimientos…</p>
+}
+@if (consulta.error()) {
+  <p role="alert">
+    {{ consulta.error() }}
+    <button type="button" class="btn btn-secondary" (click)="cargar()">Reintentar</button>
+  </p>
+}
+<section class="panel">
+  <div class="panel-title">Filtros</div>
+
+  <div class="form-grid four">
+    <div class="field">
+      <label for="kardex-compras-campo-1">Compra</label>
+      <select
+        id="kardex-compras-campo-1"
+        [ngModel]="filtros().idCompra"
+        (ngModelChange)="actualizarFiltro('idCompra', $event)"
+      >
+        <option [ngValue]="null">Todas</option>
+        @for (c of compras(); track c) {
+          <option [ngValue]="c.idCompra">
+            Compra {{ c.numeroCompra }} - RQ {{ c.numeroRequerimiento || '-' }}
+          </option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="kardex-compras-campo-2">Material</label>
+      <select
+        id="kardex-compras-campo-2"
+        [ngModel]="filtros().idMaterial"
+        (ngModelChange)="actualizarFiltro('idMaterial', $event)"
+      >
+        <option [ngValue]="null">Todos</option>
+        @for (m of referencias.materiales(); track m) {
+          <option [ngValue]="m.idMaterial">
+            {{ m.descripcion }}
+          </option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="kardex-compras-campo-3">Especialidad</label>
+      <select
+        id="kardex-compras-campo-3"
+        [ngModel]="filtros().idEspecialidad"
+        (ngModelChange)="actualizarFiltro('idEspecialidad', $event)"
+      >
+        <option [ngValue]="null">Todas</option>
+        @for (e of referencias.especialidades(); track e) {
+          <option [ngValue]="e.idEspecialidad">
+            {{ e.nombre }}
+          </option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="kardex-compras-campo-4">Fecha desde</label>
+      <input
+        id="kardex-compras-campo-4"
+        type="date"
+        [ngModel]="filtros().fechaDesde"
+        (ngModelChange)="actualizarFiltro('fechaDesde', $event)"
+      />
+    </div>
+
+    <div class="field">
+      <label for="kardex-compras-campo-5">Fecha hasta</label>
+      <input
+        id="kardex-compras-campo-5"
+        type="date"
+        [ngModel]="filtros().fechaHasta"
+        (ngModelChange)="actualizarFiltro('fechaHasta', $event)"
+      />
+    </div>
+  </div>
+
+  <div class="toolbar" style="margin-top: 14px">
+    <button type="button" class="btn btn-primary" (click)="cargar()">Filtrar</button>
+    <button type="button" class="btn btn-secondary" (click)="exportar('excel')">
+      Exportar Excel
+    </button>
+    <button type="button" class="btn btn-secondary" (click)="exportar('pdf')">Exportar PDF</button>
+  </div>
+</section>
+
+<inventario-salida-desde-compra
+  [compras]="compras()"
+  [especialidades]="referencias.especialidades()"
+  (registrada)="registrada($event)"
+/>
+
+<section class="panel" style="margin-top: 18px">
+  <div class="panel-title">Kardex desde compras</div>
+
+  @if (!consulta.cargando() && !consulta.error() && !filas().length) {
+    <div class="empty-state">No hay movimientos para mostrar.</div>
+  }
+
+  @if (filas().length) {
+    <div class="table-wrap">
+      <table id="tabla-kardex-export" #tablaExportar>
+        <thead>
+          <tr>
+            <th>Compra</th>
+            <th>RQ</th>
+            <th>Especialidad</th>
+            <th>Fecha</th>
+            <th>Material</th>
+            <th>Entrada</th>
+            <th>Disponible</th>
+            <th class="kardex-faltante-col">Faltante</th>
+            <th>Observaciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of filas(); track row; let i = $index) {
+            <tr>
+              <td>Compra {{ row.numeroCompraCorrelativo }}</td>
+              <td>{{ row.NumeroRequerimiento || '-' }}</td>
+              <td>
+                @if (nuevoGrupo(filas(), i)) {
+                  <strong>{{ row.Especialidad || '-' }}</strong>
+                }
+              </td>
+              <td>{{ row.FechaMovimiento ? (row.FechaMovimiento | date: 'dd/MM/yyyy') : '-' }}</td>
+              <td>{{ row.Material || '-' }}</td>
+              <td>{{ cantidad(row.Entrada || 0) }}</td>
+              <td>{{ cantidad(row.Salida || 0) }}</td>
+              <td class="kardex-faltante">{{ cantidad(faltante(row)) }}</td>
+              <td>{{ row.Observacion || '-' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (msg()) {
+    <div class="empty-state" style="margin-top: 14px">{{ msg() }}</div>
+  }
+</section>

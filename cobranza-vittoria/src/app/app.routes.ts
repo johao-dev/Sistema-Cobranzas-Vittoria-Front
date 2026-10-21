@@ -1,10 +1,6 @@
 import { Routes } from '@angular/router';
 import { UsuariosPage } from './pages/usuarios/usuarios.page';
 import { RolesPage } from './pages/roles/roles.page';
-import { KardexPage } from './pages/kardex/kardex.page';
-import { KardexEntradasPage } from './pages/kardex-entradas/kardex-entradas.page';
-import { KardexSalidasPage } from './pages/kardex-salidas/kardex-salidas.page';
-import { StockActualPage } from './pages/stock-actual/stock-actual.page';
 import { ValorizacionesPage } from './pages/valorizaciones/valorizaciones.page';
 import { CategoriasGastoPage } from './pages/categorias-gasto/categorias-gasto.page';
 import { ProveedoresGastoPage } from './pages/proveedores-gasto/proveedores-gasto.page';
@@ -39,15 +35,15 @@ export const routes: Routes = [
   },
   { path: 'ordenes-compra', canActivate: [protegerRuta], loadComponent: () => import('../ordenes-compra/bandeja-ordenes/bandeja-ordenes').then(m => m.BandejaOrdenes) },
   { path: 'compras', canActivate: [protegerRuta], loadComponent: () => import('../compras/bandeja-compras/bandeja-compras').then(m => m.BandejaCompras) },
-  { path: 'kardex', canActivate: [protegerRuta], component: KardexPage },
+  { path: 'kardex', canActivate: [protegerRuta], loadComponent: () => import('../inventario/kardex-compras/kardex-compras').then(m => m.KardexCompras) },
   {
     path: 'inventario',
     canActivate: [protegerRuta],
     children: [
       { path: '', redirectTo: 'kardex-entradas', pathMatch: 'full' },
-      { path: 'kardex-entradas', component: KardexEntradasPage },
-      { path: 'kardex-salidas', component: KardexSalidasPage },
-      { path: 'stock-actual', component: StockActualPage }
+      { path: 'kardex-entradas', loadComponent: () => import('../inventario/entradas/lista-entradas').then(m => m.ListaEntradas) },
+      { path: 'kardex-salidas', loadComponent: () => import('../inventario/salidas/lista-salidas').then(m => m.ListaSalidas) },
+      { path: 'stock-actual', loadComponent: () => import('../inventario/stock/stock-actual').then(m => m.StockActual) }
     ]
   },
   {

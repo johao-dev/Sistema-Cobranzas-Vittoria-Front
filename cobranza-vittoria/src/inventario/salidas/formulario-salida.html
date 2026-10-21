@@ -1,0 +1,195 @@
+<dialog
+  dialogoModal
+  (solicitarCierre)="solicitarCierre()"
+  class="panel panel--form design-modal-card"
+  aria-labelledby="titulo-salida"
+>
+  <button
+    type="button"
+    class="modal-close"
+    (click)="solicitarCierre()"
+    aria-label="Cerrar"
+    [disabled]="guardando()"
+  >
+    ×
+  </button>
+  <h2 class="panel-title" id="titulo-salida">Formulario</h2>
+
+  <div class="form-grid two">
+    <div class="field">
+      <label for="formulario-salida-campo-1">Especialidad</label>
+      <select
+        id="formulario-salida-campo-1"
+        [formControl]="form.controls.idEspecialidad"
+        name="encEsp"
+      >
+        <option [ngValue]="null">Seleccionar</option>
+        @for (e of especialidades(); track e) {
+          <option [ngValue]="e.idEspecialidad">
+            {{ e.nombre }}
+          </option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="formulario-salida-campo-2">Nro. Documento</label>
+      <input
+        id="formulario-salida-campo-2"
+        [formControl]="form.controls.numeroDocumento"
+        name="encNro"
+        placeholder="Ej. S001-12345"
+      />
+    </div>
+
+    <div class="field">
+      <label for="formulario-salida-campo-3">Proyecto</label>
+      <select
+        id="formulario-salida-campo-3"
+        [formControl]="form.controls.idProyecto"
+        name="encProyecto"
+      >
+        <option [ngValue]="null">Seleccionar</option>
+        @for (p of proyectos(); track p) {
+          <option [ngValue]="p.idProyecto">
+            {{ p.nombreProyecto }}
+          </option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="formulario-salida-campo-4">Fecha</label>
+      <input
+        id="formulario-salida-campo-4"
+        type="date"
+        [formControl]="form.controls.fecha"
+        name="encFecha"
+      />
+    </div>
+
+    <div class="field">
+      <label for="formulario-salida-campo-5">Solicitante</label>
+      <input
+        id="formulario-salida-campo-5"
+        [formControl]="form.controls.solicitante"
+        name="encSol"
+        placeholder="Persona que solicita"
+      />
+    </div>
+
+    <div class="field" style="grid-column: 1 / -1">
+      <label for="formulario-salida-campo-6">Observación</label>
+      <input
+        id="formulario-salida-campo-6"
+        [formControl]="form.controls.observacion"
+        name="encObs"
+        placeholder="Observación general"
+      />
+    </div>
+  </div>
+
+  <div class="items-section" style="margin-top: 18px">
+    <div class="items-header">
+      <div class="items-title">Materiales a despachar</div>
+      <button
+        type="button"
+        class="btn btn-secondary btn-sm"
+        (click)="abrirItem()"
+        [disabled]="guardando() || !valores().idEspecialidad"
+      >
+        + Agregar ítem
+      </button>
+    </div>
+
+    @if (!valores().items.length) {
+      <div class="empty-state" style="padding: 12px">
+        Aún no has agregado materiales. Selecciona una especialidad y haz clic en "+ Agregar ítem".
+      </div>
+    }
+
+    @if (valores().items.length) {
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width: 40px">#</th>
+            <th>Código</th>
+            <th>Material</th>
+            <th>Unidad</th>
+            <th class="num-col">Cantidad</th>
+            <th>Observación</th>
+            <th class="sticky-actions">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (it of valores().items; track it; let i = $index) {
+            <tr>
+              <td>{{ i + 1 }}</td>
+              <td>{{ it.codigoMaterial || '-' }}</td>
+              <td>{{ it.nombre || '-' }}</td>
+              <td>{{ it.unidadMedida || '-' }}</td>
+              <td class="num-col">{{ cantidad(it.cantidad) }}</td>
+              <td>{{ it.observacion || '-' }}</td>
+              <td>
+                <div class="actions actions--end">
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-sm action-btn"
+                    [disabled]="guardando()"
+                    (click)="abrirItem(i)"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-danger btn-sm action-btn"
+                    [disabled]="guardando()"
+                    (click)="quitarItem(i)"
+                  >
+                    Quitar
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+
+  <div class="toolbar" style="margin-top: 14px">
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="guardar()"
+      [disabled]="
+        guardando() ||
+        !valores().idProyecto ||
+        !valores().idEspecialidad ||
+        !valores().solicitante ||
+        !valores().fecha ||
+        !valores().items.length
+      "
+    >
+      Guardar
+    </button>
+    <button type="button" class="btn btn-ghost" [disabled]="guardando()" (click)="reset()">
+      Limpiar
+    </button>
+  </div>
+
+  @if (msg()) {
+    <div class="empty-state" style="margin-top: 14px; padding: 14px">
+      {{ msg() }}
+    </div>
+  }
+</dialog>
+
+@if (editor(); as edicion) {
+  <inventario-editor-item-salida
+    [item]="edicion.item"
+    [materiales]="materialesFiltrados()"
+    (guardar)="guardarItem($event)"
+    (cerrar)="editor.set(null)"
+  />
+}

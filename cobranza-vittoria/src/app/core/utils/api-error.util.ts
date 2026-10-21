@@ -1,4 +1,4 @@
-import { DetalleErrorValidacion } from '../../models/kardex-inventario.models';
+import { DetalleErrorValidacion } from '../../../shared/errores-api/contratos-error-validacion';
 
 export const CODIGO_ERROR = {
   CAMPO_REQUERIDO: 'CAMPO_REQUERIDO',

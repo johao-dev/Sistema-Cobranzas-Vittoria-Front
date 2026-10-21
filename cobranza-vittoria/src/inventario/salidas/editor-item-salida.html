@@ -1,0 +1,61 @@
+<dialog
+  dialogoModal
+  (solicitarCierre)="cerrar.emit()"
+  class="panel panel--form design-modal-card item-modal-card"
+  aria-labelledby="titulo-item-salida"
+>
+  <button type="button" class="modal-close" (click)="cerrar.emit()" aria-label="Cerrar">×</button>
+  <div class="panel-title" id="titulo-item-salida">
+    {{ item() !== null ? 'Editar ítem' : 'Agregar ítem' }}
+  </div>
+
+  <div class="form-grid two item-modal-grid" style="margin-top: 12px">
+    <div class="field material-picker-field" style="grid-column: 1 / -1">
+      <label for="editor-item-salida-campo-1">Material</label>
+      <select
+        id="editor-item-salida-campo-1"
+        [ngModel]="idMaterial()"
+        (ngModelChange)="idMaterial.set($event)"
+      >
+        <option [ngValue]="null">Seleccionar</option>
+        @for (m of materiales(); track m) {
+          <option [ngValue]="m.idMaterial">
+            {{ m.descripcion }} — {{ m.codigo }} — {{ m.unidadMedida }}
+          </option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="editor-item-salida-campo-2">Cantidad</label>
+      <input
+        id="editor-item-salida-campo-2"
+        type="number"
+        min="0"
+        step="0.01"
+        [ngModel]="cantidad()"
+        (ngModelChange)="cantidad.set($event)"
+      />
+    </div>
+
+    <div class="field">
+      <label for="editor-item-salida-campo-3">Observación (opcional)</label>
+      <input
+        id="editor-item-salida-campo-3"
+        [ngModel]="observacion()"
+        (ngModelChange)="observacion.set($event)"
+        placeholder="Observación del ítem"
+      />
+    </div>
+  </div>
+
+  <div class="toolbar" style="margin-top: 14px; justify-content: flex-end">
+    <button type="button" class="btn btn-ghost" (click)="cerrar.emit()">Cancelar</button>
+    <button type="button" class="btn btn-primary" (click)="confirmar()" [disabled]="!idMaterial()">
+      {{ item() !== null ? 'Guardar cambios' : 'Agregar ítem' }}
+    </button>
+  </div>
+  @if (error()) {
+    <p role="alert">{{ error() }}</p>
+  }
+</dialog>
