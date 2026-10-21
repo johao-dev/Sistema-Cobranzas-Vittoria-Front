@@ -9,6 +9,8 @@ import { KardexSalidaResponseDto } from '../contratos-inventario';
 import { salidasPrueba, materialesPrueba } from '../inventario.fixture';
 import {
   botonInventario,
+  seleccionarInventario,
+  escribirInventario,
   especialidadesPrueba,
   proyectosPrueba,
   simularDialogosInventario,
@@ -102,6 +104,87 @@ describe('FormularioSalida — edición de cabecera y todos sus ítems', () => {
       }),
     );
     expect(salidasPrueba[0].cantidad).toBe(0);
+  });
+
+  it.each([
+    ['un material', ['Cable']],
+    ['materiales de la misma especialidad', ['Cable', 'Tubo']],
+    ['materiales de distintas especialidades', ['Cable', 'Cemento']],
+  ])(
+    'crea salida con %s seleccionando especialidad dentro de cada ítem',
+    async (_caso, nombres) => {
+      botonInventario(fixture, 'Limpiar').click();
+      await fixture.whenStable();
+      await seleccionarInventario(fixture, '#formulario-salida-campo-3', 'Obra');
+      await escribirInventario(fixture, '#formulario-salida-campo-5', 'Residente');
+
+      const raiz: HTMLElement = fixture.nativeElement;
+
+      expect(raiz.querySelector('#formulario-salida-campo-1')).toBeNull();
+      for (const nombre of nombres) {
+        botonInventario(fixture, '+ Agregar ítem').click();
+        await fixture.whenStable();
+
+        expect(raiz.querySelector<HTMLSelectElement>('#editor-item-salida-campo-1')?.disabled).toBe(
+          true,
+        );
+        await seleccionarInventario(
+          fixture,
+          '#editor-item-salida-especialidad',
+          nombre === 'Cemento' ? 'Civil' : 'Eléctrica',
+        );
+        await seleccionarInventario(fixture, '#editor-item-salida-campo-1', nombre);
+        await escribirInventario(fixture, '#editor-item-salida-campo-2', '1.15');
+        botonInventario(fixture, 'Agregar ítem').click();
+        await fixture.whenStable();
+      }
+
+      expect(raiz.querySelectorAll('.data-table tbody tr')).toHaveLength(nombres.length);
+      expect(raiz.querySelector('.data-table')?.textContent).toContain('Cable');
+      botonInventario(fixture, 'Guardar').click();
+
+      expect(api.crearSalida).toHaveBeenCalledWith({
+        idKardexSalida: null,
+        idProyecto: 3,
+        fecha: expect.any(String),
+        solicitante: 'Residente',
+        numeroDocumento: null,
+        observacion: null,
+        items: nombres.map((nombre) => ({
+          idMaterial: materialesPrueba.find((material) => material.descripcion === nombre)
+            ?.idMaterial,
+          cantidad: 1.15,
+          observacion: null,
+        })),
+      });
+    },
+  );
+
+  it('preselecciona especialidad desde Material al editar y conserva otros ítems al cambiarla', async () => {
+    botonInventario(fixture, 'Editar').click();
+    await fixture.whenStable();
+
+    const raiz: HTMLElement = fixture.nativeElement;
+    const especialidad = raiz.querySelector<HTMLSelectElement>('#editor-item-salida-especialidad');
+    const material = raiz.querySelector<HTMLSelectElement>('#editor-item-salida-campo-1');
+
+    expect(especialidad?.selectedOptions[0].textContent).toContain('Eléctrica');
+    expect(material?.selectedOptions[0].textContent).toContain('Cable');
+    await seleccionarInventario(fixture, '#editor-item-salida-especialidad', 'Civil');
+    await seleccionarInventario(fixture, '#editor-item-salida-campo-1', 'Cemento');
+    botonInventario(fixture, 'Guardar cambios').click();
+    await fixture.whenStable();
+    botonInventario(fixture, 'Guardar').click();
+
+    expect(api.actualizarSalida).toHaveBeenCalledWith(
+      4,
+      expect.objectContaining({
+        items: [
+          { idMaterial: 12, cantidad: 0, observacion: 'Ítem' },
+          { idMaterial: 11, cantidad: 2, observacion: 'Ítem' },
+        ],
+      }),
+    );
   });
 
   it('bloquea duplicados durante PUT y muestra errores de stock sin cerrar', async () => {

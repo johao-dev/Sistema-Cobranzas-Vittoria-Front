@@ -1,13 +1,4 @@
-import {
-  Component,
-  DestroyRef,
-  OnInit,
-  computed,
-  inject,
-  input,
-  output,
-  signal,
-} from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, input, output, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule } from '@angular/forms';
 import { finalize, map } from 'rxjs';
@@ -61,10 +52,6 @@ export class FormularioSalida implements OnInit {
     item: ItemBorradorSalida | null;
   } | null>(null);
 
-  protected readonly materialesFiltrados = computed(() =>
-    this.materiales().filter((m) => m.idEspecialidad === this.valores().idEspecialidad),
-  );
-
   protected readonly cantidad = cantidadInventario;
 
   ngOnInit(): void {
@@ -73,7 +60,6 @@ export class FormularioSalida implements OnInit {
 
     this.form.patchValue({
       idKardexSalida: fila.idKardexSalida,
-      idEspecialidad: fila.idEspecialidad,
       idProyecto: fila.idProyecto,
       numeroDocumento: fila.numeroDocumento ?? '',
       fecha: fila.fecha,
@@ -87,7 +73,7 @@ export class FormularioSalida implements OnInit {
   }
 
   protected abrirItem(indice: number | null = null): void {
-    if (this.guardando() || !this.valores().idEspecialidad) return;
+    if (this.guardando()) return;
 
     this.editor.set({ indice, item: indice === null ? null : this.valores().items[indice] });
   }

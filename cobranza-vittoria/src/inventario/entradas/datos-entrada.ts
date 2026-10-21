@@ -52,9 +52,11 @@ export function peticionEntrada(form: BorradorEntrada): KardexEntradaCreateDto |
   if (form.observacion.trim().length > 250) return 'La observación admite hasta 250 caracteres.';
 
   return {
-    ...form,
-    idEspecialidad: form.idEspecialidad,
+    idKardexEntrada: form.idKardexEntrada,
     idMaterial: form.idMaterial,
+    idProveedor: form.idProveedor,
+    idProyecto: form.idProyecto,
+    fecha: form.fecha,
     cantidad,
     numeroDocumento: form.numeroDocumento.trim() || null,
     observacion: form.observacion.trim() || null,

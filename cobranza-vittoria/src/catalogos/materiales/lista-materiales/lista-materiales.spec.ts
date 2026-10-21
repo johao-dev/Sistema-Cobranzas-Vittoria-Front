@@ -15,6 +15,7 @@ import {
   ESPECIALIDAD,
   UNIDAD,
   escribir,
+  enviar,
   obtenerRaiz,
   obtenerElemento,
   simularDialogosNativos,
@@ -49,7 +50,13 @@ describe('ListaMateriales sin Zone.js', () => {
         provideZonelessChangeDetection(),
         { provide: CatalogoMateriales, useValue: api },
         { provide: NotificationService, useValue: { show: vi.fn() } },
-        { provide: CatalogoEspecialidades, useValue: { especialidades: () => of([ESPECIALIDAD]) } },
+        {
+          provide: CatalogoEspecialidades,
+          useValue: {
+            especialidades: () =>
+              of([ESPECIALIDAD, { ...ESPECIALIDAD, idEspecialidad: 2, nombre: 'Civil' }]),
+          },
+        },
         { provide: CatalogoUnidadesMedida, useValue: { unidadesMedida: () => of([UNIDAD]) } },
         { provide: ControlPresupuestarioService, useValue: { partidas: () => of([]) } },
       ],
@@ -95,6 +102,82 @@ describe('ListaMateriales sin Zone.js', () => {
     await fixture.whenStable();
     expect(obtenerElemento<HTMLDialogElement>(raiz, 'dialog').open).toBe(true);
     expect(raiz.querySelector('[role="alert"]')?.textContent).toContain('Revisa el registro');
+  });
+
+  it('muestra el conflicto de especialidad, conserva los datos y permite guardar otros cambios al corregirla', async () => {
+    listado.next([MATERIAL]);
+    listado.complete();
+    await fixture.whenStable();
+
+    const raiz = obtenerRaiz(fixture.nativeElement);
+
+    obtenerElemento<HTMLButtonElement>(raiz, 'tbody button').click();
+    await fixture.whenStable();
+
+    const especialidad = obtenerElemento<HTMLSelectElement>(raiz, '#material-especialidad');
+
+    especialidad.value = especialidad.options[2].value;
+    especialidad.dispatchEvent(new Event('change'));
+    escribir(raiz, '#material-descripcion', 'Cemento actualizado');
+    enviar(raiz);
+    guardado.error(
+      new HttpErrorResponse({
+        status: 409,
+        error: { error: 'ESPECIALIDAD_MATERIAL_CON_MOVIMIENTOS', message: 'Conflicto' },
+      }),
+    );
+    await fixture.whenStable();
+
+    expect(raiz.querySelector('[role="alert"]')?.textContent).toContain(
+      'ya tiene movimientos de inventario',
+    );
+    expect(obtenerElemento<HTMLDialogElement>(raiz, 'dialog').open).toBe(true);
+    expect(obtenerElemento<HTMLInputElement>(raiz, '#material-descripcion').value).toBe(
+      'Cemento actualizado',
+    );
+    expect(especialidad.value).toBe(especialidad.options[2].value);
+
+    especialidad.value = especialidad.options[1].value;
+    especialidad.dispatchEvent(new Event('change'));
+    vi.mocked(api.guardarMaterial).mockReturnValue(of({ idMaterial: MATERIAL.idMaterial }));
+    vi.mocked(api.materiales).mockReturnValue(of([MATERIAL]));
+    enviar(raiz);
+    await fixture.whenStable();
+
+    expect(api.guardarMaterial).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        idMaterial: MATERIAL.idMaterial,
+        idEspecialidad: MATERIAL.idEspecialidad,
+        descripcion: 'Cemento actualizado',
+      }),
+    );
+    expect(obtenerElemento<HTMLDialogElement>(raiz, 'dialog').open).toBe(false);
+  });
+
+  it('permite reclasificar el material si el servidor acepta la actualización', async () => {
+    listado.next([MATERIAL]);
+    listado.complete();
+    await fixture.whenStable();
+
+    const raiz = obtenerRaiz(fixture.nativeElement);
+
+    obtenerElemento<HTMLButtonElement>(raiz, 'tbody button').click();
+    await fixture.whenStable();
+
+    const especialidad = obtenerElemento<HTMLSelectElement>(raiz, '#material-especialidad');
+
+    especialidad.value = especialidad.options[2].value;
+    especialidad.dispatchEvent(new Event('change'));
+    vi.mocked(api.materiales).mockReturnValue(of([{ ...MATERIAL, idEspecialidad: 2 }]));
+    enviar(raiz);
+    guardado.next({ idMaterial: MATERIAL.idMaterial });
+    guardado.complete();
+    await fixture.whenStable();
+
+    expect(api.guardarMaterial).toHaveBeenCalledWith(
+      expect.objectContaining({ idEspecialidad: 2 }),
+    );
+    expect(obtenerElemento<HTMLDialogElement>(raiz, 'dialog').open).toBe(false);
   });
 
   it('distingue un fallo del listado del estado vacío y cancela al salir', async () => {

@@ -4,6 +4,7 @@ import {
 } from '../../../app/models/import.models';
 import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { catchError, finalize, of, startWith, Subject, Subscription, switchMap } from 'rxjs';
 import { NotificationService } from '../../../app/core/services/notification.service';
@@ -168,7 +169,18 @@ export class ListaMateriales implements OnInit {
   }
 
   private notificarError(error: unknown, respaldo: string): void {
-    const mensaje: string = mensajeCatalogo(error, respaldo);
+    const cuerpo: unknown = error instanceof HttpErrorResponse ? error.error : undefined;
+    const conflictoEspecialidad =
+      error instanceof HttpErrorResponse &&
+      error.status === 409 &&
+      typeof cuerpo === 'object' &&
+      cuerpo !== null &&
+      'error' in cuerpo &&
+      cuerpo.error === 'ESPECIALIDAD_MATERIAL_CON_MOVIMIENTOS';
+
+    const mensaje = conflictoEspecialidad
+      ? 'No se puede cambiar la especialidad porque el material ya tiene movimientos de inventario.'
+      : mensajeCatalogo(error, respaldo);
     this.error.set(mensaje);
     this.notificaciones.show(mensaje, 'error');
   }

@@ -10,15 +10,32 @@
   </div>
 
   <div class="form-grid two item-modal-grid" style="margin-top: 12px">
+    <div class="field" style="grid-column: 1 / -1">
+      <label for="editor-item-salida-especialidad">Especialidad</label>
+      <select
+        id="editor-item-salida-especialidad"
+        [ngModel]="idEspecialidad()"
+        (ngModelChange)="cambiarEspecialidad($event)"
+      >
+        <option [ngValue]="null">Seleccionar</option>
+        @for (especialidad of especialidades(); track especialidad.idEspecialidad) {
+          <option [ngValue]="especialidad.idEspecialidad">{{ especialidad.nombre }}</option>
+        }
+      </select>
+    </div>
+
     <div class="field material-picker-field" style="grid-column: 1 / -1">
       <label for="editor-item-salida-campo-1">Material</label>
       <select
         id="editor-item-salida-campo-1"
         [ngModel]="idMaterial()"
         (ngModelChange)="idMaterial.set($event)"
+        [disabled]="!idEspecialidad()"
       >
-        <option [ngValue]="null">Seleccionar</option>
-        @for (m of materiales(); track m) {
+        <option [ngValue]="null">
+          {{ idEspecialidad() ? 'Seleccionar' : 'Selecciona una especialidad primero' }}
+        </option>
+        @for (m of materialesFiltrados(); track m) {
           <option [ngValue]="m.idMaterial">
             {{ m.descripcion }} — {{ m.codigo }} — {{ m.unidadMedida }}
           </option>
@@ -51,7 +68,12 @@
 
   <div class="toolbar" style="margin-top: 14px; justify-content: flex-end">
     <button type="button" class="btn btn-ghost" (click)="cerrar.emit()">Cancelar</button>
-    <button type="button" class="btn btn-primary" (click)="confirmar()" [disabled]="!idMaterial()">
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="confirmar()"
+      [disabled]="!idEspecialidad() || !idMaterial()"
+    >
       {{ item() !== null ? 'Guardar cambios' : 'Agregar ítem' }}
     </button>
   </div>

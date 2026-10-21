@@ -9,6 +9,7 @@ import { KardexSalidaResponseDto } from '../contratos-inventario';
 import { NotificationService } from '../../app/core/services/notification.service';
 import { salidasPrueba } from '../inventario.fixture';
 import {
+  botonInventario,
   proveedoresCatalogosPrueba,
   simularDialogosInventario,
   restaurarDialogosInventario,
@@ -73,6 +74,56 @@ describe('ListaSalidas — coordinación y búsqueda', () => {
       .componentInstance as FormularioSalida;
 
     expect(form.filas()).toEqual(salidasPrueba);
+  });
+
+  it('recupera todos los detalles antes de editar con filtro de especialidad activo', async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    api.listarSalidas.mockReturnValueOnce(of([salidasPrueba[0]]));
+    await seleccionarInventario(fixture, '#inventario-filtro-especialidad', 'Eléctrica');
+    botonInventario(fixture, 'Filtrar').click();
+    await fixture.whenStable();
+
+    const todasLasFilas = [
+      salidasPrueba[0],
+      {
+        ...salidasPrueba[1],
+        idMaterial: 12,
+        nombre: 'Cemento',
+        idEspecialidad: 5,
+        especialidad: 'Civil',
+      },
+    ];
+
+    api.listarSalidas.mockReturnValueOnce(of(todasLasFilas));
+    await seleccionarInventario(fixture, '.actions-select', 'Editar');
+
+    const form = fixture.debugElement.query(By.directive(FormularioSalida))
+      .componentInstance as FormularioSalida;
+
+    expect(api.listarSalidas).toHaveBeenLastCalledWith();
+    expect(form.filas()).toEqual(todasLasFilas);
+  });
+
+  it('no abre edición parcial si falla la recuperación de la salida filtrada', async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await seleccionarInventario(fixture, '#inventario-filtro-especialidad', 'Eléctrica');
+    botonInventario(fixture, 'Filtrar').click();
+    await fixture.whenStable();
+
+    const pendiente = new Subject<KardexSalidaResponseDto[]>();
+
+    api.listarSalidas.mockReturnValueOnce(pendiente);
+    await seleccionarInventario(fixture, '.actions-select', 'Editar');
+
+    expect(botonInventario(fixture, '+ Nuevo registro').disabled).toBe(true);
+    pendiente.error({ error: { message: 'No se pudo cargar la salida.' } });
+    await fixture.whenStable();
+
+    expect(fixture.debugElement.query(By.directive(FormularioSalida))).toBeNull();
+    expect(botonInventario(fixture, '+ Nuevo registro').disabled).toBe(false);
+    expect(notify.show).toHaveBeenCalledWith('No se pudo cargar la salida.', 'error');
   });
 
   it('confirma y elimina la salida completa por ID aun con búsqueda activa', async () => {

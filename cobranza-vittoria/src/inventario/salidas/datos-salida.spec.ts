@@ -12,7 +12,6 @@ describe('Salida — controles y DTO tipados', () => {
 
     form.patchValue({
       idKardexSalida: 4,
-      idEspecialidad: 2,
       idProyecto: 3,
       fecha: '2026-10-20',
       solicitante: '  José  ',
@@ -31,6 +30,7 @@ describe('Salida — controles y DTO tipados', () => {
       observacion: 'Ítem',
       cantidad: 0,
     });
+    expect(peticionSalida(form.getRawValue())).not.toHaveProperty('idEspecialidad');
     expect(peticionSalida(form.getRawValue())).toMatchObject({
       idKardexSalida: 4,
       solicitante: 'José',
@@ -42,7 +42,7 @@ describe('Salida — controles y DTO tipados', () => {
     });
   });
 
-  it('exige proyecto, solicitante, especialidad y al menos un ítem', () => {
+  it('exige proyecto, solicitante y al menos un ítem', () => {
     const form = formulario();
 
     form.controls.idProyecto.setValue(null);

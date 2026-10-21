@@ -49,7 +49,6 @@ export function controlesItemSalida(item: ItemBorradorSalida) {
 export function controlesSalida() {
   return new FormGroup({
     idKardexSalida: new FormControl<number | null>(null),
-    idEspecialidad: new FormControl<number | null>(null, Validators.required),
     idProyecto: new FormControl<number | null>(null, Validators.required),
     numeroDocumento: new FormControl('', {
       nonNullable: true,
@@ -74,7 +73,6 @@ export function controlesSalida() {
 export function peticionSalida(
   form: ReturnType<ReturnType<typeof controlesSalida>['getRawValue']>,
 ): KardexSalidaCreateDto | string {
-  if (!form.idEspecialidad) return 'Debes seleccionar una especialidad.';
   if (!form.idProyecto) return 'Debes seleccionar un proyecto.';
 
   const solicitante = form.solicitante.trim();
@@ -94,7 +92,6 @@ export function peticionSalida(
 
   return {
     idKardexSalida: form.idKardexSalida,
-    idEspecialidad: form.idEspecialidad,
     idProyecto: form.idProyecto,
     fecha: form.fecha,
     solicitante,

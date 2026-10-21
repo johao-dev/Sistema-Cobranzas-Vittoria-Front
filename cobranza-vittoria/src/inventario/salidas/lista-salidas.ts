@@ -37,6 +37,7 @@ export class ListaSalidas implements OnInit {
   protected readonly filtros = signal<KardexFiltroInventarioDto>({});
   protected readonly busqueda = signal('');
   protected readonly eliminando = signal<number | null>(null);
+  protected readonly cargandoSalida = signal(false);
   protected readonly edicion = signal<readonly KardexSalidaResponseDto[] | null>(null);
 
   protected readonly fecha = fechaInventario;
@@ -87,13 +88,46 @@ export class ListaSalidas implements OnInit {
   }
 
   protected nuevo(): void {
+    if (this.cargandoSalida()) return;
+
     this.edicion.set([]);
   }
 
   protected editar(row: KardexSalidaResponseDto): void {
-    this.edicion.set(
-      this.consulta.filas().filter((fila) => fila.idKardexSalida === row.idKardexSalida),
-    );
+    if (this.cargandoSalida() || this.eliminando() !== null) return;
+
+    if (!this.filtros().idEspecialidad) {
+      this.edicion.set(
+        this.consulta.filas().filter((fila) => fila.idKardexSalida === row.idKardexSalida),
+      );
+      return;
+    }
+
+    // El filtro del servidor omite detalles de otras especialidades y el PUT los reemplaza.
+    this.cargandoSalida.set(true);
+
+    this.registro
+      .listarSalidas()
+      .pipe(
+        finalize(() => this.cargandoSalida.set(false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (filas) => {
+          const salida = filas.filter((fila) => fila.idKardexSalida === row.idKardexSalida);
+          if (!salida.length) {
+            this.notificaciones.show('La salida ya no está disponible.', 'error');
+            return;
+          }
+
+          this.edicion.set(salida);
+        },
+        error: (error: unknown) =>
+          this.notificaciones.show(
+            extraerMensajeError(error, 'No se pudo cargar la salida.'),
+            'error',
+          ),
+      });
   }
 
   protected guardada(mensaje: string): void {
@@ -113,12 +147,13 @@ export class ListaSalidas implements OnInit {
   }
 
   protected eliminar(row: KardexSalidaResponseDto): void {
-    if (this.eliminando() !== null) return;
+    if (this.eliminando() !== null || this.cargandoSalida()) return;
 
     const id = row.idKardexSalida;
     const filas = this.consulta.filas().filter((fila) => fila.idKardexSalida === id);
-    const detalle =
-      filas.length > 1
+    const detalle = this.filtros().idEspecialidad
+      ? `toda la salida ${id}`
+      : filas.length > 1
         ? `esta salida con ${filas.length} ítems`
         : `la salida de "${this.nombre(row)}"`;
     if (!confirm(`¿Eliminar ${detalle}? Esta acción no se puede deshacer.`)) return;

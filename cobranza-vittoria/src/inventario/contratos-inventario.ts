@@ -14,7 +14,6 @@ export interface KardexStockFiltroDto {
 
 export interface KardexEntradaCreateDto {
   idKardexEntrada?: number | null;
-  idEspecialidad: number;
   idMaterial: number;
   idProveedor?: number | null;
   idProyecto?: number | null;
@@ -50,7 +49,6 @@ export interface KardexSalidaItemCreateDto {
 
 export interface KardexSalidaCreateDto {
   idKardexSalida?: number | null;
-  idEspecialidad: number;
   idProyecto?: number | null;
   numeroDocumento?: string | null;
   fecha: string;

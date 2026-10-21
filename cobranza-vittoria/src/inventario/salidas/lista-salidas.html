@@ -26,6 +26,9 @@
 @if (consulta.cargando()) {
   <p role="status">Cargando salidas…</p>
 }
+@if (cargandoSalida()) {
+  <p role="status">Cargando salida…</p>
+}
 @if (consulta.error()) {
   <p role="alert">
     {{ consulta.error() }}
@@ -48,7 +51,14 @@
         />
       </div>
     </div>
-    <button type="button" class="btn btn-primary btn-sm" (click)="nuevo()">+ Nuevo registro</button>
+    <button
+      type="button"
+      class="btn btn-primary btn-sm"
+      [disabled]="cargandoSalida()"
+      (click)="nuevo()"
+    >
+      + Nuevo registro
+    </button>
   </div>
 
   @if (!consulta.cargando() && !consulta.error() && !filtradas().length) {
@@ -88,7 +98,7 @@
                 <select
                   class="actions-select"
                   aria-label="Acciones del registro"
-                  [disabled]="eliminando() !== null"
+                  [disabled]="eliminando() !== null || cargandoSalida()"
                   (change)="accion($event, row)"
                 >
                   <option value="">Acciones</option>

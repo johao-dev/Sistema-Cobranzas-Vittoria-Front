@@ -63,7 +63,6 @@ describe('RegistroInventario — contrato HTTP', () => {
       expect(req.request.method).toBe(accion === 'crear' ? 'POST' : 'PUT');
       expect(req.request.body).toEqual({
         idKardexEntrada: 1,
-        idEspecialidad: 2,
         idMaterial: 10,
         idProveedor: null,
         idProyecto: 3,
@@ -94,7 +93,6 @@ describe('RegistroInventario — contrato HTTP', () => {
 
       form.patchValue({
         idKardexSalida: 4,
-        idEspecialidad: 2,
         idProyecto: 3,
         fecha: '2026-10-20',
         solicitante: '  José  ',
@@ -115,7 +113,6 @@ describe('RegistroInventario — contrato HTTP', () => {
       expect(req.request.method).toBe(accion === 'crear' ? 'POST' : 'PUT');
       expect(req.request.body).toEqual({
         idKardexSalida: 4,
-        idEspecialidad: 2,
         idProyecto: 3,
         numeroDocumento: null,
         fecha: '2026-10-20',

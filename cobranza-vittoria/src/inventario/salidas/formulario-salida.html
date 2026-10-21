@@ -17,22 +17,6 @@
 
   <div class="form-grid two">
     <div class="field">
-      <label for="formulario-salida-campo-1">Especialidad</label>
-      <select
-        id="formulario-salida-campo-1"
-        [formControl]="form.controls.idEspecialidad"
-        name="encEsp"
-      >
-        <option [ngValue]="null">Seleccionar</option>
-        @for (e of especialidades(); track e) {
-          <option [ngValue]="e.idEspecialidad">
-            {{ e.nombre }}
-          </option>
-        }
-      </select>
-    </div>
-
-    <div class="field">
       <label for="formulario-salida-campo-2">Nro. Documento</label>
       <input
         id="formulario-salida-campo-2"
@@ -96,16 +80,14 @@
         type="button"
         class="btn btn-secondary btn-sm"
         (click)="abrirItem()"
-        [disabled]="guardando() || !valores().idEspecialidad"
+        [disabled]="guardando()"
       >
         + Agregar ítem
       </button>
     </div>
 
     @if (!valores().items.length) {
-      <div class="empty-state" style="padding: 12px">
-        Aún no has agregado materiales. Selecciona una especialidad y haz clic en "+ Agregar ítem".
-      </div>
+      <div class="empty-state" style="padding: 12px">Aún no has agregado materiales.</div>
     }
 
     @if (valores().items.length) {
@@ -165,7 +147,6 @@
       [disabled]="
         guardando() ||
         !valores().idProyecto ||
-        !valores().idEspecialidad ||
         !valores().solicitante ||
         !valores().fecha ||
         !valores().items.length
@@ -188,7 +169,8 @@
 @if (editor(); as edicion) {
   <inventario-editor-item-salida
     [item]="edicion.item"
-    [materiales]="materialesFiltrados()"
+    [materiales]="materiales()"
+    [especialidades]="especialidades()"
     (guardar)="guardarItem($event)"
     (cerrar)="editor.set(null)"
   />

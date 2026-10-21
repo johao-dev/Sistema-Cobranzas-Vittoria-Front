@@ -63,6 +63,28 @@ describe('FormularioEntrada — guardado y estado sin Zone.js', () => {
     expect(botonInventario(fixture, 'Guardar').disabled).toBe(true);
   });
 
+  it('mantiene el bloqueo de material hasta seleccionar especialidad al crear una entrada', async () => {
+    botonInventario(fixture, 'Limpiar').click();
+    await fixture.whenStable();
+
+    const raiz: HTMLElement = fixture.nativeElement;
+    const material = raiz.querySelector<HTMLSelectElement>('#formulario-entrada-campo-5');
+
+    expect(material?.disabled).toBe(true);
+    await seleccionarInventario(fixture, '#formulario-entrada-campo-1', 'Civil');
+
+    expect(material?.disabled).toBe(false);
+    expect(material?.textContent).not.toContain('Cable');
+    await seleccionarInventario(fixture, '#formulario-entrada-campo-5', 'Cemento');
+    await seleccionarInventario(fixture, '#formulario-entrada-campo-4', 'Obra');
+    botonInventario(fixture, 'Guardar').click();
+
+    expect(api.crearEntrada).toHaveBeenCalledWith(expect.objectContaining({ idMaterial: 12 }));
+    expect(api.crearEntrada).not.toHaveBeenCalledWith(
+      expect.objectContaining({ idEspecialidad: expect.anything() }),
+    );
+  });
+
   it('bloquea duplicados y cierre mientras guarda, y restaura formulario tras 422', async () => {
     const respuesta = new Subject<KardexEntradaResponseDto>();
 

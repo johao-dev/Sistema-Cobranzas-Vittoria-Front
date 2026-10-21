@@ -12,6 +12,7 @@ describe('Entrada — preparación y validación', () => {
       observacion: 'Nota',
       numeroDocumento: null,
     });
+    expect(peticionEntrada(form)).not.toHaveProperty('idEspecialidad');
     expect(entradaPrueba.observacion).toBeNull();
   });
 
