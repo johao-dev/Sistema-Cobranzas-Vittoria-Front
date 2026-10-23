@@ -1,0 +1,22 @@
+.table-wrap table {
+  min-width: max(100%, 640px);
+}
+
+form table select {
+  min-width: 240px;
+}
+
+form table input {
+  min-width: 100px;
+}
+
+dd {
+  margin: 4px 0 12px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) {
+  .form-grid.two {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,50 @@
+<dialog
+  dialogoModal
+  (solicitarCierre)="cerrar.emit()"
+  class="panel panel--form design-modal-card"
+  aria-labelledby="titulo-detalle-transferencia"
+>
+  <button type="button" class="modal-close" aria-label="Cerrar detalle" (click)="cerrar.emit()">
+    ×
+  </button>
+  @if (filas()[0]; as cabecera) {
+    <h2 id="titulo-detalle-transferencia" class="panel-title">
+      Transferencia #{{ cabecera.idTransferencia }}
+    </h2>
+    <dl>
+      <dt>Proyecto origen</dt>
+      <dd>{{ cabecera.proyectoOrigen }}</dd>
+      <dt>Proyecto destino</dt>
+      <dd>{{ cabecera.proyectoDestino }}</dd>
+      <dt>Fecha</dt>
+      <dd>{{ fecha(cabecera.fecha) }}</dd>
+      <dt>Observación</dt>
+      <dd>{{ cabecera.observacion || '-' }}</dd>
+    </dl>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Material</th>
+            <th>Especialidad</th>
+            <th>Unidad</th>
+            <th class="num-col">Cantidad</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of filas(); track item.idTransferenciaProyectoDetalle) {
+            <tr>
+              <td>{{ item.codigoMaterial }}</td>
+              <td>{{ item.nombre }}</td>
+              <td>{{ item.especialidad }}</td>
+              <td>{{ item.unidadMedida }}</td>
+              <td class="num-col">{{ cantidad(item.cantidad) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  <button type="button" class="btn btn-ghost" (click)="cerrar.emit()">Cerrar</button>
+</dialog>

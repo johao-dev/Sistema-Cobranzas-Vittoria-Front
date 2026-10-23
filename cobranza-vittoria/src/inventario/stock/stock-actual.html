@@ -1,13 +1,19 @@
 <div class="page-header">
   <div>
     <div class="page-title">Stock Actual</div>
-    <div class="page-subtitle">Consolidado de entradas y salidas por material.</div>
+    <div class="page-subtitle">
+      {{
+        porProyecto()
+          ? 'Stock por Proyecto: distribución actual por material.'
+          : 'Stock Global: consolidado de entradas y salidas por material.'
+      }}
+    </div>
   </div>
 </div>
 
 <inventario-filtros
   [especialidades]="referencias.especialidades()"
-  [mostrarProyecto]="false"
+  [proyectos]="referencias.proyectos()"
   (cambio)="filtros.set($event)"
   (consultar)="filtrar($event)"
 >
@@ -17,7 +23,13 @@
     [disabled]="exportacion.exportando()"
     (click)="exportacion.exportar(filtros(), incluirTotales())"
   >
-    {{ exportacion.exportando() ? 'Exportando…' : 'Exportar a Excel' }}
+    {{
+      exportacion.exportando()
+        ? 'Exportando…'
+        : filtros().idProyecto
+          ? 'Exportar Stock Global a Excel'
+          : 'Exportar a Excel'
+    }}
   </button>
   <label class="switch" [class.is-disabled]="exportacion.exportando()"
     ><input
@@ -28,6 +40,18 @@
     /><span class="slider"></span><span class="switch-label">Incluir fila de totales</span></label
   >
 </inventario-filtros>
+@if (filtros().idProyecto) {
+  <p>
+    La exportación disponible corresponde al Stock Global y aplica especialidad y fechas. No incluye
+    el filtro de proyecto.
+  </p>
+}
+@if (porProyecto()) {
+  <p>
+    Las fechas filtran el último cambio de asignación, incluidas transferencias y reversiones; no
+    representan saldos históricos.
+  </p>
+}
 @for (error of referencias.errores(); track error) {
   <p role="alert">{{ error }}</p>
 }
@@ -82,25 +106,71 @@
             <th>Cód. Material</th>
             <th>Nombre</th>
             <th>Unidad Medida</th>
-            <th class="num-col">Entrada</th>
-            <th class="num-col">Salida</th>
+            @if (porProyecto()) {
+              <th>Proyecto</th>
+            } @else {
+              <th class="num-col">Entrada</th>
+              <th class="num-col">Salida</th>
+            }
             <th class="num-col">Stock</th>
             <th>Fecha Últ. Movimiento</th>
           </tr>
         </thead>
         <tbody>
           @for (row of filtradas(); track row) {
-            <tr>
-              <td>{{ row.idKardexStock }}</td>
+            <tr
+              class="stock-fila"
+              [class.stock-fila--expandida]="idDistribucion() === row.idMaterial"
+            >
+              <td>{{ row.idRegistro }}</td>
               <td>{{ row.especialidad || '-' }}</td>
               <td>{{ row.codigoMaterial || '-' }}</td>
-              <td>{{ row.nombre || '-' }}</td>
+              <td>
+                <div class="stock-material">
+                  <span>{{ row.nombre || '-' }}</span>
+                  <button
+                    type="button"
+                    class="btn btn-ghost btn-sm stock-distribucion"
+                    [attr.aria-expanded]="idDistribucion() === row.idMaterial"
+                    [attr.aria-controls]="'stock-distribucion-' + row.idMaterial"
+                    [attr.aria-label]="
+                      'Distribución de ' + (row.nombre || row.codigoMaterial || row.idMaterial)
+                    "
+                    (click)="alternarDistribucion(row.idMaterial)"
+                  >
+                    Distribución
+                  </button>
+                </div>
+              </td>
               <td>{{ row.unidadMedida || '-' }}</td>
-              <td class="num-col">{{ cantidad(row.totalEntrada) }}</td>
-              <td class="num-col">{{ cantidad(row.totalSalida) }}</td>
+              @if (porProyecto()) {
+                <td>{{ row.proyecto }}</td>
+              } @else {
+                <td class="num-col">
+                  {{ row.totalEntrada === null ? '-' : cantidad(row.totalEntrada) }}
+                </td>
+                <td class="num-col">
+                  {{ row.totalSalida === null ? '-' : cantidad(row.totalSalida) }}
+                </td>
+              }
               <td class="num-col">{{ cantidad(row.stock) }}</td>
-              <td>{{ fecha(row.fechaUltimaMovimiento) }}</td>
+              <td>{{ fecha(row.fechaMovimiento) }}</td>
             </tr>
+            @if (idDistribucion() === row.idMaterial) {
+              <tr class="stock-distribucion-fila">
+                <td [attr.colspan]="porProyecto() ? 8 : 9">
+                  <div
+                    [id]="'stock-distribucion-' + row.idMaterial"
+                    role="region"
+                    [attr.aria-label]="
+                      'Distribución por proyecto de ' + (row.nombre || row.idMaterial)
+                    "
+                  >
+                    <inventario-distribucion-material [idMaterial]="row.idMaterial" />
+                  </div>
+                </td>
+              </tr>
+            }
           }
         </tbody>
       </table>

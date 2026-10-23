@@ -19,7 +19,7 @@ import { Especialidad } from '../../catalogos/especialidades/contratos-especiali
 import { Material } from '../../catalogos/materiales/contratos-materiales';
 import { Proyecto } from '../../catalogos/proyectos/contratos-proyectos';
 import { Proveedor } from '../../catalogos/proveedores/contratos-proveedores';
-import { extraerMensajeError } from '../../app/core/utils/api-error.util';
+import { mensajeErrorInventario } from '../errores-inventario';
 import { BorradorEntrada, borradorEntrada, peticionEntrada } from './datos-entrada';
 
 @Component({
@@ -104,7 +104,7 @@ export class FormularioEntrada implements OnInit {
             id ? 'Entrada actualizada correctamente.' : 'Entrada registrada correctamente.',
           ),
         error: (error: unknown) =>
-          this.msg.set(extraerMensajeError(error, 'No se pudo guardar la entrada.')),
+          this.msg.set(mensajeErrorInventario(error, 'No se pudo guardar la entrada.')),
       });
   }
 }

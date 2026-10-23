@@ -3,6 +3,7 @@ import { HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { ApiService } from '../app/core/services/api.service';
+import { FiltrosStockProyecto, StockProyecto } from './stock/contratos-stock-proyecto';
 import {
   KardexEntradaCreateDto,
   KardexEntradaResponseDto,
@@ -110,6 +111,20 @@ export class RegistroInventario {
     return this.api.http.get(`${this.api.baseUrl}${this.base}/stock-actual/exportar-excel`, {
       responseType: 'blob',
       observe: 'response',
+      params,
+    });
+  }
+
+  listarStockProyecto(filtros?: FiltrosStockProyecto): Observable<StockProyecto[]> {
+    const params = this.construirQueryParams({
+      idProyecto: filtros?.idProyecto,
+      idEspecialidad: filtros?.idEspecialidad,
+      idMaterial: filtros?.idMaterial,
+      fechaDesde: filtros?.fechaDesde,
+      fechaHasta: filtros?.fechaHasta,
+    });
+
+    return this.api.http.get<StockProyecto[]>(`${this.api.baseUrl}${this.base}/stock-proyecto`, {
       params,
     });
   }

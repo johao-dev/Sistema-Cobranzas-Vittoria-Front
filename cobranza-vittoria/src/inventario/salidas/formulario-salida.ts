@@ -9,7 +9,7 @@ import { KardexSalidaResponseDto } from '../contratos-inventario';
 import { Especialidad } from '../../catalogos/especialidades/contratos-especialidades';
 import { Proyecto } from '../../catalogos/proyectos/contratos-proyectos';
 import { Material } from '../../catalogos/materiales/contratos-materiales';
-import { extraerMensajeError } from '../../app/core/utils/api-error.util';
+import { mensajeErrorInventario } from '../errores-inventario';
 import { cantidadInventario } from '../presentacion-inventario/datos-presentacion-inventario';
 import {
   ItemBorradorSalida,
@@ -137,7 +137,7 @@ export class FormularioSalida implements OnInit {
             id ? 'Salida actualizada correctamente.' : 'Salida registrada correctamente.',
           ),
         error: (error: unknown) =>
-          this.msg.set(extraerMensajeError(error, 'No se pudo guardar la salida.')),
+          this.msg.set(mensajeErrorInventario(error, 'No se pudo guardar la salida.')),
       });
   }
 }

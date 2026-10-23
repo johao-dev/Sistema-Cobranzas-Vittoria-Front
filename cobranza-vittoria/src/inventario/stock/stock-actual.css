@@ -62,3 +62,31 @@
 .switch.is-disabled input[type='checkbox'] {
   cursor: not-allowed;
 }
+
+.stock-material {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.stock-distribucion {
+  margin-left: auto;
+  opacity: 0;
+}
+
+.stock-fila:hover .stock-distribucion,
+.stock-fila:focus-within .stock-distribucion,
+.stock-fila--expandida .stock-distribucion {
+  opacity: 1;
+}
+
+.stock-distribucion-fila > td {
+  background: var(--bg);
+  white-space: normal;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .stock-distribucion {
+    opacity: 1;
+  }
+}

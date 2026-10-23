@@ -210,4 +210,31 @@ describe('FormularioSalida — edición de cabecera y todos sus ítems', () => {
     expect(guardada).not.toHaveBeenCalled();
     expect(api.actualizarSalida).toHaveBeenCalledOnce();
   });
+  it('muestra insuficiencia del proyecto y conserva la salida sin transferir automáticamente', async () => {
+    const respuesta = new Subject<KardexSalidaResponseDto[]>();
+
+    api.actualizarSalida.mockReturnValue(respuesta);
+    botonInventario(fixture, 'Guardar').click();
+    respuesta.error({
+      error: {
+        errores: [
+          {
+            codigoError: 'STOCK_PROYECTO_INSUFICIENTE',
+            mensaje: 'idMaterial=10 idProyecto=3 disponible=4.00 solicitado=6.00',
+          },
+        ],
+      },
+    });
+    await fixture.whenStable();
+
+    const raiz: HTMLElement = fixture.nativeElement;
+
+    expect(raiz.textContent).toContain(
+      'No hay stock suficiente del material en el proyecto seleccionado',
+    );
+    expect(raiz.textContent).toContain('Disponible: 4.00 Solicitado: 6.00');
+    expect(raiz.querySelectorAll('.data-table tbody tr')).toHaveLength(2);
+    expect(botonInventario(fixture, 'Guardar').disabled).toBe(false);
+    expect(api.actualizarSalida).toHaveBeenCalledOnce();
+  });
 });

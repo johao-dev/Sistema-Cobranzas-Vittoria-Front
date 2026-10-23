@@ -1,0 +1,14 @@
+:host {
+  display: block;
+}
+
+.distribucion-tabla {
+  width: 100%;
+  min-width: 0;
+}
+
+caption {
+  padding: 0 0 12px;
+  text-align: left;
+  font-weight: 600;
+}

@@ -1,0 +1,172 @@
+<div class="page-header">
+  <div>
+    <div class="page-title">Transferencias entre Proyectos</div>
+    <div class="page-subtitle">Reasignación manual de stock entre proyectos.</div>
+  </div>
+  <button
+    type="button"
+    class="btn btn-primary"
+    [disabled]="!!referencias.pendientes() || !!referencias.errores().length"
+    (click)="creando.set(true)"
+  >
+    Nueva transferencia
+  </button>
+</div>
+<section class="panel">
+  <h2 class="panel-title">Filtros</h2>
+  <div class="form-grid four">
+    <div class="field">
+      <label for="transferencias-id">ID de transferencia</label>
+      <input
+        id="transferencias-id"
+        type="number"
+        min="1"
+        step="1"
+        [ngModel]="filtros().idTransferencia"
+        (ngModelChange)="actualizar('idTransferencia', $event)"
+      />
+    </div>
+    <div class="field">
+      <label for="transferencias-origen">Proyecto origen</label>
+      <select
+        id="transferencias-origen"
+        [ngModel]="filtros().idProyectoOrigen ?? null"
+        (ngModelChange)="actualizar('idProyectoOrigen', $event)"
+      >
+        <option [ngValue]="null">Todos</option>
+        @for (p of referencias.proyectos(); track p.idProyecto) {
+          <option [ngValue]="p.idProyecto">{{ p.nombreProyecto }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label for="transferencias-destino">Proyecto destino</label>
+      <select
+        id="transferencias-destino"
+        [ngModel]="filtros().idProyectoDestino ?? null"
+        (ngModelChange)="actualizar('idProyectoDestino', $event)"
+      >
+        <option [ngValue]="null">Todos</option>
+        @for (p of referencias.proyectos(); track p.idProyecto) {
+          <option [ngValue]="p.idProyecto">{{ p.nombreProyecto }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label for="transferencias-desde">Fecha desde</label>
+      <input
+        id="transferencias-desde"
+        type="date"
+        [ngModel]="filtros().fechaDesde"
+        (ngModelChange)="actualizar('fechaDesde', $event)"
+      />
+    </div>
+    <div class="field">
+      <label for="transferencias-hasta">Fecha hasta</label>
+      <input
+        id="transferencias-hasta"
+        type="date"
+        [ngModel]="filtros().fechaHasta"
+        (ngModelChange)="actualizar('fechaHasta', $event)"
+      />
+    </div>
+  </div>
+  <div class="toolbar" style="margin-top: 14px">
+    <button type="button" class="btn btn-primary" (click)="filtrar()">Filtrar</button>
+    <button type="button" class="btn btn-ghost" (click)="limpiar()">Limpiar filtros</button>
+  </div>
+  @if (errorFiltros()) {
+    <p role="alert">{{ errorFiltros() }}</p>
+  }
+</section>
+@for (error of referencias.errores(); track error) {
+  <p role="alert">{{ error }}</p>
+}
+@if (referencias.errores().length) {
+  <button
+    type="button"
+    class="btn btn-secondary"
+    [disabled]="!!referencias.pendientes()"
+    (click)="referencias.cargar('transferencia')"
+  >
+    Reintentar catálogos
+  </button>
+}
+@if (consulta.cargando()) {
+  <p role="status">Cargando transferencias…</p>
+}
+@if (consulta.error()) {
+  <p role="alert">
+    {{ consulta.error() }}
+    <button type="button" class="btn btn-secondary" (click)="cargar()">Reintentar</button>
+  </p>
+}
+@if (detalle.cargando()) {
+  <p role="status">Cargando detalle…</p>
+}
+@if (detalle.error()) {
+  <p role="alert">
+    {{ detalle.error() }}
+    <button type="button" class="btn btn-secondary" (click)="reintentarDetalle()">
+      Reintentar detalle
+    </button>
+  </p>
+}
+<section class="panel" style="margin-top: 18px">
+  <h2 class="panel-title">Listado de transferencias</h2>
+  @if (!consulta.cargando() && !consulta.error() && !consulta.filas().length) {
+    <p class="empty-state">No hay transferencias para los filtros aplicados.</p>
+  }
+  @if (consulta.filas().length) {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Origen</th>
+            <th>Destino</th>
+            <th>Fecha</th>
+            <th>Observación</th>
+            <th>Material</th>
+            <th class="num-col">Cantidad</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of consulta.filas(); track row.idTransferenciaProyectoDetalle) {
+            <tr>
+              <td>{{ row.idTransferencia }}</td>
+              <td>{{ row.proyectoOrigen }}</td>
+              <td>{{ row.proyectoDestino }}</td>
+              <td>{{ fecha(row.fecha) }}</td>
+              <td>{{ row.observacion || '-' }}</td>
+              <td>{{ row.codigoMaterial }} — {{ row.nombre }}</td>
+              <td class="num-col">{{ cantidad(row.cantidad) }} {{ row.unidadMedida }}</td>
+              <td>
+                <button
+                  type="button"
+                  class="btn btn-secondary btn-sm"
+                  (click)="verDetalle(row.idTransferencia)"
+                  [attr.aria-label]="'Ver detalle de transferencia ' + row.idTransferencia"
+                >
+                  Ver detalle
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
+@if (creando()) {
+  <inventario-formulario-transferencia
+    [proyectos]="referencias.proyectos()"
+    [materiales]="referencias.materiales()"
+    (cerrar)="creando.set(false)"
+    (guardada)="registrada()"
+  />
+}
+@if (idDetalle() && !detalle.cargando() && !detalle.error() && detalle.filas().length) {
+  <inventario-detalle-transferencia [filas]="detalle.filas()" (cerrar)="idDetalle.set(null)" />
+}

@@ -10,7 +10,7 @@ import { ReferenciasInventario } from '../referencias-inventario/referencias-inv
 import { FiltrosInventario } from '../filtros-inventario/filtros-inventario';
 import { FormularioEntrada } from './formulario-entrada';
 import { NotificationService } from '../../app/core/services/notification.service';
-import { extraerMensajeError } from '../../app/core/utils/api-error.util';
+import { mensajeErrorInventario } from '../errores-inventario';
 import {
   coincideBusquedaInventario,
   fechaInventario,
@@ -132,7 +132,7 @@ export class ListaEntradas implements OnInit {
         },
         error: (error: unknown) =>
           this.notificaciones.show(
-            extraerMensajeError(error, 'No se pudo eliminar la entrada.'),
+            mensajeErrorInventario(error, 'No se pudo eliminar la entrada.'),
             'error',
           ),
       });

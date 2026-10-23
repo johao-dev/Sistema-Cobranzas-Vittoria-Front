@@ -183,4 +183,41 @@ describe('RegistroInventario — contrato HTTP', () => {
 
     expect(error).toHaveBeenCalledWith(expect.objectContaining({ status: 422 }));
   });
+  it('consulta stock por proyecto con todos sus filtros y nunca los exporta al global', () => {
+    const filtros = {
+      idProyecto: 3,
+      idMaterial: 10,
+      idEspecialidad: 2,
+      fechaDesde: '2026-10-01',
+      fechaHasta: '2026-10-22',
+    };
+
+    api.listarStockProyecto(filtros).subscribe();
+
+    const req = http.expectOne((r) => r.url === base + '/stock-proyecto');
+
+    expect(req.request.params.keys()).toEqual([
+      'idProyecto',
+      'idEspecialidad',
+      'idMaterial',
+      'fechaDesde',
+      'fechaHasta',
+    ]);
+    expect(req.request.params.get('idProyecto')).toBe('3');
+    expect(req.request.params.get('idMaterial')).toBe('10');
+    req.flush([]);
+    api.exportarStockExcel(filtros, true).subscribe();
+
+    const excel = http.expectOne((r) => r.url === base + '/stock-actual/exportar-excel');
+
+    expect(excel.request.params.keys()).toEqual([
+      'idEspecialidad',
+      'fechaDesde',
+      'fechaHasta',
+      'incluirTotales',
+    ]);
+    expect(excel.request.params.has('idProyecto')).toBe(false);
+    expect(excel.request.params.has('idMaterial')).toBe(false);
+    excel.flush(new Blob(['xlsx']));
+  });
 });

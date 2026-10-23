@@ -43,6 +43,7 @@ export const routes: Routes = [
       { path: '', redirectTo: 'kardex-entradas', pathMatch: 'full' },
       { path: 'kardex-entradas', loadComponent: () => import('../inventario/entradas/lista-entradas').then(m => m.ListaEntradas) },
       { path: 'kardex-salidas', loadComponent: () => import('../inventario/salidas/lista-salidas').then(m => m.ListaSalidas) },
+      { path: 'transferencias-proyecto', loadComponent: () => import('../inventario/transferencias/lista-transferencias/lista-transferencias').then(m => m.ListaTransferencias) },
       { path: 'stock-actual', loadComponent: () => import('../inventario/stock/stock-actual').then(m => m.StockActual) }
     ]
   },

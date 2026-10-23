@@ -26,7 +26,7 @@ export class ReferenciasInventario {
   readonly errores = signal<string[]>([]);
   readonly pendientes = signal(0);
 
-  cargar(tipo: 'entrada' | 'salida' | 'stock' | 'compras'): void {
+  cargar(tipo: 'entrada' | 'salida' | 'stock' | 'compras' | 'transferencia'): void {
     if (this.pendientes()) return;
 
     this.errores.set([]);
@@ -38,7 +38,7 @@ export class ReferenciasInventario {
     );
     if (tipo !== 'stock')
       this.consultar(this.materialesApi.materiales(true), this.materiales, 'materiales');
-    if (tipo === 'entrada' || tipo === 'salida')
+    if (tipo !== 'compras')
       this.consultar(this.proyectosApi.proyectos(true), this.proyectos, 'proyectos');
     if (tipo === 'entrada')
       this.consultar(this.proveedoresApi.proveedores(true), this.proveedores, 'proveedores');

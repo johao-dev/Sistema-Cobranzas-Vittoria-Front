@@ -2,7 +2,7 @@ import { DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable, Subject, catchError, finalize, of, switchMap } from 'rxjs';
 
-import { extraerMensajeError } from '../../app/core/utils/api-error.util';
+import { mensajeErrorInventario } from '../errores-inventario';
 
 /** Estado de lectura compartido por los cuatro listados; cada vista conserva sus filtros y acciones. */
 export class ConsultaInventario<T> {
@@ -22,7 +22,7 @@ export class ConsultaInventario<T> {
 
           return consulta.pipe(
             catchError((error: unknown) => {
-              this.error.set(extraerMensajeError(error, 'No se pudo cargar el inventario.'));
+              this.error.set(mensajeErrorInventario(error, 'No se pudo cargar el inventario.'));
               return of([]);
             }),
             finalize(() => this.cargando.set(false)),

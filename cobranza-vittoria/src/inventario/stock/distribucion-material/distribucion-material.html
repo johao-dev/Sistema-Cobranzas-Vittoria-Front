@@ -1,0 +1,34 @@
+@if (consulta.cargando()) {
+  <p role="status">Cargando distribución…</p>
+}
+@if (consulta.error()) {
+  <p role="alert">
+    {{ consulta.error() }}
+    <button type="button" class="btn btn-secondary btn-sm" (click)="cargar()">
+      Reintentar distribución
+    </button>
+  </p>
+}
+@if (!consulta.cargando() && !consulta.error() && consulta.filas().length) {
+  <table class="distribucion-tabla">
+    <caption>
+      Distribución actual por proyecto
+    </caption>
+    <thead>
+      <tr>
+        <th>Proyecto</th>
+        <th class="num-col">Stock</th>
+        <th>Última asignación</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (fila of consulta.filas(); track fila.idStockProyecto) {
+        <tr>
+          <td>{{ fila.proyecto }}</td>
+          <td class="num-col">{{ cantidad(fila.stock) }}</td>
+          <td>{{ fecha(fila.fechaUltimoMovimiento) }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

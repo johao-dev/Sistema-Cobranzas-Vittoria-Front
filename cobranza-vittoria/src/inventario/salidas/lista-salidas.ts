@@ -10,7 +10,7 @@ import { ReferenciasInventario } from '../referencias-inventario/referencias-inv
 import { FiltrosInventario } from '../filtros-inventario/filtros-inventario';
 import { FormularioSalida } from './formulario-salida';
 import { NotificationService } from '../../app/core/services/notification.service';
-import { extraerMensajeError } from '../../app/core/utils/api-error.util';
+import { mensajeErrorInventario } from '../errores-inventario';
 import {
   coincideBusquedaInventario,
   fechaInventario,
@@ -124,7 +124,7 @@ export class ListaSalidas implements OnInit {
         },
         error: (error: unknown) =>
           this.notificaciones.show(
-            extraerMensajeError(error, 'No se pudo cargar la salida.'),
+            mensajeErrorInventario(error, 'No se pudo cargar la salida.'),
             'error',
           ),
       });
@@ -173,7 +173,7 @@ export class ListaSalidas implements OnInit {
         },
         error: (error: unknown) =>
           this.notificaciones.show(
-            extraerMensajeError(error, 'No se pudo eliminar la salida.'),
+            mensajeErrorInventario(error, 'No se pudo eliminar la salida.'),
             'error',
           ),
       });

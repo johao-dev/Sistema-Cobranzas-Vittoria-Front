@@ -1,0 +1,146 @@
+<dialog
+  dialogoModal
+  (solicitarCierre)="solicitarCierre()"
+  class="panel panel--form design-modal-card"
+  aria-labelledby="titulo-transferencia"
+>
+  <button
+    type="button"
+    class="modal-close"
+    aria-label="Cerrar"
+    (click)="solicitarCierre()"
+    [disabled]="guardando()"
+  >
+    ×
+  </button>
+  <h2 id="titulo-transferencia" class="panel-title">Nueva transferencia entre proyectos</h2>
+  <form [formGroup]="form" (ngSubmit)="guardar()">
+    <div class="form-grid two">
+      <div class="field">
+        <label for="transferencia-origen">Proyecto origen</label>
+        <select
+          id="transferencia-origen"
+          formControlName="idProyectoOrigen"
+          (change)="cambiarOrigen()"
+          required
+        >
+          <option [ngValue]="null">Seleccionar</option>
+          @for (p of proyectos(); track p.idProyecto) {
+            <option [ngValue]="p.idProyecto">{{ p.nombreProyecto }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="transferencia-destino">Proyecto destino</label>
+        <select id="transferencia-destino" formControlName="idProyectoDestino" required>
+          <option [ngValue]="null">Seleccionar</option>
+          @for (p of proyectos(); track p.idProyecto) {
+            <option
+              [ngValue]="p.idProyecto"
+              [disabled]="p.idProyecto === valores().idProyectoOrigen"
+            >
+              {{ p.nombreProyecto }}
+            </option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="transferencia-fecha">Fecha</label>
+        <input id="transferencia-fecha" type="date" formControlName="fecha" required />
+      </div>
+      <div class="field">
+        <label for="transferencia-observacion">Observación</label>
+        <input id="transferencia-observacion" formControlName="observacion" maxlength="500" />
+      </div>
+    </div>
+    <div class="items-section" style="margin-top: 18px">
+      <div class="items-header">
+        <h3 class="items-title">Materiales a transferir</h3>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="agregar()"
+          [disabled]="guardando() || valores().items.length >= maxMateriales"
+        >
+          Agregar material
+        </button>
+      </div>
+      <p>
+        Máximo {{ maxMateriales }} materiales por transferencia ({{ valores().items.length }}/{{
+          maxMateriales
+        }}).
+      </p>
+      @if (!valores().items.length) {
+        <p class="empty-state">Agregue al menos un material.</p>
+      }
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Material</th>
+              <th>Cantidad</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of form.controls.items.controls; track item; let i = $index) {
+              <tr>
+                <td>
+                  <select
+                    [formControl]="item.controls.idMaterial"
+                    [attr.aria-label]="'Material ' + (i + 1)"
+                    required
+                  >
+                    <option [ngValue]="null">Seleccionar</option>
+                    @for (m of materiales(); track m.idMaterial) {
+                      <option [ngValue]="m.idMaterial" [disabled]="repetido(m.idMaterial, i)">
+                        {{ m.codigo }} — {{ m.descripcion }} ({{ m.unidadMedida }})
+                      </option>
+                    }
+                  </select>
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    [formControl]="item.controls.cantidad"
+                    [attr.aria-label]="'Cantidad ' + (i + 1)"
+                    required
+                  />
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    class="btn btn-danger btn-sm"
+                    (click)="quitar(i)"
+                    [disabled]="guardando()"
+                    [attr.aria-label]="'Quitar material ' + (i + 1)"
+                  >
+                    Quitar
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    @if (error()) {
+      <p role="alert">{{ error() }}</p>
+    }
+    <div class="toolbar" style="margin-top: 14px">
+      <button type="submit" class="btn btn-primary" [disabled]="guardando()">
+        {{ guardando() ? 'Guardando…' : 'Registrar transferencia' }}
+      </button>
+      <button
+        type="button"
+        class="btn btn-ghost"
+        (click)="solicitarCierre()"
+        [disabled]="guardando()"
+      >
+        Cancelar
+      </button>
+    </div>
+  </form>
+</dialog>
