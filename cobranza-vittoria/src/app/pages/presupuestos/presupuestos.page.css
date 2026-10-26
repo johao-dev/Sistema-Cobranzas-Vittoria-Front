@@ -241,33 +241,6 @@
   }
 }
 
-/* Selector lista / árbol de la versión */
-.vista-toggle {
-  display: inline-flex;
-  margin: 12px 0;
-  border: 1px solid #d5dbe5;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.vista-toggle__btn {
-  border: none;
-  background: #fff;
-  padding: 6px 14px;
-  font-size: 13px;
-  color: #4b5563;
-  cursor: pointer;
-}
-
-.vista-toggle__btn + .vista-toggle__btn {
-  border-left: 1px solid #d5dbe5;
-}
-
-.vista-toggle__btn--activo {
-  background: #1f3864;
-  color: #fff;
-  font-weight: 600;
-}
 
 /* Ayuda de la importación de estructura */
 .estructura-ayuda {

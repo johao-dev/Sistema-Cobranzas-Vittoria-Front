@@ -1,12 +1,12 @@
 <div class="arbol">
   <div class="arbol-controles">
     <div class="field arbol-busqueda">
-      <label>Buscar partida</label>
-      <input type="text" [ngModel]="busqueda" (ngModelChange)="busqueda = $event; onBusqueda()" placeholder="Código o nombre" />
+      <label for="buscar-partida-arbol">Buscar partida</label>
+      <input id="buscar-partida-arbol" type="text" [ngModel]="busqueda" (ngModelChange)="busqueda = $event; onBusqueda()" placeholder="Código o nombre" />
     </div>
     <div class="field">
-      <label>Nivel máximo</label>
-      <select [(ngModel)]="nivelMaximo" (change)="onNivelMaximo()">
+      <label for="nivel-partida-arbol">Nivel máximo</label>
+      <select id="nivel-partida-arbol" [(ngModel)]="nivelMaximo" (change)="onNivelMaximo()">
         <option value="">Todos</option>
         <option *ngFor="let n of nivelesDisponibles" [value]="n">Nivel {{ n }}</option>
       </select>
@@ -32,8 +32,11 @@
     </ng-container>
   </nav>
 
-  <div *ngIf="cargando" class="empty-state">Cargando árbol de partidas...</div>
-  <div *ngIf="!cargando && error" class="empty-state">{{ error }}</div>
+  <div *ngIf="cargando && !datos" class="empty-state">Cargando árbol de partidas...</div>
+  <div *ngIf="!cargando && error" class="empty-state" role="alert">
+    {{ error }}
+    <button type="button" class="btn btn-ghost btn-sm" (click)="cargar(!!datos)">Reintentar</button>
+  </div>
   <div *ngIf="!cargando && !error && datos && !datos.nodos.length" class="empty-state">
     No hay partidas con monto para mostrar.
   </div>
@@ -41,7 +44,7 @@
     Ninguna partida coincide con los filtros.
   </div>
 
-  <div *ngIf="!cargando && !error && filas.length" class="table-wrap arbol-tabla">
+  <div *ngIf="filas.length" class="table-wrap arbol-tabla" [attr.aria-busy]="cargando">
     <table>
       <thead>
         <tr>
@@ -52,6 +55,9 @@
           <th class="num">Ejecutado</th>
           <th class="num">Saldo</th>
           <th class="barra-col">% ejecutado</th>
+          @if (modo === 'version' && accionesVersion) {
+            <th>Acciones</th>
+          }
         </tr>
       </thead>
       <tbody>
@@ -75,9 +81,12 @@
                 [title]="f.nodo.partidasExcedidas + ' partida(s) excedida(s) en esta rama'">
                 {{ f.nodo.partidasExcedidas }} excedida(s)
               </span>
-              <button *ngIf="f.nodo.esHoja" type="button" class="btn btn-ghost btn-sm arbol-movimientos"
+              <button *ngIf="f.nodo.esHoja && !(modo === 'version' && accionesVersion)" type="button" class="btn btn-ghost btn-sm arbol-movimientos"
                 (click)="$event.stopPropagation(); onClicFila(f)">Movimientos</button>
             </div>
+            @if (f.nodo.esHoja && observaciones.get(f.nodo.idCatalogoPartida); as observacion) {
+              <p class="arbol-observacion" [style.padding-left]="sangria(f)">{{ observacion }}</p>
+            }
           </td>
           <td class="num">{{ simbolo }} {{ f.nodo.montoPresupuestado | number:'1.2-2' }}</td>
           <td class="num">{{ f.nodo.montoComprometido | number:'1.2-2' }}</td>
@@ -92,6 +101,28 @@
             </div>
             <span class="barra__label">{{ f.nodo.porcentajeEjecutado | number:'1.1-1' }}%</span>
           </td>
+          @if (modo === 'version' && accionesVersion) {
+            <td>
+              @if (f.nodo.esHoja) {
+                <div class="arbol-acciones-partida">
+                  <button type="button" class="btn btn-ghost btn-sm"
+                    [disabled]="!versionEditable || accionesBloqueadas || cargando"
+                    [attr.aria-label]="'Editar ' + f.nodo.codigo"
+                    (click)="$event.stopPropagation(); emitirAccion('editar', f.nodo)">Editar</button>
+                  <button type="button" class="btn btn-ghost btn-sm"
+                    [disabled]="accionesBloqueadas || cargando" [attr.aria-label]="'Historial de ' + f.nodo.codigo"
+                    (click)="$event.stopPropagation(); emitirAccion('historial', f.nodo)">Historial</button>
+                  <button type="button" class="btn btn-ghost btn-sm"
+                    [disabled]="accionesBloqueadas || cargando" [attr.aria-label]="'Ajustar ' + f.nodo.codigo"
+                    (click)="$event.stopPropagation(); emitirAccion('ajustar', f.nodo)">Ajuste</button>
+                  <button type="button" class="btn btn-ghost btn-sm"
+                    [disabled]="!versionEditable || accionesBloqueadas || cargando"
+                    [attr.aria-label]="'Quitar ' + f.nodo.codigo"
+                    (click)="$event.stopPropagation(); emitirAccion('quitar', f.nodo)">Quitar</button>
+                </div>
+              }
+            </td>
+          }
         </tr>
       </tbody>
       <tfoot *ngIf="datos?.totales as t">
@@ -114,6 +145,9 @@
             </div>
             <span class="barra__label">{{ t.porcentajeEjecutado | number:'1.1-1' }}%</span>
           </td>
+          @if (modo === 'version' && accionesVersion) {
+            <td></td>
+          }
         </tr>
       </tfoot>
     </table>

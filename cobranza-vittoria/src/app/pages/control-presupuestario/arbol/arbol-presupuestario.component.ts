@@ -1,12 +1,26 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import {
   ArbolPresupuestario,
   ControlPresupuestarioService,
   NodoArbol
 } from '../../../core/services/control-presupuestario.service';
+
+export interface AccionPartida {
+  accion: 'editar' | 'historial' | 'ajustar' | 'quitar';
+  nodo: NodoArbol;
+}
 
 /** Fila visible del árbol: el nodo y su profundidad relativa a la raíz mostrada. */
 interface FilaArbol {
@@ -31,7 +45,7 @@ interface FilaArbol {
   templateUrl: './arbol-presupuestario.component.html',
   styleUrl: './arbol-presupuestario.component.css'
 })
-export class ArbolPresupuestarioComponent implements OnChanges {
+export class ArbolPresupuestarioComponent implements OnChanges, OnDestroy {
   @Input() modo: 'vigente' | 'version' = 'vigente';
   @Input() idCentroCosto: number | null = null;
   @Input() idPresupuesto: number | null = null;
@@ -42,6 +56,15 @@ export class ArbolPresupuestarioComponent implements OnChanges {
   @Input() nivelSincronizado: number | null = null;
   /** Clic en una hoja: el contenedor abre sus movimientos. */
   @Output() abrirHoja = new EventEmitter<NodoArbol>();
+
+  @Input() accionesVersion = false;
+  @Input() versionEditable = false;
+  @Input() accionesBloqueadas = false;
+  @Input() observaciones: ReadonlyMap<number, string> = new Map();
+
+  @Output() accionPartida = new EventEmitter<AccionPartida>();
+
+  private consulta?: Subscription;
 
   datos: ArbolPresupuestario | null = null;
   cargando = false;
@@ -63,13 +86,22 @@ export class ArbolPresupuestarioComponent implements OnChanges {
   constructor(private cp: ControlPresupuestarioService, private cdr: ChangeDetectorRef) { }
 
   ngOnChanges(changes: SimpleChanges): void {
-    const soloNivel = Object.keys(changes).every(k => k === 'nivelSincronizado');
-    if (soloNivel && !changes['nivelSincronizado'].firstChange) {
-      this.aplicarNivelSincronizado();
-      this.recalcular();
+    const cambiaOrigen = ['modo', 'idCentroCosto', 'idPresupuesto', 'idVersion'].some(
+      clave => !!changes[clave],
+    );
+    if (cambiaOrigen || changes['recarga']) {
+      this.cargar(!cambiaOrigen);
       return;
     }
-    this.cargar();
+
+    if (changes['nivelSincronizado']) {
+      this.aplicarNivelSincronizado();
+      this.recalcular();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.consulta?.unsubscribe();
   }
 
   private aplicarNivelSincronizado(): void {
@@ -97,7 +129,13 @@ export class ArbolPresupuestarioComponent implements OnChanges {
 
   // -------------------------------------------------------------------- carga
 
-  cargar(): void {
+  cargar(conservarNavegacion = false): void {
+    this.consulta?.unsubscribe();
+    if (!conservarNavegacion) {
+      this.datos = null;
+      this.indexar();
+    }
+
     const peticion = this.peticion();
     if (!peticion) {
       this.datos = null;
@@ -106,17 +144,15 @@ export class ArbolPresupuestarioComponent implements OnChanges {
     }
     this.cargando = true;
     this.error = '';
-    peticion.subscribe({
+    this.consulta = peticion.subscribe({
       next: datos => {
         this.datos = datos;
         this.cargando = false;
-        this.indexar();
+        this.indexar(conservarNavegacion);
         this.cdr.detectChanges();
       },
       error: err => {
         this.cargando = false;
-        this.datos = null;
-        this.indexar();
         this.error = err?.error?.error === 'MONEDAS_MIXTAS'
           ? 'Los presupuestos de este centro de costo usan monedas distintas. Elige un presupuesto para ver su árbol.'
           : err?.error?.message || 'No se pudo cargar el árbol de partidas.';
@@ -133,7 +169,7 @@ export class ArbolPresupuestarioComponent implements OnChanges {
   }
 
   /** Arma los índices padre → hijos conservando el preorden del backend. Empieza con solo las raíces. */
-  private indexar(): void {
+  private indexar(conservarNavegacion = false): void {
     this.porId.clear();
     this.hijos.clear();
     const nodos = this.datos?.nodos ?? [];
@@ -148,11 +184,18 @@ export class ArbolPresupuestarioComponent implements OnChanges {
     this.raices = this.hijos.get(null) ?? [];
     this.nivelesDisponibles = Array.from(new Set(nodos.map(n => Number(n.nivel)).filter(n => !isNaN(n))))
       .sort((a, b) => a - b);
-    this.expandidos.clear();
-    this.seleccionado = null;
-    this.busqueda = '';
-    this.soloDesviacion = false;
-    this.aplicarNivelSincronizado();
+    if (conservarNavegacion) {
+      this.expandidos = new Set([...this.expandidos].filter(id => this.porId.has(id)));
+      this.seleccionado = this.seleccionado
+        ? this.porId.get(this.seleccionado.idCatalogoPartida) ?? null
+        : null;
+    } else {
+      this.expandidos.clear();
+      this.seleccionado = null;
+      this.busqueda = '';
+      this.soloDesviacion = false;
+      this.aplicarNivelSincronizado();
+    }
     this.recalcular();
   }
 
@@ -178,11 +221,22 @@ export class ArbolPresupuestarioComponent implements OnChanges {
     this.recalcular();
   }
 
+  emitirAccion(accion: AccionPartida['accion'], nodo: NodoArbol): void {
+    if (
+      this.modo !== 'version' || !this.accionesVersion || !nodo.esHoja
+      || this.accionesBloqueadas || this.cargando
+      || ((accion === 'editar' || accion === 'quitar') && !this.versionEditable)
+    ) return;
+
+    this.accionPartida.emit({ accion, nodo });
+  }
+
   onClicFila(fila: FilaArbol): void {
     this.seleccionado = fila.nodo;
     if (fila.tieneHijos) this.alternar(fila.nodo);
-    else if (fila.nodo.esHoja) this.abrirHoja.emit(fila.nodo);
-    else this.recalcular();
+    else if (fila.nodo.esHoja && !this.cargando && !this.accionesBloqueadas) {
+      this.abrirHoja.emit(fila.nodo);
+    } else this.recalcular();
   }
 
   /** Breadcrumb: ir a un ancestro lo selecciona y deja visible su rama. */
@@ -287,6 +341,7 @@ export class ArbolPresupuestarioComponent implements OnChanges {
     };
     visitar(this.raices, 0);
     this.filas = filas;
+    this.cdr.markForCheck();
   }
 
   // ---------------------------------------------------------------- formato

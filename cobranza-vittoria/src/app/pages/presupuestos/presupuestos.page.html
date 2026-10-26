@@ -132,13 +132,6 @@
       Esta versión ya no es editable. Crea una nueva versión para modificar montos.
     </div>
 
-    <div class="vista-toggle" role="group" aria-label="Vista de los montos">
-      <button type="button" class="vista-toggle__btn" [class.vista-toggle__btn--activo]="vistaVersion === 'tabla'"
-        [attr.aria-pressed]="vistaVersion === 'tabla'" (click)="cambiarVistaVersion('tabla')">Lista</button>
-      <button type="button" class="vista-toggle__btn" [class.vista-toggle__btn--activo]="vistaVersion === 'arbol'"
-        [attr.aria-pressed]="vistaVersion === 'arbol'" (click)="cambiarVistaVersion('arbol')">Árbol con subtotales</button>
-    </div>
-
     <div *ngIf="resumenEstructura" class="alerta-ok">
       Estructura importada: {{ resumenEstructura.partidasCreadas }} partida(s) nueva(s) en el catálogo,
       {{ resumenEstructura.agregados }} agregada(s) y {{ resumenEstructura.actualizados }} actualizada(s)<span
@@ -147,51 +140,12 @@
       {{ simbolo }} {{ resumenEstructura.montoTotal | number:'1.2-2' }}. Revisa el árbol antes de aprobar.
     </div>
 
-    <app-arbol-presupuestario *ngIf="vistaVersion === 'arbol'" modo="version"
+    <app-arbol-presupuestario modo="version"
       [idPresupuesto]="seleccionado.idPresupuesto" [idVersion]="versionSeleccionada.idPresupuestoVersion"
-      [recarga]="recargaArbol" (abrirHoja)="verMovimientosNodo($event)"></app-arbol-presupuestario>
-
-    <div *ngIf="vistaVersion === 'tabla' && cargandoDetalles" class="empty-state">Cargando montos...</div>
-    <div *ngIf="vistaVersion === 'tabla' && !cargandoDetalles && !detalles.length" class="empty-state">
-      Esta versión no tiene partidas asignadas.
-    </div>
-
-    <div *ngIf="vistaVersion === 'tabla' && !cargandoDetalles && detalles.length" class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Partida</th>
-            <th>Descripción</th>
-            <th class="num">Monto presupuestado</th>
-            <th>Observación</th>
-            <th class="actions-col">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let d of detalles">
-            <td>{{ d.codigo }}</td>
-            <td>{{ d.nombre }}</td>
-            <td class="num">{{ simbolo }} {{ d.montoPresupuestado | number:'1.2-2' }}</td>
-            <td>{{ d.observacion || '—' }}</td>
-            <td class="actions-col">
-              <button type="button" class="btn btn-ghost btn-sm" [disabled]="!versionEditable"
-                (click)="abrirModalDetalle(d)">Editar</button>
-              <button type="button" class="btn btn-ghost btn-sm" (click)="verMovimientos(d)">Historial</button>
-              <button type="button" class="btn btn-ghost btn-sm" (click)="abrirModalAjuste(d)">Ajuste</button>
-              <button type="button" class="btn btn-ghost btn-sm" [disabled]="!versionEditable"
-                (click)="eliminarDetalle(d)">Quitar</button>
-            </td>
-          </tr>
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colspan="2"><strong>Total presupuestado</strong></td>
-            <td class="num"><strong>{{ simbolo }} {{ totalPresupuestado | number:'1.2-2' }}</strong></td>
-            <td colspan="2"></td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
+      [recarga]="recargaArbol" [accionesVersion]="true" [versionEditable]="versionEditable"
+      [accionesBloqueadas]="cargandoDetalles || guardando" [observaciones]="observacionesPartidas"
+      (accionPartida)="accionarPartida($event)" (abrirHoja)="verMovimientosNodo($event)">
+    </app-arbol-presupuestario>
   </div>
 </section>
 

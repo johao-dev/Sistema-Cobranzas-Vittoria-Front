@@ -1,10 +1,14 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { ControlPresupuestarioService, NodoArbol } from '../../core/services/control-presupuestario.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { descargarArchivo, extraerFilenameDeContentDisposition } from '../../core/utils/file-download.util';
-import { ArbolPresupuestarioComponent } from '../control-presupuestario/arbol/arbol-presupuestario.component';
+import {
+  AccionPartida,
+  ArbolPresupuestarioComponent,
+} from '../control-presupuestario/arbol/arbol-presupuestario.component';
 
 /** Fila editable del formulario de carga completa. */
 interface FilaCarga {
@@ -23,7 +27,9 @@ interface FilaCarga {
   templateUrl: './presupuestos.page.html',
   styleUrl: './presupuestos.page.css'
 })
-export class PresupuestosPage implements OnInit {
+export class PresupuestosPage implements OnInit, OnDestroy {
+  private consultaDetalles?: Subscription;
+
   presupuestos: any[] = [];
   centrosCosto: any[] = [];
   monedas: any[] = [];
@@ -61,8 +67,7 @@ export class PresupuestosPage implements OnInit {
   modalConfirmarInactivar = false;
   mensajeInactivar = '';
 
-  /** Montos de la versión como lista plana o como árbol con subtotales. */
-  vistaVersion: 'tabla' | 'arbol' = 'tabla';
+  observacionesPartidas: ReadonlyMap<number, string> = new Map();
   recargaArbol = 0;
   /** Resultado de la última importación de estructura, visible sobre el árbol. */
   resumenEstructura: any = null;
@@ -93,6 +98,10 @@ export class PresupuestosPage implements OnInit {
   ngOnInit(): void {
     this.cargarCatalogos();
     this.load();
+  }
+
+  ngOnDestroy(): void {
+    this.consultaDetalles?.unsubscribe();
   }
 
   // ----------------------------------------------------------------- formularios
@@ -142,10 +151,6 @@ export class PresupuestosPage implements OnInit {
     return (this.partidas ?? []).filter(p =>
       p.activo && p.esHoja &&
       (p.idCatalogoPartida === this.formDetalle.idCatalogoPartida || !yaAsignadas.has(p.idCatalogoPartida)));
-  }
-
-  get totalPresupuestado(): number {
-    return (this.detalles ?? []).reduce((acc, d) => acc + Number(d.montoPresupuestado ?? 0), 0);
   }
 
   get simbolo(): string {
@@ -227,6 +232,8 @@ export class PresupuestosPage implements OnInit {
   }
 
   limpiarSeleccion(): void {
+    this.consultaDetalles?.unsubscribe();
+    this.observacionesPartidas = new Map();
     this.seleccionado = null;
     this.versionSeleccionada = null;
     this.versiones = [];
@@ -234,6 +241,8 @@ export class PresupuestosPage implements OnInit {
   }
 
   seleccionar(row: any): void {
+    this.consultaDetalles?.unsubscribe();
+    this.observacionesPartidas = new Map();
     this.seleccionado = row;
     this.versionSeleccionada = null;
     this.detalles = [];
@@ -268,6 +277,8 @@ export class PresupuestosPage implements OnInit {
   seleccionarVersion(version: any): void {
     this.versionSeleccionada = version;
     this.resumenEstructura = null;
+    this.detalles = [];
+    this.observacionesPartidas = new Map();
     this.cargarDetalles();
   }
 
@@ -353,13 +364,22 @@ export class PresupuestosPage implements OnInit {
 
   // -------------------------------------------------------------------- detalles
 
-  cargarDetalles(): void {
+  cargarDetalles(recargarArbol = false): void {
     if (!this.versionSeleccionada) return;
-    this.cargandoDetalles = true;
 
-    this.cp.detalles(this.seleccionado.idPresupuesto, this.versionSeleccionada.idPresupuestoVersion).subscribe({
+    this.consultaDetalles?.unsubscribe();
+    this.cargandoDetalles = true;
+    if (recargarArbol) this.recargaArbol++;
+
+    this.consultaDetalles = this.cp.detalles(
+      this.seleccionado.idPresupuesto,
+      this.versionSeleccionada.idPresupuestoVersion,
+    ).subscribe({
       next: rows => {
         this.detalles = rows ?? [];
+        this.observacionesPartidas = new Map(
+          this.detalles.map(d => [d.idCatalogoPartida, d.observacion ?? '']),
+        );
         this.cargandoDetalles = false;
         this.cdr.detectChanges();
       },
@@ -389,7 +409,7 @@ export class PresupuestosPage implements OnInit {
   }
 
   guardarDetalle(): void {
-    if (!this.versionSeleccionada) return;
+    if (!this.versionSeleccionada || !this.versionEditable || this.guardando) return;
     if (!this.esEdicionDetalle && !this.formDetalle.idCatalogoPartida) {
       this.notifications.show('Selecciona la partida a presupuestar.', 'info');
       return;
@@ -411,7 +431,7 @@ export class PresupuestosPage implements OnInit {
         this.guardando = false;
         this.modalDetalle = false;
         this.notifications.show('Monto guardado correctamente.', 'success');
-        this.cargarDetalles();
+        this.cargarDetalles(true);
       },
       error: err => {
         this.guardando = false;
@@ -426,15 +446,22 @@ export class PresupuestosPage implements OnInit {
       this.notifications.show('Solo se pueden quitar partidas en una versión en borrador.', 'info');
       return;
     }
+    if (this.guardando) return;
     if (!confirm(`¿Quitar la partida ${detalle.codigo} de esta versión?`)) return;
 
+    this.guardando = true;
     this.cp.eliminarDetalle(this.seleccionado.idPresupuesto, this.versionSeleccionada.idPresupuestoVersion,
       detalle.idPresupuestoDetalle).subscribe({
       next: () => {
+        this.guardando = false;
         this.notifications.show('Partida retirada de la versión.', 'success');
-        this.cargarDetalles();
+        this.cargarDetalles(true);
       },
-      error: err => this.notifications.show(err?.error?.message || 'No se pudo quitar la partida.', 'error')
+      error: err => {
+        this.guardando = false;
+        this.notifications.show(err?.error?.message || 'No se pudo quitar la partida.', 'error');
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -469,7 +496,7 @@ export class PresupuestosPage implements OnInit {
   }
 
   registrarAjuste(): void {
-    if (!this.detalleSeleccionado) return;
+    if (!this.detalleSeleccionado || this.guardando) return;
     const monto = Number(this.formAjuste.monto ?? 0);
     if (isNaN(monto) || monto <= 0) {
       this.notifications.show('El monto del ajuste debe ser mayor a cero.', 'info');
@@ -487,7 +514,7 @@ export class PresupuestosPage implements OnInit {
         this.guardando = false;
         this.modalAjuste = false;
         this.notifications.show('Ajuste registrado en el historial.', 'success');
-        this.cargarDetalles();
+        this.cargarDetalles(true);
       },
       error: err => {
         this.guardando = false;
@@ -668,7 +695,7 @@ export class PresupuestosPage implements OnInit {
         this.modalCarga = false;
         this.notifications.show(
           `Montos guardados: ${r.agregados} partida(s) agregada(s) y ${r.actualizados} actualizada(s).`, 'success');
-        this.cargarDetalles();
+        this.cargarDetalles(true);
       },
       error: err => {
         this.guardando = false;
@@ -726,7 +753,7 @@ export class PresupuestosPage implements OnInit {
         this.guardando = false;
         this.resultadoImportar = r;
         this.notifications.show('Montos importados correctamente.', 'success');
-        this.cargarDetalles();
+        this.cargarDetalles(true);
       },
       error: err => {
         this.guardando = false;
@@ -792,10 +819,7 @@ export class PresupuestosPage implements OnInit {
         this.resumenEstructura = r;
         this.notifications.show(
           `Estructura importada: ${r?.partidasCreadas ?? 0} partida(s) nueva(s) en el catálogo.`, 'success');
-        // Se abre el árbol de la versión para validar padres, hijas y subtotales.
-        this.vistaVersion = 'arbol';
-        this.recargaArbol++;
-        this.cargarDetalles();
+        this.cargarDetalles(true);
         this.recargarPartidas();
       },
       error: err => {
@@ -820,21 +844,37 @@ export class PresupuestosPage implements OnInit {
 
   // ------------------------------------------------------------------- árbol
 
-  cambiarVistaVersion(vista: 'tabla' | 'arbol'): void {
-    this.vistaVersion = vista;
-    this.cdr.detectChanges();
-  }
+  accionarPartida(evento: AccionPartida): void {
+    if (this.cargandoDetalles || this.guardando) return;
 
-  /** Hoja del árbol de la versión: se abre el historial de su detalle. */
-  verMovimientosNodo(nodo: NodoArbol): void {
     const detalle = this.detalles.find(d =>
-      (nodo.idPresupuestoDetalle && d.idPresupuestoDetalle === nodo.idPresupuestoDetalle)
-      || d.idCatalogoPartida === nodo.idCatalogoPartida);
+      evento.nodo.idPresupuestoDetalle != null
+        ? d.idPresupuestoDetalle === evento.nodo.idPresupuestoDetalle
+        : d.idCatalogoPartida === evento.nodo.idCatalogoPartida);
     if (!detalle) {
       this.notifications.show('No se encontró el detalle de esta partida en la versión.', 'info');
       return;
     }
-    this.verMovimientos(detalle);
+
+    switch (evento.accion) {
+      case 'editar':
+        this.abrirModalDetalle(detalle);
+        break;
+      case 'historial':
+        this.verMovimientos(detalle);
+        break;
+      case 'ajustar':
+        this.abrirModalAjuste(detalle);
+        break;
+      case 'quitar':
+        this.eliminarDetalle(detalle);
+        break;
+    }
+  }
+
+  /** Hoja del árbol de la versión: se abre el historial de su detalle. */
+  verMovimientosNodo(nodo: NodoArbol): void {
+    this.accionarPartida({ accion: 'historial', nodo });
   }
 
   /** errores[].fila cuenta solo filas de datos; en la hoja de Excel se suma el encabezado. */
