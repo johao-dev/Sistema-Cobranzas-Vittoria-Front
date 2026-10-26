@@ -161,14 +161,6 @@
   color: var(--violet, #525598);
 }
 
-.permiso-card__menu-item--danger {
-  color: var(--danger, #d44a44);
-}
-
-.permiso-card__menu-item--danger:hover {
-  background: #fff1f0;
-}
-
 @media (max-width: 760px) {
   .permiso-card {
     padding: 14px;
@@ -177,5 +169,20 @@
 
   .permiso-card__controls {
     gap: 8px;
+  }
+}
+.switch input:disabled + .slider {
+  opacity: .5;
+  cursor: wait;
+}
+
+@media (max-width: 480px) {
+  .permiso-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .permiso-card__controls {
+    align-self: flex-end;
   }
 }

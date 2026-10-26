@@ -1,58 +1,77 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError, EMPTY, finalize, Subscription, tap } from 'rxjs';
 
 import { PermisoCardComponent } from '../../shared/components/permiso-card/permiso-card.component';
 import { SeguridadService } from '../../core/services/seguridad.service';
 import { NotificationService } from '../../core/services/notification.service';
-import { CreatePermisoRequest, Permiso, UpdatePermisoRequest } from '../../models/permisos.models';
+import { esCodigoError, extraerMensajeError } from '../../core/utils/api-error.util';
+import { Permiso } from '../../models/permisos.models';
+import { DialogoModal } from '../../../shared/dialogos/dialogo-modal';
 
 @Component({
   standalone: true,
   selector: 'app-permisos-page',
-  imports: [CommonModule, FormsModule, PermisoCardComponent],
+  imports: [CommonModule, FormsModule, PermisoCardComponent, DialogoModal],
   templateUrl: './permisos.page.html',
-  styleUrl: './permisos.page.css'
+  styleUrl: './permisos.page.css',
 })
 export class PermisosPage implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
+  private consultaListado?: Subscription;
+
   permisosListado: Permiso[] = [];
   cargando = false;
   filtroBusqueda = '';
-  filtroActivo: boolean | null = null;
+  filtroActivo = true;
+  errorListado = '';
   msg = '';
   modalOpen = false;
-  form: Permiso = { idPermiso: 0, codigo: '', nombre: '', descripcion: '', activo: true };
+  guardando = false;
+  cambiandoEstado: number | null = null;
+  idPermisoEdicion: number | null = null;
+  form = { nombre: '', descripcion: '' };
 
   constructor(
     private seguridad: SeguridadService,
     private notifyService: NotificationService,
-    private cdr: ChangeDetectorRef
-  ) { }
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
     this.load();
   }
 
   load(): void {
+    this.consultaListado?.unsubscribe();
     this.cargando = true;
-    this.seguridad.permisos(this.filtroActivo).subscribe({
-      next: (res) => {
-        this.permisosListado = res?.permisos || [];
-        this.cargando = false;
-        this.cdr.detectChanges();
-      },
-      error: (e) => {
-        this.permisosListado = [];
-        this.cargando = false;
-        this.cdr.detectChanges();
-        console.error('Error cargando permisos:', e);
-      }
-    });
+    this.errorListado = '';
+
+    this.consultaListado = this.seguridad
+      .permisos(this.filtroActivo)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => {
+          this.cargando = false;
+          this.cdr.markForCheck();
+        }),
+      )
+      .subscribe({
+        next: (res) => {
+          this.permisosListado = res.permisos;
+        },
+        error: (error: unknown) => {
+          this.permisosListado = [];
+          this.errorListado = extraerMensajeError(error, 'No se pudieron cargar las acciones.');
+          this.notifyService.show(this.errorListado, 'error');
+        },
+      });
   }
 
-  private normalizarBusqueda(valor: any): string {
-    return (valor ?? '')
-      .toString()
+  private normalizarBusqueda(valor: string): string {
+    return valor
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase()
@@ -61,114 +80,131 @@ export class PermisosPage implements OnInit {
 
   get rowsFiltradas(): Permiso[] {
     const termino = this.normalizarBusqueda(this.filtroBusqueda);
-    if (!termino) return this.permisosListado ?? [];
+    if (!termino) return this.permisosListado;
 
-    return (this.permisosListado ?? []).filter((row) =>
-      this.normalizarBusqueda(`${row.nombre} ${row.descripcion ?? ''}`).includes(termino)
+    return this.permisosListado.filter((row) =>
+      this.normalizarBusqueda(`${row.nombre} ${row.descripcion}`).includes(termino),
     );
   }
 
-  abrirModalNuevo(): void {
-    this.reset();
-    this.modalOpen = true;
-    this.cdr.detectChanges();
-  }
-
   cerrarModal(): void {
+    if (this.guardando) return;
+
     this.modalOpen = false;
-    this.cdr.detectChanges();
+    this.idPermisoEdicion = null;
+    this.msg = '';
+    this.cdr.markForCheck();
   }
 
   edit(row: Permiso): void {
-    this.form = {
-      idPermiso: row.idPermiso,
-      codigo: row.codigo ?? '',
-      nombre: row.nombre ?? '',
-      descripcion: row.descripcion ?? '',
-      activo: row.activo ?? true
-    };
-    this.modalOpen = true;
-    this.cdr.detectChanges();
-  }
+    if (this.cargando || this.guardando || this.cambiandoEstado !== null) return;
 
-  reset(): void {
-    this.form = { idPermiso: 0, codigo: '', nombre: '', descripcion: '', activo: true };
+    this.idPermisoEdicion = row.idPermiso;
+    this.form = { nombre: row.nombre, descripcion: row.descripcion };
     this.msg = '';
+    this.modalOpen = true;
+    this.cdr.markForCheck();
   }
 
   save(): void {
-    const nombre = (this.form.nombre ?? '').toString().trim();
-    const descripcion = (this.form.descripcion ?? '').toString().trim();
-    const codigo = (this.form.codigo ?? '').toString().trim().toLowerCase();
+    if (this.idPermisoEdicion === null || this.idPermisoEdicion <= 0 || this.guardando) return;
 
-    if (!nombre) {
-      this.msg = 'Debes ingresar el nombre de la acción.';
+    const nombre = this.form.nombre.trim();
+    const descripcion = this.form.descripcion.trim();
+    if (!nombre || nombre.length > 100 || descripcion.length > 255) {
+      this.msg = !nombre
+        ? 'Debes ingresar el nombre de la acción.'
+        : 'El nombre admite hasta 100 caracteres y la descripción hasta 255.';
       this.notifyService.show(this.msg, 'error');
       return;
     }
 
-    if (!this.form.idPermiso && !codigo) {
-      this.msg = 'Debes ingresar el código de la acción.';
-      this.notifyService.show(this.msg, 'error');
-      return;
-    }
-
-    const esEdicion = !!this.form.idPermiso;
-
-    if (esEdicion) {
-      this.seguridad.actualizarPermiso(this.form.idPermiso, { nombre, descripcion }).subscribe({
+    this.guardando = true;
+    this.msg = '';
+    this.seguridad
+      .actualizarPermiso(this.idPermisoEdicion, { nombre, descripcion })
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => {
+          this.guardando = false;
+          this.cdr.markForCheck();
+        }),
+      )
+      .subscribe({
         next: () => {
-          this.msg = 'Acción actualizada correctamente.';
-          this.notifyService.show(this.msg, 'success');
-          this.reset();
-          this.cerrarModal();
+          this.notifyService.show('Acción actualizada correctamente.', 'success');
+          this.modalOpen = false;
+          this.idPermisoEdicion = null;
           this.load();
         },
-        error: (e: any) => {
-          this.msg = e?.error?.message || 'No se pudo actualizar la acción.';
+        error: (error: unknown) => {
+          this.msg = extraerMensajeError(error, 'No se pudo actualizar la acción.');
           this.notifyService.show(this.msg, 'error');
-          this.cdr.detectChanges();
-        }
+        },
       });
-      return;
-    }
-
-    this.seguridad.crearPermiso({ codigo: codigo.replace(/\s+/g, '.'), nombre, descripcion }).subscribe({
-      next: () => {
-        this.msg = 'Acción guardada correctamente.';
-        this.notifyService.show(this.msg, 'success');
-        this.reset();
-        this.cerrarModal();
-        this.load();
-      },
-      error: (e: any) => {
-        this.msg = e?.error?.message || 'No se pudo guardar la acción.';
-        this.notifyService.show(this.msg, 'error');
-        this.cdr.detectChanges();
-      }
-    });
   }
 
   onToggle(row: Permiso, activo: boolean): void {
-    // La API no expone endpoint para cambiar solo el estado; el controlador
-    // no permite editar activo. Se actualiza localmente hasta que exista endpoint.
-    row.activo = activo;
-    this.cdr.detectChanges();
-  }
+    if (
+      this.cargando ||
+      this.guardando ||
+      this.modalOpen ||
+      this.cambiandoEstado !== null ||
+      row.idPermiso <= 0 ||
+      row.activo === activo
+    )
+      return;
 
-  onDelete(row: Permiso): void {
-    if (!row.idPermiso) return;
+    const accion = activo ? 'habilitar' : 'deshabilitar';
+    if (!confirm(`¿Deseas ${accion} la acción «${row.nombre}» para todo el sistema?`)) return;
 
-    if (!confirm('¿Estás seguro de eliminar esta acción?')) return;
+    this.cambiandoEstado = row.idPermiso;
+    const peticion = activo
+      ? this.seguridad.habilitarPermiso(row.idPermiso)
+      : this.seguridad.deshabilitarPermiso(row.idPermiso);
 
-    this.seguridad.eliminarPermiso(row.idPermiso).subscribe({
-      next: () => {
-        this.notifyService.show('Acción eliminada correctamente.', 'success');
-        this.load();
-      },
-      error: (e) => {
-        this.notifyService.show(e?.error?.message || 'No se pudo eliminar la acción.', 'error');
-      }
-    });
+    peticion
+      .pipe(
+        tap(() => {
+          this.notifyService.show(
+            activo ? 'Acción habilitada.' : 'Acción deshabilitada.',
+            'success',
+          );
+          this.load();
+        }),
+        catchError((error: unknown) => {
+          this.notifyService.show(
+            extraerMensajeError(error, 'No se pudo cambiar el estado.'),
+            'error',
+          );
+          const estadoRepetido =
+            esCodigoError(error, 'PERMISO_YA_HABILITADO') ||
+            esCodigoError(error, 'PERMISO_YA_DESHABILITADO');
+          if (!estadoRepetido) return EMPTY;
+
+          // Otra sesión pudo cambiar el estado. Consultar el servidor sin repetir el PATCH.
+          return this.seguridad.permisoPorId(row.idPermiso).pipe(
+            tap((permiso) => {
+              this.permisosListado = this.permisosListado
+                .map((actual) => (actual.idPermiso === permiso.idPermiso ? permiso : actual))
+                .filter((actual) => actual.activo === this.filtroActivo);
+            }),
+            catchError((errorConsulta: unknown) => {
+              this.notifyService.show(
+                extraerMensajeError(errorConsulta, 'No se pudo sincronizar la acción.'),
+                'error',
+              );
+              this.load();
+              return EMPTY;
+            }),
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => {
+          this.cambiandoEstado = null;
+          this.cdr.markForCheck();
+        }),
+      )
+      .subscribe();
   }
 }

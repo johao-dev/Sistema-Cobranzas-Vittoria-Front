@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
+import { HttpParams } from '@angular/common/http';
 import { ApiService } from './api.service';
-import { CreatePermisoRequest, ListarPermisoResponse, Permiso, UpdatePermisoRequest } from '../../models/permisos.models';
+import { ListarPermisoResponse, Permiso, UpdatePermisoRequest } from '../../models/permisos.models';
 import { AsignarRolesRequest, UsuarioCreateRequest, UsuarioUpdateRequest } from '../../models/usuarios.models';
 import { AsignarPermisosRolRequest, RolConPermisosResponse } from '../../models/roles.models';
 import { map } from 'rxjs';
@@ -10,24 +11,24 @@ export class SeguridadService {
   constructor(private api: ApiService) { }
 
   permisos(activo?: boolean | null) {
-    const qs = activo === undefined || activo === null ? '' : `?activo=${activo}`;
-    return this.api.http.get<ListarPermisoResponse>(`${this.api.baseUrl}/api/seguridad/permisos${qs}`);
+    const params = activo == null ? new HttpParams() : new HttpParams().set('activo', activo);
+    return this.api.http.get<ListarPermisoResponse>(`${this.api.baseUrl}/api/seguridad/permisos`, { params });
   }
 
   permisoPorId(id: number) {
     return this.api.http.get<Permiso>(`${this.api.baseUrl}/api/seguridad/permisos/${id}`);
   }
 
-  crearPermiso(dto: CreatePermisoRequest) {
-    return this.api.http.post<Permiso>(`${this.api.baseUrl}/api/seguridad/permisos`, dto);
-  }
-
   actualizarPermiso(id: number, dto: UpdatePermisoRequest) {
     return this.api.http.put<void>(`${this.api.baseUrl}/api/seguridad/permisos/${id}`, dto);
   }
 
-  eliminarPermiso(id: number) {
-    return this.api.http.delete<void>(`${this.api.baseUrl}/api/seguridad/permisos/${id}`);
+  habilitarPermiso(id: number) {
+    return this.api.http.patch<void>(`${this.api.baseUrl}/api/seguridad/permisos/${id}/enable`, null);
+  }
+
+  deshabilitarPermiso(id: number) {
+    return this.api.http.patch<void>(`${this.api.baseUrl}/api/seguridad/permisos/${id}/disable`, null);
   }
 
   roles(activo?: boolean | null) {

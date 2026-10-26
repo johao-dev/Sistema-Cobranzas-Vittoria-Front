@@ -3,3 +3,26 @@
   flex-direction: column;
   gap: 12px;
 }
+.maintenance-search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+@media (max-width: 600px) {
+  .panel-title-row {
+    flex-wrap: wrap;
+  }
+
+  .maintenance-search {
+    width: 100%;
+  }
+
+  .maintenance-search .field {
+    flex: 1 1 160px;
+  }
+}
+
+dialog::backdrop {
+  background: rgba(15, 23, 42, 0.4);
+}

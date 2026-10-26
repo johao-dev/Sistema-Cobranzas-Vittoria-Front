@@ -3,41 +3,40 @@ import { CommonModule } from '@angular/common';
 import { Permiso } from '../../../models/permisos.models';
 
 @Component({
-    standalone: true,
-    selector: 'app-permiso-card',
-    imports: [CommonModule],
-    templateUrl: './permiso-card.component.html',
-    styleUrl: './permiso-card.component.css'
+  standalone: true,
+  selector: 'app-permiso-card',
+  imports: [CommonModule],
+  templateUrl: './permiso-card.component.html',
+  styleUrl: './permiso-card.component.css',
 })
 export class PermisoCardComponent {
-    permiso = input.required<Permiso>();
+  permiso = input.required<Permiso>();
 
-    toggle = output<boolean>();
-    edit = output<void>();
-    remove = output<void>();
+  toggle = output<boolean>();
+  edit = output<void>();
+  bloqueado = input(false);
 
-    menuOpen = signal(false);
+  menuOpen = signal(false);
 
-    onToggle(event: Event): void {
-        const checked = (event.target as HTMLInputElement).checked;
-        this.toggle.emit(checked);
-    }
+  onToggle(event: Event): void {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement)) return;
 
-    toggleMenu(): void {
-        this.menuOpen.update(open => !open);
-    }
+    const activo = input.checked;
+    input.checked = this.permiso().activo;
+    if (!this.bloqueado()) this.toggle.emit(activo);
+  }
 
-    closeMenu(): void {
-        this.menuOpen.set(false);
-    }
+  toggleMenu(): void {
+    this.menuOpen.update((open) => !open);
+  }
 
-    onEdit(): void {
-        this.closeMenu();
-        this.edit.emit();
-    }
+  closeMenu(): void {
+    this.menuOpen.set(false);
+  }
 
-    onRemove(): void {
-        this.closeMenu();
-        this.remove.emit();
-    }
+  onEdit(): void {
+    this.closeMenu();
+    this.edit.emit();
+  }
 }
