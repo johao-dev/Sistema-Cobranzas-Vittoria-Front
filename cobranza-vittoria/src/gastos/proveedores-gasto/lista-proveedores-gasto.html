@@ -1,0 +1,169 @@
+<div class="page-header">
+  <div>
+    <div class="page-title">Proveedores de gasto</div>
+    <div class="page-subtitle">
+      Registra solo proveedores válidos para una categoría específica de gasto administrativo.
+    </div>
+  </div>
+</div>
+
+<div class="split split--form admin-split">
+  <section class="panel">
+    <div class="panel-title-row">
+      <div class="panel-title">Listado</div>
+      <div class="filters compact-filters maintenance-search">
+        <div class="field">
+          <label for="lista-proveedores-gasto-campo-1">Buscar</label>
+          <input
+            id="lista-proveedores-gasto-campo-1"
+            type="text"
+            [(ngModel)]="filtroBusqueda"
+            placeholder="Buscar proveedores de gasto"
+          />
+        </div>
+      </div>
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        [disabled]="guardando()"
+        (click)="abrirModalNuevo()"
+      >
+        + Nuevo registro
+      </button>
+      <button type="button" class="btn btn-secondary btn-sm" (click)="importOpen.set(true)">
+        Importar
+      </button>
+    </div>
+
+    @if (categorias.error()) {
+      <div role="alert">
+        {{ categorias.error() }}
+        <button type="button" class="btn btn-ghost" (click)="cargarCategorias()">
+          Reintentar categorías
+        </button>
+      </div>
+    }
+    <div class="filters compact-filters compact-filters--two">
+      <div class="field">
+        <label for="lista-proveedores-gasto-campo-2">Categoría</label>
+        <select
+          id="lista-proveedores-gasto-campo-2"
+          [(ngModel)]="filtroCategoria"
+          (change)="load()"
+        >
+          <option value="">Todas</option>
+          @for (c of categorias.filas(); track c) {
+            <option [value]="c.idCategoriaGasto">{{ c.nombre }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="lista-proveedores-gasto-campo-3">Estado</label>
+        <select id="lista-proveedores-gasto-campo-3" [(ngModel)]="filtroActivo" (change)="load()">
+          <option value="">Todos</option>
+          <option value="true">Activo</option>
+          <option value="false">Inactivo</option>
+        </select>
+      </div>
+    </div>
+
+    @if (consulta.error()) {
+      <div role="alert">
+        {{ consulta.error() }}
+        <button type="button" class="btn btn-ghost" (click)="load()">Reintentar</button>
+      </div>
+    }
+    @if (consulta.cargando()) {
+      <div class="empty-state">Cargando proveedores...</div>
+    }
+    @if (!consulta.cargando() && !consulta.error() && !rowsFiltradas().length) {
+      <div class="empty-state">
+        No hay proveedores de gasto registrados. Crea uno y asígnalo a una categoría.
+      </div>
+    }
+
+    @if (!consulta.cargando() && rowsFiltradas().length) {
+      <div class="table-wrap table-wrap--sticky-actions">
+        <table>
+          <thead>
+            <tr>
+              <th>Categoría</th>
+              <th>Proveedor</th>
+              <th>RUC</th>
+              <th>Estado</th>
+              <th class="actions-col actions-col--select">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rowsFiltradas(); track row) {
+              <tr>
+                <td>{{ row.categoria || '-' }}</td>
+                <td>{{ row.razonSocial }}</td>
+                <td>{{ row.ruc || '-' }}</td>
+                <td>
+                  <span
+                    class="badge"
+                    [class.badge--ok]="row.activo"
+                    [class.badge--neutral]="!row.activo"
+                  >
+                    {{ row.activo ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+                <td class="actions-col--select">
+                  <select
+                    aria-label="Acciones del registro"
+                    [disabled]="guardando()"
+                    class="actions-select"
+                    (change)="onAccion($event, row)"
+                  >
+                    <option value="">Acciones</option>
+                    <option value="edit">Editar</option>
+                    <option value="estado" [disabled]="!row.activo">Desactivar</option>
+                  </select>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+
+  @if (modalOpen()) {
+    <dialog
+      dialogoModal
+      class="panel panel--form design-modal-card"
+      (solicitarCierre)="cerrarModal()"
+      aria-label="Formulario de proveedor"
+    >
+      <button
+        type="button"
+        class="modal-close"
+        (click)="cerrarModal()"
+        [disabled]="guardando()"
+        aria-label="Cerrar"
+      >
+        ×
+      </button>
+      <div class="panel-title">Formulario</div>
+      @if (error()) {
+        <p role="alert">{{ error() }}</p>
+      }
+      <formulario-proveedor-especifico
+        [valor]="datosEdicion()"
+        [categorias]="categorias.filas()"
+        [guardando]="guardando()"
+        (guardar)="save($event)"
+        (limpiado)="edicion.set(null); datosEdicion.set(null)"
+      />
+    </dialog>
+  }
+  @if (importOpen()) {
+    <app-import-modal
+      modulo="proveedor-gasto"
+      (onClose)="importOpen.set(false)"
+      (onSuccess)="onImportSuccess()"
+    >
+    </app-import-modal>
+  }
+</div>

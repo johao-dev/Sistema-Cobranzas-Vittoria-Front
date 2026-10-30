@@ -1,0 +1,65 @@
+@if (error()) {
+  <p role="alert">{{ error() }}</p>
+}
+@if (buscandoRuc()) {
+  <p role="status">Consultando RUC...</p>
+} @else if (mensajeRuc()) {
+  <p role="status">{{ mensajeRuc() }}</p>
+}
+<fieldset [disabled]="guardando()" class="campos-formulario-gasto">
+  <div class="form-grid two">
+    @if (categorias(); as opciones) {
+      <div class="field">
+        <label for="proveedor-especifico-categoria">Categoría</label>
+        <select id="proveedor-especifico-categoria" [(ngModel)]="form().idCategoriaGasto">
+          <option [ngValue]="null">Seleccionar</option>
+          @for (categoria of opciones; track categoria) {
+            <option [ngValue]="categoria.idCategoriaGasto">{{ categoria.nombre }}</option>
+          }
+        </select>
+      </div>
+    }
+    <div class="field" style="grid-column: 1 / -1">
+      <label for="formulario-proveedor-especifico-campo-1">Razón social</label>
+      <input
+        id="formulario-proveedor-especifico-campo-1"
+        [(ngModel)]="form().razonSocial"
+        placeholder="Ej. Inmobiliaria / proveedor"
+      />
+    </div>
+    <div class="field">
+      <label for="formulario-proveedor-especifico-campo-2">RUC</label>
+      <input
+        id="formulario-proveedor-especifico-campo-2"
+        [(ngModel)]="form().ruc"
+        maxlength="20"
+        (blur)="buscarRuc()"
+        (keyup.enter)="buscarRuc()"
+      />
+    </div>
+    <div class="field">
+      <label for="formulario-proveedor-especifico-campo-3">Contacto</label>
+      <input id="formulario-proveedor-especifico-campo-3" [(ngModel)]="form().contacto" />
+    </div>
+    <div class="field">
+      <label for="formulario-proveedor-especifico-campo-4">Teléfono</label>
+      <input id="formulario-proveedor-especifico-campo-4" [(ngModel)]="form().telefono" />
+    </div>
+    <div class="field">
+      <label for="formulario-proveedor-especifico-campo-5">Estado</label>
+      <select id="formulario-proveedor-especifico-campo-5" [(ngModel)]="form().activo">
+        <option [ngValue]="true">Activo</option>
+        <option [ngValue]="false">Inactivo</option>
+      </select>
+    </div>
+    <div class="field" style="grid-column: 1 / -1">
+      <label for="formulario-proveedor-especifico-campo-6">Correo</label>
+      <input id="formulario-proveedor-especifico-campo-6" [(ngModel)]="form().correo" />
+    </div>
+  </div>
+
+  <div class="toolbar toolbar--compact">
+    <button class="btn btn-primary" (click)="enviar()">Guardar proveedor</button>
+    <button class="btn btn-ghost" (click)="limpiar()">Limpiar</button>
+  </div>
+</fieldset>

@@ -1,0 +1,46 @@
+<!-- Confirmar / anular -->
+<dialog
+  dialogoModal
+  class="panel panel--form design-modal-card design-modal-card--sm"
+  (solicitarCierre)="cerrar()"
+  aria-label="Confirmar operación de gasto"
+>
+  <div class="panel-title">{{ accion() === 'confirmar' ? 'Confirmar gasto' : 'Anular gasto' }}</div>
+  <p class="confirmacion-texto">
+    <strong>{{ gasto().concepto }}</strong> · {{ gasto().moneda }}
+    {{ gasto().monto | number: '1.2-2' }}
+  </p>
+  @if (accion() === 'confirmar') {
+    <p class="modal-nota">
+      El monto pasará a ejecutado y se descontará del saldo de la partida
+      {{ gasto().codigoPartida }}.
+    </p>
+  }
+  @if (accion() === 'anular') {
+    <p class="modal-nota">
+      {{
+        gasto().estado === 'CONFIRMADO'
+          ? 'Se registrará un ajuste que devuelve el monto a la partida.'
+          : 'El gasto no se confirmó, así que no afecta el saldo de la partida.'
+      }}
+      El gasto anulado no se puede reactivar.
+    </p>
+  }
+  @if (error()) {
+    <p role="alert">{{ error() }}</p>
+  }
+  <div class="toolbar toolbar--compact">
+    <button
+      class="btn"
+      [class.btn-primary]="accion() === 'confirmar'"
+      [class.btn-danger]="accion() === 'anular'"
+      [disabled]="guardando()"
+      (click)="ejecutarConfirmacion()"
+    >
+      {{
+        guardando() ? 'Procesando…' : accion() === 'confirmar' ? 'Confirmar gasto' : 'Anular gasto'
+      }}
+    </button>
+    <button class="btn btn-ghost" [disabled]="guardando()" (click)="cerrar()">Volver</button>
+  </div>
+</dialog>

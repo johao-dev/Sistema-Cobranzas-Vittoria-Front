@@ -2,11 +2,7 @@ import { Routes } from '@angular/router';
 import { UsuariosPage } from './pages/usuarios/usuarios.page';
 import { RolesPage } from './pages/roles/roles.page';
 import { ValorizacionesPage } from './pages/valorizaciones/valorizaciones.page';
-import { CategoriasGastoPage } from './pages/categorias-gasto/categorias-gasto.page';
-import { ProveedoresGastoPage } from './pages/proveedores-gasto/proveedores-gasto.page';
 import { PresupuestoPage } from './pages/presupuesto/presupuesto.page';
-import { ProveedoresTerrenoPage } from './pages/proveedores-terreno/proveedores-terreno.page';
-import { GastosSeccionPage } from './pages/gastos-seccion/gastos-seccion.page';
 import { protegerRuta } from '../core/sesion/proteger-ruta';
 import { PermisosPage } from './pages/permisos/permisos.page';
 import { ACCESS_RULES } from './reglas-acceso';
@@ -17,11 +13,11 @@ export const routes: Routes = [
   { path: 'dashboard', loadComponent: () => import('../dashboard/resumen-compras/resumen-compras').then(m => m.ResumenCompras), canActivate: [protegerRuta] },
   { path: 'presupuesto', canActivate: [protegerRuta], component: PresupuestoPage },
   // Operaciones → Gastos del proyecto: cada vista declara únicamente sus categorías descriptivas.
-  { path: 'gastos-administrativos', canActivate: [protegerRuta], component: GastosSeccionPage, data: { codigosCategoria: ['ADMINISTRATIVO'], permiteSeleccionCategoria: false, titulo: 'Gastos administrativos', subtitulo: 'Gastos de oficina y áreas de la empresa: alquiler, servicios, planilla y bancos.' } },
-  { path: 'terreno', canActivate: [protegerRuta], component: GastosSeccionPage, data: { codigosCategoria: ['TERRENO', 'ANTEPROYECTO', 'PROYECTO'], permiteSeleccionCategoria: true, titulo: 'Terreno - Anteproyecto - Proyecto', subtitulo: 'Compra de terreno, alcabala, estudios previos y desarrollo del proyecto.' } },
-  { path: 'marketing-publicidad', canActivate: [protegerRuta], component: GastosSeccionPage, data: { codigosCategoria: ['MARKETING_VENTAS'], permiteSeleccionCategoria: false, titulo: 'Marketing / Ventas', subtitulo: 'Publicidad, marketing, comisiones por ventas y sala de ventas.' } },
-  { path: 'otros-gastos', canActivate: [protegerRuta], component: GastosSeccionPage, data: { codigosCategoria: ['OTROS'], permiteSeleccionCategoria: false, titulo: 'Otros gastos', subtitulo: 'Gastos del proyecto que no pertenecen a otra categoría.' } },
-  { path: 'gastos-municipales-distritales', canActivate: [protegerRuta], component: GastosSeccionPage, data: { codigosCategoria: ['MUNICIPAL'], permiteSeleccionCategoria: false, titulo: 'Gastos municipales y distritales', subtitulo: 'Licencias, independización, declaratoria de fábrica, conformidad de obra e instalaciones.' } },
+  { path: 'gastos-administrativos', canActivate: [protegerRuta], loadComponent: () => import('../gastos/listado/gastos-seccion').then(m => m.GastosSeccion), data: { codigosCategoria: ['ADMINISTRATIVO'], permiteSeleccionCategoria: false, titulo: 'Gastos administrativos', subtitulo: 'Gastos de oficina y áreas de la empresa: alquiler, servicios, planilla y bancos.' } },
+  { path: 'terreno', canActivate: [protegerRuta], loadComponent: () => import('../gastos/listado/gastos-seccion').then(m => m.GastosSeccion), data: { codigosCategoria: ['TERRENO', 'ANTEPROYECTO', 'PROYECTO'], permiteSeleccionCategoria: true, titulo: 'Terreno - Anteproyecto - Proyecto', subtitulo: 'Compra de terreno, alcabala, estudios previos y desarrollo del proyecto.' } },
+  { path: 'marketing-publicidad', canActivate: [protegerRuta], loadComponent: () => import('../gastos/listado/gastos-seccion').then(m => m.GastosSeccion), data: { codigosCategoria: ['MARKETING_VENTAS'], permiteSeleccionCategoria: false, titulo: 'Marketing / Ventas', subtitulo: 'Publicidad, marketing, comisiones por ventas y sala de ventas.' } },
+  { path: 'otros-gastos', canActivate: [protegerRuta], loadComponent: () => import('../gastos/listado/gastos-seccion').then(m => m.GastosSeccion), data: { codigosCategoria: ['OTROS'], permiteSeleccionCategoria: false, titulo: 'Otros gastos', subtitulo: 'Gastos del proyecto que no pertenecen a otra categoría.' } },
+  { path: 'gastos-municipales-distritales', canActivate: [protegerRuta], loadComponent: () => import('../gastos/listado/gastos-seccion').then(m => m.GastosSeccion), data: { codigosCategoria: ['MUNICIPAL'], permiteSeleccionCategoria: false, titulo: 'Gastos municipales y distritales', subtitulo: 'Licencias, independización, declaratoria de fábrica, conformidad de obra e instalaciones.' } },
   { path: 'especialidades', canActivate: [protegerRuta], loadComponent: () => import('../catalogos/especialidades/lista-especialidades/lista-especialidades').then(m => m.ListaEspecialidades) },
   { path: 'proveedores', canActivate: [protegerRuta], loadComponent: () => import('../catalogos/proveedores/lista-proveedores/lista-proveedores').then(m => m.ListaProveedores) },
   { path: 'materiales', canActivate: [protegerRuta], loadComponent: () => import('../catalogos/materiales/lista-materiales/lista-materiales').then(m => m.ListaMateriales) },
@@ -94,8 +90,8 @@ export const routes: Routes = [
     ]
   },
   { path: 'valorizaciones', canActivate: [protegerRuta], component: ValorizacionesPage },
-  { path: 'proveedores-gasto', canActivate: [protegerRuta], component: ProveedoresGastoPage },
-  { path: 'proveedores-terreno', canActivate: [protegerRuta], component: ProveedoresTerrenoPage },
-  { path: 'categorias-gasto', canActivate: [protegerRuta], component: CategoriasGastoPage },
+  { path: 'proveedores-gasto', canActivate: [protegerRuta], loadComponent: () => import('../gastos/proveedores-gasto/lista-proveedores-gasto').then(m => m.ListaProveedoresGasto) },
+  { path: 'proveedores-terreno', canActivate: [protegerRuta], loadComponent: () => import('../gastos/proveedores-terreno/lista-proveedores-terreno').then(m => m.ListaProveedoresTerreno) },
+  { path: 'categorias-gasto', canActivate: [protegerRuta], loadComponent: () => import('../gastos/categorias/lista-categorias-gasto').then(m => m.ListaCategoriasGasto) },
   { path: '**', redirectTo: 'dashboard' }
 ];

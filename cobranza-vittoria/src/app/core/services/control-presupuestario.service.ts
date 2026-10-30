@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import {
   CentroCostoResumen,
+  MonedaPresupuestaria,
   PartidaCatalogo,
   SaldoPartida,
 } from '../../models/consultas-presupuestarias.models';
@@ -94,6 +95,10 @@ export class ControlPresupuestarioService {
       tiposMovimiento: this.api.http.get<any[]>(`${c}/tipos-movimiento`),
       monedas: this.api.http.get<any[]>(`${c}/monedas`)
     });
+  }
+
+  monedas(): Observable<MonedaPresupuestaria[]> {
+    return this.api.http.get<MonedaPresupuestaria[]>(`${this.base}/catalogos/monedas`);
   }
 
   // ----------------------------------------------------------- centros de costo

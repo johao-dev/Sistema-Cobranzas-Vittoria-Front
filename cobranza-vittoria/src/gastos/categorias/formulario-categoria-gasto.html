@@ -1,0 +1,30 @@
+@if (error()) {
+  <p role="alert">{{ error() }}</p>
+}
+<fieldset [disabled]="guardando()" class="campos-formulario-gasto">
+  <div class="form-grid one">
+    <div class="field">
+      <label for="categoria-gasto-codigo">Código</label
+      ><input id="categoria-gasto-codigo" [(ngModel)]="form().codigo" />
+    </div>
+    <div class="field">
+      <label for="categoria-gasto-nombre">Nombre</label
+      ><input
+        id="categoria-gasto-nombre"
+        [(ngModel)]="form().nombre"
+        placeholder="Ej. Servicios básicos"
+      />
+    </div>
+    <div class="field">
+      <label for="categoria-gasto-estado">Estado</label
+      ><select id="categoria-gasto-estado" [(ngModel)]="form().activo">
+        <option [ngValue]="true">Activo</option>
+        <option [ngValue]="false">Inactivo</option>
+      </select>
+    </div>
+  </div>
+  <div class="toolbar toolbar--compact">
+    <button type="button" class="btn btn-primary" (click)="enviar()">Guardar categoría</button
+    ><button type="button" class="btn btn-ghost" (click)="limpiar()">Limpiar</button>
+  </div>
+</fieldset>

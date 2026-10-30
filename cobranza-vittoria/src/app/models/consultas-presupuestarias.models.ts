@@ -57,3 +57,12 @@ export interface SaldoPartida {
   montoExcedido: number;
   excedido: boolean;
 }
+
+/** Moneda del catálogo presupuestario, compartida con Gastos. */
+export interface MonedaPresupuestaria {
+  idMoneda: number;
+  codigo: string;
+  nombre: string;
+  simbolo: string | null;
+  activo: boolean;
+}

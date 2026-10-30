@@ -1,0 +1,20 @@
+/* El diseño global ya posiciona la tarjeta; el diálogo nativo aporta foco y Escape. */
+dialog.design-modal-card {
+  right: auto;
+  bottom: auto;
+  max-height: calc(100dvh - 56px) !important;
+}
+dialog::backdrop {
+  background: rgb(15 23 42 / 45%);
+  backdrop-filter: blur(2px);
+}
+.campos-formulario-gasto {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.toolbar--compact {
+  margin-top: 16px;
+}

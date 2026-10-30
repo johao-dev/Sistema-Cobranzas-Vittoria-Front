@@ -1,0 +1,244 @@
+<!-- Alta y edición -->
+<dialog
+  dialogoModal
+  class="panel panel--form design-modal-card"
+  (solicitarCierre)="cerrar()"
+  aria-label="Formulario de gasto"
+>
+  <button type="button" class="modal-close" (click)="cerrar()" aria-label="Cerrar">&times;</button>
+  <div class="panel-title">
+    {{ valor() ? 'Editar gasto' : 'Nuevo gasto' }} · {{ config().titulo }}
+  </div>
+
+  <fieldset class="campos-formulario-gasto" [disabled]="guardando()">
+    @if (config().permiteSeleccionCategoria) {
+      <div class="field">
+        <label for="formulario-gasto-campo-1">Categoría</label>
+        <select id="formulario-gasto-campo-1" [formControl]="form.controls.idCategoriaGasto">
+          <option value="">Seleccione…</option>
+          @for (categoria of referencias.categorias(); track categoria) {
+            <option [ngValue]="categoria.idCategoriaGasto">
+              {{ categoria.nombre }}
+            </option>
+          }
+        </select>
+        <small class="field-hint"
+          >Elige si el gasto corresponde a terreno, anteproyecto o proyecto.</small
+        >
+      </div>
+    }
+
+    @if (error()) {
+      <p role="alert" class="alerta-bloqueo">{{ error() }}</p>
+    }
+    <div class="form-grid two">
+      <div class="field">
+        <label for="formulario-gasto-campo-2">Centro de costo</label>
+        <select
+          id="formulario-gasto-campo-2"
+          [formControl]="form.controls.idCentroCosto"
+          (change)="onCentroCostoFormChange()"
+        >
+          <option value="">
+            {{
+              referencias.centrosCosto().length
+                ? 'Seleccione…'
+                : 'No hay centros de costo disponibles'
+            }}
+          </option>
+          @for (c of referencias.centrosCosto(); track c) {
+            <option [ngValue]="c.idCentroCosto">{{ c.codigo }} — {{ c.nombre }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="formulario-gasto-campo-3">Partida</label>
+        <select
+          id="formulario-gasto-campo-3"
+          [formControl]="form.controls.idPresupuestoDetalle"
+          (change)="onPartidaChange()"
+        >
+          <option value="">
+            {{
+              cargandoPartidas()
+                ? 'Cargando partidas…'
+                : form.controls.idCentroCosto.value
+                  ? partidas().length
+                    ? 'Seleccione…'
+                    : 'Sin partidas disponibles en el presupuesto aprobado'
+                  : 'Elige un centro de costo'
+            }}
+          </option>
+          @for (p of partidas(); track p) {
+            <option [ngValue]="p.idPresupuestoDetalle">
+              {{ p.codigoPartida }} — {{ p.nombrePartida }}
+            </option>
+          }
+        </select>
+      </div>
+    </div>
+
+    @if (errorPartidas()) {
+      <p role="alert">
+        {{ errorPartidas() }}
+        <button type="button" class="btn btn-ghost" (click)="cargarPartidas()">
+          Reintentar partidas
+        </button>
+      </p>
+    }
+    @if (partidaSeleccionada(); as partida) {
+      <div class="saldo-box">
+        <div class="saldo-box__row">
+          <span>Presupuestado</span>
+          <strong
+            >{{ partida.simboloMoneda }} {{ partida.montoPresupuestado | number: '1.2-2' }}</strong
+          >
+        </div>
+        <div class="saldo-box__row">
+          <span>Comprometido</span>
+          <strong>{{ partida.montoComprometido | number: '1.2-2' }}</strong>
+        </div>
+        <div class="saldo-box__row">
+          <span>Ejecutado</span>
+          <strong>{{ partida.montoEjecutado | number: '1.2-2' }}</strong>
+        </div>
+        <div
+          class="saldo-box__row saldo-box__row--total"
+          [class.saldo-box__row--danger]="partida.saldoDisponible <= 0"
+        >
+          <span>Saldo disponible</span>
+          <strong>{{ partida.saldoDisponible | number: '1.2-2' }}</strong>
+        </div>
+      </div>
+    }
+
+    @if (excedeSaldo()) {
+      <div class="alerta-aviso">
+        El monto supera el saldo disponible de la partida. Puedes registrarlo, pero al confirmarlo
+        el sistema lo rechazará. Para ampliar la partida, aprueba una nueva versión del presupuesto.
+      </div>
+    }
+
+    <div class="form-grid two">
+      <div class="field">
+        <label for="formulario-gasto-campo-4"
+          >Monto ({{ monedaPresupuesto()?.codigo || 'moneda del presupuesto' }})</label
+        >
+        <input
+          id="formulario-gasto-campo-4"
+          type="number"
+          min="0.01"
+          step="0.01"
+          [formControl]="form.controls.monto"
+        />
+        <small class="field-hint">Se registra en la moneda del presupuesto de la partida.</small>
+      </div>
+
+      <div class="field">
+        <label for="formulario-gasto-campo-5">Fecha</label>
+        <input id="formulario-gasto-campo-5" type="date" [formControl]="form.controls.fecha" />
+      </div>
+
+      <div class="field field--full">
+        <label for="formulario-gasto-campo-6">Concepto</label>
+        <input
+          id="formulario-gasto-campo-6"
+          [formControl]="form.controls.concepto"
+          placeholder="Ej. Licencia de edificación"
+        />
+      </div>
+
+      <div class="field">
+        <label for="formulario-gasto-campo-7">Proveedor</label>
+        <select id="formulario-gasto-campo-7" [formControl]="form.controls.idProveedor">
+          <option value="">Sin proveedor</option>
+          @for (p of referencias.proveedores(); track p) {
+            <option [ngValue]="p.idProveedor">{{ p.razonSocial }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="formulario-gasto-campo-8">Descripción</label>
+        <input
+          id="formulario-gasto-campo-8"
+          [formControl]="form.controls.descripcion"
+          placeholder="Opcional"
+        />
+      </div>
+    </div>
+
+    <!-- Factura en otra moneda: solo referencia -->
+    <label class="check-inline">
+      <input
+        type="checkbox"
+        [formControl]="form.controls.facturaOtraMoneda"
+        (change)="onFacturaOtraMonedaChange()"
+      />
+      La factura está en otra moneda
+    </label>
+    @if (form.controls.facturaOtraMoneda.value) {
+      <div class="referencia-box">
+        <p class="modal-nota">
+          Datos solo de referencia: el gasto se descuenta por el monto en
+          {{ monedaPresupuesto()?.codigo }}. El módulo no convierte monedas.
+        </p>
+        <div class="form-grid two">
+          <div class="field">
+            <label for="formulario-gasto-campo-9">Moneda de la factura</label>
+            <select id="formulario-gasto-campo-9" [formControl]="form.controls.idMonedaOriginal">
+              <option value="">Seleccione…</option>
+              @for (m of monedasOriginales(); track m) {
+                <option [ngValue]="m.idMoneda">{{ m.codigo }} — {{ m.nombre }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label for="formulario-gasto-campo-10">Monto de la factura</label>
+            <input
+              id="formulario-gasto-campo-10"
+              type="number"
+              min="0.01"
+              step="0.01"
+              [formControl]="form.controls.montoOriginal"
+            />
+          </div>
+          <div class="field">
+            <label for="formulario-gasto-campo-11">Tipo de cambio</label>
+            <input
+              id="formulario-gasto-campo-11"
+              type="number"
+              min="0.000001"
+              step="0.000001"
+              [formControl]="form.controls.tipoCambio"
+            />
+          </div>
+          <div class="field">
+            <label for="formulario-gasto-campo-12">Fecha del tipo de cambio</label>
+            <input
+              id="formulario-gasto-campo-12"
+              type="date"
+              [formControl]="form.controls.fechaTipoCambio"
+            />
+          </div>
+        </div>
+        @if (montoSugerido() !== null) {
+          <div class="sugerido">
+            Equivale a {{ monedaPresupuesto()?.codigo }} {{ montoSugerido() | number: '1.2-2' }}.
+            <button type="button" class="btn btn-ghost btn-sm" (click)="usarMontoSugerido()">
+              Usar como monto
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+    <div class="toolbar toolbar--compact">
+      <button class="btn btn-primary" [disabled]="guardando()" (click)="guardar()">
+        {{ guardando() ? 'Guardando…' : 'Guardar gasto' }}
+      </button>
+      <button class="btn btn-ghost" [disabled]="guardando()" (click)="cerrar()">Cancelar</button>
+    </div>
+  </fieldset>
+</dialog>

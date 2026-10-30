@@ -1,0 +1,100 @@
+<!-- Documentos de respaldo -->
+<dialog
+  dialogoModal
+  class="panel panel--form design-modal-card"
+  (solicitarCierre)="cerrar()"
+  aria-label="Documentos de respaldo"
+>
+  <button type="button" class="modal-close" (click)="cerrar()" aria-label="Cerrar">&times;</button>
+  <div class="panel-title">Documentos de respaldo</div>
+  <p class="modal-nota">{{ gasto().concepto }}</p>
+
+  @if (error()) {
+    <p role="alert">{{ error() }}</p>
+  }
+  @if (consulta.error()) {
+    <div role="alert">
+      {{ consulta.error() }}
+      <button type="button" class="btn btn-ghost" (click)="cargar()">Reintentar</button>
+    </div>
+  }
+  @if (puedeOperar()) {
+    <div class="form-grid two">
+      <div class="field">
+        <label for="documentos-gasto-campo-1">Tipo de documento</label>
+        <select id="documentos-gasto-campo-1" [(ngModel)]="tipoDocumento">
+          <option value="Factura">Factura</option>
+          <option value="Pago">Pago</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="documentos-gasto-campo-2">Archivos PDF</label>
+        <input
+          id="documentos-gasto-campo-2"
+          type="file"
+          #selectorArchivos
+          accept="application/pdf"
+          multiple
+          [disabled]="subiendo()"
+          (change)="onArchivosSeleccionados($event)"
+        />
+      </div>
+    </div>
+    <div class="toolbar toolbar--compact">
+      <button
+        class="btn btn-secondary btn-sm"
+        [disabled]="subiendo() || !archivos().length"
+        (click)="subirDocumentos()"
+      >
+        {{ subiendo() ? 'Subiendo…' : 'Adjuntar' }}
+      </button>
+    </div>
+  }
+
+  @if (consulta.cargando()) {
+    <div class="empty-state">Cargando documentos...</div>
+  }
+  @if (!consulta.cargando() && !consulta.error() && !consulta.filas().length) {
+    <div class="empty-state">Este gasto no tiene documentos.</div>
+  }
+
+  @if (!consulta.cargando() && consulta.filas().length) {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Tipo</th>
+            <th>Archivo / N.º factura</th>
+            <th>Fecha</th>
+            <th class="actions-col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (d of consulta.filas(); track d) {
+            <tr>
+              <td>{{ d.tipoDocumento }}</td>
+              <td>
+                {{ d.numeroFactura || d.nombreArchivo }}
+                @if (!d.tieneArchivo) {
+                  <small class="modal-nota">(Referencia de factura)</small>
+                }
+              </td>
+              <td>{{ d.fechaCreacion | date: 'dd/MM/yyyy' }}</td>
+              <td class="actions-col">
+                @if (d.tieneArchivo) {
+                  <button type="button" class="btn btn-ghost btn-sm" (click)="descargar(d)">
+                    Descargar
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <div class="toolbar toolbar--compact">
+    <button class="btn btn-ghost" (click)="cerrar()">Cerrar</button>
+  </div>
+</dialog>

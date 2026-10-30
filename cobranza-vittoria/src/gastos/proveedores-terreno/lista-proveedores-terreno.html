@@ -1,0 +1,148 @@
+<div class="page-header">
+  <div>
+    <div class="page-title">Proveedores de terreno</div>
+    <div class="page-subtitle">
+      Mantenimiento de proveedores usados en Terreno, Marketing, Otros gastos y Gastos municipales.
+    </div>
+  </div>
+</div>
+
+<div class="split split--form admin-split">
+  <section class="panel">
+    <div class="panel-title-row">
+      <div class="panel-title">Listado</div>
+      <div class="filters compact-filters maintenance-search">
+        <div class="field">
+          <label for="lista-proveedores-terreno-campo-1">Buscar</label>
+          <input
+            id="lista-proveedores-terreno-campo-1"
+            type="text"
+            [(ngModel)]="filtroBusqueda"
+            placeholder="Buscar proveedores de terreno"
+          />
+        </div>
+      </div>
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        [disabled]="guardando()"
+        (click)="abrirModalNuevo()"
+      >
+        + Nuevo registro
+      </button>
+      <button type="button" class="btn btn-secondary btn-sm" (click)="importOpen.set(true)">
+        Importar
+      </button>
+    </div>
+
+    <div class="filters compact-filters compact-filters--one">
+      <div class="field">
+        <label for="lista-proveedores-terreno-campo-2">Estado</label>
+        <select id="lista-proveedores-terreno-campo-2" [(ngModel)]="filtroActivo" (change)="load()">
+          <option value="">Todos</option>
+          <option value="true">Activo</option>
+          <option value="false">Inactivo</option>
+        </select>
+      </div>
+    </div>
+
+    @if (consulta.error()) {
+      <div role="alert">
+        {{ consulta.error() }}
+        <button type="button" class="btn btn-ghost" (click)="load()">Reintentar</button>
+      </div>
+    }
+    @if (consulta.cargando()) {
+      <div class="empty-state">Cargando proveedores...</div>
+    }
+    @if (!consulta.cargando() && !consulta.error() && !rowsFiltradas().length) {
+      <div class="empty-state">No hay proveedores de terreno registrados.</div>
+    }
+
+    @if (!consulta.cargando() && rowsFiltradas().length) {
+      <div
+        class="table-wrap table-wrap--sticky-actions table-wrap--compact proveedores-terreno-table"
+      >
+        <table>
+          <thead>
+            <tr>
+              <th>Proveedor</th>
+              <th>RUC</th>
+              <th>Teléfono</th>
+              <th>Correo</th>
+              <th>Estado</th>
+              <th class="actions-col actions-col--select">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rowsFiltradas(); track row) {
+              <tr>
+                <td>{{ row.razonSocial }}</td>
+                <td>{{ row.ruc || '-' }}</td>
+                <td>{{ row.telefono || '-' }}</td>
+                <td>{{ row.correo || '-' }}</td>
+                <td>
+                  <span
+                    class="badge"
+                    [class.badge--ok]="row.activo"
+                    [class.badge--neutral]="!row.activo"
+                    >{{ row.activo ? 'Activo' : 'Inactivo' }}</span
+                  >
+                </td>
+                <td class="actions-col--select">
+                  <select
+                    aria-label="Acciones del registro"
+                    [disabled]="guardando()"
+                    class="actions-select"
+                    (change)="onAccion($event, row)"
+                  >
+                    <option value="">Acciones</option>
+                    <option value="edit">Editar</option>
+                    <option value="estado" [disabled]="!row.activo">Desactivar</option>
+                  </select>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+
+  @if (modalOpen()) {
+    <dialog
+      dialogoModal
+      class="panel panel--form design-modal-card"
+      (solicitarCierre)="cerrarModal()"
+      aria-label="Formulario de proveedor"
+    >
+      <button
+        type="button"
+        class="modal-close"
+        (click)="cerrarModal()"
+        [disabled]="guardando()"
+        aria-label="Cerrar"
+      >
+        ×
+      </button>
+      <div class="panel-title">Formulario</div>
+      @if (error()) {
+        <p role="alert">{{ error() }}</p>
+      }
+      <formulario-proveedor-especifico
+        [valor]="datosEdicion()"
+        [guardando]="guardando()"
+        (guardar)="save($event)"
+        (limpiado)="edicion.set(null); datosEdicion.set(null)"
+      />
+    </dialog>
+  }
+  @if (importOpen()) {
+    <app-import-modal
+      modulo="proveedor-terreno"
+      (onClose)="importOpen.set(false)"
+      (onSuccess)="onImportSuccess()"
+    >
+    </app-import-modal>
+  }
+</div>

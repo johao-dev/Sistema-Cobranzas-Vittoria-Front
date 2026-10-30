@@ -48,4 +48,12 @@ describe('ControlPresupuestarioService contract', () => {
     expect('idSeccionGasto' in req.request.body).toBe(false);
     req.flush({});
   });
+  it('Gastos consulta únicamente las monedas del catálogo público', () => {
+    const monedas = [{ idMoneda: 1, codigo: 'PEN', nombre: 'Soles', simbolo: 'S/', activo: true }];
+    const respuesta = vi.fn();
+    service.monedas().subscribe(respuesta);
+    http.expectOne(`${base}/catalogos/monedas`).flush(monedas);
+    expect(respuesta).toHaveBeenCalledWith(monedas);
+  });
+
 });

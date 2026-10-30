@@ -1,0 +1,265 @@
+<div class="page-header">
+  <div>
+    <div class="page-title">{{ config().titulo }}</div>
+    <div class="page-subtitle">{{ config().subtitulo }}</div>
+  </div>
+</div>
+
+@if (referencias.errorCategorias()) {
+  <div class="alerta-bloqueo">
+    {{ referencias.errorCategorias() }} No se cargarán ni guardarán gastos hasta corregir el
+    catálogo.
+    <button type="button" class="btn btn-ghost" (click)="reintentarReferencias()">
+      Reintentar
+    </button>
+  </div>
+}
+
+@if (referencias.errores().length) {
+  <div role="alert" class="alerta-bloqueo">
+    @for (error of referencias.errores(); track error) {
+      <p>{{ error }}</p>
+    }
+    <button type="button" class="btn btn-ghost" (click)="reintentarReferencias()">
+      Reintentar referencias
+    </button>
+  </div>
+}
+@if (referencias.cargando()) {
+  <div class="empty-state">Cargando referencias...</div>
+}
+<section class="panel">
+  <div class="panel-title-row">
+    <div class="panel-title">Gastos</div>
+    <div class="filters maintenance-search">
+      <div class="field">
+        <label for="gastos-seccion-campo-1">Buscar</label>
+        <input
+          id="gastos-seccion-campo-1"
+          type="text"
+          [(ngModel)]="filtroBusqueda"
+          placeholder="Concepto, proveedor o partida"
+        />
+      </div>
+    </div>
+    @if (puedeOperar) {
+      <button type="button" class="btn btn-secondary btn-sm" (click)="abrirImportModal()">
+        Importar gastos
+      </button>
+    }
+    @if (puedeOperar) {
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        [disabled]="!referencias.listas()"
+        (click)="abrirModalNuevo()"
+      >
+        + Nuevo gasto
+      </button>
+    }
+  </div>
+
+  @if (!consulta.cargando() && !consulta.error() && referencias.listas() && !errorFiltro()) {
+    <div class="resumen-cards">
+      <div class="resumen-card resumen-card--total">
+        <span>Total registrado</span>
+        @if (!totalesPorMoneda().length) {
+          <strong>0.00</strong>
+        }
+        @for (t of totalesPorMoneda(); track t) {
+          <strong>{{ t.moneda }} {{ t.total | number: '1.2-2' }}</strong>
+        }
+        <small>{{ vigentes().length }} gasto(s) sin anular</small>
+      </div>
+    </div>
+  }
+
+  <p class="ayuda-estados">
+    Un gasto <strong>registrado</strong> no afecta el saldo; al <strong>confirmarlo</strong> se
+    descuenta de la partida y al <strong>anularlo</strong> se devuelve.
+  </p>
+
+  <div class="filters">
+    <div class="field">
+      <label for="gastos-seccion-campo-2">Estado</label>
+      <select id="gastos-seccion-campo-2" [(ngModel)]="filtroEstado" (change)="load()">
+        <option value="">Todos</option>
+        <option value="REGISTRADO">Registrado</option>
+        <option value="CONFIRMADO">Confirmado</option>
+        <option value="ANULADO">Anulado</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="gastos-seccion-campo-3">Centro de costo</label>
+      <select id="gastos-seccion-campo-3" [(ngModel)]="filtroCentroCosto" (change)="load()">
+        <option value="">Todos</option>
+        @for (c of referencias.centrosCosto(); track c) {
+          <option [value]="c.idCentroCosto">{{ c.codigo }} — {{ c.nombre }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label for="gastos-seccion-campo-4">Desde</label>
+      <input id="gastos-seccion-campo-4" type="date" [(ngModel)]="filtroDesde" (change)="load()" />
+    </div>
+    <div class="field">
+      <label for="gastos-seccion-campo-5">Hasta</label>
+      <input id="gastos-seccion-campo-5" type="date" [(ngModel)]="filtroHasta" (change)="load()" />
+    </div>
+  </div>
+
+  @if (errorFiltro()) {
+    <p role="alert">{{ errorFiltro() }}</p>
+  }
+  @if (consulta.error()) {
+    <div role="alert" class="empty-state">
+      {{ consulta.error() }}
+      <button type="button" class="btn btn-ghost" (click)="load()">Reintentar</button>
+    </div>
+  }
+  @if (consulta.cargando()) {
+    <div class="empty-state">Cargando gastos...</div>
+  }
+  @if (
+    !consulta.cargando() &&
+    !referencias.errorCategorias() &&
+    !consulta.error() &&
+    !errorFiltro() &&
+    !referencias.cargando() &&
+    !rowsFiltradas().length
+  ) {
+    <div class="empty-state">No hay gastos registrados en esta vista.</div>
+  }
+
+  @if (!consulta.cargando() && rowsFiltradas().length) {
+    <div class="table-wrap table-wrap--sticky-actions">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Categoría</th>
+            <th>Concepto</th>
+            <th>Proveedor</th>
+            <th>Centro de costo</th>
+            <th>Partida</th>
+            <th class="num">Soles</th>
+            <th class="num">Dólares</th>
+            <th class="num">TC</th>
+            <th>Fecha TC</th>
+            <th>Facturas</th>
+            <th>Estado</th>
+            <th class="actions-col actions-col--select">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rowsFiltradas(); track row) {
+            <tr [class.fila-anulada]="row.estado === 'ANULADO'">
+              <td>{{ row.fecha | date: 'dd/MM/yyyy' }}</td>
+              <td>{{ row.nombreCategoriaGasto || '—' }}</td>
+              <td>{{ row.concepto }}</td>
+              <td>{{ row.proveedor || '—' }}</td>
+              <td>{{ row.centroCosto }}</td>
+              <td>{{ row.codigoPartida }} — {{ row.partida }}</td>
+              @for (mon of monedasColumna; track mon) {
+                <td class="num">
+                  @if (montoEn(row, mon); as m) {
+                    <span
+                      [class.monto-referencia]="m.referencia"
+                      [title]="
+                        m.referencia
+                          ? 'Monto de la factura, solo referencia'
+                          : 'Monto que se descuenta del presupuesto'
+                      "
+                    >
+                      {{ m.valor | number: '1.2-2' }}
+                    </span>
+                  } @else {
+                    —
+                  }
+                </td>
+              }
+              <td class="num">{{ row.tipoCambio ? (row.tipoCambio | number: '1.2-4') : '—' }}</td>
+              <td>{{ row.fechaTipoCambio ? (row.fechaTipoCambio | date: 'dd/MM/yyyy') : '—' }}</td>
+              <td>{{ row.totalDocumentos }}</td>
+              <td>
+                <span
+                  class="badge"
+                  [class.badge--ok]="row.estado === 'CONFIRMADO'"
+                  [class.badge--warn]="row.estado === 'REGISTRADO'"
+                  [class.badge--neutral]="row.estado === 'ANULADO'"
+                >
+                  {{ row.estado }}
+                </span>
+              </td>
+              <td class="actions-col--select">
+                <select
+                  class="actions-select"
+                  (change)="onAccion($event, row)"
+                  aria-label="Acciones del gasto"
+                >
+                  <option value="">Acciones</option>
+                  @if (puedeOperar) {
+                    <option value="edit" [disabled]="row.estado !== 'REGISTRADO'">Editar</option>
+                  }
+                  @if (puedeOperar && !esHistorico(row)) {
+                    <option value="confirmar" [disabled]="row.estado !== 'REGISTRADO'">
+                      Confirmar
+                    </option>
+                  }
+                  @if (puedeOperar) {
+                    <option value="anular" [disabled]="row.estado === 'ANULADO'">Anular</option>
+                  }
+                  <option value="documentos">Documentos</option>
+                </select>
+              </td>
+            </tr>
+          }
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="6"><strong>Total (sin anulados)</strong></td>
+            <td class="num">
+              <strong>{{ hayMoneda().pen ? (totalColumna('PEN') | number: '1.2-2') : '—' }}</strong>
+            </td>
+            <td class="num">
+              <strong>{{ hayMoneda().usd ? (totalColumna('USD') | number: '1.2-2') : '—' }}</strong>
+            </td>
+            <td colspan="5"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  }
+</section>
+
+@if (modalGasto()) {
+  <formulario-gasto
+    [valor]="edicion()"
+    [config]="config()"
+    (cancelar)="modalGasto.set(false)"
+    (guardado)="guardado()"
+  />
+}
+@if (gastoDocumentos(); as gasto) {
+  <documentos-gasto
+    [gasto]="gasto"
+    [puedeOperar]="puedeOperar"
+    (cancelar)="gastoDocumentos.set(null)"
+    (actualizado)="load()"
+  />
+}
+@if (modalConfirmacion(); as seleccion) {
+  <transicion-gasto
+    [gasto]="seleccion.row"
+    [accion]="seleccion.accion"
+    (cancelar)="modalConfirmacion.set(null)"
+    (actualizado)="modalConfirmacion.set(null); load()"
+  />
+}
+@if (importOpen() && puedeOperar) {
+  <app-import-modal
+    modulo="gastos-directos"
+    (onClose)="importOpen.set(false)"
+    (onSuccess)="load()"
+  />
+}

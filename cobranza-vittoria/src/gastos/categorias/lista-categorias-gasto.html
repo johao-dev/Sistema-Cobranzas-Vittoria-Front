@@ -1,0 +1,142 @@
+<div class="page-header">
+  <div>
+    <div class="page-title">Categorías de gasto</div>
+    <div class="page-subtitle">
+      Mantenimiento del catálogo usado por los gastos administrativos.
+    </div>
+  </div>
+</div>
+
+<div class="split split--form admin-split">
+  <section class="panel">
+    <div class="panel-title-row">
+      <div class="panel-title">Listado</div>
+      <div class="filters compact-filters maintenance-search">
+        <div class="field">
+          <label for="lista-categorias-gasto-campo-1">Buscar</label>
+          <input
+            id="lista-categorias-gasto-campo-1"
+            type="text"
+            [(ngModel)]="filtroBusqueda"
+            placeholder="Buscar categorías de gasto"
+          />
+        </div>
+      </div>
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        [disabled]="guardando()"
+        (click)="abrirModalNuevo()"
+      >
+        + Nuevo registro
+      </button>
+      <button type="button" class="btn btn-secondary btn-sm" (click)="importOpen.set(true)">
+        Importar
+      </button>
+    </div>
+
+    <div class="filters filters--two compact-filters">
+      <div class="field">
+        <label for="lista-categorias-gasto-campo-2">Estado</label>
+        <select id="lista-categorias-gasto-campo-2" [(ngModel)]="filtroActivo" (change)="load()">
+          <option value="">Todos</option>
+          <option value="true">Activo</option>
+          <option value="false">Inactivo</option>
+        </select>
+      </div>
+    </div>
+
+    @if (consulta.error()) {
+      <div role="alert">
+        {{ consulta.error() }}
+        <button type="button" class="btn btn-ghost" (click)="load()">Reintentar</button>
+      </div>
+    }
+    @if (consulta.cargando()) {
+      <div class="empty-state">Cargando categorías...</div>
+    }
+    @if (!consulta.cargando() && !consulta.error() && !rowsFiltradas().length) {
+      <div class="empty-state">No hay categorías registradas.</div>
+    }
+
+    @if (!consulta.cargando() && rowsFiltradas().length) {
+      <div class="table-wrap table-wrap--sticky-actions table-wrap--categorias">
+        <table>
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Categoría</th>
+              <th>Estado</th>
+              <th class="actions-col actions-col--select">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rowsFiltradas(); track row) {
+              <tr>
+                <td>{{ row.codigo || '—' }}</td>
+                <td>{{ row.nombre }}</td>
+                <td>
+                  <span
+                    class="badge"
+                    [class.badge--ok]="row.activo"
+                    [class.badge--neutral]="!row.activo"
+                  >
+                    {{ row.activo ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+                <td class="actions-col--select">
+                  <select
+                    aria-label="Acciones del registro"
+                    [disabled]="guardando()"
+                    class="actions-select"
+                    (change)="onAccion($event, row)"
+                  >
+                    <option value="">Acciones</option>
+                    <option value="edit">Editar</option>
+                    <option value="estado" [disabled]="!row.activo">Desactivar</option>
+                  </select>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+
+  @if (modalOpen()) {
+    <dialog
+      dialogoModal
+      class="panel panel--form design-modal-card"
+      (solicitarCierre)="cerrarModal()"
+      aria-label="Formulario de categoría"
+    >
+      <button
+        type="button"
+        class="modal-close"
+        (click)="cerrarModal()"
+        [disabled]="guardando()"
+        aria-label="Cerrar"
+      >
+        ×
+      </button>
+      <div class="panel-title">Formulario</div>
+      @if (error()) {
+        <p role="alert">{{ error() }}</p>
+      }
+      <formulario-categoria-gasto
+        [valor]="edicion()"
+        [guardando]="guardando()"
+        (guardar)="save($event)"
+      />
+    </dialog>
+  }
+  @if (importOpen()) {
+    <app-import-modal
+      modulo="categoria-gasto"
+      (onClose)="importOpen.set(false)"
+      (onSuccess)="onImportSuccess()"
+    >
+    </app-import-modal>
+  }
+</div>
