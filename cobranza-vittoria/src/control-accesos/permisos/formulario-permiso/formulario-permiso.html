@@ -1,0 +1,63 @@
+<dialog
+  dialogoModal
+  (solicitarCierre)="cerrarFormulario()"
+  class="panel panel--form design-modal-card"
+  aria-labelledby="titulo-editar-permiso"
+>
+  <button
+    type="button"
+    class="modal-close"
+    (click)="cerrarFormulario()"
+    [disabled]="guardando()"
+    aria-label="Cerrar"
+  >
+    ×
+  </button>
+  <div class="panel-title" id="titulo-editar-permiso">Editar acción</div>
+
+  <form (ngSubmit)="guardar()">
+    <div class="form-grid one">
+      <div class="field">
+        <label for="nombre-permiso">Nombre</label>
+        <input
+          id="nombre-permiso"
+          name="nombre"
+          [(ngModel)]="form.nombre"
+          required
+          maxlength="100"
+          [disabled]="guardando()"
+          placeholder="Nombre de la acción"
+        />
+      </div>
+      <div class="field">
+        <label for="descripcion-permiso">Descripción</label>
+        <input
+          id="descripcion-permiso"
+          name="descripcion"
+          [(ngModel)]="form.descripcion"
+          maxlength="255"
+          [disabled]="guardando()"
+          placeholder="Descripción de la acción"
+        />
+      </div>
+    </div>
+
+    <div class="toolbar toolbar--compact">
+      <button type="submit" class="btn btn-primary" [disabled]="guardando() || !form.nombre.trim()">
+        {{ guardando() ? 'Guardando…' : 'Guardar' }}
+      </button>
+      <button
+        type="button"
+        class="btn btn-ghost"
+        (click)="cerrarFormulario()"
+        [disabled]="guardando()"
+      >
+        Cancelar
+      </button>
+    </div>
+  </form>
+
+  @if (msg()) {
+    <div class="empty-state" role="alert">{{ msg() }}</div>
+  }
+</dialog>

@@ -1,0 +1,94 @@
+<div class="page-header">
+  <div>
+    <div class="page-title">Usuarios</div>
+    <div class="page-subtitle">Gestión de usuarios y asignación de roles.</div>
+  </div>
+</div>
+<div class="split split--form">
+  <section class="panel">
+    <div class="panel-title-row">
+      <div class="panel-title">Listado</div>
+      <div class="filters compact-filters maintenance-search">
+        <div class="field">
+          <label for="buscar-usuarios">Buscar</label>
+          <input
+            id="buscar-usuarios"
+            type="text"
+            [(ngModel)]="filtroBusqueda"
+            placeholder="Buscar usuarios"
+          />
+        </div>
+      </div>
+      <button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">
+        + Nuevo registro
+      </button>
+    </div>
+    <div class="filters">
+      <div class="field">
+        <label for="estado-usuarios">Estado</label
+        ><select id="estado-usuarios" [(ngModel)]="filtroActivo" (change)="load()">
+          <option [ngValue]="null">Todos</option>
+          <option [ngValue]="true">Activos</option>
+          <option [ngValue]="false">Inactivos</option>
+        </select>
+      </div>
+    </div>
+    @if (cargando()) {
+      <div class="empty-state" role="status">Cargando registros...</div>
+    } @else if (errorListado()) {
+      <div class="empty-state" role="alert">
+        {{ errorListado() }}
+        <button type="button" class="btn btn-ghost" (click)="load()">Reintentar</button>
+      </div>
+    } @else {
+      @if (!rowsFiltradas().length) {
+        <div class="empty-state">No hay usuarios registrados.</div>
+      }
+      @if (rowsFiltradas().length) {
+        <div class="table-wrap table-wrap--sticky-actions">
+          <table>
+            <thead>
+              <tr>
+                <th>Nombres</th>
+                <th>Login</th>
+                <th>Correo</th>
+                <th>Estado</th>
+                <th class="actions-col">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of rowsFiltradas(); track row) {
+                <tr>
+                  <td>{{ row.nombres }} {{ row.apellidos || '' }}</td>
+                  <td>{{ row.usuarioLogin }}</td>
+                  <td>{{ row.correo || '-' }}</td>
+                  <td>
+                    <span
+                      class="badge"
+                      [class.badge--ok]="row.activo"
+                      [class.badge--neutral]="!row.activo"
+                      >{{ row.activo ? 'Activo' : 'Inactivo' }}</span
+                    >
+                  </td>
+                  <td>
+                    <div class="actions actions--end">
+                      <button class="btn btn-secondary" (click)="seleccionar(row)">Editar</button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+  </section>
+  @if (modalOpen()) {
+    <formulario-usuario
+      [idUsuario]="seleccionado()?.idUsuario ?? null"
+      (cerrar)="cerrarModal()"
+      (guardado)="cerrarModal(); load()"
+      (solicitarAlta)="seleccionado.set(null)"
+    />
+  }
+</div>

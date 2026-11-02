@@ -1,9 +1,6 @@
 import { Routes } from '@angular/router';
-import { UsuariosPage } from './pages/usuarios/usuarios.page';
-import { RolesPage } from './pages/roles/roles.page';
 import { ValorizacionesPage } from './pages/valorizaciones/valorizaciones.page';
 import { protegerRuta } from '../core/sesion/proteger-ruta';
-import { PermisosPage } from './pages/permisos/permisos.page';
 import { ACCESS_RULES } from './reglas-acceso';
 
 export const routes: Routes = [
@@ -47,9 +44,9 @@ export const routes: Routes = [
     data: { access: ACCESS_RULES.controlAccesos },
     children: [
       { path: '', redirectTo: 'usuarios', pathMatch: 'full' },
-      { path: 'usuarios', component: UsuariosPage },
-      { path: 'perfiles', component: RolesPage },
-      { path: 'acciones', component: PermisosPage }
+      { path: 'usuarios', loadComponent: () => import('../control-accesos/usuarios/lista-usuarios/lista-usuarios').then(m => m.ListaUsuarios) },
+      { path: 'perfiles', loadComponent: () => import('../control-accesos/roles/lista-roles/lista-roles').then(m => m.ListaRoles) },
+      { path: 'acciones', loadComponent: () => import('../control-accesos/permisos/lista-permisos/lista-permisos').then(m => m.ListaPermisos) }
     ]
   },
   {

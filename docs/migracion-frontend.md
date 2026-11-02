@@ -4,7 +4,7 @@
 
 - **Fecha del acuerdo:** 2026-10-16.
 - **Contrato para agentes:** [AGENTS.md](../AGENTS.md).
-- **Estado:** preparación técnica y migración de autenticación realizadas el 2026-10-19. Autenticación verificada funcionalmente con backend por el usuario. Dashboard, los cinco catálogos generales y Requerimientos migrados y cerrados por el usuario. Órdenes de compra migrada y validada funcionalmente y en navegador por el usuario. Compras migrada y validada funcionalmente con backend y navegador por el usuario. Inventario migrado y validado funcionalmente con backend y navegador por el usuario. Gastos migrado y verificado por el usuario el 2026-10-30 tras completar sus pruebas funcionales con backend; Presupuestos migrado y verificado funcionalmente con navegador y backend por el usuario el 2026-11-02; las demás funcionalidades continúan pendientes de migración.
+- **Estado:** preparación técnica y migración de autenticación realizadas el 2026-10-19. Autenticación verificada funcionalmente con backend por el usuario. Dashboard, los cinco catálogos generales y Requerimientos migrados y cerrados por el usuario. Órdenes de compra migrada y validada funcionalmente y en navegador por el usuario. Compras migrada y validada funcionalmente con backend y navegador por el usuario. Inventario migrado y validado funcionalmente con backend y navegador por el usuario. Gastos migrado y verificado por el usuario el 2026-10-30 tras completar sus pruebas funcionales con backend; Presupuestos migrado y verificado funcionalmente con navegador y backend por el usuario el 2026-11-02; Control de accesos migrado y verificado funcionalmente con navegador y backend por el usuario el 2026-11-02; Valorizaciones y la infraestructura restante continúan pendientes de migración.
 - **Alcance:** refactor progresivo del frontend manteniendo comportamiento, contratos, permisos, importes y apariencia, con mejoras locales de accesibilidad y adaptación móvil. No incluye cambios de negocio en backend o base de datos ni pruebas automatizadas de navegador por ahora.
 
 Las rutas de la aplicación de este documento son relativas a `cobranza-vittoria/`, salvo indicación contraria. `AGENTS.md` contiene las reglas; este registro conserva decisiones, avance y evidencias sin sustituir ese contrato.
@@ -81,7 +81,7 @@ Las ubicaciones actuales indican el punto de partida; no prueban que todos sus a
 | Gastos | `src/gastos/{listado,formulario,transiciones,documentos,categorias,proveedores-gasto,proveedores-terreno,proveedores-especificos}` | `src/gastos`, agrupado por concepto | Verificada | Cinco vistas de gastos directos y tres mantenimientos migrados; contratos HTTP, partidas, referencias, formularios, documentos e importación comprobados técnicamente. Implementaciones sin consumidores retiradas. Se conservan proveedores canónicos del agregado y registros específicos separados. El usuario confirmó «Validación funcional y backend OK» y posteriormente indicó que ya probó y solicitó registrar Gastos como Verificada el 2026-10-30; validación humana cerrada, sin desglose de escenarios |
 | Presupuestos | `src/presupuestos/{listado,versiones,formulario-presupuesto,carga-montos,importacion,movimientos,consultas,arbol,tablero,centros-costo,partidas}` | `src/presupuestos`, por concepto | Verificada | Contratos y servicios públicos tipados, formularios y operaciones separados, consumidores actualizados y pantalla bancaria retirada con autorización del usuario. 709 pruebas y ambas compilaciones correctas. El usuario confirmó «Validación funcional con navegador y backend OK» el 2026-11-02; validación humana cerrada, sin desglose de escenarios |
 | Valorizaciones | `src/app/pages/valorizaciones` | `src/valorizaciones` | Pendiente | Sin entrega de migración registrada |
-| Control de accesos | Páginas `usuarios`, `roles` y `permisos` | `src/control-accesos` | Pendiente | Sin entrega de migración registrada |
+| Control de accesos | `src/control-accesos/{usuarios,roles,permisos}` | `src/control-accesos`, por concepto | Verificada | Contratos y registros HTTP propios, formularios y asignaciones separados, rutas diferidas y código anterior sin consumidores retirado. 80 pruebas del módulo; 763 pruebas totales correctas. Envío del formulario corregido y componentes agrupados en subcarpetas por concepto. Producción, staging y lint comprobados. El usuario confirmó «Validación funcional con navegador y backend OK» el 2026-11-02, después de la corrección de envío y organización por conceptos; confirmación general sin desglose de escenarios |
 | Infraestructura y elementos compartidos | Sesión y ambientes en `src/core`; servicios, modelos, compartidos y contenedor pendientes en `src/app` | Distribuir por propietario; conservar infraestructura en `src/core` y reutilización real en `src/shared` | En curso | Sesión y ambientes migrados con consumidores; notificaciones y utilidades compartidas se reutilizan desde su ubicación actual. Retirar `src/app` al finalizar |
 
 Estados de seguimiento: **Pendiente**, **En curso**, **Pendiente de validación funcional** y **Verificada**. Si existe una limitación o bloqueo, describirlo con su causa y siguiente paso; no marcar como verificada una entrega por haber movido archivos o por haber compilado únicamente.
@@ -121,6 +121,9 @@ Estados de seguimiento: **Pendiente**, **En curso**, **Pendiente de validación 
 | 2026-10-30 | Cierre de validación de Gastos | El usuario confirmó que ya probó y pidió registrar la entrega como verificada | Gastos pasa a Verificada y se cierra la validación humana pendiente. Confirmación general sin desglose de escenarios; actualización exclusivamente documental, sin repetir pruebas ni compilaciones. |
 | 2026-11-02 | Migración de Presupuestos | Catálogos, presupuestos/versiones/montos, importación, historial, consultas, árbol y tablero en `src/presupuestos`; consumidores actualizados. Retirada autorizada del presupuesto bancario | 709 pruebas en 104 archivos; 0 errores de lint, 256 advertencias legacy; producción y staging correctos. Pendiente de validación funcional con backend y navegador; detalles al final del registro. |
 | 2026-11-02 | Validación funcional de Presupuestos | El usuario confirmó «Validación funcional con navegador y backend OK» | Presupuestos pasa a Verificada. Confirmación general posterior al diagnóstico del chunk obsoleto, sin desglose de escenarios. Cierre exclusivamente documental; no se repitieron pruebas ni compilaciones. |
+| 2026-11-02 | Migración de Control de accesos | Usuarios, Perfiles y Acciones en `src/control-accesos`; registros HTTP y contratos propios, formularios/asignaciones separados, rutas diferidas y retirada de código sustituido | 761 pruebas correctas en 113 archivos; 0 errores de lint y 182 advertencias legacy; producción y staging correctos. Contraseña y roles del usuario conservados por indicación del responsable; habilitación de permisos confirmada. Pendiente de validación funcional con backend y navegador. |
+| 2026-11-02 | Corrección de envío y organización de Control de accesos | Enlace del formulario reactivo de Usuario con `[formGroup]`; 30 archivos agrupados en nueve carpetas por concepto, con imports, estilos y rutas actualizados | Regresión reproducida antes de corregir; 763 pruebas correctas en 113 archivos, 80 del módulo; producción/staging correctos y lint sin errores. Validación humana de la corrección pendiente. |
+| 2026-11-02 | Validación funcional de Control de accesos | El usuario confirmó «Validación funcional con navegador y backend OK» tras la corrección del formulario y la organización por conceptos | Control de accesos pasa a Verificada. Confirmación general sin desglose de escenarios. Cierre exclusivamente documental; no se repitieron pruebas ni compilaciones. |
 
 En cada entrega futura registrar:
 
@@ -651,3 +654,75 @@ A petición del usuario se completa la separación del estado compartido. La con
 - El usuario confirmó «Validación funcional con navegador y backend OK» después del diagnóstico de carga de Centros de costo y Partidas. Presupuestos pasa a **Verificada** y queda cerrada la validación humana pendiente de esta entrega.
 - La confirmación es general y no desglosa escenarios; no se atribuyen verificaciones individuales adicionales. Se conservan las evidencias técnicas y los avisos de lint/CSS registrados anteriormente.
 - Esta actualización modifica únicamente el registro de migración. Se revisaron estados, coherencia del historial y `git diff --check`; no se modificó código ni se repitieron pruebas o compilaciones.
+
+
+## Entrega de Control de accesos — 2026-11-02
+
+**Estado:** Verificada. El usuario confirmó «Validación funcional con navegador y backend OK» el 2026-11-02, después de la corrección de envío y organización por conceptos.
+
+### Alcance y decisiones del responsable
+
+- Se migran Usuarios, Perfiles de acceso y Acciones disponibles a `src/control-accesos/{usuarios,roles,permisos}`. Las rutas públicas `/control-accesos/usuarios`, `/control-accesos/perfiles` y `/control-accesos/acciones` cargan los nuevos componentes de forma diferida. Se conservan la redirección inicial a Usuarios, `protegerRuta`, la regla compartida `ACCESS_RULES.controlAccesos` para Administrador y el menú existente.
+- Lectura acotada de `docs/ContratoApi.md`: endpoints de Seguridad para usuarios, roles, permisos y asignaciones, y sus esquemas de petición/respuesta. No se leyó el contrato completo ni se añadió generación OpenAPI.
+- El contrato documental marca los PATCH de habilitación/deshabilitación de permisos como no implementados. El responsable confirmó «Ya están implementados; conservar los controles». Se conservan PATCH con cuerpo nulo, respuesta 204, confirmación y sincronización ante un estado ya aplicado.
+- Ante la discrepancia del PUT de usuarios (`passwordHash` documentado frente a `password` enviado actualmente), el usuario indicó «no modifiques nada en esa parte». Se conserva la contraseña literal del alta; al editar, vacía se omite y con contenido se envía como `password`, sin recortarla. No se lee ni se muestra un hash. La revisión de esa discrepancia sigue pendiente por indicación expresa; no se presenta como contrato backend resuelto.
+- Ante los roles adicionales del detalle de usuario, ausentes del DTO documentado, el usuario indicó «no modifiques nada en esa parte aún». Se conservan la lectura histórica del usuario directo o envuelto en `usuario`/`Usuario`, los chips de `roles[].nombreRol`, la asignación mediante `idRoles` y la consulta posterior del detalle que reinicia el editor. Ese dato adicional tiene un modelo de presentación local; no se declara un DTO confirmado ni se añaden operaciones de retirada de roles.
+
+### Propietarios, tipado y separación
+
+- `RegistroUsuarios`, `RegistroRoles` y `RegistroPermisos` poseen sus llamadas HTTP y contratos estáticos. Las consultas usan `HttpParams`, conservan `false` y omiten `null`/`undefined` como antes; la omisión de `activo` sigue utilizando el valor por defecto del backend. La creación de roles envía solo `nombre`/`descripcion`; la actualización incluye `activo`. Los identificadores de asignaciones se deduplican y las retiradas individuales usan DELETE.
+- La compatibilidad de listas históricas (arreglo directo, contenedores por concepto, `data`, `items`/`Items` y `$values`) queda en el borde HTTP de usuarios y roles. Los datos desconocidos se validan antes de leerlos y se adaptan a contratos locales; una envoltura, identidad o estado inválidos produce error en vez de aparentar una lista vacía. Las variantes de nombres de roles y campos en PascalCase ya admitidas se conservan en esa frontera.
+- Los listados coordinan filtros, búsqueda, carga y apertura/cierre. `FormularioUsuario` usa un formulario reactivo tipado por la validación condicional de alta/edición y su coordinación con asignaciones. Roles y permisos mantienen `ngModel` por su estructura sencilla. La normalización de peticiones y validación del correo consumen el valor recortado; la contraseña conserva su tratamiento anterior. Modelos y servicios no dependen de componentes.
+- `AsignacionRolesUsuario` carga las opciones y gestiona su escritura; `AsignacionPermisosRol` gestiona catálogo, selección, asignados, escritura y sincronización. Los permisos asignados ausentes del catálogo activo siguen visibles y conservan su identificador al guardar; pueden retirarse explícitamente. Se conserva el aviso sobre renovación de claims, sin cambiar tokens ni sesión.
+- `TarjetaPermiso` es un componente propio de Permisos. Su interruptor conserva el estado recibido hasta confirmar la respuesta del servidor; se mantiene la edición exclusiva de nombre/descripción y sus límites de 100/255 caracteres. Se comparten dentro del módulo la búsqueda sin tildes, los estilos equivalentes de listados y los de diálogos; no se creó una capa global de servicios ni una fachada de estado.
+- Se retiraron las páginas anteriores de Usuarios/Roles/Permisos, el servicio agregado `SeguridadService`, sus modelos globales y `PermisoCardComponent`, después de actualizar rutas, consumidores y pruebas. La búsqueda final de referencias incluyó imports y rutas diferidas; no quedan reexports ni implementaciones duplicadas. Valorizaciones, el contenedor y la infraestructura restante conservan sus ubicaciones pendientes.
+
+### Comportamiento, asincronía e interfaz
+
+- Antes de cambiar producción pasaron **35 pruebas base en cuatro archivos**, sobre el servicio y las páginas anteriores. Las pruebas se trasladaron y ampliaron junto a sus conceptos propietarios.
+- Signals y `computed` mantienen la actualización sin Zone.js. Los listados y detalles cancelan consultas sustituidas; `takeUntilDestroyed` libera las suscripciones. Los guardados y asignaciones bloquean duplicados, coordinan el bloqueo del formulario y restauran estados tanto en éxito como en error. Los errores mantienen el borrador y permiten reintentar.
+- Cuando una asignación de permisos se guarda pero falla la lectura posterior, la interfaz informa que el cambio fue guardado y ofrece reintentar solo el GET. No se repite la escritura ni se presenta el fallo de lectura como rechazo de una operación ya aceptada.
+- Se conservan apariencia, tablas, tarjetas, filtros y acciones. Los diálogos reutilizan `DialogoModal`, con etiquetas asociadas, botones semánticos y nombres accesibles. Las opciones de rol y los permisos disponibles diferencian carga, error y reintento; el detalle fallido bloquea el guardado. Los estilos usan las variables y reglas globales existentes, sin rediseño general.
+
+### Verificaciones técnicas y pendientes
+
+- `npm test -- --watch=false`: **761 pruebas correctas en 113 archivos**, incluidas **78 de Control de accesos en 11 archivos**. Cubren contratos HTTP, filtros, compatibilidad y rechazo de respuestas inválidas, contraseña literal/omitida, roles adicionales, validaciones, conservación de borradores, asignaciones y retiradas, claims, duplicados, errores de escritura/lectura, reintentos y cancelación. Las rutas diferidas se prueban con `RouterTestingHarness`: Administrador accede a las tres pantallas, Residente es rechazado antes de consultar datos y la falta de sesión redirige a login con retorno. No se llamó al backend real.
+- `npm run lint`: **0 errores y 182 advertencias** del código pendiente de `src/app`, frente a 256 previas. El módulo migrado no produce errores ni advertencias. Se mantienen reglas estrictas y no se introduce `any`, `$any`, supresiones de TypeScript ni aserciones que oculten incompatibilidades. `ngc --noEmit -p tsconfig.app.json`, `tsc --noEmit -p tsconfig.spec.json`, Prettier del código migrado y `git diff --check`: correctos.
+- `npm run build` y `npm run build -- --configuration staging`: correctos, con **455.86 kB** y **455.87 kB** iniciales, respectivamente, frente a 498.24/498.25 kB de la entrega anterior. Conservan los tres avisos de tamaño CSS de `app.css`, Valorizaciones y el tablero presupuestario; no se modificaron presupuestos Angular. El intento restringido de producción falló por DNS de Google Fonts; las compilaciones completas se realizaron con acceso autorizado a las fuentes.
+- Durante la implementación el agente no dispuso de navegador conectado ni validó con API real. TestBed/jsdom simula `showModal` y comprueba actualización de DOM sin Zone.js; no acredita foco/teclado nativos, adaptación móvil ni funcionamiento con API real. Posteriormente, el usuario confirmó «Validación funcional con navegador y backend OK» el 2026-11-02, después de la corrección de envío y organización por conceptos. Esta confirmación general cierra la validación humana de Control de accesos; no aporta resultados individuales de escenarios o dispositivos.
+- Sin cambios de dependencias, lockfile, configuración de compilación o infraestructura de autenticación. No se creó commit ni PR.
+
+
+### Corrección de envío y organización por conceptos — 2026-11-02
+
+- El usuario informó que Guardar en el alta de usuarios recargaba la página. El elemento `<form>` tenía `(ngSubmit)` pero carecía de `[formGroup]`; al usar únicamente `ReactiveFormsModule`, no se instanciaba la directiva que intercepta `submit`. Se añadió `[formGroup]="form"`, conectando el envío al grupo tipado existente. Se conserva el tratamiento de contraseñas, roles y peticiones acordado anteriormente.
+- Se añadieron dos pruebas de regresión que rellenan los controles mediante eventos `input`, despachan un `submit` cancelable desde el DOM y verifican `defaultPrevented`, POST/PUT con el cuerpo esperado y la emisión de guardado. Ambas fallaron antes de la corrección porque el evento no se cancelaba; después pasan. Las pruebas anteriores llamaban directamente al método `guardar()` y no detectaban este fallo de conexión de la plantilla.
+- Por indicación del usuario se agruparon **30 archivos en nueve subcarpetas**. TypeScript, plantillas, estilos propios y pruebas disponibles permanecen junto a su componente; `datos-formulario-usuario.ts` acompaña al formulario. Los contratos, registros HTTP y adaptaciones de respuesta permanecen en la raíz de Usuarios/Roles/Permisos como servicios y contratos del concepto, siguiendo el patrón de los catálogos migrados. Los estilos compartidos mantienen su propietario en la raíz del módulo.
+
+```text
+control-accesos/
+├─ usuarios/
+│  ├─ lista-usuarios/
+│  ├─ formulario-usuario/
+│  └─ asignacion-roles-usuario/
+├─ roles/
+│  ├─ lista-roles/
+│  ├─ formulario-rol/
+│  └─ asignacion-permisos-rol/
+└─ permisos/
+   ├─ lista-permisos/
+   ├─ formulario-permiso/
+   └─ tarjeta-permiso/
+```
+
+- Se actualizaron imports, referencias de estilos y cargas diferidas del router. Las tres URL públicas y sus reglas de acceso se conservan. La suite de navegación carga las pantallas desde las nuevas ubicaciones; no se añadieron archivos puente ni duplicados.
+- `npm test -- --watch=false`: **763 pruebas correctas en 113 archivos**, incluidas **80 de Control de accesos en 11 archivos**. `npm run lint`: **0 errores y las mismas 182 advertencias** del código pendiente; el módulo no añade errores ni advertencias. Tipos/plantillas (`ngc` y `tsc`), Prettier del módulo y `git diff --check`: correctos.
+- Producción y staging compilan con acceso autorizado a Google Fonts; conservan los tres avisos de tamaño CSS previos. No se modificaron dependencias, lockfile, configuración ni presupuestos de compilación.
+- El agente verificó la regresión mediante TestBed/jsdom y HTTP simulado, sin ejecutar navegador ni backend real. Posteriormente, el usuario confirmó «Validación funcional con navegador y backend OK», cerrando la validación humana pendiente tras esta corrección y reorganización.
+
+
+### Validación funcional y cierre de Control de accesos — 2026-11-02
+
+- El usuario confirmó «Validación funcional con navegador y backend OK» después de la corrección de Guardar y la organización de Usuarios, Roles y Permisos por conceptos. Control de accesos pasa a **Verificada**.
+- La confirmación es general, sin desglose de escenarios. Se conservan las evidencias técnicas anteriores y las decisiones de mantener el comportamiento de contraseñas y roles del usuario; las discrepancias documentales correspondientes siguen pendientes de revisión por indicación del responsable.
+- Esta actualización modifica únicamente el registro de migración. Se revisaron el estado general, la tabla de seguimiento, el historial y el contenido de la entrega mediante `git diff --check`; no se modificó código ni se repitieron pruebas o compilaciones.

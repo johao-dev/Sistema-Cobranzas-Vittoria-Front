@@ -1,0 +1,68 @@
+<section class="role-permissions">
+  <div class="panel-title role-permissions__title">Permisos del rol</div>
+  <div class="helper-text">
+    Selecciona los permisos que tendrá el rol y guarda los cambios. Para retirar el último permiso
+    asignado, usa el botón ×. Los claims de sesiones ya emitidas se actualizarán al renovar o
+    iniciar sesión nuevamente.
+  </div>
+  @if (cargando()) {
+    <div class="helper-text role-permissions__status" role="status">
+      Cargando permisos del rol...
+    </div>
+  }
+  @if (errorCatalogo()) {
+    <p role="alert">{{ errorCatalogo() }}</p>
+    <button type="button" class="btn btn-ghost" (click)="cargarCatalogo()">
+      Reintentar permisos
+    </button>
+  }
+  @if (errorSincronizacion()) {
+    <p role="alert">{{ errorSincronizacion() }}</p>
+    <button type="button" class="btn btn-ghost" [disabled]="guardando()" (click)="sincronizar()">
+      Actualizar permisos
+    </button>
+  }
+  @if (!cargando()) {
+    <div class="role-permissions__grid">
+      @for (permiso of permisos(); track permiso.idPermiso) {
+        <label class="permission-option">
+          <input
+            type="checkbox"
+            [checked]="seleccionados().has(permiso.idPermiso)"
+            [disabled]="deshabilitado()"
+            (change)="togglePermiso(permiso.idPermiso, $event)"
+          />
+          <span
+            ><strong>{{ permiso.nombre }}</strong
+            ><small>{{ permiso.codigo }}</small></span
+          >
+        </label>
+      }
+    </div>
+  }
+  <button
+    type="button"
+    class="btn btn-secondary"
+    [disabled]="deshabilitado() || !seleccionados().size"
+    (click)="asignarPermisos()"
+  >
+    {{ guardando() ? 'Guardando...' : 'Guardar permisos' }}
+  </button>
+  @if (asignados().length) {
+    <div class="assigned-permissions">
+      <span class="assigned-permissions__label">Asignados</span>
+      @for (permiso of asignados(); track permiso.idPermiso) {
+        <button
+          type="button"
+          class="permission-chip"
+          (click)="quitarPermiso(permiso)"
+          [disabled]="deshabilitado()"
+          [title]="'Quitar ' + permiso.nombre"
+          [attr.aria-label]="'Quitar ' + permiso.nombre"
+        >
+          {{ permiso.nombre }} <span aria-hidden="true">×</span>
+        </button>
+      }
+    </div>
+  }
+</section>

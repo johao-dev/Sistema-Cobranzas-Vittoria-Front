@@ -1,0 +1,63 @@
+<div class="page-header">
+  <div>
+    <div class="page-title">Acciones Disponibles</div>
+    <div class="page-subtitle">
+      Los permisos listados en este módulo son las acciones que se pueden realizar actualmente en el
+      sistema. Habilitarlos o deshabilitarlos afecta al catálogo global.
+    </div>
+  </div>
+</div>
+
+<section class="panel">
+  <div class="panel-title-row">
+    <div class="panel-title">Listado</div>
+    <div class="filters compact-filters maintenance-search">
+      <div class="field">
+        <label for="estado-permisos">Estado</label>
+        <select id="estado-permisos" [(ngModel)]="filtroActivo" (ngModelChange)="load()">
+          <option [ngValue]="true">Habilitados</option>
+          <option [ngValue]="false">Deshabilitados</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="buscar-permisos">Buscar</label>
+        <input
+          id="buscar-permisos"
+          type="search"
+          [(ngModel)]="filtroBusqueda"
+          placeholder="Buscar acciones"
+        />
+      </div>
+    </div>
+  </div>
+
+  @if (cargando()) {
+    <div class="empty-state" role="status">Cargando acciones...</div>
+  } @else if (errorListado()) {
+    <div class="empty-state" role="alert">
+      {{ errorListado() }}
+      <button type="button" class="btn btn-ghost btn-sm" (click)="load()">Reintentar</button>
+    </div>
+  } @else {
+    <div class="permiso-list">
+      @for (row of rowsFiltradas(); track row.idPermiso) {
+        <tarjeta-permiso
+          [permiso]="row"
+          [bloqueado]="cambiandoEstado() !== null"
+          (cambiarEstado)="onToggle(row, $event)"
+          (editar)="edit(row)"
+        ></tarjeta-permiso>
+      } @empty {
+        <div class="empty-state">No hay acciones que coincidan con los filtros.</div>
+      }
+    </div>
+  }
+</section>
+
+@if (edicion(); as permiso) {
+  <formulario-permiso
+    [valor]="permiso"
+    (cerrar)="edicion.set(null)"
+    (guardado)="edicion.set(null); load()"
+  />
+}

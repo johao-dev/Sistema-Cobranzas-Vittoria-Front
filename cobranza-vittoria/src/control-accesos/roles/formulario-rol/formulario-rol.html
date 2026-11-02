@@ -1,0 +1,74 @@
+<dialog
+  dialogoModal
+  class="panel panel--form design-modal-card"
+  (solicitarCierre)="cerrarFormulario()"
+  aria-labelledby="titulo-formulario-rol"
+>
+  <button
+    type="button"
+    class="modal-close"
+    (click)="cerrarFormulario()"
+    [disabled]="guardando() || asignando()"
+    aria-label="Cerrar"
+  >
+    ×
+  </button>
+  <div class="panel-title" id="titulo-formulario-rol">Formulario</div>
+  @if (cargando()) {
+    <p role="status">Cargando rol...</p>
+  }
+  @if (errorDetalle()) {
+    <p role="alert">{{ errorDetalle() }}</p>
+    <button type="button" class="btn btn-ghost" (click)="cargarDetalle()">
+      Reintentar detalle
+    </button>
+  }
+  <form (ngSubmit)="guardar()">
+    <fieldset class="campos-acceso" [disabled]="!listo() || guardando() || asignando()">
+      <div class="form-grid two">
+        <div class="field">
+          <label for="rol-nombre">Nombre</label
+          ><input id="rol-nombre" name="nombre" [(ngModel)]="form.nombreRol" required />
+        </div>
+        <div class="field">
+          <label for="rol-activo">Estado</label
+          ><select id="rol-activo" name="activo" [(ngModel)]="form.activo">
+            <option [ngValue]="true">Activo</option>
+            <option [ngValue]="false">Inactivo</option>
+          </select>
+        </div>
+        <div class="field" style="grid-column: 1/-1">
+          <label for="rol-descripcion">Descripción</label
+          ><input id="rol-descripcion" name="descripcion" [(ngModel)]="form.descripcion" />
+        </div>
+      </div>
+    </fieldset>
+    @if (detalle(); as rol) {
+      <asignacion-permisos-rol
+        [rol]="rol"
+        [bloqueado]="guardando()"
+        (ocupacion)="asignando.set($event)"
+      />
+    }
+    <div class="toolbar toolbar--compact">
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="!listo() || guardando() || asignando() || !form.nombreRol.trim()"
+      >
+        {{ guardando() ? 'Guardando…' : 'Guardar' }}
+      </button>
+      <button
+        type="button"
+        class="btn btn-ghost"
+        (click)="limpiar()"
+        [disabled]="guardando() || asignando()"
+      >
+        Limpiar
+      </button>
+    </div>
+  </form>
+  @if (msg()) {
+    <div class="empty-state mensaje-formulario" role="alert">{{ msg() }}</div>
+  }
+</dialog>

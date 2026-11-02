@@ -1,0 +1,22 @@
+dialog.design-modal-card {
+  margin: 0;
+  border: 0;
+}
+dialog::backdrop {
+  background: rgb(15 23 42 / 40%);
+}
+.campos-acceso {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.toolbar--compact {
+  margin-top: 14px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.mensaje-formulario {
+  margin-top: 14px;
+  padding: 14px;
+}

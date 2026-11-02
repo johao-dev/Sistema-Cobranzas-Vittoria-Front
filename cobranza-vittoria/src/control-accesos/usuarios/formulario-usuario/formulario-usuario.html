@@ -1,0 +1,80 @@
+<dialog
+  dialogoModal
+  class="panel panel--form design-modal-card"
+  (solicitarCierre)="cerrarFormulario()"
+  aria-labelledby="titulo-formulario-usuario"
+>
+  <button
+    type="button"
+    class="modal-close"
+    (click)="cerrarFormulario()"
+    [disabled]="guardando() || asignando()"
+    aria-label="Cerrar"
+  >
+    ×
+  </button>
+  <div class="panel-title" id="titulo-formulario-usuario">Formulario</div>
+  @if (cargando()) {
+    <p role="status">Cargando usuario...</p>
+  }
+  @if (errorDetalle()) {
+    <p role="alert">{{ errorDetalle() }}</p>
+    <button type="button" class="btn btn-ghost" (click)="cargarDetalle()">
+      Reintentar detalle
+    </button>
+  }
+  <form [formGroup]="form" (ngSubmit)="guardar()">
+    <fieldset class="campos-acceso" [disabled]="!listo() || guardando() || asignando()">
+      <div class="form-grid two">
+        <div class="field">
+          <label for="usuario-nombres">Nombres</label
+          ><input id="usuario-nombres" [formControl]="form.controls.nombres" />
+        </div>
+        <div class="field">
+          <label for="usuario-apellidos">Apellidos</label
+          ><input id="usuario-apellidos" [formControl]="form.controls.apellidos" />
+        </div>
+        <div class="field">
+          <label for="usuario-correo">Correo</label
+          ><input id="usuario-correo" type="email" [formControl]="form.controls.correo" />
+        </div>
+        <div class="field">
+          <label for="usuario-login">Login</label
+          ><input id="usuario-login" [formControl]="form.controls.usuarioLogin" />
+        </div>
+        <div class="field">
+          <label for="usuario-password"
+            >Contraseña{{ idUsuario() ? ' (dejar vacía para conservar)' : '' }}</label
+          ><input
+            id="usuario-password"
+            type="password"
+            [formControl]="form.controls.password"
+            autocomplete="new-password"
+          />
+        </div>
+        <div class="field">
+          <label for="usuario-activo">Estado</label
+          ><select id="usuario-activo" [formControl]="form.controls.activo">
+            <option [ngValue]="true">Activo</option>
+            <option [ngValue]="false">Inactivo</option>
+          </select>
+        </div>
+      </div>
+      <div class="toolbar toolbar--compact">
+        <button type="submit" class="btn btn-primary" [disabled]="form.invalid || guardando()">
+          {{ guardando() ? 'Guardando…' : 'Guardar' }}</button
+        ><button type="button" class="btn btn-ghost" (click)="limpiar()">Limpiar</button>
+      </div>
+    </fieldset>
+  </form>
+  <asignacion-roles-usuario
+    [idUsuario]="listo() ? idUsuario() : null"
+    [asignados]="rolesAsignados()"
+    [bloqueado]="!listo() || guardando()"
+    (ocupacion)="asignando.set($event)"
+    (actualizado)="cargarDetalle()"
+  />
+  @if (msg()) {
+    <div class="empty-state mensaje-formulario" role="alert">{{ msg() }}</div>
+  }
+</dialog>
