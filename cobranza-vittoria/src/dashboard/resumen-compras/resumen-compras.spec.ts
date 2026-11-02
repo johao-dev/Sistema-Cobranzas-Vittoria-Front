@@ -113,19 +113,19 @@ describe('ResumenCompras sin Zone.js', () => {
   it('distingue datos vacíos de datos incompletos por un error', async () => {
     await crear();
     respuesta.next({
-      tarjetas: calcularTarjetas([], []),
+      tarjetas: calcularTarjetas([]),
       materiales: [],
       cargandoMateriales: false,
       errores: [],
     });
     await fixture.whenStable();
     expect(raiz().querySelectorAll('.empty-state')).toHaveLength(2);
-    respuesta.next({ ...crearDatos(), errores: ['No se pudieron cargar las valorizaciones.'] });
+    respuesta.next({ ...crearDatos(), errores: ['No se pudo cargar el listado de compras.'] });
     await fixture.whenStable();
     expect(raiz().querySelector('[role="alert"]')?.textContent).toContain(
       'pueden estar incompletos',
     );
-    expect(raiz().querySelector('[role="alert"]')?.textContent).toContain('valorizaciones');
+    expect(raiz().querySelector('[role="alert"]')?.textContent).toContain('compras');
     expect(raiz().querySelectorAll('.empty-state')).toHaveLength(0);
   });
 

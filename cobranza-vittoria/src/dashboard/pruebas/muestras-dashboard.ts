@@ -3,7 +3,6 @@ import {
   CompraFilaSql,
   CompraItemFilaSql,
 } from '../../compras/contratos-compras';
-import { ValorizacionListado } from '../../app/models/valorizaciones.models';
 
 export function crearCompra(cambios: Partial<CompraFilaSql> = {}): CompraFilaSql {
   return {
@@ -48,25 +47,4 @@ export function crearItem(cambios: Partial<CompraItemFilaSql> = {}): CompraItemF
 
 export function crearDetalle(items: CompraItemFilaSql[] = [crearItem()]): CompraDetalleResponse {
   return { compra: crearCompra(), items, documentos: [] };
-}
-
-export function crearValorizacion(cambios: Partial<ValorizacionListado> = {}): ValorizacionListado {
-  return {
-    idValorizacion: 1,
-    periodo: null,
-    proyecto: null,
-    proveedor: null,
-    especialidad: null,
-    empresa: null,
-    servicio: null,
-    moneda: 'PEN',
-    cotizacion: 100,
-    facturado: 80,
-    transferido: 50,
-    garantia: 5,
-    detraccion: 3,
-    resta: 20,
-    liquidar: 30,
-    ...cambios,
-  };
 }

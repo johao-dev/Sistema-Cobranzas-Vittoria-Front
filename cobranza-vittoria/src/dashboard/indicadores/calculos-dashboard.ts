@@ -1,5 +1,4 @@
 import { CompraDetalleResponse, CompraFilaSql } from '../../compras/contratos-compras';
-import { ValorizacionListado } from '../../app/models/valorizaciones.models';
 import {
   EstadisticaMaterial,
   FilaGrafico,
@@ -11,35 +10,12 @@ function redondear(value: number): number {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
-export function calcularTarjetas(
-  compras: readonly CompraFilaSql[],
-  valorizaciones: readonly ValorizacionListado[],
-): TarjetaResumen[] {
+export function calcularTarjetas(compras: readonly CompraFilaSql[]): TarjetaResumen[] {
   return [
     {
       key: 'compras',
       label: 'Compras registradas',
       value: compras.reduce((total, compra) => total + compra.MontoTotal, 0),
-    },
-    {
-      key: 'facturado',
-      label: 'Valorizado facturado',
-      value: valorizaciones.reduce((total, fila) => total + fila.facturado, 0),
-    },
-    {
-      key: 'transferido',
-      label: 'Valorizado transferido',
-      value: valorizaciones.reduce((total, fila) => total + fila.transferido, 0),
-    },
-    {
-      key: 'garantia',
-      label: 'Garantías retenidas',
-      value: valorizaciones.reduce((total, fila) => total + fila.garantia, 0),
-    },
-    {
-      key: 'detraccion',
-      label: 'Detracciones',
-      value: valorizaciones.reduce((total, fila) => total + fila.detraccion, 0),
     },
   ];
 }

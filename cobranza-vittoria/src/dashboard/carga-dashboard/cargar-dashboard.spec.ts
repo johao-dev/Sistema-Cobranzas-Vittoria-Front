@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
+import { provideHttpClient } from '@angular/common/http';
 import {
   HttpTestingController,
   provideHttpClientTesting,
@@ -9,17 +9,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CargarDashboard } from './cargar-dashboard';
 import { DatosDashboard } from '../contratos-dashboard';
 import { RegistroCompras } from '../../compras/registro-compras';
-import { ValorizacionesService } from '../../app/core/services/valorizaciones.service';
 import { environment } from '../../core/config/environment';
-import {
-  crearCompra,
-  crearDetalle,
-  crearItem,
-  crearValorizacion,
-} from '../pruebas/muestras-dashboard';
+import { crearCompra, crearDetalle, crearItem } from '../pruebas/muestras-dashboard';
 
 const COMPRAS = `${environment.apiUrl}/api/compras/compras`;
-const VALORIZACIONES = `${environment.apiUrl}/api/contable/valorizaciones`;
 
 describe('CargarDashboard y contratos HTTP consumidos', () => {
   let http: HttpTestingController;
@@ -44,10 +37,7 @@ describe('CargarDashboard y contratos HTTP consumidos', () => {
     const compras: TestRequest = http.expectOne(COMPRAS);
     expect(compras.request.method).toBe('GET');
     compras.flush([crearCompra()]);
-    const valorizaciones: TestRequest = http.expectOne(VALORIZACIONES);
-    expect(valorizaciones.request.method).toBe('GET');
-    valorizaciones.flush([crearValorizacion()]);
-    expect(estados[0]?.tarjetas.map((tarjeta) => tarjeta.value)).toEqual([100, 80, 50, 5, 3]);
+    expect(estados[0]?.tarjetas.map((tarjeta) => tarjeta.value)).toEqual([100]);
     expect(estados[0]?.cargandoMateriales).toBe(true);
     const detalle: TestRequest = http.expectOne(`${COMPRAS}/1`);
     expect(detalle.request.method).toBe('GET');
@@ -66,43 +56,37 @@ describe('CargarDashboard y contratos HTTP consumidos', () => {
     const recibido = vi.fn<(estado: DatosDashboard) => void>();
     carga.cargar().subscribe(recibido);
     http.expectOne(COMPRAS).flush([]);
-    http.expectOne(VALORIZACIONES).flush([]);
     expect(recibido).toHaveBeenCalledExactlyOnceWith(
       expect.objectContaining({ cargandoMateriales: false, materiales: [], errores: [] }),
     );
     http.expectNone(`${COMPRAS}/1`);
   });
 
-  it('conserva datos parciales y expone el fallo de cada listado', () => {
+  it('expone el fallo del listado de compras sin solicitar detalles', () => {
     const recibido = vi.fn<(estado: DatosDashboard) => void>();
     carga.cargar().subscribe(recibido);
     http.expectOne(COMPRAS).flush(null, { status: 500, statusText: 'Error' });
-    http.expectOne(VALORIZACIONES).flush([crearValorizacion()]);
     expect(recibido).toHaveBeenCalledWith(
       expect.objectContaining({
-        tarjetas: expect.arrayContaining([
-          expect.objectContaining({ key: 'facturado', value: 80 }),
-        ]),
+        tarjetas: expect.arrayContaining([expect.objectContaining({ key: 'compras', value: 0 })]),
         errores: ['No se pudo cargar el listado de compras.'],
       }),
     );
   });
 
-  it('expone el fallo de valorizaciones y mantiene materiales de las compras', () => {
-    const estados: DatosDashboard[] = [];
-    carga.cargar().subscribe((estado: DatosDashboard) => estados.push(estado));
-    http.expectOne(COMPRAS).flush([crearCompra()]);
-    http.expectOne(VALORIZACIONES).flush(null, { status: 503, statusText: 'Unavailable' });
-    http.expectOne(`${COMPRAS}/1`).flush(crearDetalle());
-    expect(estados[1]?.materiales).toHaveLength(1);
-    expect(estados[1]?.errores).toEqual(['No se pudieron cargar las valorizaciones.']);
+  it('consulta solo Compras al cargar y recargar, sin peticiones a Valorizaciones', () => {
+    for (let intento = 0; intento < 2; intento++) {
+      carga.cargar().subscribe();
+      const peticiones = http.match(() => true);
+      expect(peticiones.map((peticion) => peticion.request.url)).toEqual([COMPRAS]);
+      peticiones[0]?.flush([]);
+    }
   });
 
   it('informa el fallo de un detalle sin descartar materiales de las otras compras', () => {
     const estados: DatosDashboard[] = [];
     carga.cargar().subscribe((estado: DatosDashboard) => estados.push(estado));
     http.expectOne(COMPRAS).flush([crearCompra(), crearCompra({ IdCompra: 2 })]);
-    http.expectOne(VALORIZACIONES).flush([]);
     http.expectOne(`${COMPRAS}/2`).flush(null, { status: 404, statusText: 'Not Found' });
     http.expectOne(`${COMPRAS}/1`).flush(crearDetalle());
     expect(estados[1]?.materiales).toHaveLength(1);
@@ -113,7 +97,6 @@ describe('CargarDashboard y contratos HTTP consumidos', () => {
     const estados: DatosDashboard[] = [];
     carga.cargar().subscribe((estado: DatosDashboard) => estados.push(estado));
     http.expectOne(COMPRAS).flush([1, 2, 3, 4, 5, 1].map((id) => crearCompra({ IdCompra: id })));
-    http.expectOne(VALORIZACIONES).flush([]);
     const primeras: TestRequest[] = [1, 2, 3, 4].map((id) => http.expectOne(`${COMPRAS}/${id}`));
     http.expectNone(`${COMPRAS}/5`);
     primeras[3]?.flush(crearDetalle([crearItem({ Material: 'D' })]));
@@ -137,7 +120,6 @@ describe('CargarDashboard y contratos HTTP consumidos', () => {
     const estados: DatosDashboard[] = [];
     carga.cargar().subscribe((estado: DatosDashboard) => estados.push(estado));
     http.expectOne(COMPRAS).flush([crearCompra()]);
-    http.expectOne(VALORIZACIONES).flush([]);
     const pendiente: TestRequest = http.expectOne(`${COMPRAS}/1`);
     await vi.advanceTimersByTimeAsync(12000);
     expect(pendiente.cancelled).toBe(true);
@@ -145,13 +127,11 @@ describe('CargarDashboard y contratos HTTP consumidos', () => {
     expect(estados[1]?.errores).toHaveLength(1);
   });
 
-  it('cancela ambas consultas al cancelar la suscripción', () => {
+  it('cancela el listado de compras al cancelar la suscripción', () => {
     const suscripcion = carga.cargar().subscribe();
     const compras: TestRequest = http.expectOne(COMPRAS);
-    const valorizaciones: TestRequest = http.expectOne(VALORIZACIONES);
     suscripcion.unsubscribe();
     expect(compras.cancelled).toBe(true);
-    expect(valorizaciones.cancelled).toBe(true);
   });
 
   it('preserva filtros false y cero, y omite filtros nulos en compras', () => {
@@ -163,20 +143,9 @@ describe('CargarDashboard y contratos HTTP consumidos', () => {
     http.expectOne(COMPRAS).flush([]);
   });
 
-  it('envía los filtros de valorizaciones y propaga errores HTTP desde el servicio público', () => {
-    const fallo = vi.fn<(error: HttpErrorResponse) => void>();
-    TestBed.inject(ValorizacionesService)
-      .valorizaciones({ idProyecto: 1, idProveedor: 2, idEspecialidad: 3 })
-      .subscribe({ error: fallo });
-    http
-      .expectOne(`${VALORIZACIONES}?idProyecto=1&idProveedor=2&idEspecialidad=3`)
-      .flush(null, { status: 500, statusText: 'Error' });
-    expect(fallo).toHaveBeenCalledWith(expect.objectContaining({ status: 500 }));
-  });
   it('cancela los detalles activos y no inicia los encolados al salir de la carga', () => {
     const suscripcion = carga.cargar().subscribe();
     http.expectOne(COMPRAS).flush([1, 2, 3, 4, 5].map((id) => crearCompra({ IdCompra: id })));
-    http.expectOne(VALORIZACIONES).flush([]);
     const pendientes: TestRequest[] = [1, 2, 3, 4].map((id) => http.expectOne(`${COMPRAS}/${id}`));
     suscripcion.unsubscribe();
     expect(pendientes.every((peticion) => peticion.cancelled)).toBe(true);

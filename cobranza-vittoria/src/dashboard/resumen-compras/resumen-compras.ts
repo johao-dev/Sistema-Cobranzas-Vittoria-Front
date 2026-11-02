@@ -32,7 +32,7 @@ export class ResumenCompras implements OnInit {
 
   protected readonly cargando: WritableSignal<boolean> = signal(true);
   protected readonly datos: WritableSignal<DatosDashboard> = signal({
-    tarjetas: calcularTarjetas([], []),
+    tarjetas: calcularTarjetas([]),
     materiales: [],
     cargandoMateriales: false,
     errores: [],
@@ -67,7 +67,7 @@ export class ResumenCompras implements OnInit {
           this.carga.cargar().pipe(
             catchError(() =>
               of<DatosDashboard>({
-                tarjetas: calcularTarjetas([], []),
+                tarjetas: calcularTarjetas([]),
                 materiales: [],
                 cargandoMateriales: false,
                 errores: ['No se pudo cargar el dashboard. Intenta actualizarlo.'],

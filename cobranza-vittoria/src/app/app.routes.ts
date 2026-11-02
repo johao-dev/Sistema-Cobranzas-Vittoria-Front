@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { ValorizacionesPage } from './pages/valorizaciones/valorizaciones.page';
 import { protegerRuta } from '../core/sesion/proteger-ruta';
 import { ACCESS_RULES } from './reglas-acceso';
 
@@ -84,7 +83,6 @@ export const routes: Routes = [
       }
     ]
   },
-  { path: 'valorizaciones', canActivate: [protegerRuta], component: ValorizacionesPage },
   { path: 'proveedores-gasto', canActivate: [protegerRuta], loadComponent: () => import('../gastos/proveedores-gasto/lista-proveedores-gasto').then(m => m.ListaProveedoresGasto) },
   { path: 'proveedores-terreno', canActivate: [protegerRuta], loadComponent: () => import('../gastos/proveedores-terreno/lista-proveedores-terreno').then(m => m.ListaProveedoresTerreno) },
   { path: 'categorias-gasto', canActivate: [protegerRuta], loadComponent: () => import('../gastos/categorias/lista-categorias-gasto').then(m => m.ListaCategoriasGasto) },

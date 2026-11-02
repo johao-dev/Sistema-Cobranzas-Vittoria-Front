@@ -2,7 +2,6 @@ import { inject, Injectable } from '@angular/core';
 import {
   catchError,
   concat,
-  forkJoin,
   from,
   map,
   mergeMap,
@@ -13,9 +12,7 @@ import {
   toArray,
 } from 'rxjs';
 import { RegistroCompras } from '../../compras/registro-compras';
-import { ValorizacionesService } from '../../app/core/services/valorizaciones.service';
 import { CompraDetalleResponse, CompraFilaSql } from '../../compras/contratos-compras';
-import { ValorizacionListado } from '../../app/models/valorizaciones.models';
 import { agruparMateriales, calcularTarjetas } from '../indicadores/calculos-dashboard';
 import { DatosDashboard } from '../contratos-dashboard';
 
@@ -38,30 +35,22 @@ function consultar<T>(
 @Injectable({ providedIn: 'root' })
 export class CargarDashboard {
   private readonly compras: RegistroCompras = inject(RegistroCompras);
-  private readonly valorizaciones: ValorizacionesService = inject(ValorizacionesService);
 
   cargar(): Observable<DatosDashboard> {
-    return forkJoin({
-      compras: consultar<CompraFilaSql[]>(
-        this.compras.compras(),
-        [],
-        'No se pudo cargar el listado de compras.',
-      ),
-      valorizaciones: consultar<ValorizacionListado[]>(
-        this.valorizaciones.valorizaciones(),
-        [],
-        'No se pudieron cargar las valorizaciones.',
-      ),
-    }).pipe(
-      switchMap(({ compras, valorizaciones }): Observable<DatosDashboard> => {
+    return consultar<CompraFilaSql[]>(
+      this.compras.compras(),
+      [],
+      'No se pudo cargar el listado de compras.',
+    ).pipe(
+      switchMap((compras): Observable<DatosDashboard> => {
         const ids: number[] = [
           ...new Set(compras.datos.map((compra) => compra.IdCompra).filter((id) => id > 0)),
         ];
         const resumen: DatosDashboard = {
-          tarjetas: calcularTarjetas(compras.datos, valorizaciones.datos),
+          tarjetas: calcularTarjetas(compras.datos),
           materiales: [],
           cargandoMateriales: ids.length > 0,
-          errores: [...compras.errores, ...valorizaciones.errores],
+          errores: compras.errores,
         };
         if (!ids.length) return of(resumen);
 

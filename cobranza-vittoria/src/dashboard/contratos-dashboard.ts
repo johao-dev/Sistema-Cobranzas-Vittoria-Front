@@ -1,5 +1,5 @@
 export interface TarjetaResumen {
-  key: 'compras' | 'facturado' | 'transferido' | 'garantia' | 'detraccion';
+  key: 'compras';
   label: string;
   value: number;
 }

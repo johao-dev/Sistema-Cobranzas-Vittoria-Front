@@ -6,33 +6,25 @@ import {
   formatearImporte,
 } from './calculos-dashboard';
 import { EstadisticaMaterial } from '../contratos-dashboard';
-import {
-  crearCompra,
-  crearDetalle,
-  crearItem,
-  crearValorizacion,
-} from '../pruebas/muestras-dashboard';
+import { crearCompra, crearDetalle, crearItem } from '../pruebas/muestras-dashboard';
 
 describe('Cálculos históricos del dashboard', () => {
-  it('suma compras y valorizaciones en el orden de las cinco tarjetas', () => {
-    const tarjetas = calcularTarjetas(
-      [crearCompra(), crearCompra({ MontoTotal: 25 })],
-      [crearValorizacion(), crearValorizacion()],
-    );
-    expect(tarjetas.map((tarjeta) => tarjeta.value)).toEqual([125, 160, 100, 10, 6]);
+  it('muestra únicamente la suma de compras registradas', () => {
+    const tarjetas = calcularTarjetas([crearCompra(), crearCompra({ MontoTotal: 25 })]);
+    expect(tarjetas.map((tarjeta) => tarjeta.value)).toEqual([125]);
   });
 
   it('devuelve cero en todas las tarjetas sin datos', () => {
-    expect(calcularTarjetas([], []).map((tarjeta) => tarjeta.value)).toEqual([0, 0, 0, 0, 0]);
+    expect(calcularTarjetas([]).map((tarjeta) => tarjeta.value)).toEqual([0]);
     expect(agruparMateriales([])).toEqual([]);
     expect(construirFilas([], 'cantidad')).toEqual([]);
   });
 
   it('conserva la suma nominal de monedas distintas sin introducir conversiones', () => {
-    const tarjetas = calcularTarjetas(
-      [crearCompra({ CodigoMoneda: 'PEN' }), crearCompra({ CodigoMoneda: 'USD' })],
-      [crearValorizacion({ moneda: 'USD' })],
-    );
+    const tarjetas = calcularTarjetas([
+      crearCompra({ CodigoMoneda: 'PEN' }),
+      crearCompra({ CodigoMoneda: 'USD' }),
+    ]);
     expect(tarjetas[0]?.value).toBe(200);
     expect(formatearImporte(tarjetas[0]?.value ?? 0)).toBe('PEN 200.00');
   });
