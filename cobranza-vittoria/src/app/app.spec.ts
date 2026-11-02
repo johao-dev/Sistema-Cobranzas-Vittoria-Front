@@ -54,4 +54,23 @@ describe('App', () => {
       elemento.querySelector('a[href="/categorias-gasto"]')?.closest('.nav-subsection') ?? null;
     expect(gastos?.textContent).toContain('Gastos del proyecto');
   });
+  it('permite cerrar el menú móvil con un control nativo accesible', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.componentInstance.mobileMenuOpen = true;
+    vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(700);
+    try {
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const raiz: unknown = fixture.nativeElement;
+      if (!(raiz instanceof HTMLElement)) throw new Error('Falta el contenedor');
+      const cierre = raiz.querySelector('.sidebar-backdrop');
+      expect(cierre).toBeInstanceOf(HTMLButtonElement);
+      if (!(cierre instanceof HTMLButtonElement)) throw new Error('Falta el botón de cierre');
+      expect(cierre.getAttribute('aria-label')).toBe('Cerrar menú de navegación');
+      cierre.click();
+      expect(fixture.componentInstance.mobileMenuOpen).toBe(false);
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
 });

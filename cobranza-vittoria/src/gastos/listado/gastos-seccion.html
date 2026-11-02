@@ -259,7 +259,7 @@
 @if (importOpen() && puedeOperar) {
   <app-import-modal
     modulo="gastos-directos"
-    (onClose)="importOpen.set(false)"
-    (onSuccess)="load()"
+    (cerrado)="importOpen.set(false)"
+    (importacionCompletada)="load()"
   />
 }

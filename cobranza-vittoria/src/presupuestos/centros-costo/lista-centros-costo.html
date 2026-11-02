@@ -121,8 +121,8 @@
     <app-import-modal
       modulo="centro-costo"
       plantillaFormato="csv"
-      (onClose)="cerrarImportModal()"
-      (onSuccess)="onImportado()"
+      (cerrado)="cerrarImportModal()"
+      (importacionCompletada)="onImportado()"
     >
       <div class="import-ayuda">
         <p>

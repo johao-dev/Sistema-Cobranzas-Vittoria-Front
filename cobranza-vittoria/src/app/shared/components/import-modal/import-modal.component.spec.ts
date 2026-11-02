@@ -73,6 +73,11 @@ describe('ImportModalComponent compartido', () => {
     fixture.nativeElement.querySelector('button.btn-primary') as HTMLButtonElement;
 
   beforeEach(() => {
+    // jsdom no implementa showModal; el navegador administra foco y teclado.
+    Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
+      configurable: true,
+      value: vi.fn(),
+    });
     respuesta = new Subject<ImportResultado>();
     puedeOperar = true;
     imports.importar.mockReset().mockReturnValue(respuesta);
@@ -89,6 +94,47 @@ describe('ImportModalComponent compartido', () => {
       ],
     });
     abrir();
+  });
+
+  afterEach(() => {
+    Reflect.deleteProperty(HTMLDialogElement.prototype, 'showModal');
+  });
+
+  it('permite solicitar cierre con Escape y lo bloquea durante una importación', () => {
+    const cerrado = vi.fn();
+    component.cerrado.subscribe(cerrado);
+    const dialogo: unknown = fixture.nativeElement.querySelector('dialog');
+    if (!(dialogo instanceof HTMLDialogElement)) throw new Error('Falta el diálogo');
+
+    elegir();
+    component.subir();
+    const ocupado = new Event('cancel', { cancelable: true });
+    dialogo.dispatchEvent(ocupado);
+    expect(ocupado.defaultPrevented).toBe(true);
+    expect(cerrado).not.toHaveBeenCalled();
+
+    respuesta.next(rechazo);
+    const disponible = new Event('cancel', { cancelable: true });
+    dialogo.dispatchEvent(disponible);
+    expect(disponible.defaultPrevented).toBe(true);
+    expect(cerrado).toHaveBeenCalledOnce();
+  });
+
+  it('conserva el diálogo al interactuar dentro y permite cerrar desde su fondo', () => {
+    const cerrado = vi.fn();
+    component.cerrado.subscribe(cerrado);
+    const dialogo: unknown = fixture.nativeElement.querySelector('dialog');
+    if (!(dialogo instanceof HTMLDialogElement)) throw new Error('Falta el diálogo');
+
+    const archivo = dialogo.querySelector('input');
+    archivo?.dispatchEvent(
+      new MouseEvent('pointerdown', { bubbles: true, clientX: -1, clientY: -1 }),
+    );
+    expect(cerrado).not.toHaveBeenCalled();
+    dialogo.dispatchEvent(
+      new MouseEvent('pointerdown', { bubbles: true, clientX: -1, clientY: -1 }),
+    );
+    expect(cerrado).toHaveBeenCalledOnce();
   });
 
   it('empieza sin archivo y muestra las instrucciones y el límite de gastos', () => {
@@ -141,8 +187,8 @@ describe('ImportModalComponent compartido', () => {
   it('evita doble envío, selección, descarga y cierre mientras procesa; emite éxito una sola vez', () => {
     const success = vi.fn();
     const close = vi.fn();
-    component.onSuccess.subscribe(success);
-    component.onClose.subscribe(close);
+    component.importacionCompletada.subscribe(success);
+    component.cerrado.subscribe(close);
     const archivo = elegir();
     component.subir();
     component.subir();
@@ -181,7 +227,7 @@ describe('ImportModalComponent compartido', () => {
 
   it('muestra HTTP 422 por fila, conserva el archivo y limpia el rechazo al seleccionar uno corregido', () => {
     const success = vi.fn();
-    component.onSuccess.subscribe(success);
+    component.importacionCompletada.subscribe(success);
     const file = elegir();
     component.subir();
     respuesta.next(rechazo);
@@ -227,7 +273,7 @@ describe('ImportModalComponent compartido', () => {
     component.subir();
     respuesta.next(rechazo);
     const close = vi.fn();
-    component.onClose.subscribe(close);
+    component.cerrado.subscribe(close);
     component.cerrar();
     expect(close).toHaveBeenCalledTimes(1);
     expect(component.archivo).toBeNull();

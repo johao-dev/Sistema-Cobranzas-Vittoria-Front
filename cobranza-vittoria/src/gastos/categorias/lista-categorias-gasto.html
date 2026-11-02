@@ -134,8 +134,8 @@
   @if (importOpen()) {
     <app-import-modal
       modulo="categoria-gasto"
-      (onClose)="importOpen.set(false)"
-      (onSuccess)="onImportSuccess()"
+      (cerrado)="importOpen.set(false)"
+      (importacionCompletada)="onImportSuccess()"
     >
     </app-import-modal>
   }

@@ -95,8 +95,8 @@
   @if (importAbierto()) {
     <app-import-modal
       modulo="especialidad"
-      (onClose)="importAbierto.set(false)"
-      (onSuccess)="importado()"
+      (cerrado)="importAbierto.set(false)"
+      (importacionCompletada)="importado()"
     />
   }
 </div>

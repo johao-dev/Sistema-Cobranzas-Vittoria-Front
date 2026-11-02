@@ -1,7 +1,7 @@
-import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, HostListener, inject } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NotificationComponent } from './shared/components/notification/notification.component';
 import { SesionUsuario } from '../core/sesion/sesion-usuario';
 import { ACCESS_RULES } from './reglas-acceso';
@@ -9,9 +9,9 @@ import { AccessRule } from '../core/sesion/contratos-sesion';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, NotificationComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, NotificationComponent],
   templateUrl: './app.html',
-  styleUrl: './app.css'
+  styleUrl: './app.css',
 })
 export class App {
   private readonly router = inject(Router);
@@ -29,16 +29,21 @@ export class App {
     gastosProyecto: false,
     inventario: false,
     controlPresupuestario: false,
-    controlAccesos: false
+    controlAccesos: false,
   };
 
   constructor() {
-    this.router.events.pipe(filter(evt => evt instanceof NavigationEnd)).subscribe((evt: any) => {
-      this.currentUrl = evt.urlAfterRedirects || evt.url || this.router.url;
-      if (this.isLoginRoute()) {
-        this.mobileMenuOpen = false;
-      }
-    });
+    this.router.events
+      .pipe(
+        filter((evt): evt is NavigationEnd => evt instanceof NavigationEnd),
+        takeUntilDestroyed(),
+      )
+      .subscribe((evt) => {
+        this.currentUrl = evt.urlAfterRedirects || evt.url || this.router.url;
+        if (this.isLoginRoute()) {
+          this.mobileMenuOpen = false;
+        }
+      });
   }
 
   isLoginRoute(): boolean {
@@ -54,12 +59,14 @@ export class App {
   }
 
   get profileInitials(): string {
-    return this.profileName
-      .split(' ')
-      .filter(Boolean)
-      .slice(0, 2)
-      .map(part => part[0]?.toUpperCase() ?? '')
-      .join('') || 'AD';
+    return (
+      this.profileName
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase() ?? '')
+        .join('') || 'AD'
+    );
   }
 
   get isAuthenticated(): boolean {
@@ -69,7 +76,6 @@ export class App {
   canAccess(rule?: AccessRule): boolean {
     return this.auth.canAccess(rule);
   }
-
 
   @HostListener('window:resize')
   onResize(): void {
@@ -91,7 +97,6 @@ export class App {
     }
     this.cdr.detectChanges();
   }
-
 
   toggleMenu(key: string): void {
     if (this.sidebarCollapsed) return;

@@ -107,8 +107,8 @@
   @if (importAbierto()) {
     <app-import-modal
       modulo="unidad-medida"
-      (onClose)="importAbierto.set(false)"
-      (onSuccess)="importado()"
+      (cerrado)="importAbierto.set(false)"
+      (importacionCompletada)="importado()"
     />
   }
 </div>

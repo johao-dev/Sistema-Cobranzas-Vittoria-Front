@@ -1,7 +1,8 @@
-<div class="design-modal-backdrop" (click)="cerrar()"></div>
-<section
+<dialog
+  dialogoModal
   class="panel panel--form design-modal-card design-modal-card--xl"
-  (click)="$event.stopPropagation()"
+  (solicitarCierre)="cerrar()"
+  aria-labelledby="titulo-importacion"
 >
   <button
     type="button"
@@ -12,7 +13,7 @@
   >
     ×
   </button>
-  <div class="panel-title">Importar {{ meta()?.titulo }}</div>
+  <div class="panel-title" id="titulo-importacion">Importar {{ meta()?.titulo }}</div>
   <div class="page-subtitle" style="margin-bottom: 12px">
     Tamaño máx. {{ maxMb }} MB ({{
       meta()?.maxRegistros
@@ -21,23 +22,21 @@
     }}).
   </div>
 
-  <p class="form-hint" *ngIf="meta()?.instrucciones">
-    {{ meta()?.instrucciones }} Solo se aceptan archivos XLSX.
-  </p>
-  <div
-    class="toolbar"
-    *ngIf="modulo === 'gastos-directos' && puedeImportar"
-    style="margin-bottom: 14px"
-  >
-    <button
-      class="btn btn-secondary"
-      type="button"
-      (click)="descargarPlantilla()"
-      [disabled]="loading || descargandoPlantilla"
-    >
-      {{ descargandoPlantilla ? 'Descargando…' : 'Descargar plantilla' }}
-    </button>
-  </div>
+  @if (meta()?.instrucciones) {
+    <p class="form-hint">{{ meta()?.instrucciones }} Solo se aceptan archivos XLSX.</p>
+  }
+  @if (modulo === 'gastos-directos' && puedeImportar) {
+    <div class="toolbar" style="margin-bottom: 14px">
+      <button
+        class="btn btn-secondary"
+        type="button"
+        (click)="descargarPlantilla()"
+        [disabled]="loading || descargandoPlantilla"
+      >
+        {{ descargandoPlantilla ? 'Descargando…' : 'Descargar plantilla' }}
+      </button>
+    </div>
+  }
 
   <!-- Ayuda propia del módulo (columnas, códigos válidos, etc.). -->
   <ng-content></ng-content>
@@ -52,51 +51,65 @@
         (change)="onFileSelected($event)"
         [disabled]="loading || descargandoPlantilla"
       />
-      <small class="form-hint" *ngIf="modulo === 'material' || modulo === 'partida'">
-        CSV: delimitador <code>;</code> preferido (coma como fallback). Encoding UTF-8 o
-        Windows-1252.
-      </small>
+      @if (modulo === 'material' || modulo === 'partida') {
+        <small class="form-hint">
+          CSV: delimitador <code>;</code> preferido (coma como fallback). Encoding UTF-8 o
+          Windows-1252.
+        </small>
+      }
     </div>
   </div>
 
-  <div class="toolbar" *ngIf="archivo">
-    <span class="form-hint archivo-seleccionado">{{ archivo.name }} ({{ tamanoArchivo }})</span>
-    <button
-      class="btn btn-ghost btn-sm"
-      type="button"
-      (click)="quitarArchivo()"
-      [disabled]="loading || descargandoPlantilla"
-    >
-      Quitar archivo
-    </button>
-  </div>
-  <div *ngIf="errorArchivo" class="empty-state import-error" role="alert">{{ errorArchivo }}</div>
-  <ng-container *ngIf="modulo === 'gastos-directos' && resumen as r">
-    <div *ngIf="importado" class="empty-state" role="status">
-      Importación exitosa: {{ r.filasInsertadas }} gasto(s) insertado(s).
+  @if (archivo) {
+    <div class="toolbar">
+      <span class="form-hint archivo-seleccionado">{{ archivo.name }} ({{ tamanoArchivo }})</span>
+      <button
+        class="btn btn-ghost btn-sm"
+        type="button"
+        (click)="quitarArchivo()"
+        [disabled]="loading || descargandoPlantilla"
+      >
+        Quitar archivo
+      </button>
     </div>
+  }
+  @if (errorArchivo) {
+    <div class="empty-state import-error" role="alert">{{ errorArchivo }}</div>
+  }
+  @if (modulo === 'gastos-directos' && resumen; as r) {
+    @if (importado) {
+      <div class="empty-state" role="status">
+        Importación exitosa: {{ r.filasInsertadas }} gasto(s) insertado(s).
+      </div>
+    }
     <div class="toolbar import-resumen" aria-live="polite">
-      <span *ngIf="r.totalFilas !== undefined"
-        >Total de filas: <strong>{{ r.totalFilas }}</strong></span
-      >
-      <span *ngIf="r.filasValidas !== undefined"
-        >Válidas: <strong>{{ r.filasValidas }}</strong></span
-      >
-      <span *ngIf="r.filasInvalidas !== undefined"
-        >Inválidas: <strong>{{ r.filasInvalidas }}</strong></span
-      >
-      <span *ngIf="r.filasInsertadas !== undefined"
-        >Insertadas: <strong>{{ r.filasInsertadas }}</strong></span
-      >
+      @if (r.totalFilas !== undefined) {
+        <span
+          >Total de filas: <strong>{{ r.totalFilas }}</strong></span
+        >
+      }
+      @if (r.filasValidas !== undefined) {
+        <span
+          >Válidas: <strong>{{ r.filasValidas }}</strong></span
+        >
+      }
+      @if (r.filasInvalidas !== undefined) {
+        <span
+          >Inválidas: <strong>{{ r.filasInvalidas }}</strong></span
+        >
+      }
+      @if (r.filasInsertadas !== undefined) {
+        <span
+          >Insertadas: <strong>{{ r.filasInsertadas }}</strong></span
+        >
+      }
     </div>
-  </ng-container>
-  <div
-    *ngIf="errorActual && !tieneErrores && !tieneDetalles"
-    class="empty-state import-error"
-    role="alert"
-  >
-    {{ errorActual.message }}
-  </div>
+  }
+  @if (errorActual && !tieneErrores && !tieneDetalles) {
+    <div class="empty-state import-error" role="alert">
+      {{ errorActual.message }}
+    </div>
+  }
 
   <div class="toolbar" style="margin-top: 14px">
     <button
@@ -105,23 +118,30 @@
       (click)="subir()"
       [disabled]="!archivo || loading || descargandoPlantilla || importado || !puedeImportar"
     >
-      <span *ngIf="!loading">{{
-        modulo === 'gastos-directos' ? (errorActual ? 'Reintentar' : 'Importar gastos') : 'Subir'
-      }}</span>
-      <span *ngIf="loading">Procesando…</span>
+      @if (!loading) {
+        <span>{{
+          modulo === 'gastos-directos' ? (errorActual ? 'Reintentar' : 'Importar gastos') : 'Subir'
+        }}</span>
+      }
+      @if (loading) {
+        <span>Procesando…</span>
+      }
     </button>
-    <button
-      *ngIf="modulo !== 'gastos-directos'"
-      class="btn btn-secondary"
-      type="button"
-      (click)="descargarPlantilla()"
-      [disabled]="loading || descargandoPlantilla || !puedeImportar"
-    >
-      <span *ngIf="!descargandoPlantilla"
-        >Descargar plantilla ({{ plantillaFormato | uppercase }})</span
+    @if (modulo !== 'gastos-directos') {
+      <button
+        class="btn btn-secondary"
+        type="button"
+        (click)="descargarPlantilla()"
+        [disabled]="loading || descargandoPlantilla || !puedeImportar"
       >
-      <span *ngIf="descargandoPlantilla">Descargando…</span>
-    </button>
+        @if (!descargandoPlantilla) {
+          <span>Descargar plantilla ({{ plantillaFormato | uppercase }})</span>
+        }
+        @if (descargandoPlantilla) {
+          <span>Descargando…</span>
+        }
+      </button>
+    }
     <button
       class="btn btn-ghost"
       type="button"
@@ -133,54 +153,62 @@
   </div>
 
   <!-- Errores v2: contrato Materiales con detalles[] (_fila + mensaje) -->
-  <div *ngIf="tieneDetalles" style="margin-top: 16px">
-    <div class="empty-state import-error">
-      {{ errorActual?.message }}
+  @if (tieneDetalles) {
+    <div style="margin-top: 16px">
+      <div class="empty-state import-error">
+        {{ errorActual?.message }}
+      </div>
+      <div class="table-wrap import-errors">
+        <table>
+          <thead>
+            <tr>
+              <th>Fila</th>
+              <th>Mensaje</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of errorActual?.detalles; track trackDetalle($index, d)) {
+              <tr>
+                <td>{{ d._fila }}</td>
+                <td>{{ d.mensaje }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     </div>
-    <div class="table-wrap import-errors">
-      <table>
-        <thead>
-          <tr>
-            <th>Fila</th>
-            <th>Mensaje</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let d of errorActual?.detalles; trackBy: trackDetalle">
-            <td>{{ d._fila }}</td>
-            <td>{{ d.mensaje }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+  }
 
   <!-- Errores legacy: otros módulos con errores[] (fila, campo, codigoError, mensaje) -->
-  <div *ngIf="tieneErrores" style="margin-top: 16px">
-    <div class="empty-state import-error">
-      {{ errorActual?.message }}
+  @if (tieneErrores) {
+    <div style="margin-top: 16px">
+      <div class="empty-state import-error">
+        {{ errorActual?.message }}
+      </div>
+      <div class="table-wrap import-errors">
+        <table>
+          <thead>
+            <tr>
+              <th>Fila</th>
+              <th>Campo</th>
+              <th>Código</th>
+              <th>Mensaje</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (e of errorActual?.errores; track trackError($index, e)) {
+              <tr>
+                <td>{{ e.fila }}</td>
+                <td>{{ e.campo }}</td>
+                <td>
+                  <code>{{ e.codigoError }}</code>
+                </td>
+                <td>{{ e.mensaje }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     </div>
-    <div class="table-wrap import-errors">
-      <table>
-        <thead>
-          <tr>
-            <th>Fila</th>
-            <th>Campo</th>
-            <th>Código</th>
-            <th>Mensaje</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let e of errorActual?.errores; trackBy: trackError">
-            <td>{{ e.fila }}</td>
-            <td>{{ e.campo }}</td>
-            <td>
-              <code>{{ e.codigoError }}</code>
-            </td>
-            <td>{{ e.mensaje }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
+  }
+</dialog>

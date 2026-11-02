@@ -1,16 +1,16 @@
 import {
   Component,
   ChangeDetectorRef,
-  EventEmitter,
   Input,
-  Output,
   inject,
+  output,
   signal,
   OnInit,
   DestroyRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DialogoModal } from '../../../../shared/dialogos/dialogo-modal';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ImportService } from '../../../core/services/import.service';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -32,7 +32,7 @@ import {
 @Component({
   selector: 'app-import-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DialogoModal],
   templateUrl: './import-modal.component.html',
   styleUrl: './import-modal.component.css',
 })
@@ -40,8 +40,8 @@ export class ImportModalComponent implements OnInit {
   @Input({ required: true }) modulo!: ImportModulo;
   /** Formato de la plantilla a descargar. Por defecto XLSX. */
   @Input() plantillaFormato: MaterialPlantillaFormato = 'xlsx';
-  @Output() onClose = new EventEmitter<void>();
-  @Output() onSuccess = new EventEmitter<number>();
+  readonly cerrado = output<void>();
+  readonly importacionCompletada = output<number>();
 
   archivo: File | null = null;
   loading = false;
@@ -63,7 +63,7 @@ export class ImportModalComponent implements OnInit {
   cerrar() {
     if (this.loading || this.descargandoPlantilla) return;
     this.quitarArchivo();
-    this.onClose.emit();
+    this.cerrado.emit();
   }
 
   get extensiones(): readonly string[] {
@@ -176,7 +176,7 @@ export class ImportModalComponent implements OnInit {
             `Importación exitosa: ${r.data.filasInsertadas} fila(s) insertada(s).`,
             'success',
           );
-          this.onSuccess.emit(r.data.filasInsertadas);
+          this.importacionCompletada.emit(r.data.filasInsertadas);
           return;
         }
 

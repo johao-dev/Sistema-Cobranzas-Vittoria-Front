@@ -13,10 +13,10 @@ export class NotificationService {
   readonly state = signal<NotificationState>({
     message: '',
     type: 'info',
-    visible: false
+    visible: false,
   });
 
-  private timeoutRef: any;
+  private timeoutRef: ReturnType<typeof setTimeout> | undefined;
 
   show(message: string, type: NotificationType = 'success', duration = 3000) {
     if (this.timeoutRef) {
@@ -26,7 +26,7 @@ export class NotificationService {
     this.state.set({ message, type, visible: true });
 
     this.timeoutRef = setTimeout(() => {
-      this.state.update(curr => ({ ...curr, visible: false }));
+      this.state.update((curr) => ({ ...curr, visible: false }));
     }, duration);
   }
 }

@@ -20,6 +20,8 @@
 }
 
 .sidebar-backdrop {
+  border: 0;
+  padding: 0;
   display: none !important;
 }
 

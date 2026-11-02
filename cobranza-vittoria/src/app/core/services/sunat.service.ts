@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
@@ -10,9 +10,10 @@ export class SunatService {
   private readonly tipoCambioSubject = new BehaviorSubject<TipoCambioResponse | null>(null);
   private isLoading = false;
 
-  readonly tipoCambio$: Observable<TipoCambioResponse | null> = this.tipoCambioSubject.asObservable();
+  readonly tipoCambio$: Observable<TipoCambioResponse | null> =
+    this.tipoCambioSubject.asObservable();
 
-  constructor(private api: ApiService) { }
+  private readonly api = inject(ApiService);
 
   consultarTipoCambio(fecha?: string): void {
     if (this.isLoading) return;
@@ -28,7 +29,7 @@ export class SunatService {
         },
         error: () => {
           this.tipoCambioSubject.next(this.tipoCambioSubject.value);
-        }
+        },
       });
   }
 

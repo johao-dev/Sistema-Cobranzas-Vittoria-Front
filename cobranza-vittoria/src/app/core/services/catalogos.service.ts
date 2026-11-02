@@ -1,10 +1,10 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ApiService } from './api.service';
 import { CategoriaGasto, Proveedor, Material } from '../../models/catalogos.models';
 
 @Injectable({ providedIn: 'root' })
 export class CatalogosService {
-  constructor(private api: ApiService) { }
+  private readonly api = inject(ApiService);
 
   categorias() {
     return this.api.http.get<CategoriaGasto[]>(`${this.api.baseUrl}/api/catalogos/categorias`);

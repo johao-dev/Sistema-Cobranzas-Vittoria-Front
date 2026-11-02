@@ -96,8 +96,8 @@
   @if (importAbierto()) {
     <app-import-modal
       modulo="proveedor"
-      (onClose)="importAbierto.set(false)"
-      (onSuccess)="importado()"
+      (cerrado)="importAbierto.set(false)"
+      (importacionCompletada)="importado()"
     />
   }
 </div>

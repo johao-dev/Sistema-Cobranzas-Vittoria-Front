@@ -129,8 +129,8 @@
     <app-import-modal
       modulo="material"
       [plantillaFormato]="importFormato()"
-      (onClose)="importAbierto.set(false)"
-      (onSuccess)="importado()"
+      (cerrado)="importAbierto.set(false)"
+      (importacionCompletada)="importado()"
     />
   }
 </div>
