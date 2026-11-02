@@ -4,7 +4,8 @@ import type { MaterialSeleccionado } from './contratos-formulario-requerimiento'
 import { imprimirRequerimiento } from './impresion-requerimiento/impresion-requerimiento';
 import { normalizarNombreSolicitante } from '../shared/presentacion/nombre-solicitante';
 import { Especialidad } from '../catalogos/especialidades/contratos-especialidades';
-import { CentroCostoResumen, SaldoPartida } from '../app/models/consultas-presupuestarias.models';
+import { CentroCostoResumen } from '../presupuestos/centros-costo/contratos-centros-costo';
+import { SaldoPartida } from '../presupuestos/consultas/contratos-consultas-presupuestarias';
 import { Injectable, inject, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SesionUsuario } from '../core/sesion/sesion-usuario';

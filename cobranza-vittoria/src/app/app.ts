@@ -3,14 +3,13 @@ import { ChangeDetectorRef, Component, HostListener, inject } from '@angular/cor
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { NotificationComponent } from './shared/components/notification/notification.component';
-import { TipoCambioComponent } from './shared/components/tipo-cambio/tipo-cambio.component';
 import { SesionUsuario } from '../core/sesion/sesion-usuario';
 import { ACCESS_RULES } from './reglas-acceso';
 import { AccessRule } from '../core/sesion/contratos-sesion';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, NotificationComponent, TipoCambioComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, NotificationComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -71,9 +70,6 @@ export class App {
     return this.auth.canAccess(rule);
   }
 
-  get isPresupuestoRoute(): boolean {
-    return (this.currentUrl || '').startsWith('/presupuesto');
-  }
 
   @HostListener('window:resize')
   onResize(): void {

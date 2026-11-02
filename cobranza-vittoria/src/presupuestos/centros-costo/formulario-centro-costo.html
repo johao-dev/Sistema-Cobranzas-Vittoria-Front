@@ -1,0 +1,85 @@
+<dialog
+  dialogoModal
+  class="panel panel--form design-modal-card"
+  (solicitarCierre)="cerrarFormulario()"
+  aria-label="Operación presupuestaria"
+>
+  <button type="button" class="modal-close" (click)="cerrarFormulario()" aria-label="Cerrar">
+    ×
+  </button>
+  <div class="panel-title">
+    {{ esEdicion ? 'Editar centro de costo' : 'Nuevo centro de costo' }}
+  </div>
+  <div class="form-grid two">
+    <div class="field">
+      <label for="lista-centros-costo-campo-4">Código</label>
+      <input
+        id="lista-centros-costo-campo-4"
+        [(ngModel)]="form.codigo"
+        [disabled]="esEdicion"
+        placeholder="Ej. CC-PROY-001"
+      />
+      @if (esEdicion) {
+        <small class="field-hint">El código no se modifica una vez creado.</small>
+      }
+    </div>
+    <div class="field">
+      <label for="lista-centros-costo-campo-5">Tipo</label>
+      <select
+        id="lista-centros-costo-campo-5"
+        [(ngModel)]="form.idTipoCentroCosto"
+        [disabled]="esEdicion"
+        (change)="onTipoChange()"
+      >
+        <option value="">Seleccione…</option>
+        @for (t of tipos(); track t) {
+          <option [value]="t.idTipoCentroCosto">{{ t.nombre }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label for="lista-centros-costo-campo-6">Nombre</label>
+      <input
+        id="lista-centros-costo-campo-6"
+        [(ngModel)]="form.nombre"
+        placeholder="Ej. Proyecto Vittoria I"
+      />
+    </div>
+    <div class="field">
+      <label for="lista-centros-costo-campo-7"
+        >Proyecto {{ requiereProyecto ? '(requerido)' : '(no aplica)' }}</label
+      >
+      <select
+        id="lista-centros-costo-campo-7"
+        [(ngModel)]="form.idProyecto"
+        [disabled]="!requiereProyecto"
+      >
+        <option value="">Sin proyecto</option>
+        @for (p of proyectos(); track p) {
+          <option [value]="p.idProyecto">{{ p.nombreProyecto }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label for="lista-centros-costo-campo-8">Estado</label>
+      <select id="lista-centros-costo-campo-8" [(ngModel)]="form.activo">
+        <option [ngValue]="true">Activo</option>
+        <option [ngValue]="false">Inactivo</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="lista-centros-costo-campo-9">Descripción</label>
+      <input
+        id="lista-centros-costo-campo-9"
+        [(ngModel)]="form.descripcion"
+        placeholder="Opcional"
+      />
+    </div>
+  </div>
+  <div class="toolbar toolbar--compact">
+    <button class="btn btn-primary" [disabled]="guardando()" (click)="save()">
+      {{ guardando() ? 'Guardando…' : 'Guardar centro de costo' }}
+    </button>
+    <button class="btn btn-ghost" (click)="cerrarFormulario()">Cancelar</button>
+  </div>
+</dialog>

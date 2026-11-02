@@ -9,7 +9,9 @@ import { CatalogoEspecialidades } from '../catalogos/especialidades/catalogo-esp
 import { CatalogoProyectos } from '../catalogos/proyectos/catalogo-proyectos';
 import { CatalogoMateriales } from '../catalogos/materiales/catalogo-materiales';
 import { CatalogoUnidadesMedida } from '../catalogos/unidades-medida/catalogo-unidades-medida';
-import { ControlPresupuestarioService } from '../app/core/services/control-presupuestario.service';
+import { CatalogoCentrosCosto } from '../presupuestos/centros-costo/catalogo-centros-costo';
+import { CatalogoPartidas } from '../presupuestos/partidas/catalogo-partidas';
+import { ConsultasPresupuestarias } from '../presupuestos/consultas/consultas-presupuestarias';
 import { SesionUsuario } from '../core/sesion/sesion-usuario';
 import { NotificationService } from '../app/core/services/notification.service';
 import {
@@ -133,11 +135,14 @@ describe('ListaRequerimientos — gestión de ítems en almacén', () => {
               ]),
           },
         })),
+        { provide: CatalogoPartidas, useValue: { partidas: () => of([]) } },
         {
-          provide: ControlPresupuestarioService,
+          provide: CatalogoCentrosCosto,
+          useValue: { centrosCosto: () => of([{ idCentroCosto: 8, idProyecto: 6 }]) },
+        },
+        {
+          provide: ConsultasPresupuestarias,
           useValue: {
-            partidas: () => of([]),
-            centrosCosto: () => of([{ idCentroCosto: 8, idProyecto: 6 }]),
             saldos: () =>
               of([{ idPresupuestoDetalle: 18, codigoPartida: '01', partida: 'Obra gris' }]),
           },

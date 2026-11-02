@@ -4,7 +4,7 @@ import { ActivatedRoute, Data } from '@angular/router';
 import { BehaviorSubject, Observable, Subject, of, throwError } from 'rxjs';
 import { routes } from '../../app/app.routes';
 import { SesionUsuario } from '../../core/sesion/sesion-usuario';
-import { ControlPresupuestarioService } from '../../app/core/services/control-presupuestario.service';
+import { CatalogosPresupuestarios } from '../../presupuestos/catalogos-presupuestarios';
 import { NotificationService } from '../../app/core/services/notification.service';
 import { ImportService } from '../../app/core/services/import.service';
 import { ImportResultado } from '../../app/models/import.models';
@@ -63,7 +63,7 @@ describe('GastosSeccion: cinco vistas y operaciones compartidas', () => {
       providers: [
         { provide: ActivatedRoute, useValue: { data: ruta } },
         { provide: RegistroGastosDirectos, useValue: registro },
-        { provide: ControlPresupuestarioService, useValue: { monedas: () => of([]) } },
+        { provide: CatalogosPresupuestarios, useValue: { monedas: () => of([]) } },
         {
           provide: SesionUsuario,
           useValue: { hasPermission: () => permiso, session: { usuarioLogin: 'operador' } },

@@ -1,8 +1,9 @@
+import { CatalogosPresupuestarios } from '../presupuestos/catalogos-presupuestarios';
 import { DestroyRef, Injectable, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable, Subject, catchError, forkJoin, map, of, switchMap } from 'rxjs';
-import { ControlPresupuestarioService } from '../app/core/services/control-presupuestario.service';
-import { MonedaPresupuestaria } from '../app/models/consultas-presupuestarias.models';
+
+import { MonedaPresupuestaria } from '../presupuestos/contratos-catalogos-presupuestarios';
 import {
   CategoriaGasto,
   CentroCostoGastoDirecto,
@@ -15,8 +16,9 @@ import { resolverCategoriasPorCodigo } from './presentacion-gastos';
 /** Referencias locales de las cinco vistas; conserva resultados válidos ante fallos parciales. */
 @Injectable()
 export class ReferenciasGastos {
+  private readonly catalogosPresupuestarios = inject(CatalogosPresupuestarios);
+
   private readonly registro = inject(RegistroGastosDirectos);
-  private readonly presupuestos = inject(ControlPresupuestarioService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly solicitudes = new Subject<GastoDirectoVistaConfig>();
 
@@ -42,7 +44,7 @@ export class ReferenciasGastos {
             categorias: this.recuperar(this.registro.categorias(), 'categorías de gasto'),
             centros: this.recuperar(this.registro.centrosCosto(), 'centros de costo'),
             proveedores: this.recuperar(this.registro.proveedores(), 'proveedores'),
-            monedas: this.recuperar(this.presupuestos.monedas(), 'monedas'),
+            monedas: this.recuperar(this.catalogosPresupuestarios.monedas(), 'monedas'),
           }).pipe(map((datos) => ({ datos, config })));
         }),
         takeUntilDestroyed(this.destroyRef),

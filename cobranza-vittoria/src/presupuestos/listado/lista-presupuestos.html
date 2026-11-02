@@ -1,0 +1,134 @@
+<div class="page-header">
+  <div>
+    <div class="page-title">Presupuestos</div>
+    <div class="page-subtitle">
+      Creación, versionado y asignación de montos por partida. Solo una versión aprobada afecta
+      saldos.
+    </div>
+  </div>
+</div>
+
+<section class="panel">
+  <div class="panel-title-row">
+    <div class="panel-title">Listado de presupuestos</div>
+    <div class="filters maintenance-search">
+      <div class="field">
+        <label for="lista-presupuestos-campo-1">Buscar</label>
+        <input
+          id="lista-presupuestos-campo-1"
+          type="text"
+          [(ngModel)]="filtroBusqueda"
+          placeholder="Código, nombre o centro de costo"
+        />
+      </div>
+    </div>
+    <button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">
+      + Nuevo presupuesto
+    </button>
+  </div>
+
+  <div class="filters filters--two">
+    <div class="field">
+      <label for="lista-presupuestos-campo-2">Estado</label>
+      <select id="lista-presupuestos-campo-2" [(ngModel)]="filtroActivo" (change)="load()">
+        <option value="">Todos</option>
+        <option value="true">Activo</option>
+        <option value="false">Inactivo</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="lista-presupuestos-campo-3">Centro de costo</label>
+      <select id="lista-presupuestos-campo-3" [(ngModel)]="filtroCentroCosto" (change)="load()">
+        <option value="">Todos</option>
+        @for (c of centrosCosto; track c) {
+          <option [value]="c.idCentroCosto">{{ c.codigo }} — {{ c.nombre }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="empty-state">Cargando presupuestos...</div>
+  }
+  @if (!loading && !presupuestosFiltrados.length) {
+    <div class="empty-state">No hay presupuestos registrados.</div>
+  }
+
+  @if (!loading && presupuestosFiltrados.length) {
+    <div class="table-wrap table-wrap--sticky-actions">
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Presupuesto</th>
+            <th>Centro de costo</th>
+            <th>Moneda</th>
+            <th>Situación</th>
+            <th>Estado</th>
+            <th class="actions-col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of presupuestosFiltrados; track row) {
+            <tr [class.row--selected]="seleccionado?.idPresupuesto === row.idPresupuesto">
+              <td>{{ row.codigo }}</td>
+              <td>{{ row.nombre }}</td>
+              <td>{{ row.centroCosto }}</td>
+              <td>{{ row.moneda }}</td>
+              <td>
+                <span
+                  class="badge"
+                  [class.badge--ok]="row.estadoElaboracion === 'APROBADO'"
+                  [class.badge--warn]="
+                    row.estadoElaboracion === 'EN_REVISION' ||
+                    row.estadoElaboracion === 'EN_ELABORACION'
+                  "
+                  [class.badge--danger]="row.estadoElaboracion === 'INCONSISTENTE'"
+                  [class.badge--neutral]="row.estadoElaboracion === 'SIN_VERSION_VIGENTE'"
+                >
+                  {{ etiquetaEstado(row.estadoElaboracion) }}
+                </span>
+              </td>
+              <td>
+                <span
+                  class="badge"
+                  [class.badge--ok]="row.activo"
+                  [class.badge--neutral]="!row.activo"
+                >
+                  {{ row.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td class="actions-col">
+                <button type="button" class="btn btn-secondary btn-sm" (click)="seleccionar(row)">
+                  Gestionar
+                </button>
+                <button type="button" class="btn btn-ghost btn-sm" (click)="editarPresupuesto(row)">
+                  Editar
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
+
+@if (seleccionado) {
+  <versiones-presupuesto
+    [presupuesto]="seleccionado"
+    [partidas]="partidas"
+    (cerrar)="limpiarSeleccion()"
+    (actualizado)="load()"
+    (partidasActualizadas)="recargarPartidas()"
+  />
+}
+@if (modalPresupuesto) {
+  <formulario-presupuesto
+    [presupuesto]="presupuestoEditado"
+    [centrosCosto]="centrosCosto"
+    [monedas]="monedas"
+    (cerrar)="modalPresupuesto = false"
+    (guardado)="modalPresupuesto = false; load()"
+  />
+}

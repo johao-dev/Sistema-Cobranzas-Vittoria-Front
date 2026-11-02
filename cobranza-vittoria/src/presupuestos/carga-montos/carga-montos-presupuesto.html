@@ -1,0 +1,96 @@
+<!-- Carga completa: todas las partidas hoja activas en una sola grilla -->
+<dialog
+  dialogoModal
+  class="panel panel--form design-modal-card design-modal-card--wide"
+  (solicitarCierre)="cerrarFormulario()"
+  aria-label="Operación presupuestaria"
+>
+  <button type="button" class="modal-close" (click)="cerrarFormulario()" aria-label="Cerrar">
+    &times;
+  </button>
+  <div class="panel-title">Carga completa · versión {{ numeroVersion() }}</div>
+  <p class="modal-nota">
+    Escribe el monto de cada partida. Si una partida no aplica, déjala en 0. Al guardar se cargan
+    todas las partidas de la lista en la versión.
+  </p>
+
+  <div class="carga-toolbar">
+    <div class="field carga-busqueda">
+      <label for="carga-montos-presupuesto-campo-1">Buscar</label>
+      <input
+        id="carga-montos-presupuesto-campo-1"
+        type="text"
+        [(ngModel)]="busqueda"
+        placeholder="Código, partida o grupo"
+      />
+    </div>
+    <div class="carga-total">
+      <span>{{ conMonto() }} de {{ filas.length }} partidas con monto</span>
+      <strong>Total: {{ simbolo() }} {{ total() | number: '1.2-2' }}</strong>
+    </div>
+  </div>
+
+  @if (!filas.length) {
+    <div class="empty-state">No hay partidas activas en el catálogo.</div>
+  }
+
+  @if (filas.length) {
+    <div class="table-wrap carga-tabla">
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Partida</th>
+            <th class="num">Monto ({{ simbolo() }})</th>
+            <th>Observación</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (f of visibles(); track f; let i = $index) {
+            @if (iniciaGrupo(i)) {
+              <tr class="carga-grupo">
+                <td colspan="4">{{ f.controls.grupo.value }}</td>
+              </tr>
+            }
+            <tr>
+              <td>{{ f.controls.codigo.value }}</td>
+              <td>{{ f.controls.nombre.value }}</td>
+              <td class="num">
+                <input
+                  class="carga-monto"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  [formControl]="f.controls.monto"
+                  [attr.aria-label]="'Monto de ' + f.controls.nombre.value"
+                />
+              </td>
+              <td>
+                <input
+                  class="carga-obs"
+                  [formControl]="f.controls.observacion"
+                  placeholder="Opcional"
+                  [attr.aria-label]="'Observación de ' + f.controls.nombre.value"
+                />
+              </td>
+            </tr>
+          }
+          @if (!visibles().length) {
+            <tr>
+              <td colspan="4" class="empty-state">Ninguna partida coincide con la búsqueda.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <div class="toolbar toolbar--compact">
+    <button class="btn btn-primary" [disabled]="guardando() || !filas.length" (click)="guardar()">
+      {{ guardando() ? 'Guardando…' : 'Guardar montos' }}
+    </button>
+    <button class="btn btn-ghost" [disabled]="guardando()" (click)="cerrarFormulario()">
+      Cancelar
+    </button>
+  </div>
+</dialog>

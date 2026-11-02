@@ -1,0 +1,307 @@
+<div class="page-header">
+  <div>
+    <div class="page-title">Control presupuestario</div>
+    <div class="page-subtitle">
+      Presupuesto, comprometido, ejecutado y saldo disponible. Fuente única del módulo.
+    </div>
+  </div>
+</div>
+
+<section class="panel">
+  <div class="filters filters--two">
+    <div class="field">
+      <label for="control-presupuestario-campo-1">Centro de costo</label>
+      <select
+        id="control-presupuestario-campo-1"
+        [(ngModel)]="filtroCentroCosto"
+        (change)="onCentroCostoChange()"
+      >
+        <option value="">Todos</option>
+        @for (c of centrosCosto; track c) {
+          <option [value]="c.idCentroCosto">{{ c.codigo }} — {{ c.nombre }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label for="control-presupuestario-campo-2">Presupuesto</label>
+      <select
+        id="control-presupuestario-campo-2"
+        [(ngModel)]="filtroPresupuesto"
+        (change)="recargar()"
+      >
+        <option value="">Todos</option>
+        @for (p of presupuestosDisponibles; track p) {
+          <option [value]="p.idPresupuesto">{{ p.codigo }} — {{ p.nombre }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label for="control-presupuestario-campo-3">Nivel de anidamiento</label>
+      <select
+        id="control-presupuestario-campo-3"
+        [(ngModel)]="filtroNivel"
+        [disabled]="!idCentroCostoDashboard"
+      >
+        <option value="">Partidas finales</option>
+        @for (n of nivelesDisponibles; track n) {
+          <option [value]="n">Nivel {{ n }}{{ n === 1 ? ' (categorías principales)' : '' }}</option>
+        }
+      </select>
+    </div>
+    <div class="field field--check">
+      <label for="control-presupuestario-campo-4">
+        <input type="checkbox" [(ngModel)]="soloExcedidos" (change)="recargar()" />
+        Solo partidas excedidas
+      </label>
+    </div>
+  </div>
+</section>
+
+@if (idCentroCostoDashboard) {
+  <tablero-presupuestario
+    [idCentroCosto]="idCentroCostoDashboard"
+    [idPresupuesto]="idPresupuestoDashboard"
+    [nivel]="nivelDashboard"
+    (nivelMaximo)="onNivelMaximo($event)"
+  ></tablero-presupuestario>
+}
+@if (!idCentroCostoDashboard) {
+  <section class="panel tablero-invitacion">
+    Elige un centro de costo para ver el dashboard: distribución del gasto por rubro y evolución del
+    gasto real frente al presupuesto.
+  </section>
+}
+
+@if (idCentroCostoDashboard) {
+  <section class="panel">
+    <div class="panel-title">Árbol de partidas</div>
+    <p class="modal-nota">
+      Presupuesto vigente (versiones aprobadas) con subtotales por categoría. Haz clic en una
+      categoría para abrirla y en una partida para ver sus movimientos.
+    </p>
+    <arbol-presupuestario
+      modo="vigente"
+      [idCentroCosto]="idCentroCostoDashboard"
+      [idPresupuesto]="idPresupuestoDashboard"
+      [nivelSincronizado]="nivelDashboard"
+      (abrirHoja)="verMovimientosNodo($event)"
+    ></arbol-presupuestario>
+  </section>
+}
+
+@if (totales) {
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-card__label">Presupuestado</div>
+      <div class="kpi-card__value">{{ totales.presupuestado | number: '1.2-2' }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-card__label">Comprometido</div>
+      <div class="kpi-card__value">{{ totales.comprometido | number: '1.2-2' }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-card__label">Ejecutado</div>
+      <div class="kpi-card__value">{{ totales.ejecutado | number: '1.2-2' }}</div>
+    </div>
+    <div class="kpi-card" [class.kpi-card--danger]="totales.saldoDisponible < 0">
+      <div class="kpi-card__label">Saldo disponible</div>
+      <div class="kpi-card__value">{{ totales.saldoDisponible | number: '1.2-2' }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-card__label">% ejecutado</div>
+      <div class="kpi-card__value">{{ totales.porcentajeEjecutado | number: '1.2-2' }}%</div>
+    </div>
+    <div class="kpi-card" [class.kpi-card--danger]="totales.partidasExcedidas > 0">
+      <div class="kpi-card__label">Partidas excedidas</div>
+      <div class="kpi-card__value">{{ totales.partidasExcedidas }} / {{ totales.partidas }}</div>
+    </div>
+  </div>
+}
+
+@if (cargandoResumen && !totales) {
+  <div class="empty-state">Cargando resumen...</div>
+}
+
+@if (partidasExcedidas.length) {
+  <section class="panel">
+    <div class="panel-title">Partidas con saldo excedido</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Centro de costo</th>
+            <th>Presupuesto</th>
+            <th>Partida</th>
+            <th class="num">Presupuestado</th>
+            <th class="num">Comprometido</th>
+            <th class="num">Ejecutado</th>
+            <th class="num">Exceso</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (f of partidasExcedidas; track f) {
+            <tr>
+              <td>{{ f.centroCosto }}</td>
+              <td>{{ f.codigoPresupuesto }}</td>
+              <td>{{ f.codigoPartida }} — {{ f.partida }}</td>
+              <td class="num">{{ f.montoPresupuestado | number: '1.2-2' }}</td>
+              <td class="num">{{ f.comprometido | number: '1.2-2' }}</td>
+              <td class="num">{{ f.ejecutado | number: '1.2-2' }}</td>
+              <td class="num num--danger">
+                {{ f.simboloMoneda }} {{ f.montoExcedido | number: '1.2-2' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+}
+
+<section class="panel">
+  <div class="panel-title-row">
+    <div class="panel-title">{{ etiquetaVista }}</div>
+    <div class="filters maintenance-search">
+      <div class="field">
+        <label for="control-presupuestario-campo-4">Buscar</label>
+        <input
+          id="control-presupuestario-campo-4"
+          type="text"
+          [(ngModel)]="filtroBusqueda"
+          placeholder="Partida, centro de costo o presupuesto"
+        />
+      </div>
+    </div>
+    <button type="button" class="btn btn-secondary btn-sm" (click)="exportarCsv()">
+      Exportar CSV
+    </button>
+  </div>
+
+  <div class="tabs">
+    <button
+      type="button"
+      class="tab"
+      [class.tab--active]="vista === 'saldos'"
+      (click)="cambiarVista('saldos')"
+    >
+      Saldos
+    </button>
+    <button
+      type="button"
+      class="tab"
+      [class.tab--active]="vista === 'comprometido'"
+      (click)="cambiarVista('comprometido')"
+    >
+      Vs. comprometido
+    </button>
+    <button
+      type="button"
+      class="tab"
+      [class.tab--active]="vista === 'ejecutado'"
+      (click)="cambiarVista('ejecutado')"
+    >
+      Vs. ejecutado
+    </button>
+    <button
+      type="button"
+      class="tab"
+      [class.tab--active]="vista === 'gastos-partida'"
+      (click)="cambiarVista('gastos-partida')"
+    >
+      Gastos por partida
+    </button>
+    <button
+      type="button"
+      class="tab"
+      [class.tab--active]="vista === 'gastos-centro'"
+      (click)="cambiarVista('gastos-centro')"
+    >
+      Gastos por centro
+    </button>
+  </div>
+
+  @if (cargando) {
+    <div class="empty-state">Cargando reporte...</div>
+  }
+  @if (!cargando && !filasFiltradas.length) {
+    <div class="empty-state">No hay información para los filtros seleccionados.</div>
+  }
+
+  @if (!cargando && filasFiltradas.length) {
+    <div class="table-wrap table-wrap--sticky-actions">
+      <table>
+        <thead>
+          <tr>
+            <th>Centro de costo</th>
+            <th>Presupuesto</th>
+            @if (muestraPartida) {
+              <th>Partida</th>
+            }
+            <th>Versión</th>
+            <th class="num">Presupuestado</th>
+            @if (muestraComprometido) {
+              <th class="num">Comprometido</th>
+            }
+            @if (muestraEjecutado) {
+              <th class="num">Ejecutado</th>
+            }
+            @if (muestraSaldo) {
+              <th class="num">Saldo</th>
+            }
+            <th class="barra-col">Avance</th>
+            @if (muestraPartida) {
+              <th class="actions-col">Acciones</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (f of filasFiltradas; track f) {
+            <tr [class.row--excedido]="f.excedido">
+              <td>{{ f.codigoCentroCosto }} — {{ f.centroCosto }}</td>
+              <td>{{ f.codigoPresupuesto }}</td>
+              @if (muestraPartida) {
+                <td>{{ f.codigoPartida }} — {{ f.partida }}</td>
+              }
+              <td>v{{ f.numeroVersion }} · {{ f.estado }}</td>
+              <td class="num">
+                {{ f.simboloMoneda }} {{ f.montoPresupuestado | number: '1.2-2' }}
+              </td>
+              @if (muestraComprometido) {
+                <td class="num">{{ f.comprometido | number: '1.2-2' }}</td>
+              }
+              @if (muestraEjecutado) {
+                <td class="num">{{ f.ejecutado | number: '1.2-2' }}</td>
+              }
+              @if (muestraSaldo) {
+                <td class="num" [class.num--danger]="(f.saldoDisponible ?? 0) < 0">
+                  {{ f.saldoDisponible | number: '1.2-2' }}
+                </td>
+              }
+              <td class="barra-col">
+                <div class="barra">
+                  <div
+                    class="barra__fill"
+                    [ngClass]="claseBarra(porcentaje(f))"
+                    [style.width]="anchoBarra(porcentaje(f))"
+                  ></div>
+                </div>
+                <span class="barra__label">{{ porcentaje(f) | number: '1.1-1' }}%</span>
+              </td>
+              @if (muestraPartida) {
+                <td class="actions-col">
+                  <button type="button" class="btn btn-ghost btn-sm" (click)="verMovimientos(f)">
+                    Historial
+                  </button>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
+
+@if (modalMovimientos && contextoMovimientos) {
+  <historial-presupuestario [contexto]="contextoMovimientos" (cerrar)="modalMovimientos = false" />
+}

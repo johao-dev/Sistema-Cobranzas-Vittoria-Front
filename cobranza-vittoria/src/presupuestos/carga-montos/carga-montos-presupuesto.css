@@ -1,0 +1,56 @@
+.carga-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.carga-busqueda {
+  flex: 1 1 240px;
+  margin: 0;
+}
+
+.carga-total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.carga-total strong {
+  font-size: 15px;
+  color: #111827;
+}
+
+.carga-tabla {
+  max-height: 55vh;
+  overflow: auto;
+}
+.carga-grupo td {
+  background: #f3f4f6;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #4b5563;
+}
+.carga-monto {
+  width: 140px;
+  text-align: right;
+}
+.carga-obs {
+  width: 100%;
+  min-width: 160px;
+}
+@media (max-width: 720px) {
+  .carga-total {
+    align-items: flex-start;
+  }
+  .carga-monto {
+    width: 110px;
+  }
+}

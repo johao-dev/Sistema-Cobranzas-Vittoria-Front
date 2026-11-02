@@ -1,0 +1,71 @@
+<dialog
+  dialogoModal
+  class="panel panel--form design-modal-card"
+  (solicitarCierre)="cerrarFormulario()"
+  aria-label="Operación presupuestaria"
+>
+  <button type="button" class="modal-close" (click)="cerrarFormulario()" aria-label="Cerrar">
+    &times;
+  </button>
+  <div class="panel-title">{{ esEdicion ? 'Editar partida' : 'Nueva partida' }}</div>
+  <div class="form-grid two">
+    <div class="field">
+      <label for="lista-partidas-campo-5">Código</label>
+      <input
+        id="lista-partidas-campo-5"
+        [(ngModel)]="form.codigo"
+        [disabled]="esEdicion"
+        placeholder="Ej. 01.02.003"
+      />
+      @if (esEdicion) {
+        <small class="field-hint">El código no se modifica una vez creado.</small>
+      }
+    </div>
+    <div class="field">
+      <label for="lista-partidas-campo-6">Tipo</label>
+      <select id="lista-partidas-campo-6" [(ngModel)]="form.idTipoPartida">
+        <option value="">Seleccione&hellip;</option>
+        @for (t of tipos(); track t) {
+          <option [value]="t.idTipoPartida">{{ t.nombre }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label for="lista-partidas-campo-7">Nombre</label>
+      <input
+        id="lista-partidas-campo-7"
+        [(ngModel)]="form.nombre"
+        placeholder="Ej. Acero de refuerzo"
+      />
+    </div>
+    <div class="field">
+      <label for="lista-partidas-campo-8">Partida padre</label>
+      <select id="lista-partidas-campo-8" [(ngModel)]="form.idPartidaPadre">
+        <option value="">Sin padre (raíz)</option>
+        @for (p of partidasPadreDisponibles; track p) {
+          <option [value]="p.idCatalogoPartida">{{ p.codigo }} — {{ p.nombre }}</option>
+        }
+      </select>
+      <small class="field-hint">
+        Una partida con montos asignados no puede convertirse en agrupadora.
+      </small>
+    </div>
+    <div class="field">
+      <label for="lista-partidas-campo-9">Estado</label>
+      <select id="lista-partidas-campo-9" [(ngModel)]="form.activo">
+        <option [ngValue]="true">Activo</option>
+        <option [ngValue]="false">Inactivo</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="lista-partidas-campo-10">Descripción</label>
+      <input id="lista-partidas-campo-10" [(ngModel)]="form.descripcion" placeholder="Opcional" />
+    </div>
+  </div>
+  <div class="toolbar toolbar--compact">
+    <button class="btn btn-primary" [disabled]="guardando()" (click)="save()">
+      {{ guardando() ? 'Guardando…' : 'Guardar partida' }}
+    </button>
+    <button class="btn btn-ghost" (click)="cerrarFormulario()">Cancelar</button>
+  </div>
+</dialog>

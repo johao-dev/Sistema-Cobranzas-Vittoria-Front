@@ -1,3 +1,4 @@
+import { CatalogoPartidas } from '../../../presupuestos/partidas/catalogo-partidas';
 import {
   MaterialPlantillaFormato,
   MATERIAL_PLANTILLA_FORMATOS,
@@ -19,8 +20,6 @@ import { CatalogoEspecialidades } from '../../especialidades/catalogo-especialid
 import { CatalogoUnidadesMedida } from '../../unidades-medida/catalogo-unidades-medida';
 import { Especialidad } from '../../especialidades/contratos-especialidades';
 import { UnidadMedida } from '../../unidades-medida/contratos-unidades-medida';
-import { ControlPresupuestarioService } from '../../../app/core/services/control-presupuestario.service';
-import { leerOpcionesPartida } from '../opciones-partida';
 
 @Component({
   selector: 'lista-materiales',
@@ -29,13 +28,14 @@ import { leerOpcionesPartida } from '../opciones-partida';
   styleUrl: './lista-materiales.css',
 })
 export class ListaMateriales implements OnInit {
+  private readonly catalogoPartidas = inject(CatalogoPartidas);
+
   private readonly api: CatalogoMateriales = inject(CatalogoMateriales);
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
   private readonly notificaciones: NotificationService = inject(NotificationService);
   private readonly recargas: Subject<void> = new Subject<void>();
   private readonly especialidadesApi: CatalogoEspecialidades = inject(CatalogoEspecialidades);
   private readonly unidadesApi: CatalogoUnidadesMedida = inject(CatalogoUnidadesMedida);
-  private readonly presupuesto: ControlPresupuestarioService = inject(ControlPresupuestarioService);
   protected readonly especialidades = signal<Especialidad[]>([]);
   protected readonly unidades = signal<UnidadMedida[]>([]);
   protected readonly partidas = signal<OpcionPartida[]>([]);
@@ -72,12 +72,9 @@ export class ListaMateriales implements OnInit {
         error: (error: unknown) =>
           this.notificarError(error, 'No se pudieron cargar las unidades.'),
       });
-    this.presupuesto
+    this.catalogoPartidas
       .partidas({ activo: true, esHoja: true })
-      .pipe(
-        switchMap((datos: unknown) => of(leerOpcionesPartida(datos))),
-        takeUntilDestroyed(this.destroyRef),
-      )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({ next: (datos) => this.partidas.set(datos), error: () => this.partidas.set([]) });
     this.recargas
       .pipe(

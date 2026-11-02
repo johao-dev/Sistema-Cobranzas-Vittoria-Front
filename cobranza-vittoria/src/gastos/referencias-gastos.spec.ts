@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Subject, of, throwError } from 'rxjs';
-import { ControlPresupuestarioService } from '../app/core/services/control-presupuestario.service';
+import { CatalogosPresupuestarios } from '../presupuestos/catalogos-presupuestarios';
 import { RegistroGastosDirectos } from './registro-gastos-directos';
 import { CategoriaGasto } from './contratos-gastos-directos';
 import { ReferenciasGastos } from './referencias-gastos';
@@ -20,7 +20,7 @@ describe('Referencias locales de Gastos', () => {
       providers: [
         ReferenciasGastos,
         { provide: RegistroGastosDirectos, useValue: registro },
-        { provide: ControlPresupuestarioService, useValue: presupuestos },
+        { provide: CatalogosPresupuestarios, useValue: presupuestos },
       ],
     });
     referencias = TestBed.inject(ReferenciasGastos);

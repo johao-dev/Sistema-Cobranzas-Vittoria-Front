@@ -1,6 +1,6 @@
 import { Material } from '../../catalogos/materiales/contratos-materiales';
 import { Especialidad } from '../../catalogos/especialidades/contratos-especialidades';
-import { SaldoPartida } from '../../app/models/consultas-presupuestarias.models';
+import { SaldoPartida } from '../../presupuestos/consultas/contratos-consultas-presupuestarias';
 import { DatosItemRequerimiento, ItemRequerimiento } from '../contratos-formulario-requerimiento';
 import {
   RequerimientoDetalleItem,

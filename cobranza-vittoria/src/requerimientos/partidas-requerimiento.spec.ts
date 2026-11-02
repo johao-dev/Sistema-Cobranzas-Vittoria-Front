@@ -2,7 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { PartidasRequerimiento } from './partidas-requerimiento';
-import { ControlPresupuestarioService } from '../app/core/services/control-presupuestario.service';
+import { CatalogoCentrosCosto } from '../presupuestos/centros-costo/catalogo-centros-costo';
+import { CatalogoPartidas } from '../presupuestos/partidas/catalogo-partidas';
 import { environment } from '../core/config/environment';
 
 describe('PartidasRequerimiento y consultas presupuestarias públicas', () => {
@@ -127,7 +128,7 @@ describe('PartidasRequerimiento y consultas presupuestarias públicas', () => {
   });
 
   it('preserva false y los identificadores en los filtros públicos tipados', () => {
-    const api = TestBed.inject(ControlPresupuestarioService);
+    const api = TestBed.inject(CatalogoCentrosCosto);
 
     api.centrosCosto(false, 2, 'Obra', 6).subscribe();
 
@@ -139,7 +140,9 @@ describe('PartidasRequerimiento y consultas presupuestarias públicas', () => {
 
     centros.flush([]);
 
-    api.partidas({ activo: false, esHoja: false, idPartidaPadre: 10 }).subscribe();
+    TestBed.inject(CatalogoPartidas)
+      .partidas({ activo: false, esHoja: false, idPartidaPadre: 10 })
+      .subscribe();
 
     const partidas = http.expectOne((req) => req.url === `${base}/partidas`);
 

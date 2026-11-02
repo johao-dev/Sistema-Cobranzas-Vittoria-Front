@@ -1,0 +1,125 @@
+<dialog
+  dialogoModal
+  class="panel panel--form design-modal-card"
+  (solicitarCierre)="cerrarFormulario()"
+  aria-label="Operación presupuestaria"
+>
+  <button type="button" class="modal-close" (click)="cerrarFormulario()" aria-label="Cerrar">
+    &times;
+  </button>
+  <div class="panel-title">{{ esEdicion ? 'Editar presupuesto' : 'Nuevo presupuesto' }}</div>
+
+  <div class="form-grid two">
+    <div class="field">
+      <label for="formulario-presupuesto-campo-1">Centro de costo</label>
+      <select
+        id="formulario-presupuesto-campo-1"
+        [(ngModel)]="form.idCentroCosto"
+        [disabled]="esEdicion"
+      >
+        <option value="">Seleccione&hellip;</option>
+        @for (c of centrosCosto(); track c) {
+          <option [value]="c.idCentroCosto">{{ c.codigo }} — {{ c.nombre }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="formulario-presupuesto-campo-2">Moneda</label>
+      <select
+        id="formulario-presupuesto-campo-2"
+        [(ngModel)]="form.idMoneda"
+        [disabled]="esEdicion"
+      >
+        <option value="">Seleccione&hellip;</option>
+        @for (m of monedas(); track m) {
+          <option [value]="m.idMoneda">{{ m.codigo }} — {{ m.nombre }}</option>
+        }
+      </select>
+      <small class="field-hint"
+        >Cada presupuesto opera en una sola moneda. No hay conversión automática.</small
+      >
+    </div>
+
+    <div class="field">
+      <label for="formulario-presupuesto-campo-3">Código</label>
+      <input
+        id="formulario-presupuesto-campo-3"
+        [(ngModel)]="form.codigo"
+        [disabled]="esEdicion"
+        placeholder="Ej. PRES-2026-001"
+      />
+    </div>
+
+    <div class="field">
+      <label for="formulario-presupuesto-campo-4">Nombre</label>
+      <input
+        id="formulario-presupuesto-campo-4"
+        [(ngModel)]="form.nombre"
+        placeholder="Ej. Presupuesto de obra 2026"
+      />
+    </div>
+
+    <div class="field">
+      <label for="formulario-presupuesto-campo-5">Fecha inicio</label>
+      <input id="formulario-presupuesto-campo-5" type="date" [(ngModel)]="form.fechaInicio" />
+    </div>
+
+    <div class="field">
+      <label for="formulario-presupuesto-campo-6">Fecha fin</label>
+      <input id="formulario-presupuesto-campo-6" type="date" [(ngModel)]="form.fechaFin" />
+    </div>
+
+    @if (esEdicion) {
+      <div class="field">
+        <label for="formulario-presupuesto-campo-7">Estado</label>
+        <select id="formulario-presupuesto-campo-7" [(ngModel)]="form.activo">
+          <option [ngValue]="true">Activo</option>
+          <option [ngValue]="false">Inactivo</option>
+        </select>
+      </div>
+    }
+
+    <div class="field">
+      <label for="formulario-presupuesto-campo-8">Descripción</label>
+      <input
+        id="formulario-presupuesto-campo-8"
+        [(ngModel)]="form.descripcion"
+        placeholder="Opcional"
+      />
+    </div>
+  </div>
+
+  <div class="toolbar toolbar--compact">
+    <button class="btn btn-primary" [disabled]="guardando()" (click)="guardarPresupuesto()">
+      {{ guardando() ? 'Guardando…' : 'Guardar presupuesto' }}
+    </button>
+    <button class="btn btn-ghost" (click)="cerrarFormulario()">Cancelar</button>
+  </div>
+</dialog>
+
+<!-- Confirmación de inactivar un presupuesto con registros asociados -->
+@if (modalConfirmarInactivar()) {
+  <dialog
+    dialogoModal
+    class="panel panel--form design-modal-card design-modal-card--top"
+    role="alertdialog"
+    aria-labelledby="titulo-inactivar"
+    (solicitarCierre)="cancelarInactivacion()"
+    aria-label="Operación presupuestaria"
+  >
+    <button type="button" class="modal-close" (click)="cancelarInactivacion()" aria-label="Cerrar">
+      &times;
+    </button>
+    <div class="panel-title" id="titulo-inactivar">¿Inactivar el presupuesto?</div>
+    <p class="modal-nota modal-nota--aviso">{{ mensajeInactivar() }}</p>
+    <div class="toolbar toolbar--compact">
+      <button class="btn btn-danger" [disabled]="guardando()" (click)="confirmarInactivacion()">
+        {{ guardando() ? 'Inactivando…' : 'Sí, inactivar' }}
+      </button>
+      <button class="btn btn-ghost" [disabled]="guardando()" (click)="cancelarInactivacion()">
+        Cancelar
+      </button>
+    </div>
+  </dialog>
+}

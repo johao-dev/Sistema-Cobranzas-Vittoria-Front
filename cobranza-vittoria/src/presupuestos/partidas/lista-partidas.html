@@ -1,0 +1,174 @@
+<div class="page-header">
+  <div>
+    <div class="page-title">Catálogo de partidas</div>
+    <div class="page-subtitle">
+      Estructura jerárquica de partidas presupuestales. Solo las hojas reciben montos.
+    </div>
+  </div>
+</div>
+
+<div class="split split--form admin-split">
+  <section class="panel">
+    <div class="panel-title-row">
+      <div class="panel-title">Listado</div>
+      <div class="filters maintenance-search">
+        <div class="field">
+          <label for="lista-partidas-campo-1">Buscar</label>
+          <input
+            id="lista-partidas-campo-1"
+            type="text"
+            [(ngModel)]="filtroBusqueda"
+            placeholder="Código, nombre o partida padre"
+          />
+        </div>
+      </div>
+      <div class="title-actions">
+        <button type="button" class="btn btn-secondary btn-sm" (click)="abrirImportModal()">
+          Importar CSV/XLSX
+        </button>
+        <button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">
+          + Nueva partida
+        </button>
+      </div>
+    </div>
+
+    <div class="filters">
+      <div class="field">
+        <label for="lista-partidas-campo-2">Estado</label>
+        <select id="lista-partidas-campo-2" [(ngModel)]="filtroActivo" (change)="load()">
+          <option value="">Todos</option>
+          <option value="true">Activo</option>
+          <option value="false">Inactivo</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="lista-partidas-campo-3">Tipo</label>
+        <select id="lista-partidas-campo-3" [(ngModel)]="filtroTipo" (change)="load()">
+          <option value="">Todos</option>
+          @for (t of tipos; track t) {
+            <option [value]="t.idTipoPartida">{{ t.nombre }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="lista-partidas-campo-4">Nivel</label>
+        <select id="lista-partidas-campo-4" [(ngModel)]="filtroNivel">
+          <option value="">Todos</option>
+          @for (n of nivelesDisponibles; track n) {
+            <option [value]="n">Nivel {{ n }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    @if (loading) {
+      <div class="empty-state">Cargando partidas...</div>
+    }
+    @if (!loading && !rowsFiltradas.length) {
+      <div class="empty-state">No hay partidas registradas.</div>
+    }
+
+    @if (!loading && rowsFiltradas.length) {
+      <div class="table-wrap table-wrap--sticky-actions">
+        <table>
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Partida</th>
+              <th>Tipo</th>
+              <th>Partida padre</th>
+              <th>Nivel</th>
+              <th>Hoja</th>
+              <th>Estado</th>
+              <th class="actions-col actions-col--select">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rowsFiltradas; track row) {
+              <tr>
+                <td>{{ row.codigo }}</td>
+                <td>
+                  <span [style.padding-left]="sangria(row.nivel)">{{ row.nombre }}</span>
+                </td>
+                <td>{{ row.nombreTipoPartida }}</td>
+                <td>{{ row.nombrePartidaPadre || '—' }}</td>
+                <td>{{ row.nivel }}</td>
+                <td>
+                  <span
+                    class="badge"
+                    [class.badge--ok]="row.esHoja"
+                    [class.badge--neutral]="!row.esHoja"
+                  >
+                    {{ row.esHoja ? 'Hoja' : 'Agrupadora' }}
+                  </span>
+                </td>
+                <td>
+                  <span
+                    class="badge"
+                    [class.badge--ok]="row.activo"
+                    [class.badge--neutral]="!row.activo"
+                  >
+                    {{ row.activo ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+                <td class="actions-col--select">
+                  <select
+                    class="actions-select"
+                    [disabled]="guardando"
+                    aria-label="Acciones del registro"
+                    (change)="onAccion($event, row)"
+                  >
+                    <option value="">Acciones</option>
+                    <option value="edit">Editar</option>
+                    <option value="estado">{{ row.activo ? 'Desactivar' : 'Activar' }}</option>
+                  </select>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+
+  @if (modalOpen) {
+    <formulario-partida
+      [valor]="editado"
+      [tipos]="tipos"
+      [rows]="rows"
+      (cerrar)="cerrarModal()"
+      (guardado)="cerrarModal(); load()"
+    />
+  }
+  @if (importOpen) {
+    <app-import-modal
+      modulo="partida"
+      plantillaFormato="csv"
+      (onClose)="cerrarImportModal()"
+      (onSuccess)="onImportado()"
+    >
+      <div class="import-ayuda">
+        <p>
+          Columnas: <code>Codigo</code>, <code>Nombre</code> y <code>Tipo</code> (obligatorias);
+          <code>CodigoPadre</code> y <code>Descripcion</code> (opcionales). Las partidas hijas
+          pueden ir antes que su padre. Si una fila tiene un error, no se importa ninguna.
+        </p>
+        <p>
+          ¿Tienes el presupuesto con niveles (<code>Nivel 1</code>… <code>Nivel N</code>) y montos?
+          Súbelo en
+          <strong>Presupuestos → versión en borrador → Importar estructura (Excel)</strong>: crea
+          las partidas que falten y carga los montos en un solo paso.
+        </p>
+        <p>
+          <strong>Tipo</strong> (código o nombre):
+          @for (t of tipos; track t; let ultimo = $last) {
+            <span
+              ><code>{{ t.codigo }}</code
+              >{{ ultimo ? '' : ', ' }}</span
+            >
+          }
+        </p>
+      </div>
+    </app-import-modal>
+  }
+</div>

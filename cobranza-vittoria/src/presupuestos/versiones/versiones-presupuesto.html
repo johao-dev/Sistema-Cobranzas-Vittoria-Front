@@ -1,0 +1,361 @@
+<section class="panel">
+  <div class="panel-title-row">
+    <div>
+      <div class="panel-title">{{ presupuesto().codigo }} — {{ presupuesto().nombre }}</div>
+      <div class="page-subtitle">
+        {{ presupuesto().centroCosto }} · Moneda {{ presupuesto().moneda }}
+      </div>
+    </div>
+    <button type="button" class="btn btn-primary btn-sm" (click)="abrirModalVersion()">
+      + Nueva versión
+    </button>
+    <button type="button" class="btn btn-ghost btn-sm" (click)="cerrar.emit()">Cerrar</button>
+  </div>
+  @if (cargandoVersiones()) {
+    <div class="empty-state">Cargando versiones()...</div>
+  }
+  @if (!cargandoVersiones() && !versiones().length) {
+    <div class="empty-state">Este presupuesto no tiene versiones().</div>
+  }
+  @if (!cargandoVersiones() && versiones().length) {
+    <div class="version-chips">
+      @for (v of versiones(); track v) {
+        <button
+          type="button"
+          class="version-chip"
+          [class.version-chip--active]="
+            versionSeleccionada()?.idPresupuestoVersion === v.idPresupuestoVersion
+          "
+          (click)="seleccionarVersion(v)"
+        >
+          <span class="version-chip__num">v{{ v.numeroVersion }}</span>
+          <span class="version-chip__estado">{{ v.estado }}</span>
+        </button>
+      }
+    </div>
+  }
+  @if (versionSeleccionada(); as version) {
+    <div class="version-detalle">
+      <div class="version-meta">
+        <div>
+          <strong>Versión {{ version.numeroVersion }}</strong> ·
+          {{ version.estado }}
+        </div>
+        @if (version.motivoCambio) {
+          <div>Motivo: {{ version.motivoCambio }}</div>
+        }
+        @if (version.usuarioCreacion) {
+          <div>Creada por {{ version.usuarioCreacion }}</div>
+        }
+        @if (version.usuarioAprobacion) {
+          <div>Aprobada por {{ version.usuarioAprobacion }}</div>
+        }
+      </div>
+      <div class="toolbar toolbar--compact">
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          [disabled]="!versionEditable()"
+          (click)="abrirModalDetalle()"
+        >
+          + Asignar partida
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          [disabled]="!versionEditable()"
+          (click)="abrirCargaCompleta()"
+        >
+          Carga completa
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          [disabled]="!versionEditable()"
+          (click)="abrirImportar()"
+        >
+          Importar CSV/XLSX
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          [disabled]="!versionEditable()"
+          (click)="abrirImportarEstructura()"
+        >
+          Importar estructura (Excel)
+        </button>
+        <button
+          type="button"
+          class="btn btn-success btn-sm"
+          [disabled]="!versionAprobable()"
+          (click)="aprobarVersion()"
+        >
+          Aprobar versión
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger btn-sm"
+          [disabled]="!versionEditable()"
+          (click)="anularVersion()"
+        >
+          Anular borrador
+        </button>
+      </div>
+      @if (!versionEditable()) {
+        <div class="alerta-info">
+          Esta versión ya no es editable. Crea una nueva versión para modificar montos.
+        </div>
+      }
+      @if (resumenEstructura(); as resumen) {
+        <div class="alerta-ok">
+          Estructura importada: {{ resumen.partidasCreadas }} partida(s) nueva(s) en el catálogo,
+          {{ resumen.agregados }} agregada(s) y {{ resumen.actualizados }} actualizada(s)
+          @if (resumen.eliminados) {
+            <span>, {{ resumen.eliminados }} quitada(s)</span>
+          }
+          . La versión tiene {{ resumen.partidasEnVersion }} partidas por un total de
+          {{ simbolo() }} {{ resumen.montoTotal | number: '1.2-2' }}. Revisa el árbol antes de
+          aprobar.
+        </div>
+      }
+      <arbol-presupuestario
+        modo="version"
+        [idPresupuesto]="presupuesto().idPresupuesto"
+        [idVersion]="versionSeleccionada()?.idPresupuestoVersion ?? 0"
+        [recarga]="recargaArbol()"
+        [accionesVersion]="true"
+        [versionEditable]="versionEditable()"
+        [accionesBloqueadas]="cargandoDetalles() || guardando()"
+        [observaciones]="observacionesPartidas()"
+        (accionPartida)="accionarPartida($event)"
+        (abrirHoja)="verMovimientosNodo($event)"
+      >
+      </arbol-presupuestario>
+    </div>
+  }
+</section>
+
+@if (modalVersion()) {
+  <dialog
+    dialogoModal
+    class="panel panel--form design-modal-card"
+    (solicitarCierre)="cerrarModales()"
+    aria-label="Operación presupuestaria"
+  >
+    <button type="button" class="modal-close" (click)="cerrarModales()" aria-label="Cerrar">
+      &times;
+    </button>
+    <div class="panel-title">Nueva versión</div>
+    <p class="modal-nota">
+      Se copian los montos de la versión vigente a un nuevo borrador. Las versiones() anteriores se
+      conservan como historial.
+    </p>
+    <div class="form-grid one">
+      <div class="field">
+        <label for="versiones-presupuesto-campo-1">Motivo del cambio</label>
+        <input
+          id="versiones-presupuesto-campo-1"
+          [(ngModel)]="formVersion.motivoCambio"
+          placeholder="Ej. Ampliación de metrados del bloque B"
+        />
+      </div>
+      <div class="field">
+        <label for="versiones-presupuesto-campo-2">Descripción</label>
+        <input
+          id="versiones-presupuesto-campo-2"
+          [(ngModel)]="formVersion.descripcion"
+          placeholder="Opcional"
+        />
+      </div>
+    </div>
+    <div class="toolbar toolbar--compact">
+      <button class="btn btn-primary" [disabled]="guardando()" (click)="crearVersion()">
+        {{ guardando() ? 'Creando…' : 'Crear versión' }}
+      </button>
+      <button class="btn btn-ghost" (click)="cerrarModales()">Cancelar</button>
+    </div>
+  </dialog>
+}
+
+@if (modalAnular()) {
+  <dialog
+    dialogoModal
+    class="panel panel--form design-modal-card"
+    (solicitarCierre)="cerrarModales()"
+    aria-label="Operación presupuestaria"
+  >
+    <button type="button" class="modal-close" (click)="cerrarModales()" aria-label="Cerrar">
+      &times;
+    </button>
+    <div class="panel-title">Anular versión {{ versionSeleccionada()?.numeroVersion }}</div>
+    <p class="modal-nota">
+      El borrador queda anulado y no se puede reabrir. El motivo se guarda en el historial de la
+      versión.
+    </p>
+    <div class="form-grid one">
+      <div class="field">
+        <label for="versiones-presupuesto-campo-3">Motivo de la anulación</label>
+        <textarea
+          id="versiones-presupuesto-campo-3"
+          rows="3"
+          [(ngModel)]="motivoAnulacion"
+          maxlength="500"
+          placeholder="Ej. Se descartó esta propuesta presupuestaria"
+        ></textarea>
+      </div>
+    </div>
+    <div class="toolbar toolbar--compact">
+      <button class="btn btn-danger" [disabled]="guardando()" (click)="confirmarAnulacion()">
+        {{ guardando() ? 'Anulando…' : 'Anular versión' }}
+      </button>
+      <button class="btn btn-ghost" (click)="cerrarModales()">Cancelar</button>
+    </div>
+  </dialog>
+}
+
+@if (modalDetalle()) {
+  <dialog
+    dialogoModal
+    class="panel panel--form design-modal-card"
+    (solicitarCierre)="cerrarModales()"
+    aria-label="Operación presupuestaria"
+  >
+    <button type="button" class="modal-close" (click)="cerrarModales()" aria-label="Cerrar">
+      &times;
+    </button>
+    <div class="panel-title">{{ esEdicionDetalle ? 'Editar monto' : 'Asignar partida' }}</div>
+    <div class="form-grid one">
+      @if (!esEdicionDetalle) {
+        <div class="field">
+          <label for="versiones-presupuesto-campo-4">Partida</label>
+          <select id="versiones-presupuesto-campo-4" [(ngModel)]="formDetalle.idCatalogoPartida">
+            <option value="">Seleccione&hellip;</option>
+            @for (p of partidasAsignables; track p) {
+              <option [value]="p.idCatalogoPartida">{{ p.codigo }} — {{ p.nombre }}</option>
+            }
+          </select>
+          <small class="field-hint"
+            >Solo se listan partidas hoja activas que aún no están en esta versión.</small
+          >
+        </div>
+      }
+      <div class="field">
+        <label for="versiones-presupuesto-campo-5">Monto presupuestado ({{ simbolo() }})</label>
+        <input
+          id="versiones-presupuesto-campo-5"
+          type="number"
+          min="0"
+          step="0.01"
+          [(ngModel)]="formDetalle.montoPresupuestado"
+        />
+      </div>
+      <div class="field">
+        <label for="versiones-presupuesto-campo-6">Observación</label>
+        <input
+          id="versiones-presupuesto-campo-6"
+          [(ngModel)]="formDetalle.observacion"
+          placeholder="Opcional"
+        />
+      </div>
+    </div>
+    <div class="toolbar toolbar--compact">
+      <button class="btn btn-primary" [disabled]="guardando()" (click)="guardarDetalle()">
+        {{ guardando() ? 'Guardando…' : 'Guardar monto' }}
+      </button>
+      <button class="btn btn-ghost" (click)="cerrarModales()">Cancelar</button>
+    </div>
+  </dialog>
+}
+
+@if (contextoMovimientos(); as contexto) {
+  @if (modalMovimientos()) {
+    <historial-presupuestario [contexto]="contexto" (cerrar)="modalMovimientos.set(false)" />
+  }
+}
+@if (modalAjuste()) {
+  <dialog
+    dialogoModal
+    class="panel panel--form design-modal-card"
+    (solicitarCierre)="cerrarModales()"
+    aria-label="Operación presupuestaria"
+  >
+    <button type="button" class="modal-close" (click)="cerrarModales()" aria-label="Cerrar">
+      &times;
+    </button>
+    <div class="panel-title">Registrar ajuste</div>
+    <p class="modal-nota">
+      Los movimientos no se borran ni se editan. Un error se corrige con un ajuste que queda
+      registrado en el historial.
+    </p>
+    <div class="form-grid two">
+      <div class="field">
+        <label for="versiones-presupuesto-campo-7">Afectación</label>
+        <select id="versiones-presupuesto-campo-7" [(ngModel)]="formAjuste.afectacion">
+          <option value="COMPROMISO">Comprometido</option>
+          <option value="EJECUCION">Ejecutado</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="versiones-presupuesto-campo-8">Dirección</label>
+        <select id="versiones-presupuesto-campo-8" [(ngModel)]="formAjuste.direccion">
+          <option value="INCREMENTO">Incremento</option>
+          <option value="DECREMENTO">Decremento</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="versiones-presupuesto-campo-9">Monto</label>
+        <input
+          id="versiones-presupuesto-campo-9"
+          type="number"
+          min="0.01"
+          step="0.01"
+          [(ngModel)]="formAjuste.monto"
+        />
+      </div>
+      <div class="field">
+        <label for="versiones-presupuesto-campo-10">Fecha</label>
+        <input id="versiones-presupuesto-campo-10" type="date" [(ngModel)]="formAjuste.fecha" />
+      </div>
+      <div class="field field--full">
+        <label for="versiones-presupuesto-campo-11">Observación (requerida)</label>
+        <input
+          id="versiones-presupuesto-campo-11"
+          [(ngModel)]="formAjuste.observacion"
+          placeholder="Justifica el ajuste"
+        />
+      </div>
+    </div>
+    <div class="toolbar toolbar--compact">
+      <button class="btn btn-primary" [disabled]="guardando()" (click)="registrarAjuste()">
+        {{ guardando() ? 'Registrando…' : 'Registrar ajuste' }}
+      </button>
+      <button class="btn btn-ghost" (click)="cerrarModales()">Cancelar</button>
+    </div>
+  </dialog>
+}
+
+@if (versionSeleccionada(); as versionCarga) {
+  @if (modalCarga()) {
+    <carga-montos-presupuesto
+      [idPresupuesto]="presupuesto().idPresupuesto"
+      [idVersion]="versionCarga.idPresupuestoVersion"
+      [numeroVersion]="versionCarga.numeroVersion"
+      [simbolo]="simbolo()"
+      [partidas]="partidas()"
+      [detalles]="detalles()"
+      (cerrar)="modalCarga.set(false)"
+      (guardado)="modalCarga.set(false); cargarDetalles(true)"
+    />
+  }
+  @if (modalImportar() || modalEstructura()) {
+    <importacion-presupuesto
+      [idPresupuesto]="presupuesto().idPresupuesto"
+      [idVersion]="versionCarga.idPresupuestoVersion"
+      [numeroVersion]="versionCarga.numeroVersion"
+      [simbolo]="simbolo()"
+      [estructura]="modalEstructura()"
+      (cerrar)="modalImportar.set(false); modalEstructura.set(false)"
+      (importado)="onImportado($event)"
+    />
+  }
+}

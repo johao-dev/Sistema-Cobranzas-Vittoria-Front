@@ -1,18 +1,22 @@
+import { CatalogoPartidas } from '../presupuestos/partidas/catalogo-partidas';
+import { ConsultasPresupuestarias } from '../presupuestos/consultas/consultas-presupuestarias';
+import { CatalogoCentrosCosto } from '../presupuestos/centros-costo/catalogo-centros-costo';
 import { DestroyRef, Injectable, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, catchError, finalize, of, switchMap } from 'rxjs';
-import { ControlPresupuestarioService } from '../app/core/services/control-presupuestario.service';
-import {
-  CentroCostoResumen,
-  PartidaCatalogo,
-  SaldoPartida,
-} from '../app/models/consultas-presupuestarias.models';
+
+import { CentroCostoResumen } from '../presupuestos/centros-costo/contratos-centros-costo';
+import { PartidaCatalogo } from '../presupuestos/partidas/contratos-partidas';
+import { SaldoPartida } from '../presupuestos/consultas/contratos-consultas-presupuestarias';
 import { mensajeRequerimiento } from './mensaje-requerimiento';
 
 /** Consultas presupuestarias del editor; nunca modifica el presupuesto. */
 @Injectable()
 export class PartidasRequerimiento {
-  private readonly api = inject(ControlPresupuestarioService);
+  private readonly catalogoCentrosCosto = inject(CatalogoCentrosCosto);
+  private readonly consultasPresupuestarias = inject(ConsultasPresupuestarias);
+  private readonly catalogoPartidas = inject(CatalogoPartidas);
+
   private readonly destroyRef = inject(DestroyRef);
 
   readonly centros = signal<CentroCostoResumen[]>([]);
@@ -42,7 +46,7 @@ export class PartidasRequerimiento {
 
           if (!centro) return of([]);
 
-          return this.api
+          return this.consultasPresupuestarias
             .saldos({ idCentroCosto: centro.idCentroCosto, estadoPresupuesto: 'APROBADO' })
             .pipe(
               catchError((error: unknown) => {
@@ -69,7 +73,7 @@ export class PartidasRequerimiento {
   iniciar(): void {
     this.cargandoCentros.set(true);
 
-    this.api
+    this.catalogoCentrosCosto
       .centrosCosto(true, null, null)
       .pipe(
         finalize(() => this.cargandoCentros.set(false)),
@@ -88,7 +92,7 @@ export class PartidasRequerimiento {
           ),
       });
 
-    this.api
+    this.catalogoPartidas
       .partidas({ activo: true, esHoja: true })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({

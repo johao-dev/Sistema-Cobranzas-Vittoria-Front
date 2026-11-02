@@ -7,7 +7,7 @@ import { CatalogoMateriales } from '../../catalogos/materiales/catalogo-material
 import { Especialidad } from '../../catalogos/especialidades/contratos-especialidades';
 import { UnidadMedida } from '../../catalogos/unidades-medida/contratos-unidades-medida';
 import { MaterialUpsert } from '../../catalogos/materiales/contratos-materiales';
-import { PartidaCatalogo } from '../../app/models/consultas-presupuestarias.models';
+import { PartidaCatalogo } from '../../presupuestos/partidas/contratos-partidas';
 import { NotificationService } from '../../app/core/services/notification.service';
 import { mensajeRequerimiento } from '../mensaje-requerimiento';
 import { DialogoModal } from '../../shared/dialogos/dialogo-modal';

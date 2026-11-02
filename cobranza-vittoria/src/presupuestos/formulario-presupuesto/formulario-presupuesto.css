@@ -1,0 +1,15 @@
+/* Confirmación sobre el formulario del presupuesto */
+.design-modal-backdrop--top {
+  z-index: 92;
+}
+
+.design-modal-card--top {
+  z-index: 93;
+  max-width: 520px;
+}
+
+.modal-nota--aviso {
+  font-size: 13px;
+  color: #374151;
+  white-space: pre-line;
+}

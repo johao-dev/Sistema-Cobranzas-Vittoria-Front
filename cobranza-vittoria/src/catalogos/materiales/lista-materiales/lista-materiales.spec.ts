@@ -22,7 +22,7 @@ import {
 } from '../../pruebas/muestras-catalogos';
 import { CatalogoEspecialidades } from '../../especialidades/catalogo-especialidades';
 import { CatalogoUnidadesMedida } from '../../unidades-medida/catalogo-unidades-medida';
-import { ControlPresupuestarioService } from '../../../app/core/services/control-presupuestario.service';
+import { CatalogoPartidas } from '../../../presupuestos/partidas/catalogo-partidas';
 
 describe('ListaMateriales sin Zone.js', () => {
   let fixture: ComponentFixture<ListaMateriales>;
@@ -58,7 +58,7 @@ describe('ListaMateriales sin Zone.js', () => {
           },
         },
         { provide: CatalogoUnidadesMedida, useValue: { unidadesMedida: () => of([UNIDAD]) } },
-        { provide: ControlPresupuestarioService, useValue: { partidas: () => of([]) } },
+        { provide: CatalogoPartidas, useValue: { partidas: () => of([]) } },
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(ListaMateriales);

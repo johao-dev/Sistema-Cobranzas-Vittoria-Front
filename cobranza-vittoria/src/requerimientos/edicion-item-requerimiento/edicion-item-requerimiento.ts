@@ -10,10 +10,8 @@ import {
 import { PartidasRequerimiento } from '../partidas-requerimiento';
 import { DatosItemRequerimiento, ItemRequerimiento } from '../contratos-formulario-requerimiento';
 import type { MaterialSeleccionado } from '../contratos-formulario-requerimiento';
-import {
-  CentroCostoResumen,
-  SaldoPartida,
-} from '../../app/models/consultas-presupuestarias.models';
+import { CentroCostoResumen } from '../../presupuestos/centros-costo/contratos-centros-costo';
+import { SaldoPartida } from '../../presupuestos/consultas/contratos-consultas-presupuestarias';
 import { Injectable, inject, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RequerimientoItemPatchRequest } from '../contratos-requerimientos';

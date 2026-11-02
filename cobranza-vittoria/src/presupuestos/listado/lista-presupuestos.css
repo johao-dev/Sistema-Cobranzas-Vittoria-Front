@@ -1,0 +1,51 @@
+.panel-title-row {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.maintenance-search {
+  flex: 1 1 220px;
+  min-width: 200px;
+  margin: 0;
+}
+
+.field-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.toolbar--compact {
+  margin-top: 16px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.row--selected td {
+  background: #eef2ff;
+}
+
+.badge--warn {
+  background: #fff4e0;
+  color: #92500a;
+}
+
+.badge--danger {
+  background: #fde8e8;
+  color: #9b1c1c;
+}
+
+@media (max-width: 720px) {
+  .panel-title-row {
+    align-items: stretch;
+  }
+  .maintenance-search {
+    flex-basis: 100%;
+  }
+}

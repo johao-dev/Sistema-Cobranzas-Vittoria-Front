@@ -1,0 +1,483 @@
+<div class="tablero" [class.tablero--cargando]="cargando">
+  @if (error) {
+    <div class="tablero-aviso tablero-aviso--error" role="alert">{{ error }}</div>
+  }
+  @if (!datos && cargando) {
+    <div class="empty-state">Cargando dashboard...</div>
+  }
+
+  @if (datos) {
+    <!-- 1. Distribución del gasto por rubro -->
+    <section class="panel tablero-card">
+      <header class="tablero-card__header">
+        <h2 class="tablero-card__titulo">Distribución del gasto por {{ etiquetaAgrupacion }}</h2>
+        <p class="tablero-card__sub">
+          {{
+            datos.encabezado.nombreProyecto
+              ? 'Proyecto: ' + datos.encabezado.nombreProyecto
+              : datos.encabezado.codigoCentroCosto + ' — ' + datos.encabezado.nombreCentroCosto
+          }}
+          <span class="sep">|</span> Corte: {{ datos.encabezado.fechaCorte | date: 'dd/MM/yyyy' }}
+        </p>
+      </header>
+      @if (rama.length) {
+        <nav class="tablero-ruta" aria-label="Rama del tablero">
+          <button type="button" class="tablero-ruta__item" (click)="irARama(null)">Todo</button>
+          @for (n of rama; track n; let ultimo = $last) {
+            <span class="tablero-ruta__sep" aria-hidden="true">›</span>
+            <button
+              type="button"
+              class="tablero-ruta__item"
+              [class.tablero-ruta__item--actual]="ultimo"
+              [attr.aria-current]="ultimo ? 'location' : null"
+              (click)="irARama(n.idCatalogoPartida)"
+            >
+              {{ n.codigo }} {{ n.nombre }}
+            </button>
+          }
+        </nav>
+      }
+      @if (hayNavegables) {
+        <p class="tablero-ayuda">Haz clic en una categoría para ver cómo se reparte su gasto.</p>
+      }
+      @if (!segmentos.length) {
+        <div class="empty-state">
+          Aún no hay gasto ejecutado en {{ rama.length ? 'esta rama' : 'este centro de costo' }}.
+        </div>
+      }
+      @if (segmentos.length) {
+        <div class="distribucion">
+          <div class="dona">
+            <svg
+              viewBox="0 0 200 200"
+              role="img"
+              [attr.aria-label]="
+                'Distribución del gasto total de ' +
+                simbolo +
+                ' ' +
+                (datos.resumen.ejecutado | number: '1.0-0') +
+                ' por rubro'
+              "
+            >
+              @for (s of segmentos; track s) {
+                <path
+                  class="dona__segmento"
+                  [attr.d]="s.path"
+                  [attr.fill]="s.color"
+                  [class.dona__segmento--activo]="segmentoActivo === s"
+                  [class.dona__segmento--navegable]="puedeBajar(s.rubro)"
+                  (pointerenter)="segmentoActivo = s"
+                  (pointerleave)="segmentoActivo = null"
+                  (focus)="segmentoActivo = s"
+                  (blur)="segmentoActivo = null"
+                  tabindex="0"
+                  (click)="bajarA(s.rubro)"
+                  (keydown.enter)="bajarA(s.rubro)"
+                  [attr.aria-label]="
+                    s.nombre +
+                    ': ' +
+                    simbolo +
+                    ' ' +
+                    (s.monto | number: '1.0-0') +
+                    ', ' +
+                    (s.porcentaje | number: '1.0-0') +
+                    '%'
+                  "
+                ></path>
+              }
+            </svg>
+            <div class="dona__centro" aria-hidden="true">
+              @if (!segmentoActivo) {
+                <span class="dona__label">Gasto total</span>
+                <strong class="dona__valor"
+                  >{{ simbolo }} {{ datos.resumen.ejecutado | number: '1.0-0' }}</strong
+                >
+              }
+              @if (segmentoActivo) {
+                <span class="dona__label">{{ segmentoActivo.nombre }}</span>
+                <strong class="dona__valor"
+                  >{{ simbolo }} {{ segmentoActivo.monto | number: '1.0-0' }}</strong
+                >
+                <span class="dona__pct">{{ segmentoActivo.porcentaje | number: '1.0-1' }}%</span>
+              }
+            </div>
+          </div>
+          <div class="table-wrap distribucion__tabla">
+            <table>
+              <thead>
+                <tr>
+                  <th>{{ datos.encabezado.nivel ? 'Categoría' : 'Partida' }}</th>
+                  <th class="num">Gasto ({{ simbolo }})</th>
+                  <th class="num">% del total</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of rubrosConGasto; track r; let i = $index) {
+                  <tr [class.fila-navegable]="puedeBajar(r)" (click)="bajarA(r)">
+                    <td>
+                      <span
+                        class="swatch"
+                        [style.background]="colorRubro(i)"
+                        aria-hidden="true"
+                      ></span>
+                      @if (puedeBajar(r)) {
+                        <button
+                          type="button"
+                          class="rubro-enlace"
+                          (click)="$event.stopPropagation(); bajarA(r)"
+                        >
+                          {{ nombreRubro(r) }}
+                        </button>
+                      }
+                      @if (!puedeBajar(r)) {
+                        {{ nombreRubro(r) }}
+                      }
+                      @if (i >= 5) {
+                        <small class="otros-tag">(en "Otros")</small>
+                      }
+                    </td>
+                    <td class="num">{{ r.ejecutado | number: '1.0-0' }}</td>
+                    <td class="num">{{ r.porcentajeDelTotal | number: '1.0-1' }}%</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <aside class="resumen">
+            <div class="resumen__titulo">Resumen</div>
+            <div class="resumen__fila">
+              <span>Presupuesto vigente</span>
+              <strong>{{ simbolo }} {{ datos.resumen.presupuestado | number: '1.0-0' }}</strong>
+            </div>
+            <div class="resumen__fila">
+              <span>Gasto real (ejecutado)</span>
+              <strong>{{ simbolo }} {{ datos.resumen.ejecutado | number: '1.0-0' }}</strong>
+            </div>
+            <div class="resumen__fila">
+              <span>Avance del gasto</span>
+              <strong>{{ datos.resumen.porcentajeEjecutado ?? 0 | number: '1.1-1' }}%</strong>
+            </div>
+            <div class="resumen__fila">
+              <span>Desviación</span>
+              <strong
+                [class.txt-malo]="datos.resumen.desviacion > 0"
+                [class.txt-bueno]="datos.resumen.desviacion <= 0"
+              >
+                {{ datos.resumen.desviacion > 0 ? '▲' : '▼' }} {{ simbolo }}
+                {{ abs(datos.resumen.desviacion) | number: '1.0-0' }}
+              </strong>
+              <small
+                >{{
+                  datos.resumen.desviacion > 0
+                    ? 'Sobre el presupuesto'
+                    : 'Por debajo del presupuesto'
+                }}
+                ({{ abs(datos.resumen.desviacionPorcentaje ?? 0) | number: '1.1-1' }}%)</small
+              >
+            </div>
+          </aside>
+        </div>
+      }
+    </section>
+    <!-- 2. Evolución del gasto: real vs presupuesto -->
+    <section class="panel tablero-card">
+      <header class="tablero-card__header">
+        <h2 class="tablero-card__titulo">Evolución del gasto: real vs presupuesto</h2>
+        <p class="tablero-card__sub">Acumulado semanal en {{ datos.encabezado.codigoMoneda }}</p>
+      </header>
+      @if (!datos.encabezado.tieneCronograma) {
+        <div class="tablero-aviso">
+          Registra las fechas de inicio y fin del presupuesto para ver la curva planificada y la
+          desviación a la fecha. Mientras tanto, la línea punteada marca el presupuesto total como
+          referencia.
+        </div>
+      }
+      <div class="evolucion">
+        <div class="evolucion__grafico">
+          <div class="leyenda" aria-hidden="true">
+            <span class="leyenda__item"
+              ><span class="linea-key linea-key--real"></span>Gasto real acumulado</span
+            >
+            @if (datos.encabezado.tieneCronograma) {
+              <span class="leyenda__item">
+                <span class="linea-key linea-key--plan"></span>Presupuesto acumulado
+              </span>
+            }
+            @if (referenciaTotal) {
+              <span class="leyenda__item">
+                <span class="linea-key linea-key--plan"></span>Presupuesto total
+              </span>
+            }
+            @if (hayExceso) {
+              <span class="leyenda__item">
+                <span class="area-key"></span>Real por encima del presupuesto
+              </span>
+            }
+          </div>
+          <div class="lineas">
+            <svg
+              #svg
+              [attr.viewBox]="'0 0 ' + ancho + ' ' + alto"
+              role="img"
+              aria-label="Gasto real acumulado frente al presupuesto acumulado por semana"
+              (pointermove)="onMoverPuntero($event, svg)"
+              (pointerleave)="onSalirPuntero()"
+            >
+              <defs>
+                <clipPath id="sobre-plan">
+                  <polygon [attr.points]="areaSobrePlan"></polygon>
+                </clipPath>
+              </defs>
+              <!-- Grilla y ejes -->
+              <g class="grilla">
+                @for (t of ticksY; track t) {
+                  <line
+                    [attr.x1]="margen.izquierda"
+                    [attr.x2]="ancho - margen.derecha"
+                    [attr.y1]="t.y"
+                    [attr.y2]="t.y"
+                  ></line>
+                }
+              </g>
+              <g class="eje-texto">
+                @for (t of ticksY; track t) {
+                  <text [attr.x]="margen.izquierda - 8" [attr.y]="t.y + 4" text-anchor="end">
+                    {{ formatoCompacto(t.valor) }}
+                  </text>
+                }
+                @for (t of ticksX; track t) {
+                  <text [attr.x]="t.x" [attr.y]="alto - margen.abajo + 18" text-anchor="middle">
+                    {{ t.semana }}
+                  </text>
+                }
+                <text
+                  [attr.x]="margen.izquierda + (ancho - margen.izquierda - margen.derecha) / 2"
+                  [attr.y]="alto - 2"
+                  text-anchor="middle"
+                  class="eje-titulo"
+                >
+                  Semana
+                </text>
+              </g>
+              <!-- Desviación: franja entre curvas donde el real supera al presupuesto -->
+              @if (hayExceso) {
+                <polygon
+                  class="area-desviacion"
+                  [attr.points]="areaEntreCurvas"
+                  clip-path="url(#sobre-plan)"
+                ></polygon>
+              }
+              @if (rutaPlan) {
+                <path class="linea-plan" [attr.d]="rutaPlan"></path>
+              }
+              @if (referenciaTotal) {
+                <g>
+                  <line
+                    class="linea-plan"
+                    [attr.x1]="margen.izquierda"
+                    [attr.x2]="ancho - margen.derecha"
+                    [attr.y1]="referenciaTotal.y"
+                    [attr.y2]="referenciaTotal.y"
+                  ></line>
+                  <text
+                    class="referencia-texto"
+                    [attr.x]="ancho - margen.derecha - 4"
+                    [attr.y]="referenciaTotal.y - 6"
+                    text-anchor="end"
+                  >
+                    Presupuesto total · {{ simbolo }} {{ formatoCompacto(referenciaTotal.valor) }}
+                  </text>
+                </g>
+              }
+              @if (rutaReal) {
+                <path class="linea-real" [attr.d]="rutaReal"></path>
+              }
+              @if (puntoFinReal) {
+                <circle
+                  class="punto-fin"
+                  [attr.cx]="puntoFinReal.x"
+                  [attr.cy]="puntoFinReal.y"
+                  r="5"
+                ></circle>
+              }
+              <!-- Crosshair -->
+              @if (hover) {
+                <line
+                  class="crosshair"
+                  [attr.x1]="hover.x"
+                  [attr.x2]="hover.x"
+                  [attr.y1]="margen.arriba"
+                  [attr.y2]="alto - margen.abajo"
+                ></line>
+              }
+            </svg>
+            @if (hover) {
+              <div
+                class="tooltip"
+                [class.tooltip--izquierda]="hover.izquierda"
+                [style.left.%]="porcentajeX(hover.x)"
+              >
+                <div class="tooltip__titulo">
+                  Semana {{ hover.punto.semana | number: '1.0-1' }} ·
+                  {{ hover.punto.fecha | date: 'dd/MM/yyyy' }}
+                </div>
+                @if (hover.punto.realAcumulado !== null) {
+                  <div class="tooltip__fila">
+                    <span class="linea-key linea-key--real"></span>
+                    <strong>{{ simbolo }} {{ hover.punto.realAcumulado | number: '1.0-0' }}</strong
+                    ><span>Real</span>
+                  </div>
+                }
+                @if (hover.punto.presupuestoAcumulado !== null) {
+                  <div class="tooltip__fila">
+                    <span class="linea-key linea-key--plan"></span>
+                    <strong
+                      >{{ simbolo }}
+                      {{ hover.punto.presupuestoAcumulado | number: '1.0-0' }}</strong
+                    ><span>Presupuesto</span>
+                  </div>
+                }
+                @if (desviacionDe(hover.punto) !== null) {
+                  <div class="tooltip__fila">
+                    <strong
+                      >{{ desviacionDe(hover.punto)! > 0 ? '+' : ''
+                      }}{{ desviacionDe(hover.punto) | number: '1.0-0' }}</strong
+                    >
+                    <span>Desviación</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            (click)="verTablaSemanal = !verTablaSemanal"
+          >
+            {{ verTablaSemanal ? 'Ocultar tabla' : 'Ver datos en tabla' }}
+          </button>
+          @if (verTablaSemanal) {
+            <div class="table-wrap tabla-semanal">
+              <table>
+                <thead>
+                  <tr>
+                    <th class="num">Semana</th>
+                    <th>Fecha</th>
+                    <th class="num">Real acumulado</th>
+                    <th class="num">Presupuesto acumulado</th>
+                    <th class="num">Desviación</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (s of datos.semanas; track s) {
+                    <tr>
+                      <td class="num">{{ s.semana | number: '1.0-1' }}</td>
+                      <td>{{ s.fecha | date: 'dd/MM/yyyy' }}</td>
+                      <td class="num">
+                        {{ s.realAcumulado === null ? '—' : (s.realAcumulado | number: '1.0-0') }}
+                      </td>
+                      <td class="num">
+                        {{
+                          s.presupuestoAcumulado === null
+                            ? '—'
+                            : (s.presupuestoAcumulado | number: '1.0-0')
+                        }}
+                      </td>
+                      <td class="num">
+                        {{ desviacionDe(s) === null ? '—' : (desviacionDe(s) | number: '1.0-0') }}
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+        <aside class="evolucion__lateral">
+          <div class="resumen">
+            <div class="resumen__titulo">Resumen a la fecha</div>
+            @if (datos.alCorte.presupuestoAcumulado !== null) {
+              <div class="resumen__fila">
+                <span>Presupuesto (acumulado)</span>
+                <strong
+                  >{{ simbolo }} {{ datos.alCorte.presupuestoAcumulado | number: '1.0-0' }}</strong
+                >
+              </div>
+            }
+            <div class="resumen__fila">
+              <span>Gasto real (acumulado)</span>
+              <strong>{{ simbolo }} {{ datos.alCorte.realAcumulado | number: '1.0-0' }}</strong>
+            </div>
+            @if (datos.alCorte.desviacion !== null) {
+              <div class="resumen__fila">
+                <span>Desviación</span>
+                <strong
+                  [class.txt-malo]="datos.alCorte.desviacion > 0"
+                  [class.txt-bueno]="datos.alCorte.desviacion <= 0"
+                >
+                  {{ datos.alCorte.desviacion > 0 ? '▲' : '▼' }} {{ simbolo }}
+                  {{ abs(datos.alCorte.desviacion) | number: '1.0-0' }} ({{
+                    abs(datos.alCorte.desviacionPorcentaje ?? 0) | number: '1.1-1'
+                  }}%)
+                </strong>
+                <small>{{
+                  datos.alCorte.desviacion > 0
+                    ? 'Gasto adelantado al plan'
+                    : 'Gasto por debajo del plan'
+                }}</small>
+              </div>
+            }
+          </div>
+          @if (datos.desviacionPorRubro.length) {
+            <div class="resumen">
+              <div class="resumen__titulo">Desviación por rubro (acumulado)</div>
+              <table class="tabla-desviacion">
+                <thead>
+                  <tr>
+                    <th>{{ datos.encabezado.nivel ? 'Categoría' : 'Partida' }}</th>
+                    <th class="num">Desviación</th>
+                    <th class="num">%</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (r of topDesviaciones; track r) {
+                    <tr>
+                      <td [title]="r.codigo">{{ nombreRubro(r) }}</td>
+                      <td class="num" [class.txt-malo]="r.desviacion > 0">
+                        {{ r.desviacion > 0 ? '+' : '' }}{{ r.desviacion | number: '1.0-0' }}
+                      </td>
+                      <td class="num" [class.txt-malo]="r.desviacion > 0">
+                        {{
+                          r.desviacionPorcentaje === null
+                            ? '—'
+                            : (r.desviacionPorcentaje > 0 ? '+' : '') +
+                              (r.desviacionPorcentaje | number: '1.1-1') +
+                              '%'
+                        }}
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th>Total</th>
+                    <th class="num">
+                      {{ totalDesviacionRubros > 0 ? '+' : ''
+                      }}{{ totalDesviacionRubros | number: '1.0-0' }}
+                    </th>
+                    <th></th>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          }
+        </aside>
+      </div>
+      <p class="nota">
+        Presupuesto acumulado: el presupuesto vigente repartido en forma pareja entre la fecha de
+        inicio y fin del presupuesto. Gasto real: compras aceptadas y gastos directos confirmados,
+        con sus ajustes.
+      </p>
+    </section>
+  }
+</div>

@@ -2,7 +2,6 @@ import { Routes } from '@angular/router';
 import { UsuariosPage } from './pages/usuarios/usuarios.page';
 import { RolesPage } from './pages/roles/roles.page';
 import { ValorizacionesPage } from './pages/valorizaciones/valorizaciones.page';
-import { PresupuestoPage } from './pages/presupuesto/presupuesto.page';
 import { protegerRuta } from '../core/sesion/proteger-ruta';
 import { PermisosPage } from './pages/permisos/permisos.page';
 import { ACCESS_RULES } from './reglas-acceso';
@@ -11,7 +10,6 @@ export const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   { path: 'login', loadComponent: () => import('../autenticacion/inicio-sesion').then(m => m.InicioSesion) },
   { path: 'dashboard', loadComponent: () => import('../dashboard/resumen-compras/resumen-compras').then(m => m.ResumenCompras), canActivate: [protegerRuta] },
-  { path: 'presupuesto', canActivate: [protegerRuta], component: PresupuestoPage },
   // Operaciones → Gastos del proyecto: cada vista declara únicamente sus categorías descriptivas.
   { path: 'gastos-administrativos', canActivate: [protegerRuta], loadComponent: () => import('../gastos/listado/gastos-seccion').then(m => m.GastosSeccion), data: { codigosCategoria: ['ADMINISTRATIVO'], permiteSeleccionCategoria: false, titulo: 'Gastos administrativos', subtitulo: 'Gastos de oficina y áreas de la empresa: alquiler, servicios, planilla y bancos.' } },
   { path: 'terreno', canActivate: [protegerRuta], loadComponent: () => import('../gastos/listado/gastos-seccion').then(m => m.GastosSeccion), data: { codigosCategoria: ['TERRENO', 'ANTEPROYECTO', 'PROYECTO'], permiteSeleccionCategoria: true, titulo: 'Terreno - Anteproyecto - Proyecto', subtitulo: 'Compra de terreno, alcabala, estudios previos y desarrollo del proyecto.' } },
@@ -63,14 +61,14 @@ export const routes: Routes = [
       {
         path: 'panel',
         canActivate: [protegerRuta],
-        loadComponent: () => import('./pages/control-presupuestario/control-presupuestario.page')
-          .then(m => m.ControlPresupuestarioPage),
+        loadComponent: () => import('../presupuestos/consultas/control-presupuestario')
+          .then(m => m.ControlPresupuestario),
         data: { access: ACCESS_RULES.controlPresupuestarioReportes }
       },
       {
         path: 'presupuestos',
         canActivate: [protegerRuta],
-        loadComponent: () => import('./pages/presupuestos/presupuestos.page').then(m => m.PresupuestosPage),
+        loadComponent: () => import('../presupuestos/listado/lista-presupuestos').then(m => m.ListaPresupuestos),
         data: { access: ACCESS_RULES.controlPresupuestarioPresupuestos }
       },
       // Gasto directo vive en Operaciones → Gastos del proyecto.
@@ -78,13 +76,13 @@ export const routes: Routes = [
       {
         path: 'centros-costo',
         canActivate: [protegerRuta],
-        loadComponent: () => import('./pages/centros-costo/centros-costo.page').then(m => m.CentrosCostoPage),
+        loadComponent: () => import('../presupuestos/centros-costo/lista-centros-costo').then(m => m.ListaCentrosCosto),
         data: { access: ACCESS_RULES.controlPresupuestarioCentrosCosto }
       },
       {
         path: 'partidas',
         canActivate: [protegerRuta],
-        loadComponent: () => import('./pages/partidas/partidas.page').then(m => m.PartidasPage),
+        loadComponent: () => import('../presupuestos/partidas/lista-partidas').then(m => m.ListaPartidas),
         data: { access: ACCESS_RULES.controlPresupuestarioPartidas }
       }
     ]

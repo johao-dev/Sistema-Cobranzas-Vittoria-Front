@@ -22,7 +22,6 @@
         </button>
         <div class="nav-panel" *ngIf="isMenuOpen('general')">
           <a routerLink="/dashboard" routerLinkActive="active" (click)="closeMobileMenu()">Dashboard</a>
-          <a routerLink="/presupuesto" routerLinkActive="active" (click)="closeMobileMenu()">Presupuesto bancario</a>
         </div>
       </div>
 
@@ -146,7 +145,6 @@
       </div>
 
       <div class="topbar__actions" *ngIf="isAuthenticated">
-        <app-tipo-cambio *ngIf="isPresupuestoRoute"></app-tipo-cambio>
         <div class="profile-pill">
           <div class="profile-pill__avatar">{{ profileInitials }}</div>
           <div class="profile-pill__content">

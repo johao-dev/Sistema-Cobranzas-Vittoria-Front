@@ -1,0 +1,160 @@
+<div class="page-header">
+  <div>
+    <div class="page-title">Centros de costo</div>
+    <div class="page-subtitle">
+      Proyectos y áreas corporativas sobre los que se planifica el presupuesto.
+    </div>
+  </div>
+</div>
+
+<div class="split split--form admin-split">
+  <section class="panel">
+    <div class="panel-title-row">
+      <div class="panel-title">Listado</div>
+      <div class="filters maintenance-search">
+        <div class="field">
+          <label for="lista-centros-costo-campo-1">Buscar</label>
+          <input
+            id="lista-centros-costo-campo-1"
+            type="text"
+            [(ngModel)]="filtroBusqueda"
+            placeholder="Código, nombre o proyecto"
+          />
+        </div>
+      </div>
+      <div class="title-actions">
+        <button type="button" class="btn btn-secondary btn-sm" (click)="abrirImportModal()">
+          Importar CSV/XLSX
+        </button>
+        <button type="button" class="btn btn-primary btn-sm" (click)="abrirModalNuevo()">
+          + Nuevo centro de costo
+        </button>
+      </div>
+    </div>
+
+    <div class="filters filters--two">
+      <div class="field">
+        <label for="lista-centros-costo-campo-2">Estado</label>
+        <select id="lista-centros-costo-campo-2" [(ngModel)]="filtroActivo" (change)="load()">
+          <option value="">Todos</option>
+          <option value="true">Activo</option>
+          <option value="false">Inactivo</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="lista-centros-costo-campo-3">Tipo</label>
+        <select id="lista-centros-costo-campo-3" [(ngModel)]="filtroTipo" (change)="load()">
+          <option value="">Todos</option>
+          @for (t of tipos; track t) {
+            <option [value]="t.idTipoCentroCosto">{{ t.nombre }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    @if (loading) {
+      <div class="empty-state">Cargando centros de costo...</div>
+    }
+    @if (!loading && !rowsFiltradas.length) {
+      <div class="empty-state">No hay centros de costo registrados.</div>
+    }
+
+    @if (!loading && rowsFiltradas.length) {
+      <div class="table-wrap table-wrap--sticky-actions">
+        <table>
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Nombre</th>
+              <th>Tipo</th>
+              <th>Proyecto</th>
+              <th>Estado</th>
+              <th class="actions-col actions-col--select">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rowsFiltradas; track row) {
+              <tr>
+                <td>{{ row.codigo }}</td>
+                <td>{{ row.nombre }}</td>
+                <td>{{ row.nombreTipoCentroCosto }}</td>
+                <td>{{ row.nombreProyecto || '—' }}</td>
+                <td>
+                  <span
+                    class="badge"
+                    [class.badge--ok]="row.activo"
+                    [class.badge--neutral]="!row.activo"
+                  >
+                    {{ row.activo ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+                <td class="actions-col--select">
+                  <select
+                    class="actions-select"
+                    [disabled]="guardando"
+                    aria-label="Acciones del registro"
+                    (change)="onAccion($event, row)"
+                  >
+                    <option value="">Acciones</option>
+                    <option value="edit">Editar</option>
+                    <option value="estado">{{ row.activo ? 'Desactivar' : 'Activar' }}</option>
+                  </select>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+
+  @if (modalOpen) {
+    <formulario-centro-costo
+      [valor]="editado"
+      [tipos]="tipos"
+      [proyectos]="proyectos"
+      (cerrar)="cerrarModal()"
+      (guardado)="cerrarModal(); load()"
+    />
+  }
+  @if (importOpen) {
+    <app-import-modal
+      modulo="centro-costo"
+      plantillaFormato="csv"
+      (onClose)="cerrarImportModal()"
+      (onSuccess)="onImportado()"
+    >
+      <div class="import-ayuda">
+        <p>
+          Columnas: <code>Codigo</code>, <code>Nombre</code> y <code>Tipo</code> (obligatorias);
+          <code>Proyecto</code> y <code>Descripcion</code> (opcionales). Si una fila tiene un error,
+          no se importa ninguna.
+        </p>
+        <p>
+          <strong>Tipo</strong> (código o nombre):
+          @for (t of tipos; track t; let ultimo = $last) {
+            <span
+              ><code>{{ t.codigo }}</code
+              >{{ ultimo ? '' : ', ' }}</span
+            >
+          }
+        </p>
+        <p>
+          <strong>Proyecto</strong> (nombre): obligatorio para el tipo <code>PROYECTO</code> y vacío
+          para los demás. Cada proyecto tiene un solo centro de costo.
+          @if (proyectosDisponibles.length) {
+            Disponibles:
+            @for (p of proyectosDisponibles; track p; let ultimo = $last) {
+              <span
+                ><code>{{ p.nombreProyecto }}</code
+                >{{ ultimo ? '' : ', ' }}</span
+              >
+            }
+          } @else {
+            Todos los proyectos activos ya tienen centro de costo.
+          }
+        </p>
+      </div>
+    </app-import-modal>
+  }
+</div>

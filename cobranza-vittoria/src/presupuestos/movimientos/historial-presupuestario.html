@@ -1,0 +1,57 @@
+<dialog
+  dialogoModal
+  class="panel panel--form design-modal-card design-modal-card--wide"
+  (solicitarCierre)="cerrar.emit()"
+  aria-label="Operación presupuestaria"
+>
+  <button type="button" class="modal-close" (click)="cerrar.emit()" aria-label="Cerrar">
+    &times;
+  </button>
+  <div class="panel-title">Historial de movimientos</div>
+  @if (error()) {
+    <p role="alert">{{ error() }}</p>
+    <button class="btn btn-secondary" (click)="cargar()">Reintentar</button>
+  }
+  @if (contexto()) {
+    <p class="modal-nota">{{ contexto().codigo }} — {{ contexto().nombre }}</p>
+  }
+  @if (cargando()) {
+    <div class="empty-state">Cargando historial...</div>
+  }
+  @if (!error() && !cargando() && !movimientos().length) {
+    <div class="empty-state">Esta partida no registra movimientos.</div>
+  }
+  @if (!cargando() && movimientos().length) {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Afectación</th>
+            <th>Dirección</th>
+            <th>Origen</th>
+            <th class="num">Monto</th>
+            <th>Observación</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (m of movimientos(); track m) {
+            <tr>
+              <td>{{ m.fecha | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td>{{ m.tipo }}</td>
+              <td>{{ m.afectacion || '—' }}</td>
+              <td>{{ m.direccion || '—' }}</td>
+              <td>{{ m.origen }} #{{ m.idOrigen }}</td>
+              <td class="num">{{ m.simboloMoneda }} {{ m.monto | number: '1.2-2' }}</td>
+              <td>{{ m.observacion || '—' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  <div class="toolbar toolbar--compact">
+    <button class="btn btn-ghost" (click)="cerrar.emit()">Cerrar</button>
+  </div>
+</dialog>
