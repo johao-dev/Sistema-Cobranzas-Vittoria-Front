@@ -3,9 +3,9 @@ import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { DialogoModal } from '../../shared/dialogos/dialogo-modal';
-import { ImportModalComponent } from '../../app/shared/components/import-modal/import-modal.component';
-import { NotificationService } from '../../app/core/services/notification.service';
-import { extraerMensajeError } from '../../app/core/utils/api-error.util';
+import { ModalImportacion } from '../../shared/importacion/modal-importacion/modal-importacion';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
+import { extraerMensajeError } from '../../shared/errores-api/mensajes-error-api';
 import { ConsultaGastos } from '../consulta-gastos';
 import { normalizarBusquedaGasto } from '../presentacion-gastos';
 import { ProveedorTerreno } from './contratos-proveedores-terreno';
@@ -15,13 +15,13 @@ import { EdicionProveedorEspecifico } from '../proveedores-especificos/datos-pro
 
 @Component({
   selector: 'lista-proveedores-terreno',
-  imports: [FormsModule, DialogoModal, ImportModalComponent, FormularioProveedorEspecifico],
+  imports: [FormsModule, DialogoModal, ModalImportacion, FormularioProveedorEspecifico],
   templateUrl: './lista-proveedores-terreno.html',
   styleUrls: ['./lista-proveedores-terreno.css', '../mantenimientos-gastos.css'],
 })
 export class ListaProveedoresTerreno implements OnInit {
   private readonly registro = inject(RegistroProveedoresTerreno);
-  private readonly notifications = inject(NotificationService);
+  private readonly notifications = inject(Notificaciones);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly consulta = new ConsultaGastos<ProveedorTerreno>(

@@ -6,7 +6,7 @@ import { ListaSalidas } from './lista-salidas';
 import { FormularioSalida } from './formulario-salida';
 import { RegistroInventario } from '../registro-inventario';
 import { KardexSalidaResponseDto } from '../contratos-inventario';
-import { NotificationService } from '../../app/core/services/notification.service';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 import { salidasPrueba } from '../inventario.fixture';
 import {
   botonInventario,
@@ -34,7 +34,7 @@ describe('ListaSalidas — coordinación y búsqueda', () => {
       providers: [
         ...proveedoresCatalogosPrueba,
         { provide: RegistroInventario, useValue: api },
-        { provide: NotificationService, useValue: notify },
+        { provide: Notificaciones, useValue: notify },
       ],
     });
     fixture = TestBed.createComponent(ListaSalidas);

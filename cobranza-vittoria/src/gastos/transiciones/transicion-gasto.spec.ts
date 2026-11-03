@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Subject, of } from 'rxjs';
 import { SesionUsuario } from '../../core/sesion/sesion-usuario';
-import { NotificationService } from '../../app/core/services/notification.service';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 import { RegistroGastosDirectos } from '../registro-gastos-directos';
 import {
   AccionGasto,
@@ -26,7 +26,7 @@ describe('Transiciones de Gastos', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: RegistroGastosDirectos, useValue: api },
-        { provide: NotificationService, useValue: notifications },
+        { provide: Notificaciones, useValue: notifications },
         { provide: SesionUsuario, useValue: { hasPermission: () => permiso } },
       ],
     });

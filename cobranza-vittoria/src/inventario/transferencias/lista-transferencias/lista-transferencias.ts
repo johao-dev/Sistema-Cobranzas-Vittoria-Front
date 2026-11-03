@@ -10,7 +10,7 @@ import { ReferenciasInventario } from '../../referencias-inventario/referencias-
 import { ConsultaInventario } from '../../consulta-inventario/consulta-inventario';
 import { FormularioTransferencia } from '../formulario-transferencia/formulario-transferencia';
 import { DetalleTransferencia } from '../detalle-transferencia/detalle-transferencia';
-import { NotificationService } from '../../../app/core/services/notification.service';
+import { Notificaciones } from '../../../shared/notificaciones/notificaciones';
 import {
   fechaInventario,
   cantidadInventario,
@@ -28,7 +28,7 @@ import {
 })
 export class ListaTransferencias implements OnInit {
   private readonly registro = inject(RegistroTransferenciasProyecto);
-  private readonly notificaciones = inject(NotificationService);
+  private readonly notificaciones = inject(Notificaciones);
   protected readonly referencias = inject(ReferenciasInventario);
 
   protected readonly consulta = new ConsultaInventario<TransferenciaProyecto>();

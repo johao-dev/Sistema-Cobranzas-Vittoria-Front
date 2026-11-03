@@ -7,7 +7,7 @@ import { FormularioTransferencia } from '../formulario-transferencia/formulario-
 import { RegistroTransferenciasProyecto } from '../registro-transferencias-proyecto';
 import { TransferenciaProyecto } from '../contratos-transferencias-proyecto';
 import { transferenciasPrueba } from '../pruebas/transferencias.fixture';
-import { NotificationService } from '../../../app/core/services/notification.service';
+import { Notificaciones } from '../../../shared/notificaciones/notificaciones';
 import {
   proveedoresCatalogosPrueba,
   botonInventario,
@@ -34,7 +34,7 @@ describe('ListaTransferencias — filtros, consulta y detalle', () => {
       providers: [
         ...proveedoresCatalogosPrueba,
         { provide: RegistroTransferenciasProyecto, useValue: api },
-        { provide: NotificationService, useValue: notificaciones },
+        { provide: Notificaciones, useValue: notificaciones },
       ],
     });
     fixture = TestBed.createComponent(ListaTransferencias);

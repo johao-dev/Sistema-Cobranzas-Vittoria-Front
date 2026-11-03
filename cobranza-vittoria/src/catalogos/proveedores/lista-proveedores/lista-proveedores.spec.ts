@@ -8,7 +8,7 @@ import { ListaProveedores } from './lista-proveedores';
 import { FormularioProveedor } from '../formulario-proveedor/formulario-proveedor';
 import { CatalogoProveedores } from '../catalogo-proveedores';
 import { Proveedor, DetalleProveedor } from '../contratos-proveedores';
-import { NotificationService } from '../../../app/core/services/notification.service';
+import { Notificaciones } from '../../../shared/notificaciones/notificaciones';
 import {
   PROVEEDOR,
   PROVEEDOR_REQUEST,
@@ -51,7 +51,7 @@ describe('ListaProveedores sin Zone.js', () => {
       providers: [
         provideZonelessChangeDetection(),
         { provide: CatalogoProveedores, useValue: api },
-        { provide: NotificationService, useValue: { show: vi.fn() } },
+        { provide: Notificaciones, useValue: { show: vi.fn() } },
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(ListaProveedores);

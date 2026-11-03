@@ -11,7 +11,7 @@ import { FormularioOrden } from '../formulario-orden/formulario-orden';
 import { NuevoProveedorOrden } from '../nuevo-proveedor-orden/nuevo-proveedor-orden';
 import { DetalleOrden } from '../detalle-orden/detalle-orden';
 import { CambioEstadoOrden } from '../cambio-estado-orden/cambio-estado-orden';
-import { NotificationService } from '../../app/core/services/notification.service';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 import { SesionUsuario } from '../../core/sesion/sesion-usuario';
 
 describe('BandejaOrdenes — coordinación y actualización sin Zone.js', () => {
@@ -54,7 +54,7 @@ describe('BandejaOrdenes — coordinación y actualización sin Zone.js', () => 
               ]),
           },
         },
-        { provide: NotificationService, useValue: { show: vi.fn() } },
+        { provide: Notificaciones, useValue: { show: vi.fn() } },
         { provide: SesionUsuario, useValue: { session: { idUsuario: 99 } } },
       ],
     });

@@ -8,7 +8,7 @@ import { ListaMateriales } from './lista-materiales';
 import { FormularioMaterial } from '../formulario-material/formulario-material';
 import { CatalogoMateriales } from '../catalogo-materiales';
 import { Material } from '../contratos-materiales';
-import { NotificationService } from '../../../app/core/services/notification.service';
+import { Notificaciones } from '../../../shared/notificaciones/notificaciones';
 import {
   MATERIAL,
   MATERIAL_REQUEST,
@@ -49,7 +49,7 @@ describe('ListaMateriales sin Zone.js', () => {
       providers: [
         provideZonelessChangeDetection(),
         { provide: CatalogoMateriales, useValue: api },
-        { provide: NotificationService, useValue: { show: vi.fn() } },
+        { provide: Notificaciones, useValue: { show: vi.fn() } },
         {
           provide: CatalogoEspecialidades,
           useValue: {

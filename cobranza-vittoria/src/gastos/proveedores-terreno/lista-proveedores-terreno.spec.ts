@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Subject, of } from 'rxjs';
 import { CatalogoProveedores } from '../../catalogos/proveedores/catalogo-proveedores';
-import { NotificationService } from '../../app/core/services/notification.service';
-import { ImportService } from '../../app/core/services/import.service';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
+import { RegistroImportacion } from '../../shared/importacion/registro-importacion';
 import { ProveedorTerreno } from './contratos-proveedores-terreno';
 import { RegistroProveedoresTerreno } from './registro-proveedores-terreno';
 import {
@@ -36,8 +36,8 @@ describe('ListaProveedoresTerreno: interacción y preservación de datos', () =>
     TestBed.configureTestingModule({
       providers: [
         { provide: RegistroProveedoresTerreno, useValue: api },
-        { provide: NotificationService, useValue: { show: vi.fn() } },
-        { provide: ImportService, useValue: {} },
+        { provide: Notificaciones, useValue: { show: vi.fn() } },
+        { provide: RegistroImportacion, useValue: {} },
         { provide: CatalogoProveedores, useValue: { consultaRuc: vi.fn() } },
       ],
     });

@@ -3,8 +3,8 @@ import { Component, DestroyRef, OnInit, inject, input, output, signal } from '@a
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DialogoModal } from '../../shared/dialogos/dialogo-modal';
-import { NotificationService } from '../../app/core/services/notification.service';
-import { extraerMensajeError } from '../../app/core/utils/api-error.util';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
+import { extraerMensajeError } from '../../shared/errores-api/mensajes-error-api';
 import { CentroCostoResumen } from './contratos-centros-costo';
 import { BorradorCentroCosto } from './borrador-centro-costo';
 import { TipoCentroCosto } from '../contratos-catalogos-presupuestarios';
@@ -20,7 +20,7 @@ import { CatalogoCentrosCosto } from './catalogo-centros-costo';
 export class FormularioCentroCosto implements OnInit {
   private readonly catalogoCentrosCosto = inject(CatalogoCentrosCosto);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly notifications = inject(NotificationService);
+  private readonly notifications = inject(Notificaciones);
   readonly valor = input<CentroCostoResumen | null>(null);
   readonly guardado = output<void>();
   readonly cerrar = output<void>();

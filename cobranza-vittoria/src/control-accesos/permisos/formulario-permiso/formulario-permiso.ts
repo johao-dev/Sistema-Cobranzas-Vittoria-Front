@@ -3,8 +3,8 @@ import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { DialogoModal } from '../../../shared/dialogos/dialogo-modal';
-import { NotificationService } from '../../../app/core/services/notification.service';
-import { extraerMensajeError } from '../../../app/core/utils/api-error.util';
+import { Notificaciones } from '../../../shared/notificaciones/notificaciones';
+import { extraerMensajeError } from '../../../shared/errores-api/mensajes-error-api';
 import { Permiso } from '../contratos-permisos';
 import { RegistroPermisos } from '../registro-permisos';
 
@@ -17,7 +17,7 @@ import { RegistroPermisos } from '../registro-permisos';
 export class FormularioPermiso implements OnInit {
   private readonly registro = inject(RegistroPermisos);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly notificaciones = inject(NotificationService);
+  private readonly notificaciones = inject(Notificaciones);
   readonly valor = input.required<Permiso>();
   readonly guardado = output<void>();
   readonly cerrar = output<void>();

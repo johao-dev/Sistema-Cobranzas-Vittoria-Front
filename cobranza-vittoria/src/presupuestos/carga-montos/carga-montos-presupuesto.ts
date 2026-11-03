@@ -20,8 +20,8 @@ import {
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { DialogoModal } from '../../shared/dialogos/dialogo-modal';
-import { NotificationService } from '../../app/core/services/notification.service';
-import { extraerMensajeError } from '../../app/core/utils/api-error.util';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
+import { extraerMensajeError } from '../../shared/errores-api/mensajes-error-api';
 import { RegistroPresupuestos } from '../registro-presupuestos';
 import { PartidaCatalogo } from '../partidas/contratos-partidas';
 import { DetallePresupuesto } from '../contratos-presupuestos';
@@ -45,7 +45,7 @@ type FilaMonto = FormGroup<{
 export class CargaMontosPresupuesto implements OnInit {
   private readonly registro = inject(RegistroPresupuestos);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly notifications = inject(NotificationService);
+  private readonly notifications = inject(Notificaciones);
   readonly idPresupuesto = input.required<number>();
   readonly idVersion = input.required<number>();
   readonly numeroVersion = input.required<number>();

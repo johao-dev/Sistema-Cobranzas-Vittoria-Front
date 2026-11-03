@@ -1,12 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../app/core/services/api.service';
+import { ApiHttp } from '../../core/http/api-http';
 import { CategoriaGastoReferencia, CategoriaGastoUpsert } from './contratos-categorias-gasto';
 
 @Injectable({ providedIn: 'root' })
 export class CatalogoCategoriasGasto {
-  private readonly api = inject(ApiService);
+  private readonly api = inject(ApiHttp);
   private readonly base = `${this.api.baseUrl}/api/maestra/categorias-gasto`;
 
   listar(activo?: boolean | null): Observable<CategoriaGastoReferencia[]> {

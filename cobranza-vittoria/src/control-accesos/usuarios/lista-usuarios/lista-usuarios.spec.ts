@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NotificationService } from '../../../app/core/services/notification.service';
+import { Notificaciones } from '../../../shared/notificaciones/notificaciones';
 import { environment } from '../../../core/config/environment';
 import { ListaUsuarios } from './lista-usuarios';
 
@@ -26,7 +26,7 @@ describe('ListaUsuarios sin Zone.js', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: NotificationService, useValue: notificaciones },
+        { provide: Notificaciones, useValue: notificaciones },
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(ListaUsuarios);

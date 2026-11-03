@@ -3,7 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 
 import { RegistroKardexCompras } from './registro-kardex-compras';
-import { ApiService } from '../../app/core/services/api.service';
+import { ApiHttp } from '../../core/http/api-http';
 import { movimientoPrueba } from '../inventario.fixture';
 
 describe('RegistroKardexCompras — contrato legacy vigente', () => {
@@ -17,7 +17,7 @@ describe('RegistroKardexCompras — contrato legacy vigente', () => {
     });
     api = TestBed.inject(RegistroKardexCompras);
     http = TestBed.inject(HttpTestingController);
-    base = TestBed.inject(ApiService).baseUrl + '/api/almacen/kardex';
+    base = TestBed.inject(ApiHttp).baseUrl + '/api/almacen/kardex';
   });
 
   afterEach(() => http.verify());

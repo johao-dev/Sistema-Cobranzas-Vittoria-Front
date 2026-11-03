@@ -3,7 +3,7 @@ import { of } from 'rxjs';
 
 import { ListaEntradas } from './lista-entradas';
 import { RegistroInventario } from '../registro-inventario';
-import { NotificationService } from '../../app/core/services/notification.service';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 import { entradaPrueba } from '../inventario.fixture';
 import {
   proveedoresCatalogosPrueba,
@@ -19,7 +19,7 @@ describe('ListaEntradas — búsqueda y eliminación', () => {
       providers: [
         ...proveedoresCatalogosPrueba,
         { provide: RegistroInventario, useValue: api },
-        { provide: NotificationService, useValue: { show: vi.fn() } },
+        { provide: Notificaciones, useValue: { show: vi.fn() } },
       ],
     });
 

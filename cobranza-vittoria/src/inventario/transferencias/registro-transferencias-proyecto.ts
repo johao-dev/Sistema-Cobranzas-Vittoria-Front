@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import { ApiService } from '../../app/core/services/api.service';
+import { ApiHttp } from '../../core/http/api-http';
 import {
   CrearTransferenciaProyectoDto,
   FiltrosTransferenciasProyecto,
@@ -11,7 +11,7 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class RegistroTransferenciasProyecto {
-  private readonly api = inject(ApiService);
+  private readonly api = inject(ApiHttp);
   private readonly ruta = `${this.api.baseUrl}/api/almacen/transferencias-proyecto`;
 
   listar(filtros: FiltrosTransferenciasProyecto = {}): Observable<TransferenciaProyecto[]> {

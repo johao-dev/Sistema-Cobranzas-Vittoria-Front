@@ -1,7 +1,7 @@
 import { DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable, Subject, catchError, finalize, of, switchMap } from 'rxjs';
-import { extraerMensajeError } from '../app/core/utils/api-error.util';
+import { extraerMensajeError } from '../shared/errores-api/mensajes-error-api';
 
 /** Cada propietario mantiene su consulta; una nueva lectura cancela la anterior. */
 export class ConsultaGastos<T> {

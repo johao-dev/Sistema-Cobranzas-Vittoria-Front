@@ -7,7 +7,7 @@ import { compraPrueba, pendientePrueba } from '../compras.fixture';
 import { CompraFilaSql } from '../contratos-compras';
 import { AceptacionCompra } from '../aceptacion-compra/aceptacion-compra';
 import { SesionUsuario } from '../../core/sesion/sesion-usuario';
-import { NotificationService } from '../../app/core/services/notification.service';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 describe('BandejaCompras — carga y coordinación sin Zone.js', () => {
   const api = {
     compras: vi.fn<() => Observable<CompraFilaSql[]>>(),
@@ -26,7 +26,7 @@ describe('BandejaCompras — carga y coordinación sin Zone.js', () => {
       providers: [
         { provide: RegistroCompras, useValue: api },
         { provide: SesionUsuario, useValue: { session: { idUsuario: 99 } } },
-        { provide: NotificationService, useValue: { show: vi.fn() } },
+        { provide: Notificaciones, useValue: { show: vi.fn() } },
       ],
     });
     fixture = TestBed.createComponent(BandejaCompras);

@@ -1,0 +1,19 @@
+<div
+  role="status"
+  aria-live="polite"
+  aria-atomic="true"
+  class="notification-container"
+  [class.show]="state().visible"
+  [ngClass]="state().type"
+>
+  <div class="notification-content">
+    <i
+      aria-hidden="true"
+      class="feather"
+      [class.icon-check-circle]="state().type === 'success'"
+      [class.icon-x-circle]="state().type === 'error'"
+      [class.icon-info]="state().type === 'info'"
+    ></i>
+    <span class="notification-message">{{ state().visible ? state().message : '' }}</span>
+  </div>
+</div>

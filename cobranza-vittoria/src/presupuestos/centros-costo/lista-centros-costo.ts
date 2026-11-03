@@ -2,7 +2,7 @@ import { normalizarBusqueda } from '../presentacion-presupuestos';
 import { FormularioCentroCosto } from './formulario-centro-costo';
 import { finalize, Subscription } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { extraerMensajeError } from '../../app/core/utils/api-error.util';
+import { extraerMensajeError } from '../../shared/errores-api/mensajes-error-api';
 import { CentroCostoResumen } from './contratos-centros-costo';
 import { TipoCentroCosto } from '../contratos-catalogos-presupuestarios';
 import { Proyecto } from '../../catalogos/proyectos/contratos-proyectos';
@@ -11,13 +11,13 @@ import { CatalogosPresupuestarios } from '../catalogos-presupuestarios';
 import { DestroyRef, inject, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CatalogoProyectos } from '../../catalogos/proyectos/catalogo-proyectos';
-import { NotificationService } from '../../app/core/services/notification.service';
-import { ImportModalComponent } from '../../app/shared/components/import-modal/import-modal.component';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
+import { ModalImportacion } from '../../shared/importacion/modal-importacion/modal-importacion';
 
 @Component({
   standalone: true,
   selector: 'lista-centros-costo',
-  imports: [FormularioCentroCosto, FormsModule, ImportModalComponent],
+  imports: [FormularioCentroCosto, FormsModule, ModalImportacion],
   templateUrl: './lista-centros-costo.html',
   styleUrls: ['../dialogos-presupuesto.css', './lista-centros-costo.css'],
 })
@@ -43,7 +43,7 @@ export class ListaCentrosCosto implements OnInit {
   filtroBusqueda = '';
 
   private readonly proyectosApi = inject(CatalogoProyectos);
-  private readonly notifications = inject(NotificationService);
+  private readonly notifications = inject(Notificaciones);
   private readonly cdr = inject(ChangeDetectorRef);
 
   ngOnInit(): void {

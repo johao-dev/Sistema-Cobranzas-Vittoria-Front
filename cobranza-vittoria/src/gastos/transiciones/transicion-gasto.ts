@@ -4,8 +4,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { DialogoModal } from '../../shared/dialogos/dialogo-modal';
 import { SesionUsuario } from '../../core/sesion/sesion-usuario';
-import { NotificationService } from '../../app/core/services/notification.service';
-import { extraerMensajeError } from '../../app/core/utils/api-error.util';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
+import { extraerMensajeError } from '../../shared/errores-api/mensajes-error-api';
 import { AccionGasto, GastoDirectoListado } from '../contratos-gastos-directos';
 import { RegistroGastosDirectos } from '../registro-gastos-directos';
 import { esGastoHistorico } from '../presentacion-gastos';
@@ -19,7 +19,7 @@ import { esGastoHistorico } from '../presentacion-gastos';
 export class TransicionGasto {
   private readonly registro = inject(RegistroGastosDirectos);
   private readonly sesion = inject(SesionUsuario);
-  private readonly notifications = inject(NotificationService);
+  private readonly notifications = inject(Notificaciones);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly gasto = input.required<GastoDirectoListado>();

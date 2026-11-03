@@ -1,6 +1,6 @@
 import { DetalleOrdenCompra, ItemOrdenCompra } from '../contratos-ordenes-compra';
 import { presentarDetalleOrden } from '../datos-orden';
-import { descargarArchivo } from '../../app/core/utils/file-download.util';
+import { descargarArchivo } from '../../shared/archivos/descarga-archivos';
 import { documentoOrden } from './documento-orden';
 import { nombrePlanillaOrden, planillaOrden } from './planilla-orden';
 

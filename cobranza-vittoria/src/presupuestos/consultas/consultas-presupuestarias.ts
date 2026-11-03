@@ -11,12 +11,12 @@ import {
 } from './contratos-consultas-presupuestarias';
 import { DatosArbolPresupuestario } from '../arbol/contratos-arbol-presupuestario';
 import { Tablero } from '../tablero/contratos-tablero-presupuestario';
-import { ApiService } from '../../app/core/services/api.service';
+import { ApiHttp } from '../../core/http/api-http';
 import { parametrosConsulta } from '../parametros-presupuestarios';
 
 @Injectable({ providedIn: 'root' })
 export class ConsultasPresupuestarias {
-  private readonly api = inject(ApiService);
+  private readonly api = inject(ApiHttp);
   private readonly base = `${this.api.baseUrl}/api/control-presupuestario`;
 
   resumen(filtro: ReporteFiltro = {}): Observable<ResumenPresupuestario> {

@@ -2,14 +2,14 @@ import { CatalogoPartidas } from '../../../presupuestos/partidas/catalogo-partid
 import {
   MaterialPlantillaFormato,
   MATERIAL_PLANTILLA_FORMATOS,
-} from '../../../app/models/import.models';
+} from '../../../shared/importacion/contratos-importacion';
 import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { catchError, finalize, of, startWith, Subject, Subscription, switchMap } from 'rxjs';
-import { NotificationService } from '../../../app/core/services/notification.service';
-import { ImportModalComponent } from '../../../app/shared/components/import-modal/import-modal.component';
+import { Notificaciones } from '../../../shared/notificaciones/notificaciones';
+import { ModalImportacion } from '../../../shared/importacion/modal-importacion/modal-importacion';
 import { DialogoCatalogo } from '../../dialogo-catalogo/dialogo-catalogo';
 import { filtrarCatalogo } from '../../busqueda-catalogo';
 import { mensajeCatalogo } from '../../mensaje-catalogo';
@@ -23,7 +23,7 @@ import { UnidadMedida } from '../../unidades-medida/contratos-unidades-medida';
 
 @Component({
   selector: 'lista-materiales',
-  imports: [FormsModule, DialogoCatalogo, FormularioMaterial, ImportModalComponent],
+  imports: [FormsModule, DialogoCatalogo, FormularioMaterial, ModalImportacion],
   templateUrl: './lista-materiales.html',
   styleUrl: './lista-materiales.css',
 })
@@ -32,7 +32,7 @@ export class ListaMateriales implements OnInit {
 
   private readonly api: CatalogoMateriales = inject(CatalogoMateriales);
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
-  private readonly notificaciones: NotificationService = inject(NotificationService);
+  private readonly notificaciones: Notificaciones = inject(Notificaciones);
   private readonly recargas: Subject<void> = new Subject<void>();
   private readonly especialidadesApi: CatalogoEspecialidades = inject(CatalogoEspecialidades);
   private readonly unidadesApi: CatalogoUnidadesMedida = inject(CatalogoUnidadesMedida);

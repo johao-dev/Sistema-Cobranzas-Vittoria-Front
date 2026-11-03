@@ -3,11 +3,11 @@ import { parametrosConsulta, textoOpcional } from '../parametros-presupuestarios
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { PartidaCatalogo } from './contratos-partidas';
-import { ApiService } from '../../app/core/services/api.service';
+import { ApiHttp } from '../../core/http/api-http';
 
 @Injectable({ providedIn: 'root' })
 export class CatalogoPartidas {
-  private readonly api = inject(ApiService);
+  private readonly api = inject(ApiHttp);
   private readonly base = `${this.api.baseUrl}/api/control-presupuestario`;
 
   partidas(filtros: FiltroPartidas = {}): Observable<PartidaCatalogo[]> {

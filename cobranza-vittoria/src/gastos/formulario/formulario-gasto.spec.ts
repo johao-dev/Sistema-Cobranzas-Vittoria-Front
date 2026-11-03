@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { Observable, Subject, of } from 'rxjs';
 import { SesionUsuario } from '../../core/sesion/sesion-usuario';
-import { NotificationService } from '../../app/core/services/notification.service';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 import { ReferenciasGastos } from '../referencias-gastos';
 import { RegistroGastosDirectos } from '../registro-gastos-directos';
 import { GastoDirectoGuardado, PartidaDisponibleGastoDirecto } from '../contratos-gastos-directos';
@@ -40,7 +40,7 @@ describe('FormularioGasto: partidas, importes y guardado', () => {
       providers: [
         { provide: RegistroGastosDirectos, useValue: api },
         { provide: SesionUsuario, useValue: { hasPermission: () => permiso } },
-        { provide: NotificationService, useValue: { show: vi.fn() } },
+        { provide: Notificaciones, useValue: { show: vi.fn() } },
         {
           provide: ReferenciasGastos,
           useValue: {

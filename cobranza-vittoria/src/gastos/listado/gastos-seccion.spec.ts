@@ -2,13 +2,13 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute, Data } from '@angular/router';
 import { BehaviorSubject, Observable, Subject, of, throwError } from 'rxjs';
-import { routes } from '../../app/app.routes';
+import { rutas } from '../../rutas';
 import { SesionUsuario } from '../../core/sesion/sesion-usuario';
 import { CatalogosPresupuestarios } from '../../presupuestos/catalogos-presupuestarios';
-import { NotificationService } from '../../app/core/services/notification.service';
-import { ImportService } from '../../app/core/services/import.service';
-import { ImportResultado } from '../../app/models/import.models';
-import { ImportModalComponent } from '../../app/shared/components/import-modal/import-modal.component';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
+import { RegistroImportacion } from '../../shared/importacion/registro-importacion';
+import { ImportResultado } from '../../shared/importacion/contratos-importacion';
+import { ModalImportacion } from '../../shared/importacion/modal-importacion/modal-importacion';
 import { RegistroGastosDirectos } from '../registro-gastos-directos';
 import { GastoDirectoListado } from '../contratos-gastos-directos';
 import { categoriasGastoPrueba, gastoPrueba } from '../gastos.fixture';
@@ -29,7 +29,7 @@ const paths = [
   'gastos-municipales-distritales',
 ];
 function datosRuta(path: string): Data {
-  const data = routes.find((route) => route.path === path)?.data;
+  const data = rutas.find((route) => route.path === path)?.data;
   if (!data) throw new Error('Falta configuración de ruta');
   return data;
 }
@@ -68,8 +68,8 @@ describe('GastosSeccion: cinco vistas y operaciones compartidas', () => {
           provide: SesionUsuario,
           useValue: { hasPermission: () => permiso, session: { usuarioLogin: 'operador' } },
         },
-        { provide: NotificationService, useValue: notificaciones },
-        { provide: ImportService, useValue: imports },
+        { provide: Notificaciones, useValue: notificaciones },
+        { provide: RegistroImportacion, useValue: imports },
       ],
     });
   });
@@ -84,7 +84,7 @@ describe('GastosSeccion: cinco vistas y operaciones compartidas', () => {
 
   it.each(paths)('%s mantiene URL, protección y categorías por código', async (path) => {
     await abrir(path);
-    const route = routes.find((item) => item.path === path);
+    const route = rutas.find((item) => item.path === path);
     expect(await route?.loadComponent?.()).toBe(GastosSeccion);
     expect(route?.canActivate).toHaveLength(1);
     const codigos: string[] = datosRuta(path)['codigosCategoria'];
@@ -116,12 +116,12 @@ describe('GastosSeccion: cinco vistas y operaciones compartidas', () => {
     await escribirGasto(fixture, '#gastos-seccion-campo-1', 'Estudios');
     botonGasto(fixture, 'Importar gastos').click();
     await fixture.whenStable();
-    const modal = fixture.debugElement.query(By.directive(ImportModalComponent))
-      .componentInstance as ImportModalComponent;
+    const modal = fixture.debugElement.query(By.directive(ModalImportacion))
+      .componentInstance as ModalImportacion;
     modal.descargarPlantilla();
     expect(imports.descargarPlantilla).toHaveBeenCalledExactlyOnceWith('gastos-directos', 'xlsx');
     registro.listar.mockClear();
-    modal.archivo = new File(['xlsx'], 'gastos.xlsx');
+    modal.archivo.set(new File(['xlsx'], 'gastos.xlsx'));
     modal.subir();
     respuesta.next({
       ok: true,
@@ -151,10 +151,10 @@ describe('GastosSeccion: cinco vistas y operaciones compartidas', () => {
     await fixture.whenStable();
     botonGasto(fixture, 'Importar gastos').click();
     await fixture.whenStable();
-    const nuevo = fixture.debugElement.query(By.directive(ImportModalComponent))
-      .componentInstance as ImportModalComponent;
-    expect(nuevo.resultado).toBeNull();
-    expect(nuevo.archivo).toBeNull();
+    const nuevo = fixture.debugElement.query(By.directive(ModalImportacion))
+      .componentInstance as ModalImportacion;
+    expect(nuevo.resultado()).toBeNull();
+    expect(nuevo.archivo()).toBeNull();
   });
 
   it('totaliza por moneda sin anulados ni importes de referencia y busca sin tildes', async () => {
@@ -239,8 +239,8 @@ describe('GastosSeccion: cinco vistas y operaciones compartidas', () => {
   });
 
   it('mantiene retirado Resumen Total y el alias de gastos directos', () => {
-    expect(routes.some((route) => route.path === 'resumen-total')).toBe(false);
-    const control = routes.find((route) => route.path === 'control-presupuestario');
+    expect(rutas.some((route) => route.path === 'resumen-total')).toBe(false);
+    const control = rutas.find((route) => route.path === 'control-presupuestario');
     expect(control?.children?.find((route) => route.path === 'gastos-directos')?.redirectTo).toBe(
       '/gastos-administrativos',
     );

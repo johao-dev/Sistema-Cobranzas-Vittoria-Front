@@ -2,8 +2,8 @@ import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angula
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { catchError, finalize, of, startWith, Subject, switchMap } from 'rxjs';
-import { NotificationService } from '../../../app/core/services/notification.service';
-import { ImportModalComponent } from '../../../app/shared/components/import-modal/import-modal.component';
+import { Notificaciones } from '../../../shared/notificaciones/notificaciones';
+import { ModalImportacion } from '../../../shared/importacion/modal-importacion/modal-importacion';
 import { DialogoCatalogo } from '../../dialogo-catalogo/dialogo-catalogo';
 import { filtrarCatalogo } from '../../busqueda-catalogo';
 import { mensajeCatalogo } from '../../mensaje-catalogo';
@@ -13,14 +13,14 @@ import { FormularioEspecialidad } from '../formulario-especialidad/formulario-es
 
 @Component({
   selector: 'lista-especialidades',
-  imports: [FormsModule, DialogoCatalogo, FormularioEspecialidad, ImportModalComponent],
+  imports: [FormsModule, DialogoCatalogo, FormularioEspecialidad, ModalImportacion],
   templateUrl: './lista-especialidades.html',
   styleUrl: './lista-especialidades.css',
 })
 export class ListaEspecialidades implements OnInit {
   private readonly api: CatalogoEspecialidades = inject(CatalogoEspecialidades);
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
-  private readonly notificaciones: NotificationService = inject(NotificationService);
+  private readonly notificaciones: Notificaciones = inject(Notificaciones);
   private readonly recargas: Subject<void> = new Subject<void>();
   protected readonly filas = signal<Especialidad[]>([]);
   protected readonly busqueda = signal('');

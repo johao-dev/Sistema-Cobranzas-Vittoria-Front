@@ -93,7 +93,7 @@
     }
   </dialogo-catalogo>
   @if (importAbierto()) {
-    <app-import-modal
+    <modal-importacion
       modulo="especialidad"
       (cerrado)="importAbierto.set(false)"
       (importacionCompletada)="importado()"

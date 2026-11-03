@@ -9,7 +9,7 @@ import { ConsultaInventario } from '../consulta-inventario/consulta-inventario';
 import { ReferenciasInventario } from '../referencias-inventario/referencias-inventario';
 import { FiltrosInventario } from '../filtros-inventario/filtros-inventario';
 import { FormularioSalida } from './formulario-salida';
-import { NotificationService } from '../../app/core/services/notification.service';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 import { mensajeErrorInventario } from '../errores-inventario';
 import {
   coincideBusquedaInventario,
@@ -28,7 +28,7 @@ import {
 })
 export class ListaSalidas implements OnInit {
   private readonly registro = inject(RegistroInventario);
-  private readonly notificaciones = inject(NotificationService);
+  private readonly notificaciones = inject(Notificaciones);
   private readonly destroyRef = inject(DestroyRef);
   protected readonly referencias = inject(ReferenciasInventario);
 

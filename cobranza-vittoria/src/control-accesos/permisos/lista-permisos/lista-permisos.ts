@@ -2,8 +2,8 @@ import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angula
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, EMPTY, finalize, Subscription, tap } from 'rxjs';
-import { NotificationService } from '../../../app/core/services/notification.service';
-import { esCodigoError, extraerMensajeError } from '../../../app/core/utils/api-error.util';
+import { Notificaciones } from '../../../shared/notificaciones/notificaciones';
+import { esCodigoError, extraerMensajeError } from '../../../shared/errores-api/mensajes-error-api';
 import { normalizarBusquedaAccesos } from '../../busqueda-accesos';
 import { Permiso } from '../contratos-permisos';
 import { RegistroPermisos } from '../registro-permisos';
@@ -19,7 +19,7 @@ import { FormularioPermiso } from '../formulario-permiso/formulario-permiso';
 export class ListaPermisos implements OnInit {
   private readonly registro = inject(RegistroPermisos);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly notificaciones = inject(NotificationService);
+  private readonly notificaciones = inject(Notificaciones);
   private consultaListado?: Subscription;
   protected readonly permisosListado = signal<Permiso[]>([]);
   protected readonly cargando = signal(false);

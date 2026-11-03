@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { extraerMensajeError } from '../app/core/utils/api-error.util';
+import { extraerMensajeError } from '../shared/errores-api/mensajes-error-api';
 
 /** Presenta el mensaje del servidor; los fallos de transporte usan el texto de la operación. */
 export function mensajeRequerimiento(error: unknown, respaldo: string): string {

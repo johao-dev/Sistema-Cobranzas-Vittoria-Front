@@ -126,7 +126,7 @@
     }
   </dialogo-catalogo>
   @if (importAbierto()) {
-    <app-import-modal
+    <modal-importacion
       modulo="material"
       [plantillaFormato]="importFormato()"
       (cerrado)="importAbierto.set(false)"

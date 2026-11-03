@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { NotificationService } from '../../../app/core/services/notification.service';
+import { Notificaciones } from '../../../shared/notificaciones/notificaciones';
 import { environment } from '../../../core/config/environment';
 import { FormularioUsuario } from './formulario-usuario';
 import { AsignacionRolesUsuario } from '../asignacion-roles-usuario/asignacion-roles-usuario';
@@ -43,7 +43,7 @@ describe('FormularioUsuario sin Zone.js', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: NotificationService, useValue: notificaciones },
+        { provide: Notificaciones, useValue: notificaciones },
       ],
     }).compileComponents();
     http = TestBed.inject(HttpTestingController);

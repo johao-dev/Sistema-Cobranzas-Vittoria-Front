@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DialogoModal } from '../../shared/dialogos/dialogo-modal';
-import { NotificationService } from '../../app/core/services/notification.service';
-import { extraerMensajeError, obtenerErrores } from '../../app/core/utils/api-error.util';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
+import { extraerMensajeError, obtenerErrores } from '../../shared/errores-api/mensajes-error-api';
 import { RegistroPresupuestos } from '../registro-presupuestos';
 import {
   ResultadoCargaPresupuesto,
@@ -14,7 +14,7 @@ import { DetalleErrorValidacion } from '../../shared/errores-api/contratos-error
 import {
   descargarArchivo,
   extraerFilenameDeContentDisposition,
-} from '../../app/core/utils/file-download.util';
+} from '../../shared/archivos/descarga-archivos';
 
 @Component({
   selector: 'importacion-presupuesto',
@@ -25,7 +25,7 @@ import {
 export class ImportacionPresupuesto {
   private readonly destroyRef = inject(DestroyRef);
   private readonly registroPresupuestos = inject(RegistroPresupuestos);
-  private readonly notifications = inject(NotificationService);
+  private readonly notifications = inject(Notificaciones);
   readonly cerrar = output<void>();
   readonly idPresupuesto = input.required<number>();
   readonly idVersion = input.required<number>();

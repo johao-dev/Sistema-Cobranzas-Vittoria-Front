@@ -18,12 +18,12 @@ import {
   ResultadoEstructuraPresupuesto,
   MovimientoPresupuestario,
 } from './contratos-presupuestos';
-import { ApiService } from '../app/core/services/api.service';
+import { ApiHttp } from '../core/http/api-http';
 import { parametrosConsulta, textoOpcional } from './parametros-presupuestarios';
 
 @Injectable({ providedIn: 'root' })
 export class RegistroPresupuestos {
-  private readonly api = inject(ApiService);
+  private readonly api = inject(ApiHttp);
   private readonly base = `${this.api.baseUrl}/api/control-presupuestario`;
 
   presupuestos(

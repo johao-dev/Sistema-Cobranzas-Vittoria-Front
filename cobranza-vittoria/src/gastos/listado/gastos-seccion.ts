@@ -14,8 +14,8 @@ import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { of } from 'rxjs';
 import { SesionUsuario } from '../../core/sesion/sesion-usuario';
-import { NotificationService } from '../../app/core/services/notification.service';
-import { ImportModalComponent } from '../../app/shared/components/import-modal/import-modal.component';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
+import { ModalImportacion } from '../../shared/importacion/modal-importacion/modal-importacion';
 import {
   AccionGasto,
   GastoDirectoListado,
@@ -48,7 +48,7 @@ function configurarVista(data: Record<string, unknown>): GastoDirectoVistaConfig
   imports: [
     CommonModule,
     FormsModule,
-    ImportModalComponent,
+    ModalImportacion,
     FormularioGasto,
     DocumentosGasto,
     TransicionGasto,
@@ -61,7 +61,7 @@ export class GastosSeccion implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly registro = inject(RegistroGastosDirectos);
   private readonly sesion = inject(SesionUsuario);
-  private readonly notifications = inject(NotificationService);
+  private readonly notifications = inject(Notificaciones);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly referencias = inject(ReferenciasGastos);

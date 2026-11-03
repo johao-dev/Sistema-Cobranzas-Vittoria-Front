@@ -14,9 +14,9 @@ import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { DialogoModal } from '../../shared/dialogos/dialogo-modal';
-import { NotificationService } from '../../app/core/services/notification.service';
-import { extraerMensajeError } from '../../app/core/utils/api-error.util';
-import { descargarArchivo } from '../../app/core/utils/file-download.util';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
+import { extraerMensajeError } from '../../shared/errores-api/mensajes-error-api';
+import { descargarArchivo } from '../../shared/archivos/descarga-archivos';
 import { SesionUsuario } from '../../core/sesion/sesion-usuario';
 import { GastoDirectoDocumento, GastoDirectoListado } from '../contratos-gastos-directos';
 import { ConsultaGastos } from '../consulta-gastos';
@@ -31,7 +31,7 @@ import { RegistroGastosDirectos } from '../registro-gastos-directos';
 export class DocumentosGasto implements OnInit {
   private readonly registro = inject(RegistroGastosDirectos);
   private readonly sesion = inject(SesionUsuario);
-  private readonly notifications = inject(NotificationService);
+  private readonly notifications = inject(Notificaciones);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly gasto = input.required<GastoDirectoListado>();

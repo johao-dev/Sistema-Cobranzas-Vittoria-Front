@@ -6,8 +6,8 @@ import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { DialogoModal } from '../../shared/dialogos/dialogo-modal';
 import { SesionUsuario } from '../../core/sesion/sesion-usuario';
-import { NotificationService } from '../../app/core/services/notification.service';
-import { extraerMensajeError } from '../../app/core/utils/api-error.util';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
+import { extraerMensajeError } from '../../shared/errores-api/mensajes-error-api';
 import { CompraFilaSql } from '../contratos-compras';
 import { RegistroCompras } from '../registro-compras';
 export function esCompraAceptable(compra: CompraFilaSql): boolean {
@@ -22,7 +22,7 @@ export function esCompraAceptable(compra: CompraFilaSql): boolean {
 export class AceptacionCompra {
   private readonly registro = inject(RegistroCompras);
   private readonly sesion = inject(SesionUsuario);
-  private readonly notificaciones = inject(NotificationService);
+  private readonly notificaciones = inject(Notificaciones);
   private readonly destroyRef = inject(DestroyRef);
   readonly compra = input.required<CompraFilaSql>();
   readonly cerrar = output<void>();

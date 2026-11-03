@@ -8,11 +8,11 @@ import {
   TipoMovimientoPresupuestal,
   CatalogosPresupuestariosDatos,
 } from './contratos-catalogos-presupuestarios';
-import { ApiService } from '../app/core/services/api.service';
+import { ApiHttp } from '../core/http/api-http';
 
 @Injectable({ providedIn: 'root' })
 export class CatalogosPresupuestarios {
-  private readonly api = inject(ApiService);
+  private readonly api = inject(ApiHttp);
   private readonly base = `${this.api.baseUrl}/api/control-presupuestario`;
 
   catalogos(): Observable<CatalogosPresupuestariosDatos> {

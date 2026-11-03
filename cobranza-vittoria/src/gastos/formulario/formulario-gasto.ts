@@ -12,8 +12,8 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Subject, catchError, finalize, map, of, switchMap } from 'rxjs';
-import { NotificationService } from '../../app/core/services/notification.service';
-import { extraerMensajeError } from '../../app/core/utils/api-error.util';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
+import { extraerMensajeError } from '../../shared/errores-api/mensajes-error-api';
 import { SesionUsuario } from '../../core/sesion/sesion-usuario';
 import { DialogoModal } from '../../shared/dialogos/dialogo-modal';
 import {
@@ -35,7 +35,7 @@ import { validarFormularioGasto, construirPeticionGasto } from './datos-formular
 export class FormularioGasto implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly registro = inject(RegistroGastosDirectos);
-  private readonly notifications = inject(NotificationService);
+  private readonly notifications = inject(Notificaciones);
   private readonly sesion = inject(SesionUsuario);
   private readonly destroyRef = inject(DestroyRef);
   protected readonly referencias = inject(ReferenciasGastos);

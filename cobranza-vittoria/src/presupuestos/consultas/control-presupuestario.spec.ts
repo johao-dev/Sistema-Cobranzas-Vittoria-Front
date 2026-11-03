@@ -4,7 +4,7 @@ import { ControlPresupuestario } from './control-presupuestario';
 import { ConsultasPresupuestarias } from './consultas-presupuestarias';
 import { RegistroPresupuestos } from '../registro-presupuestos';
 import { CatalogoCentrosCosto } from '../centros-costo/catalogo-centros-costo';
-import { NotificationService } from '../../app/core/services/notification.service';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 import { FilaReportePresupuestario } from './contratos-consultas-presupuestarias';
 import { presupuestoPrueba } from '../presupuestos.fixture';
 
@@ -22,7 +22,7 @@ describe('ControlPresupuestario: selección y consultas concurrentes', () => {
         { provide: ConsultasPresupuestarias, useValue: api },
         { provide: RegistroPresupuestos, useValue: {} },
         { provide: CatalogoCentrosCosto, useValue: {} },
-        { provide: NotificationService, useValue: notificaciones },
+        { provide: Notificaciones, useValue: notificaciones },
       ],
     });
     TestBed.overrideComponent(ControlPresupuestario, { set: { template: '' } });

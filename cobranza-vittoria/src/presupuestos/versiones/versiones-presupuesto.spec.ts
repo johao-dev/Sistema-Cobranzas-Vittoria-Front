@@ -10,7 +10,7 @@ import { RegistroPresupuestos } from '../registro-presupuestos';
 import { DatosArbolPresupuestario, NodoArbol } from '../arbol/contratos-arbol-presupuestario';
 import { ConsultasPresupuestarias } from '../consultas/consultas-presupuestarias';
 import { presupuestoPrueba, versionPrueba, detallePrueba } from '../presupuestos.fixture';
-import { NotificationService } from '../../app/core/services/notification.service';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 
 const DETALLE = detallePrueba();
 
@@ -108,7 +108,7 @@ describe('Presupuestos con árbol como vista única sin Zone.js', () => {
         provideZonelessChangeDetection(),
         { provide: RegistroPresupuestos, useValue: api },
         { provide: ConsultasPresupuestarias, useValue: api },
-        { provide: NotificationService, useValue: notificaciones },
+        { provide: Notificaciones, useValue: notificaciones },
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(VersionesPresupuesto);

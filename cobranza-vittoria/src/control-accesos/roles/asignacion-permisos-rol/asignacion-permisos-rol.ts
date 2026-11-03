@@ -10,8 +10,8 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable, finalize, switchMap, tap } from 'rxjs';
-import { NotificationService } from '../../../app/core/services/notification.service';
-import { extraerMensajeError } from '../../../app/core/utils/api-error.util';
+import { Notificaciones } from '../../../shared/notificaciones/notificaciones';
+import { extraerMensajeError } from '../../../shared/errores-api/mensajes-error-api';
 import { Permiso } from '../../permisos/contratos-permisos';
 import { RegistroPermisos } from '../../permisos/registro-permisos';
 import { PermisoAsignadoResponse, RolConPermisosResponse } from '../contratos-roles';
@@ -27,7 +27,7 @@ export class AsignacionPermisosRol implements OnInit {
   private readonly registro = inject(RegistroRoles);
   private readonly permisosApi = inject(RegistroPermisos);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly notificaciones = inject(NotificationService);
+  private readonly notificaciones = inject(Notificaciones);
   readonly rol = input.required<RolConPermisosResponse>();
   readonly bloqueado = input(false);
   readonly ocupacion = output<boolean>();

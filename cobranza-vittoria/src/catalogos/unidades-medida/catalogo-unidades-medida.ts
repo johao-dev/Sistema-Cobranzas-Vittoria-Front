@@ -1,12 +1,12 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../app/core/services/api.service';
+import { ApiHttp } from '../../core/http/api-http';
 import { UnidadMedida, UnidadMedidaUpsert } from './contratos-unidades-medida';
 
 @Injectable({ providedIn: 'root' })
 export class CatalogoUnidadesMedida {
-  private readonly api: ApiService = inject(ApiService);
+  private readonly api: ApiHttp = inject(ApiHttp);
 
   unidadesMedida(activo?: boolean | null): Observable<UnidadMedida[]> {
     let params = new HttpParams();

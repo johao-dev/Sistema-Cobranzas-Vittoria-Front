@@ -2,7 +2,7 @@ import { normalizarBusqueda } from '../presentacion-presupuestos';
 import { VersionesPresupuesto } from '../versiones/versiones-presupuesto';
 import { FormularioPresupuesto } from '../formulario-presupuesto/formulario-presupuesto';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { extraerMensajeError } from '../../app/core/utils/api-error.util';
+import { extraerMensajeError } from '../../shared/errores-api/mensajes-error-api';
 import { Presupuesto } from '../contratos-presupuestos';
 import { CentroCostoResumen } from '../centros-costo/contratos-centros-costo';
 import { MonedaPresupuestaria } from '../contratos-catalogos-presupuestarios';
@@ -15,7 +15,7 @@ import { DestroyRef, inject, ChangeDetectorRef, Component, OnInit } from '@angul
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { NotificationService } from '../../app/core/services/notification.service';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 
 @Component({
   standalone: true,
@@ -43,7 +43,7 @@ export class ListaPresupuestos implements OnInit {
   modalPresupuesto = false;
   presupuestoEditado: Presupuesto | null = null;
   private consultaListado?: Subscription;
-  private readonly notifications = inject(NotificationService);
+  private readonly notifications = inject(Notificaciones);
   private readonly cdr = inject(ChangeDetectorRef);
 
   ngOnInit(): void {

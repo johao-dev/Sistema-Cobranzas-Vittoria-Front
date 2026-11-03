@@ -8,7 +8,7 @@ import { Especialidad } from '../../catalogos/especialidades/contratos-especiali
 import { UnidadMedida } from '../../catalogos/unidades-medida/contratos-unidades-medida';
 import { MaterialUpsert } from '../../catalogos/materiales/contratos-materiales';
 import { PartidaCatalogo } from '../../presupuestos/partidas/contratos-partidas';
-import { NotificationService } from '../../app/core/services/notification.service';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 import { mensajeRequerimiento } from '../mensaje-requerimiento';
 import { DialogoModal } from '../../shared/dialogos/dialogo-modal';
 
@@ -30,7 +30,7 @@ export class NuevoMaterial {
   readonly cerrar = output<void>();
 
   private readonly materialesApi = inject(CatalogoMateriales);
-  private readonly notificaciones = inject(NotificationService);
+  private readonly notificaciones = inject(Notificaciones);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly mensaje = signal('');

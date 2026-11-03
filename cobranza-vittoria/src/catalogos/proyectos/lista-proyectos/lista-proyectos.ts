@@ -2,7 +2,7 @@ import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angula
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { catchError, finalize, of, startWith, Subject, switchMap } from 'rxjs';
-import { NotificationService } from '../../../app/core/services/notification.service';
+import { Notificaciones } from '../../../shared/notificaciones/notificaciones';
 import { DialogoCatalogo } from '../../dialogo-catalogo/dialogo-catalogo';
 import { filtrarCatalogo } from '../../busqueda-catalogo';
 import { mensajeCatalogo } from '../../mensaje-catalogo';
@@ -19,7 +19,7 @@ import { FormularioProyecto } from '../formulario-proyecto/formulario-proyecto';
 export class ListaProyectos implements OnInit {
   private readonly api: CatalogoProyectos = inject(CatalogoProyectos);
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
-  private readonly notificaciones: NotificationService = inject(NotificationService);
+  private readonly notificaciones: Notificaciones = inject(Notificaciones);
   private readonly recargas: Subject<void> = new Subject<void>();
   protected readonly filas = signal<Proyecto[]>([]);
   protected readonly busqueda = signal('');

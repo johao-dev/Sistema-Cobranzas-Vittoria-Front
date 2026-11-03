@@ -2,8 +2,8 @@ import { Component, DestroyRef, OnInit, inject, input, output, signal } from '@a
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
-import { NotificationService } from '../../../app/core/services/notification.service';
-import { extraerMensajeError } from '../../../app/core/utils/api-error.util';
+import { Notificaciones } from '../../../shared/notificaciones/notificaciones';
+import { extraerMensajeError } from '../../../shared/errores-api/mensajes-error-api';
 import { Rol } from '../../roles/contratos-roles';
 import { RegistroRoles } from '../../roles/registro-roles';
 import { RegistroUsuarios } from '../registro-usuarios';
@@ -19,7 +19,7 @@ export class AsignacionRolesUsuario implements OnInit {
   private readonly registro = inject(RegistroUsuarios);
   private readonly registroRoles = inject(RegistroRoles);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly notificaciones = inject(NotificationService);
+  private readonly notificaciones = inject(Notificaciones);
   readonly idUsuario = input<number | null>(null);
   readonly asignados = input<RolUsuario[]>([]);
   readonly bloqueado = input(false);

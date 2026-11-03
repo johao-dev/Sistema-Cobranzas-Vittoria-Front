@@ -5,7 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { SesionUsuario } from '../../core/sesion/sesion-usuario';
 import { DialogoModal } from '../../shared/dialogos/dialogo-modal';
-import { NotificationService } from '../../app/core/services/notification.service';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 import { RegistroOrdenesCompra } from '../registro-ordenes-compra';
 import { SolicitudCambioEstadoOrden } from '../contratos-ordenes-compra';
 import { accionesEstado, estadoOrden, ETIQUETA_ESTADO } from '../datos-orden';
@@ -24,7 +24,7 @@ export class CambioEstadoOrden {
 
   private readonly registro = inject(RegistroOrdenesCompra);
   private readonly sesion = inject(SesionUsuario);
-  private readonly notificaciones = inject(NotificationService);
+  private readonly notificaciones = inject(Notificaciones);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly guardando = signal(false);

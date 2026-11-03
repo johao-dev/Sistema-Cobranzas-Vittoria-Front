@@ -1,0 +1,187 @@
+archivo_anterior,tipo_de_retiro,destino_o_contexto,ultimo_retiro,presente_en_49dfb84
+cobranza-vittoria/src/app/app.config.ts,Traslado y renombrado del contenedor/arranque,"src/aplicacion.*, rutas.ts y configuracion-aplicacion.ts; sin retiro de API por el movimiento",Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/app.css,Traslado y renombrado del contenedor/arranque,"src/aplicacion.*, rutas.ts y configuracion-aplicacion.ts; sin retiro de API por el movimiento",Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/app.html,Traslado y renombrado del contenedor/arranque,"src/aplicacion.*, rutas.ts y configuracion-aplicacion.ts; sin retiro de API por el movimiento",Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/app.routes.ts,Traslado y renombrado del contenedor/arranque,"src/aplicacion.*, rutas.ts y configuracion-aplicacion.ts; sin retiro de API por el movimiento",Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/app.spec.ts,Traslado y renombrado del contenedor/arranque,"src/aplicacion.*, rutas.ts y configuracion-aplicacion.ts; sin retiro de API por el movimiento",Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/app.ts,Traslado y renombrado del contenedor/arranque,"src/aplicacion.*, rutas.ts y configuracion-aplicacion.ts; sin retiro de API por el movimiento",Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/core/auth/access-control.util.spec.ts,Traslado y separación de infraestructura,core/sesion/ y reglas-acceso.ts; autenticación y permisos conservados,5f477c8,Sí
+cobranza-vittoria/src/app/core/auth/access-control.util.ts,Traslado y separación de infraestructura,core/sesion/ y reglas-acceso.ts; autenticación y permisos conservados,5f477c8,Sí
+cobranza-vittoria/src/app/core/auth/jwt-claims.util.spec.ts,Traslado y separación de infraestructura,core/sesion/ y reglas-acceso.ts; autenticación y permisos conservados,5f477c8,Sí
+cobranza-vittoria/src/app/core/auth/jwt-claims.util.ts,Traslado y separación de infraestructura,core/sesion/ y reglas-acceso.ts; autenticación y permisos conservados,5f477c8,Sí
+cobranza-vittoria/src/app/core/auth/session.models.ts,Traslado y separación de infraestructura,core/sesion/ y reglas-acceso.ts; autenticación y permisos conservados,5f477c8,Sí
+cobranza-vittoria/src/app/core/config/environment.production.ts,Traslado conservando configuración,core/config/,5f477c8,Sí
+cobranza-vittoria/src/app/core/config/environment.staging.ts,Traslado conservando configuración,core/config/,5f477c8,Sí
+cobranza-vittoria/src/app/core/config/environment.ts,Traslado conservando configuración,core/config/,5f477c8,Sí
+cobranza-vittoria/src/app/core/guards/auth.guard.spec.ts,Traslado y separación de infraestructura,core/sesion/ y reglas-acceso.ts; autenticación y permisos conservados,5f477c8,No; creado en una entrega intermedia
+cobranza-vittoria/src/app/core/guards/auth.guard.ts,Traslado y separación de infraestructura,core/sesion/ y reglas-acceso.ts; autenticación y permisos conservados,5f477c8,Sí
+cobranza-vittoria/src/app/core/interceptors/auth.interceptor.spec.ts,Traslado y separación de infraestructura,core/sesion/ y reglas-acceso.ts; autenticación y permisos conservados,5f477c8,No; creado en una entrega intermedia
+cobranza-vittoria/src/app/core/interceptors/auth.interceptor.ts,Traslado y separación de infraestructura,core/sesion/ y reglas-acceso.ts; autenticación y permisos conservados,5f477c8,Sí
+cobranza-vittoria/src/app/core/services/almacen.service.ts,Retirada de adaptador sin consumidor,Kardex agregado antiguo; ver matriz de endpoints,3fcc02c,Sí
+cobranza-vittoria/src/app/core/services/api.service.ts,Traslado y renombrado,core/http/api-http.ts; ApiHttp,Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/core/services/auth.service.spec.ts,Prueba del adaptador anterior; Sustitución conservando API,core/sesion/sesion-usuario.ts; SesionUsuario,5f477c8,No; creado en una entrega intermedia
+cobranza-vittoria/src/app/core/services/auth.service.ts,Sustitución conservando API,core/sesion/sesion-usuario.ts; SesionUsuario,5f477c8,Sí
+cobranza-vittoria/src/app/core/services/catalogos.service.ts,Retirada de adaptador sin consumidor,Catálogos alternativos antiguos; ver matriz de endpoints,Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/core/services/compras.service.ts,Sustitución conservando API,compras/registro-compras.ts; operaciones duplicadas de requerimientos/OC pasan a sus propietarios,e372d61,Sí
+cobranza-vittoria/src/app/core/services/control-presupuestario.service.spec.ts,Prueba del adaptador anterior; Distribución por propietario conservando API,"presupuestos/registro-presupuestos.ts, catalogos-presupuestarios.ts, centros-costo, partidas y consultas",5b0b756,Sí
+cobranza-vittoria/src/app/core/services/control-presupuestario.service.ts,Distribución por propietario conservando API,"presupuestos/registro-presupuestos.ts, catalogos-presupuestarios.ts, centros-costo, partidas y consultas",5b0b756,Sí
+cobranza-vittoria/src/app/core/services/cotizacion-materiales.service.ts,Retirada de adaptador sin consumidor,Subcotizaciones de materiales por proyecto; ver matriz de endpoints,75292a6,Sí
+cobranza-vittoria/src/app/core/services/cotizaciones.service.ts,Retirada de adaptador sin consumidor,Cotizaciones legacy de requerimientos; ver matriz de endpoints,Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/core/services/gasto-proyecto.service.ts,Retirada de adaptador sin consumidor,Gastos por proyecto antiguos; ver matriz de endpoints,343ea67,Sí
+cobranza-vittoria/src/app/core/services/gastos-administrativos.service.ts,Retirada de adaptador sin consumidor,Gastos administrativos antiguos; ver matriz de endpoints,343ea67,Sí
+cobranza-vittoria/src/app/core/services/gastos-directos.service.spec.ts,Prueba del adaptador anterior; Sustitución conservando API,gastos/registro-gastos-directos.ts,343ea67,Sí
+cobranza-vittoria/src/app/core/services/gastos-directos.service.ts,Sustitución conservando API,gastos/registro-gastos-directos.ts,343ea67,Sí
+cobranza-vittoria/src/app/core/services/import.service.spec.ts,Prueba del adaptador anterior; Traslado y renombrado,shared/importacion/registro-importacion.ts,Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/core/services/import.service.ts,Traslado y renombrado,shared/importacion/registro-importacion.ts,Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/core/services/kardex-inventario.service.ts,Sustitución conservando API,inventario/registro-inventario.ts,82868c7,Sí
+cobranza-vittoria/src/app/core/services/kardex.service.ts,Distribución conservando API vigente,inventario/registro-inventario.ts e inventario/kardex-compras/registro-kardex-compras.ts; DTO legacy retirado,82868c7,Sí
+cobranza-vittoria/src/app/core/services/maestra.service.ts,Distribución por propietario conservando API,"catalogos/{especialidades,materiales,proveedores,proyectos,unidades-medida}/catalogo-*.ts",75292a6,Sí
+cobranza-vittoria/src/app/core/services/notification.service.spec.ts,Prueba del adaptador anterior; Traslado y renombrado; sin API propia,shared/notificaciones/notificaciones.ts,Árbol local de cierre; sin commit,No; creado en una entrega intermedia
+cobranza-vittoria/src/app/core/services/notification.service.ts,Traslado y renombrado; sin API propia,shared/notificaciones/notificaciones.ts,Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/core/services/ordenes-compra.service.ts,Retirada de adaptador sin consumidor,Órdenes de compra legacy; ver matriz de endpoints,67e1d55,Sí
+cobranza-vittoria/src/app/core/services/presupuesto.service.ts,Retirada de adaptador sin consumidor,Presupuesto bancario; ver matriz de endpoints,5b0b756,Sí
+cobranza-vittoria/src/app/core/services/proveedores-terreno.service.ts,Sustitución conservando API,gastos/proveedores-terreno/registro-proveedores-terreno.ts,343ea67,Sí
+cobranza-vittoria/src/app/core/services/requerimientos.service.spec.ts,Prueba del adaptador anterior; Sustitución conservando API,requerimientos/registro-requerimientos.ts,98420a2,Sí
+cobranza-vittoria/src/app/core/services/requerimientos.service.ts,Sustitución conservando API,requerimientos/registro-requerimientos.ts,98420a2,Sí
+cobranza-vittoria/src/app/core/services/seguridad.service.spec.ts,Prueba del adaptador anterior; Distribución por propietario conservando API,"control-accesos/{usuarios,roles,permisos}/registro-*.ts",53768f2,Sí
+cobranza-vittoria/src/app/core/services/seguridad.service.ts,Distribución por propietario conservando API,"control-accesos/{usuarios,roles,permisos}/registro-*.ts",53768f2,Sí
+cobranza-vittoria/src/app/core/services/sunat.service.ts,Retirada de adaptador sin consumidor,Tipo de cambio; ver matriz de endpoints,Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/core/services/valorizaciones.service.ts,Retirada de adaptador sin consumidor,Valorizaciones; ver matriz de endpoints,be3285d,Sí
+cobranza-vittoria/src/app/core/utils/api-error.util.spec.ts,Traslado por propósito,shared/errores-api/ o shared/archivos/; nombre de stock en inventario/stock,Árbol local de cierre; sin commit,No; creado en una entrega intermedia
+cobranza-vittoria/src/app/core/utils/api-error.util.ts,Traslado por propósito,shared/errores-api/ o shared/archivos/; nombre de stock en inventario/stock,Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/core/utils/file-download.util.ts,Traslado por propósito,shared/errores-api/ o shared/archivos/; nombre de stock en inventario/stock,Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/models/almacen.models.ts,Contratos distribuidos por propietario,Contratos temáticos dentro de su funcionalidad o shared/importacion; API vigente conservada,82868c7,Sí
+cobranza-vittoria/src/app/models/catalogos.models.ts,Contrato sin consumidores retirado,"Valorizaciones, catálogos legacy, ApiOkResponse, cotizaciones o tipo de cambio; ver reporte",Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/models/common.models.ts,Contrato sin consumidores retirado,"Valorizaciones, catálogos legacy, ApiOkResponse, cotizaciones o tipo de cambio; ver reporte",Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/models/compras.models.ts,Contratos distribuidos por propietario,Contratos temáticos dentro de su funcionalidad o shared/importacion; API vigente conservada,e372d61,Sí
+cobranza-vittoria/src/app/models/consultas-presupuestarias.models.ts,Contratos distribuidos por propietario,Contratos temáticos dentro de su funcionalidad o shared/importacion; API vigente conservada,5b0b756,No; creado en una entrega intermedia
+cobranza-vittoria/src/app/models/cotizaciones.models.ts,Contrato sin consumidores retirado,"Valorizaciones, catálogos legacy, ApiOkResponse, cotizaciones o tipo de cambio; ver reporte",Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/models/import.models.spec.ts,Contratos distribuidos por propietario,Contratos temáticos dentro de su funcionalidad o shared/importacion; API vigente conservada,Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/models/import.models.ts,Contratos distribuidos por propietario,Contratos temáticos dentro de su funcionalidad o shared/importacion; API vigente conservada,Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/models/kardex-inventario.models.ts,Contratos distribuidos por propietario,Contratos temáticos dentro de su funcionalidad o shared/importacion; API vigente conservada,82868c7,Sí
+cobranza-vittoria/src/app/models/maestra.models.ts,Contratos distribuidos por propietario,Contratos temáticos dentro de su funcionalidad o shared/importacion; API vigente conservada,75292a6,Sí
+cobranza-vittoria/src/app/models/ordenes-compra.models.ts,Contrato legacy retirado,OrdenCompraGenerar y respuestas legacy; órdenes vigentes poseen contratos-ordenes-compra.ts,67e1d55,Sí
+cobranza-vittoria/src/app/models/permisos.models.ts,Contratos distribuidos por propietario,Contratos temáticos dentro de su funcionalidad o shared/importacion; API vigente conservada,53768f2,Sí
+cobranza-vittoria/src/app/models/requerimientos.models.ts,Contratos distribuidos por propietario,Contratos temáticos dentro de su funcionalidad o shared/importacion; API vigente conservada,98420a2,Sí
+cobranza-vittoria/src/app/models/roles.models.ts,Contratos distribuidos por propietario,Contratos temáticos dentro de su funcionalidad o shared/importacion; API vigente conservada,53768f2,Sí
+cobranza-vittoria/src/app/models/tipo-cambio.models.ts,Contrato sin consumidores retirado,"Valorizaciones, catálogos legacy, ApiOkResponse, cotizaciones o tipo de cambio; ver reporte",Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/models/usuarios.models.ts,Contratos distribuidos por propietario,Contratos temáticos dentro de su funcionalidad o shared/importacion; API vigente conservada,53768f2,Sí
+cobranza-vittoria/src/app/models/valorizaciones.models.ts,Contrato sin consumidores retirado,"Valorizaciones, catálogos legacy, ApiOkResponse, cotizaciones o tipo de cambio; ver reporte",be3285d,Sí
+cobranza-vittoria/src/app/pages/categorias-gasto/categorias-gasto.page.css,Implementación sustituida o reagrupada,src/gastos/categorias/; API del dominio conservada,343ea67,Sí
+cobranza-vittoria/src/app/pages/categorias-gasto/categorias-gasto.page.html,Implementación sustituida o reagrupada,src/gastos/categorias/; API del dominio conservada,343ea67,Sí
+cobranza-vittoria/src/app/pages/categorias-gasto/categorias-gasto.page.ts,Implementación sustituida o reagrupada,src/gastos/categorias/; API del dominio conservada,343ea67,Sí
+cobranza-vittoria/src/app/pages/centros-costo/centros-costo.page.css,Implementación sustituida o reagrupada,src/presupuestos/centros-costo/; API del dominio conservada,5b0b756,Sí
+cobranza-vittoria/src/app/pages/centros-costo/centros-costo.page.html,Implementación sustituida o reagrupada,src/presupuestos/centros-costo/; API del dominio conservada,5b0b756,Sí
+cobranza-vittoria/src/app/pages/centros-costo/centros-costo.page.ts,Implementación sustituida o reagrupada,src/presupuestos/centros-costo/; API del dominio conservada,5b0b756,Sí
+cobranza-vittoria/src/app/pages/compras/compras.page.css,Implementación sustituida o reagrupada,src/compras/; API del dominio conservada,e372d61,Sí
+cobranza-vittoria/src/app/pages/compras/compras.page.html,Implementación sustituida o reagrupada,src/compras/; API del dominio conservada,e372d61,Sí
+cobranza-vittoria/src/app/pages/compras/compras.page.ts,Implementación sustituida o reagrupada,src/compras/; API del dominio conservada,e372d61,Sí
+cobranza-vittoria/src/app/pages/control-presupuestario/arbol/arbol-presupuestario.component.css,Implementación sustituida o reagrupada,src/presupuestos/; API del dominio conservada,5b0b756,Sí
+cobranza-vittoria/src/app/pages/control-presupuestario/arbol/arbol-presupuestario.component.html,Implementación sustituida o reagrupada,src/presupuestos/; API del dominio conservada,5b0b756,Sí
+cobranza-vittoria/src/app/pages/control-presupuestario/arbol/arbol-presupuestario.component.ts,Implementación sustituida o reagrupada,src/presupuestos/; API del dominio conservada,5b0b756,Sí
+cobranza-vittoria/src/app/pages/control-presupuestario/control-presupuestario.page.css,Implementación sustituida o reagrupada,src/presupuestos/; API del dominio conservada,5b0b756,Sí
+cobranza-vittoria/src/app/pages/control-presupuestario/control-presupuestario.page.html,Implementación sustituida o reagrupada,src/presupuestos/; API del dominio conservada,5b0b756,Sí
+cobranza-vittoria/src/app/pages/control-presupuestario/control-presupuestario.page.ts,Implementación sustituida o reagrupada,src/presupuestos/; API del dominio conservada,5b0b756,Sí
+cobranza-vittoria/src/app/pages/control-presupuestario/tablero/tablero-presupuestario.component.css,Implementación sustituida o reagrupada,src/presupuestos/; API del dominio conservada,5b0b756,Sí
+cobranza-vittoria/src/app/pages/control-presupuestario/tablero/tablero-presupuestario.component.html,Implementación sustituida o reagrupada,src/presupuestos/; API del dominio conservada,5b0b756,Sí
+cobranza-vittoria/src/app/pages/control-presupuestario/tablero/tablero-presupuestario.component.ts,Implementación sustituida o reagrupada,src/presupuestos/; API del dominio conservada,5b0b756,Sí
+cobranza-vittoria/src/app/pages/dashboard/dashboard.page.css,Implementación sustituida o reagrupada,src/dashboard/; API del dominio conservada,9d2506d,Sí
+cobranza-vittoria/src/app/pages/dashboard/dashboard.page.html,Implementación sustituida o reagrupada,src/dashboard/; API del dominio conservada,9d2506d,Sí
+cobranza-vittoria/src/app/pages/dashboard/dashboard.page.ts,Implementación sustituida o reagrupada,src/dashboard/; API del dominio conservada,9d2506d,Sí
+cobranza-vittoria/src/app/pages/especialidades/especialidades.page.css,Implementación sustituida o reagrupada,src/catalogos/especialidades/; API del dominio conservada,75292a6,Sí
+cobranza-vittoria/src/app/pages/especialidades/especialidades.page.html,Implementación sustituida o reagrupada,src/catalogos/especialidades/; API del dominio conservada,75292a6,Sí
+cobranza-vittoria/src/app/pages/especialidades/especialidades.page.ts,Implementación sustituida o reagrupada,src/catalogos/especialidades/; API del dominio conservada,75292a6,Sí
+cobranza-vittoria/src/app/pages/gastos-administrativos/gastos-administrativos.page.css,Implementación legacy sin consumidores retirada,URLs de gastos conservadas mediante gastos/listado/GastosSeccion y Gastos Directos,343ea67,Sí
+cobranza-vittoria/src/app/pages/gastos-administrativos/gastos-administrativos.page.html,Implementación legacy sin consumidores retirada,URLs de gastos conservadas mediante gastos/listado/GastosSeccion y Gastos Directos,343ea67,Sí
+cobranza-vittoria/src/app/pages/gastos-administrativos/gastos-administrativos.page.ts,Implementación legacy sin consumidores retirada,URLs de gastos conservadas mediante gastos/listado/GastosSeccion y Gastos Directos,343ea67,Sí
+cobranza-vittoria/src/app/pages/gastos-proyecto/gastos-proyecto.page.css,Implementación legacy sin consumidores retirada,URLs de gastos conservadas mediante gastos/listado/GastosSeccion y Gastos Directos,343ea67,Sí
+cobranza-vittoria/src/app/pages/gastos-proyecto/gastos-proyecto.page.html,Implementación legacy sin consumidores retirada,URLs de gastos conservadas mediante gastos/listado/GastosSeccion y Gastos Directos,343ea67,Sí
+cobranza-vittoria/src/app/pages/gastos-proyecto/gastos-proyecto.page.ts,Implementación legacy sin consumidores retirada,URLs de gastos conservadas mediante gastos/listado/GastosSeccion y Gastos Directos,343ea67,Sí
+cobranza-vittoria/src/app/pages/gastos-seccion/gastos-seccion-importacion.spec.ts,Implementación sustituida o reagrupada,src/gastos/listado/; API del dominio conservada,343ea67,Sí
+cobranza-vittoria/src/app/pages/gastos-seccion/gastos-seccion.page.css,Implementación sustituida o reagrupada,src/gastos/listado/; API del dominio conservada,343ea67,Sí
+cobranza-vittoria/src/app/pages/gastos-seccion/gastos-seccion.page.html,Implementación sustituida o reagrupada,src/gastos/listado/; API del dominio conservada,343ea67,Sí
+cobranza-vittoria/src/app/pages/gastos-seccion/gastos-seccion.page.spec.ts,Implementación sustituida o reagrupada,src/gastos/listado/; API del dominio conservada,343ea67,Sí
+cobranza-vittoria/src/app/pages/gastos-seccion/gastos-seccion.page.ts,Implementación sustituida o reagrupada,src/gastos/listado/; API del dominio conservada,343ea67,Sí
+cobranza-vittoria/src/app/pages/kardex-entradas/kardex-entradas.page.css,Implementación sustituida o reagrupada,src/inventario/entradas/; API del dominio conservada,82868c7,Sí
+cobranza-vittoria/src/app/pages/kardex-entradas/kardex-entradas.page.html,Implementación sustituida o reagrupada,src/inventario/entradas/; API del dominio conservada,82868c7,Sí
+cobranza-vittoria/src/app/pages/kardex-entradas/kardex-entradas.page.ts,Implementación sustituida o reagrupada,src/inventario/entradas/; API del dominio conservada,82868c7,Sí
+cobranza-vittoria/src/app/pages/kardex-salidas/kardex-salidas.page.css,Implementación sustituida o reagrupada,src/inventario/salidas/; API del dominio conservada,82868c7,Sí
+cobranza-vittoria/src/app/pages/kardex-salidas/kardex-salidas.page.html,Implementación sustituida o reagrupada,src/inventario/salidas/; API del dominio conservada,82868c7,Sí
+cobranza-vittoria/src/app/pages/kardex-salidas/kardex-salidas.page.ts,Implementación sustituida o reagrupada,src/inventario/salidas/; API del dominio conservada,82868c7,Sí
+cobranza-vittoria/src/app/pages/kardex/kardex.page.css,Implementación sustituida o reagrupada,src/inventario/kardex-compras/; API del dominio conservada,82868c7,Sí
+cobranza-vittoria/src/app/pages/kardex/kardex.page.html,Implementación sustituida o reagrupada,src/inventario/kardex-compras/; API del dominio conservada,82868c7,Sí
+cobranza-vittoria/src/app/pages/kardex/kardex.page.ts,Implementación sustituida o reagrupada,src/inventario/kardex-compras/; API del dominio conservada,82868c7,Sí
+cobranza-vittoria/src/app/pages/login/login.page.css,Implementación sustituida o reagrupada,src/autenticacion/; API del dominio conservada,5f477c8,Sí
+cobranza-vittoria/src/app/pages/login/login.page.html,Implementación sustituida o reagrupada,src/autenticacion/; API del dominio conservada,5f477c8,Sí
+cobranza-vittoria/src/app/pages/login/login.page.spec.ts,Implementación sustituida o reagrupada,src/autenticacion/; API del dominio conservada,5f477c8,No; creado en una entrega intermedia
+cobranza-vittoria/src/app/pages/login/login.page.ts,Implementación sustituida o reagrupada,src/autenticacion/; API del dominio conservada,5f477c8,Sí
+cobranza-vittoria/src/app/pages/materiales/materiales.page.css,Implementación sustituida o reagrupada,src/catalogos/materiales/; API del dominio conservada,75292a6,Sí
+cobranza-vittoria/src/app/pages/materiales/materiales.page.html,Implementación sustituida o reagrupada,src/catalogos/materiales/; API del dominio conservada,75292a6,Sí
+cobranza-vittoria/src/app/pages/materiales/materiales.page.ts,Implementación sustituida o reagrupada,src/catalogos/materiales/; API del dominio conservada,75292a6,Sí
+cobranza-vittoria/src/app/pages/ordenes-compra/ordenes-compra.page.css,Implementación sustituida o reagrupada,src/ordenes-compra/; API del dominio conservada,67e1d55,Sí
+cobranza-vittoria/src/app/pages/ordenes-compra/ordenes-compra.page.html,Implementación sustituida o reagrupada,src/ordenes-compra/; API del dominio conservada,67e1d55,Sí
+cobranza-vittoria/src/app/pages/ordenes-compra/ordenes-compra.page.ts,Implementación sustituida o reagrupada,src/ordenes-compra/; API del dominio conservada,67e1d55,Sí
+cobranza-vittoria/src/app/pages/partidas/partidas.page.css,Implementación sustituida o reagrupada,src/presupuestos/partidas/; API del dominio conservada,5b0b756,Sí
+cobranza-vittoria/src/app/pages/partidas/partidas.page.html,Implementación sustituida o reagrupada,src/presupuestos/partidas/; API del dominio conservada,5b0b756,Sí
+cobranza-vittoria/src/app/pages/partidas/partidas.page.ts,Implementación sustituida o reagrupada,src/presupuestos/partidas/; API del dominio conservada,5b0b756,Sí
+cobranza-vittoria/src/app/pages/permisos/permisos.page.css,Implementación sustituida o reagrupada,src/control-accesos/permisos/; API del dominio conservada,53768f2,Sí
+cobranza-vittoria/src/app/pages/permisos/permisos.page.html,Implementación sustituida o reagrupada,src/control-accesos/permisos/; API del dominio conservada,53768f2,Sí
+cobranza-vittoria/src/app/pages/permisos/permisos.page.spec.ts,Implementación sustituida o reagrupada,src/control-accesos/permisos/; API del dominio conservada,53768f2,No; creado en una entrega intermedia
+cobranza-vittoria/src/app/pages/permisos/permisos.page.ts,Implementación sustituida o reagrupada,src/control-accesos/permisos/; API del dominio conservada,53768f2,Sí
+cobranza-vittoria/src/app/pages/presupuesto/presupuesto.page.css,Pantalla retirada funcionalmente,presupuesto; ver matriz de endpoints,5b0b756,Sí
+cobranza-vittoria/src/app/pages/presupuesto/presupuesto.page.html,Pantalla retirada funcionalmente,presupuesto; ver matriz de endpoints,5b0b756,Sí
+cobranza-vittoria/src/app/pages/presupuesto/presupuesto.page.ts,Pantalla retirada funcionalmente,presupuesto; ver matriz de endpoints,5b0b756,Sí
+cobranza-vittoria/src/app/pages/presupuestos/presupuestos.page.css,Implementación sustituida o reagrupada,src/presupuestos/; API del dominio conservada,5b0b756,Sí
+cobranza-vittoria/src/app/pages/presupuestos/presupuestos.page.html,Implementación sustituida o reagrupada,src/presupuestos/; API del dominio conservada,5b0b756,Sí
+cobranza-vittoria/src/app/pages/presupuestos/presupuestos.page.spec.ts,Implementación sustituida o reagrupada,src/presupuestos/; API del dominio conservada,5b0b756,No; creado en una entrega intermedia
+cobranza-vittoria/src/app/pages/presupuestos/presupuestos.page.ts,Implementación sustituida o reagrupada,src/presupuestos/; API del dominio conservada,5b0b756,Sí
+cobranza-vittoria/src/app/pages/proveedores-gasto/proveedores-gasto.page.css,Implementación sustituida o reagrupada,src/gastos/proveedores-gasto/; API del dominio conservada,343ea67,Sí
+cobranza-vittoria/src/app/pages/proveedores-gasto/proveedores-gasto.page.html,Implementación sustituida o reagrupada,src/gastos/proveedores-gasto/; API del dominio conservada,343ea67,Sí
+cobranza-vittoria/src/app/pages/proveedores-gasto/proveedores-gasto.page.ts,Implementación sustituida o reagrupada,src/gastos/proveedores-gasto/; API del dominio conservada,343ea67,Sí
+cobranza-vittoria/src/app/pages/proveedores-terreno/proveedores-terreno.page.css,Implementación sustituida o reagrupada,src/gastos/proveedores-terreno/; API del dominio conservada,343ea67,Sí
+cobranza-vittoria/src/app/pages/proveedores-terreno/proveedores-terreno.page.html,Implementación sustituida o reagrupada,src/gastos/proveedores-terreno/; API del dominio conservada,343ea67,Sí
+cobranza-vittoria/src/app/pages/proveedores-terreno/proveedores-terreno.page.ts,Implementación sustituida o reagrupada,src/gastos/proveedores-terreno/; API del dominio conservada,343ea67,Sí
+cobranza-vittoria/src/app/pages/proveedores/proveedores.page.css,Implementación sustituida o reagrupada,src/catalogos/proveedores/; API del dominio conservada,75292a6,Sí
+cobranza-vittoria/src/app/pages/proveedores/proveedores.page.html,Implementación sustituida o reagrupada,src/catalogos/proveedores/; API del dominio conservada,75292a6,Sí
+cobranza-vittoria/src/app/pages/proveedores/proveedores.page.ts,Implementación sustituida o reagrupada,src/catalogos/proveedores/; API del dominio conservada,75292a6,Sí
+cobranza-vittoria/src/app/pages/proyectos/proyectos.page.css,Implementación sustituida o reagrupada,src/catalogos/proyectos/; API del dominio conservada,75292a6,Sí
+cobranza-vittoria/src/app/pages/proyectos/proyectos.page.html,Implementación sustituida o reagrupada,src/catalogos/proyectos/; API del dominio conservada,75292a6,Sí
+cobranza-vittoria/src/app/pages/proyectos/proyectos.page.ts,Implementación sustituida o reagrupada,src/catalogos/proyectos/; API del dominio conservada,75292a6,Sí
+cobranza-vittoria/src/app/pages/requerimientos/requerimientos.page.css,Implementación sustituida o reagrupada,src/requerimientos/; API del dominio conservada,98420a2,Sí
+cobranza-vittoria/src/app/pages/requerimientos/requerimientos.page.html,Implementación sustituida o reagrupada,src/requerimientos/; API del dominio conservada,98420a2,Sí
+cobranza-vittoria/src/app/pages/requerimientos/requerimientos.page.spec.ts,Implementación sustituida o reagrupada,src/requerimientos/; API del dominio conservada,98420a2,Sí
+cobranza-vittoria/src/app/pages/requerimientos/requerimientos.page.ts,Implementación sustituida o reagrupada,src/requerimientos/; API del dominio conservada,98420a2,Sí
+cobranza-vittoria/src/app/pages/roles/roles.page.css,Implementación sustituida o reagrupada,src/control-accesos/roles/; API del dominio conservada,53768f2,Sí
+cobranza-vittoria/src/app/pages/roles/roles.page.html,Implementación sustituida o reagrupada,src/control-accesos/roles/; API del dominio conservada,53768f2,Sí
+cobranza-vittoria/src/app/pages/roles/roles.page.ts,Implementación sustituida o reagrupada,src/control-accesos/roles/; API del dominio conservada,53768f2,Sí
+cobranza-vittoria/src/app/pages/stock-actual/stock-actual.page.css,Implementación sustituida o reagrupada,src/inventario/stock/; API del dominio conservada,82868c7,Sí
+cobranza-vittoria/src/app/pages/stock-actual/stock-actual.page.html,Implementación sustituida o reagrupada,src/inventario/stock/; API del dominio conservada,82868c7,Sí
+cobranza-vittoria/src/app/pages/stock-actual/stock-actual.page.ts,Implementación sustituida o reagrupada,src/inventario/stock/; API del dominio conservada,82868c7,Sí
+cobranza-vittoria/src/app/pages/terreno/terreno.page.css,Implementación legacy sin consumidores retirada,URLs de gastos conservadas mediante gastos/listado/GastosSeccion y Gastos Directos,343ea67,Sí
+cobranza-vittoria/src/app/pages/terreno/terreno.page.html,Implementación legacy sin consumidores retirada,URLs de gastos conservadas mediante gastos/listado/GastosSeccion y Gastos Directos,343ea67,Sí
+cobranza-vittoria/src/app/pages/terreno/terreno.page.ts,Implementación legacy sin consumidores retirada,URLs de gastos conservadas mediante gastos/listado/GastosSeccion y Gastos Directos,343ea67,Sí
+cobranza-vittoria/src/app/pages/unidades-medida/unidades-medida.page.css,Implementación sustituida o reagrupada,src/catalogos/unidades-medida/; API del dominio conservada,75292a6,Sí
+cobranza-vittoria/src/app/pages/unidades-medida/unidades-medida.page.html,Implementación sustituida o reagrupada,src/catalogos/unidades-medida/; API del dominio conservada,75292a6,Sí
+cobranza-vittoria/src/app/pages/unidades-medida/unidades-medida.page.ts,Implementación sustituida o reagrupada,src/catalogos/unidades-medida/; API del dominio conservada,75292a6,Sí
+cobranza-vittoria/src/app/pages/usuarios/usuarios.page.css,Implementación sustituida o reagrupada,src/control-accesos/usuarios/; API del dominio conservada,53768f2,Sí
+cobranza-vittoria/src/app/pages/usuarios/usuarios.page.html,Implementación sustituida o reagrupada,src/control-accesos/usuarios/; API del dominio conservada,53768f2,Sí
+cobranza-vittoria/src/app/pages/usuarios/usuarios.page.ts,Implementación sustituida o reagrupada,src/control-accesos/usuarios/; API del dominio conservada,53768f2,Sí
+cobranza-vittoria/src/app/pages/valorizaciones/valorizaciones.page.css,Pantalla retirada funcionalmente,valorizaciones; ver matriz de endpoints,be3285d,Sí
+cobranza-vittoria/src/app/pages/valorizaciones/valorizaciones.page.html,Pantalla retirada funcionalmente,valorizaciones; ver matriz de endpoints,be3285d,Sí
+cobranza-vittoria/src/app/pages/valorizaciones/valorizaciones.page.ts,Pantalla retirada funcionalmente,valorizaciones; ver matriz de endpoints,be3285d,Sí
+cobranza-vittoria/src/app/reglas-acceso.ts,Traslado y renombrado del contenedor/arranque,"src/aplicacion.*, rutas.ts y configuracion-aplicacion.ts; sin retiro de API por el movimiento",Árbol local de cierre; sin commit,No; creado en una entrega intermedia
+cobranza-vittoria/src/app/shared/components/import-modal/import-modal.component.css,Traslado y renombrado,shared/importacion/modal-importacion/,Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/shared/components/import-modal/import-modal.component.html,Traslado y renombrado,shared/importacion/modal-importacion/,Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/shared/components/import-modal/import-modal.component.spec.ts,Traslado y renombrado,shared/importacion/modal-importacion/,Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/shared/components/import-modal/import-modal.component.ts,Traslado y renombrado,shared/importacion/modal-importacion/,Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/shared/components/notification/notification.component.css,Traslado y renombrado,shared/notificaciones/aviso-notificacion/,Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/shared/components/notification/notification.component.html,Traslado y renombrado,shared/notificaciones/aviso-notificacion/,Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/shared/components/notification/notification.component.ts,Traslado y renombrado,shared/notificaciones/aviso-notificacion/,Árbol local de cierre; sin commit,Sí
+cobranza-vittoria/src/app/shared/components/permiso-card/permiso-card.component.css,Sustitución,control-accesos/permisos/tarjeta-permiso/,53768f2,Sí
+cobranza-vittoria/src/app/shared/components/permiso-card/permiso-card.component.html,Sustitución,control-accesos/permisos/tarjeta-permiso/,53768f2,Sí
+cobranza-vittoria/src/app/shared/components/permiso-card/permiso-card.component.ts,Sustitución,control-accesos/permisos/tarjeta-permiso/,53768f2,Sí
+cobranza-vittoria/src/app/shared/components/tipo-cambio/tipo-cambio.component.css,Componente retirado con pantalla bancaria,Sin consulta frontend actual a /api/tipo-cambio,5b0b756,Sí
+cobranza-vittoria/src/app/shared/components/tipo-cambio/tipo-cambio.component.html,Componente retirado con pantalla bancaria,Sin consulta frontend actual a /api/tipo-cambio,5b0b756,Sí
+cobranza-vittoria/src/app/shared/components/tipo-cambio/tipo-cambio.component.ts,Componente retirado con pantalla bancaria,Sin consulta frontend actual a /api/tipo-cambio,5b0b756,Sí
+cobranza-vittoria/src/requerimientos/dialogo-requerimiento/dialogo-requerimiento.ts,Diálogo específico sustituido,shared/dialogos/dialogo-modal.ts; sin endpoint propio,67e1d55,No; creado en una entrega intermedia
+docs/stock-proyecto-implementacion.md,Documento histórico retirado,Información conservada en el registro de migración; no retira un endpoint,6686716,No; creado en una entrega intermedia

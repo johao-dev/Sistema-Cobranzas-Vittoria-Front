@@ -11,8 +11,8 @@ import {
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable, Subscription, finalize } from 'rxjs';
-import { NotificationService } from '../../../app/core/services/notification.service';
-import { extraerMensajeError } from '../../../app/core/utils/api-error.util';
+import { Notificaciones } from '../../../shared/notificaciones/notificaciones';
+import { extraerMensajeError } from '../../../shared/errores-api/mensajes-error-api';
 import { DialogoModal } from '../../../shared/dialogos/dialogo-modal';
 import { RegistroUsuarios } from '../registro-usuarios';
 import { RolUsuario } from '../contratos-usuarios';
@@ -32,7 +32,7 @@ import { AsignacionRolesUsuario } from '../asignacion-roles-usuario/asignacion-r
 export class FormularioUsuario implements OnChanges {
   private readonly registro = inject(RegistroUsuarios);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly notificaciones = inject(NotificationService);
+  private readonly notificaciones = inject(Notificaciones);
   private consultaDetalle?: Subscription;
   readonly idUsuario = input<number | null>(null);
   readonly guardado = output<void>();

@@ -138,11 +138,11 @@
     </dialog>
   }
   @if (importOpen()) {
-    <app-import-modal
+    <modal-importacion
       modulo="proveedor-terreno"
       (cerrado)="importOpen.set(false)"
       (importacionCompletada)="onImportSuccess()"
     >
-    </app-import-modal>
+    </modal-importacion>
   }
 </div>

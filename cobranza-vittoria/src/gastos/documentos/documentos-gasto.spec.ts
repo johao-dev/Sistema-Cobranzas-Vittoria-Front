@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { EMPTY, Subject, of, throwError } from 'rxjs';
 import { SesionUsuario } from '../../core/sesion/sesion-usuario';
-import { NotificationService } from '../../app/core/services/notification.service';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 import { RegistroGastosDirectos } from '../registro-gastos-directos';
 import { DocumentosGastoAdjuntados } from '../contratos-gastos-directos';
 import { documentoGastoPrueba, gastoPrueba } from '../gastos.fixture';
@@ -20,7 +20,7 @@ describe('DocumentosGasto', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: RegistroGastosDirectos, useValue: api },
-        { provide: NotificationService, useValue: { show: vi.fn() } },
+        { provide: Notificaciones, useValue: { show: vi.fn() } },
         { provide: SesionUsuario, useValue: { hasPermission: () => true } },
       ],
     });

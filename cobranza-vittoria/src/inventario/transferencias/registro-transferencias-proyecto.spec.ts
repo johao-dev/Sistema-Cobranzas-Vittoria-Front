@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 
-import { ApiService } from '../../app/core/services/api.service';
+import { ApiHttp } from '../../core/http/api-http';
 import { RegistroTransferenciasProyecto } from './registro-transferencias-proyecto';
 import { transferenciasPrueba } from './pruebas/transferencias.fixture';
 
@@ -17,7 +17,7 @@ describe('RegistroTransferenciasProyecto — contrato HTTP', () => {
     });
     api = TestBed.inject(RegistroTransferenciasProyecto);
     http = TestBed.inject(HttpTestingController);
-    ruta = TestBed.inject(ApiService).baseUrl + '/api/almacen/transferencias-proyecto';
+    ruta = TestBed.inject(ApiHttp).baseUrl + '/api/almacen/transferencias-proyecto';
   });
 
   afterEach(() => http.verify());

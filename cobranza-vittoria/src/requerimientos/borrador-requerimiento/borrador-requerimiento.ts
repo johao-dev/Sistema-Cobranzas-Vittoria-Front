@@ -9,7 +9,7 @@ import {
 import { DatosRequerimiento } from '../contratos-formulario-requerimiento';
 import { Injectable, inject, signal, computed, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NotificationService } from '../../app/core/services/notification.service';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 import { SesionUsuario } from '../../core/sesion/sesion-usuario';
 import { RegistroRequerimientos } from '../registro-requerimientos';
 import { mensajeRequerimiento } from '../mensaje-requerimiento';
@@ -25,7 +25,7 @@ import { ConsultaRequerimientos } from '../consulta-requerimientos/consulta-requ
 export class BorradorRequerimiento {
   private readonly requerimientos = inject(RegistroRequerimientos);
   readonly auth = inject(SesionUsuario);
-  private readonly notifyService = inject(NotificationService);
+  private readonly notifyService = inject(Notificaciones);
   private readonly destroyRef = inject(DestroyRef);
   private readonly consulta = inject(ConsultaRequerimientos);
 

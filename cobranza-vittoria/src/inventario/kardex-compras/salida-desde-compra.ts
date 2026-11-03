@@ -7,7 +7,7 @@ import { RegistroKardexCompras } from './registro-kardex-compras';
 import { CompraParaSalida, SalidaCompraRequest } from './contratos-kardex-compras';
 import { Especialidad } from '../../catalogos/especialidades/contratos-especialidades';
 import { hoyInventario } from '../presentacion-inventario/datos-presentacion-inventario';
-import { extraerMensajeError } from '../../app/core/utils/api-error.util';
+import { extraerMensajeError } from '../../shared/errores-api/mensajes-error-api';
 
 @Component({
   selector: 'inventario-salida-desde-compra',

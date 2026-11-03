@@ -132,11 +132,11 @@
     </dialog>
   }
   @if (importOpen()) {
-    <app-import-modal
+    <modal-importacion
       modulo="categoria-gasto"
       (cerrado)="importOpen.set(false)"
       (importacionCompletada)="onImportSuccess()"
     >
-    </app-import-modal>
+    </modal-importacion>
   }
 </div>

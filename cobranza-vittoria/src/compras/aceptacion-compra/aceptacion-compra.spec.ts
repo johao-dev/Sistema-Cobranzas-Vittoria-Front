@@ -5,7 +5,7 @@ import { AceptacionCompra, esCompraAceptable } from './aceptacion-compra';
 import { RegistroCompras } from '../registro-compras';
 import { compraPrueba } from '../compras.fixture';
 import { SesionUsuario } from '../../core/sesion/sesion-usuario';
-import { NotificationService } from '../../app/core/services/notification.service';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 describe('AceptacionCompra — identidad y transición', () => {
   const api = { aceptarCompra: vi.fn<() => Observable<{ ok: boolean }>>() };
   const sesion = { session: { idUsuario: 99 } };
@@ -24,7 +24,7 @@ describe('AceptacionCompra — identidad y transición', () => {
       providers: [
         { provide: RegistroCompras, useValue: api },
         { provide: SesionUsuario, useValue: sesion },
-        { provide: NotificationService, useValue: { show: vi.fn() } },
+        { provide: Notificaciones, useValue: { show: vi.fn() } },
       ],
     });
     fixture = TestBed.createComponent(AceptacionCompra);

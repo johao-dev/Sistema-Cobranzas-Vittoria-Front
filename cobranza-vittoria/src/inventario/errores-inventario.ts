@@ -2,7 +2,7 @@ import {
   esCodigoError,
   extraerMensajeError,
   obtenerErrores,
-} from '../app/core/utils/api-error.util';
+} from '../shared/errores-api/mensajes-error-api';
 
 const MENSAJES_INVENTARIO: Readonly<Record<string, string>> = {
   STOCK_PROYECTO_NO_INICIALIZADO:

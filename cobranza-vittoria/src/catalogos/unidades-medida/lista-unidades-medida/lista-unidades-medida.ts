@@ -2,8 +2,8 @@ import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angula
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { catchError, finalize, of, startWith, Subject, switchMap } from 'rxjs';
-import { NotificationService } from '../../../app/core/services/notification.service';
-import { ImportModalComponent } from '../../../app/shared/components/import-modal/import-modal.component';
+import { Notificaciones } from '../../../shared/notificaciones/notificaciones';
+import { ModalImportacion } from '../../../shared/importacion/modal-importacion/modal-importacion';
 import { DialogoCatalogo } from '../../dialogo-catalogo/dialogo-catalogo';
 import { filtrarCatalogo } from '../../busqueda-catalogo';
 import { mensajeCatalogo } from '../../mensaje-catalogo';
@@ -13,14 +13,14 @@ import { FormularioUnidadMedida } from '../formulario-unidad-medida/formulario-u
 
 @Component({
   selector: 'lista-unidades-medida',
-  imports: [FormsModule, DialogoCatalogo, FormularioUnidadMedida, ImportModalComponent],
+  imports: [FormsModule, DialogoCatalogo, FormularioUnidadMedida, ModalImportacion],
   templateUrl: './lista-unidades-medida.html',
   styleUrl: './lista-unidades-medida.css',
 })
 export class ListaUnidadesMedida implements OnInit {
   private readonly api: CatalogoUnidadesMedida = inject(CatalogoUnidadesMedida);
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
-  private readonly notificaciones: NotificationService = inject(NotificationService);
+  private readonly notificaciones: Notificaciones = inject(Notificaciones);
   private readonly recargas: Subject<void> = new Subject<void>();
   protected readonly filtroActivo = signal<boolean | null>(null);
   protected readonly filas = signal<UnidadMedida[]>([]);

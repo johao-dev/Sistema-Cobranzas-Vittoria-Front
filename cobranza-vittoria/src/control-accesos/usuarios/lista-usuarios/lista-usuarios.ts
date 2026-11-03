@@ -3,8 +3,8 @@ import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angula
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subscription, finalize } from 'rxjs';
-import { NotificationService } from '../../../app/core/services/notification.service';
-import { extraerMensajeError } from '../../../app/core/utils/api-error.util';
+import { Notificaciones } from '../../../shared/notificaciones/notificaciones';
+import { extraerMensajeError } from '../../../shared/errores-api/mensajes-error-api';
 import { filtrarRegistrosAccesos } from '../../busqueda-accesos';
 import { Usuario } from '../contratos-usuarios';
 import { RegistroUsuarios } from '../registro-usuarios';
@@ -19,7 +19,7 @@ import { FormularioUsuario } from '../formulario-usuario/formulario-usuario';
 export class ListaUsuarios implements OnInit {
   private readonly registro = inject(RegistroUsuarios);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly notificaciones = inject(NotificationService);
+  private readonly notificaciones = inject(Notificaciones);
   private consulta?: Subscription;
   protected readonly rows = signal<Usuario[]>([]);
   protected readonly filtroBusqueda = signal('');

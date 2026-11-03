@@ -4,7 +4,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { environment } from '../../../core/config/environment';
-import { NotificationService } from '../../../app/core/services/notification.service';
+import { Notificaciones } from '../../../shared/notificaciones/notificaciones';
 import { Permiso } from '../contratos-permisos';
 import { ListaPermisos } from './lista-permisos';
 import { FormularioPermiso } from '../formulario-permiso/formulario-permiso';
@@ -50,7 +50,7 @@ describe('ListaPermisos con contrato de permisos y sin Zone.js', () => {
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: NotificationService, useValue: notificaciones },
+        { provide: Notificaciones, useValue: notificaciones },
       ],
     }).compileComponents();
     http = TestBed.inject(HttpTestingController);

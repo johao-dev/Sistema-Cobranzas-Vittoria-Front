@@ -4,7 +4,7 @@ import { Observable, Subject, of, throwError } from 'rxjs';
 
 import { RegistroInventario } from '../registro-inventario';
 import { ExportacionStock } from './exportacion-stock';
-import { NotificationService } from '../../app/core/services/notification.service';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 import {
   simularDescargasInventario,
   restaurarDescargasInventario,
@@ -32,7 +32,7 @@ describe('ExportacionStock — XLSX y errores binarios', () => {
       providers: [
         ExportacionStock,
         { provide: RegistroInventario, useValue: api },
-        { provide: NotificationService, useValue: notify },
+        { provide: Notificaciones, useValue: notify },
       ],
     });
     exportacion = TestBed.inject(ExportacionStock);

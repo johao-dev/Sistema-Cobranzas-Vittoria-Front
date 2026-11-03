@@ -1,6 +1,6 @@
 import { Injectable, inject, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NotificationService } from '../../app/core/services/notification.service';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 import { RegistroRequerimientos } from '../registro-requerimientos';
 import { mensajeRequerimiento } from '../mensaje-requerimiento';
 import {
@@ -13,7 +13,7 @@ import { finalize, switchMap, Subject, catchError, of } from 'rxjs';
 @Injectable()
 export class ConsultaRequerimientos {
   private readonly requerimientos = inject(RegistroRequerimientos);
-  private readonly notifyService = inject(NotificationService);
+  private readonly notifyService = inject(Notificaciones);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly rows = signal<RequerimientoResumen[]>([]);

@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { finalize, switchMap } from 'rxjs';
 import { DialogoModal } from '../../shared/dialogos/dialogo-modal';
-import { extraerMensajeError } from '../../app/core/utils/api-error.util';
+import { extraerMensajeError } from '../../shared/errores-api/mensajes-error-api';
 import { RegistroCompras } from '../registro-compras';
 import { CompraDetalleResponse, CompraDocumentoFilaSql } from '../contratos-compras';
 import { archivosSeleccionados } from '../formulario-compra/datos-compra';

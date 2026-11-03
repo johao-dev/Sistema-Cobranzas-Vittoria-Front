@@ -1,12 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../app/core/services/api.service';
+import { ApiHttp } from '../../core/http/api-http';
 import { ListarPermisoResponse, Permiso, UpdatePermisoRequest } from './contratos-permisos';
 
 @Injectable({ providedIn: 'root' })
 export class RegistroPermisos {
-  private readonly api = inject(ApiService);
+  private readonly api = inject(ApiHttp);
   private readonly base = `${this.api.baseUrl}/api/seguridad/permisos`;
 
   permisos(activo?: boolean | null): Observable<ListarPermisoResponse> {

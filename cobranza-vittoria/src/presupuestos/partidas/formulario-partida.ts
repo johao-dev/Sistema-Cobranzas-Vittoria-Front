@@ -3,8 +3,8 @@ import { Component, DestroyRef, OnInit, inject, input, output, signal } from '@a
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DialogoModal } from '../../shared/dialogos/dialogo-modal';
-import { NotificationService } from '../../app/core/services/notification.service';
-import { extraerMensajeError } from '../../app/core/utils/api-error.util';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
+import { extraerMensajeError } from '../../shared/errores-api/mensajes-error-api';
 import { PartidaCatalogo } from './contratos-partidas';
 import { BorradorPartida } from './borrador-partida';
 import { TipoPartida } from '../contratos-catalogos-presupuestarios';
@@ -19,7 +19,7 @@ import { CatalogoPartidas } from './catalogo-partidas';
 export class FormularioPartida implements OnInit {
   private readonly catalogoPartidas = inject(CatalogoPartidas);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly notifications = inject(NotificationService);
+  private readonly notifications = inject(Notificaciones);
   readonly valor = input<PartidaCatalogo | null>(null);
   readonly guardado = output<void>();
   readonly cerrar = output<void>();

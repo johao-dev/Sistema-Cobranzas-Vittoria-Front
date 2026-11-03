@@ -4,8 +4,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { routes } from '../app/app.routes';
-import { NotificationService } from '../app/core/services/notification.service';
+import { rutas } from '../rutas';
+import { Notificaciones } from '../shared/notificaciones/notificaciones';
 import { environment } from '../core/config/environment';
 
 @Component({ selector: 'destino-prueba', template: '' })
@@ -20,13 +20,13 @@ const RUTAS = [
 describe('Rutas migradas de Control de accesos', () => {
   beforeEach(() => {
     localStorage.clear();
-    const acceso = routes.find((ruta) => ruta.path === 'control-accesos');
+    const acceso = rutas.find((ruta) => ruta.path === 'control-accesos');
     if (!acceso) throw new Error('Falta Control de accesos');
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: NotificationService, useValue: { show: vi.fn() } },
+        { provide: Notificaciones, useValue: { show: vi.fn() } },
         provideRouter([
           acceso,
           { path: 'login', component: DestinoPrueba },

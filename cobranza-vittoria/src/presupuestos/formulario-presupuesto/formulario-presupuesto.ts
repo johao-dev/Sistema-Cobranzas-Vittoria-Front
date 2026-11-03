@@ -2,8 +2,8 @@ import { Component, DestroyRef, inject, input, output, signal, OnInit } from '@a
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DialogoModal } from '../../shared/dialogos/dialogo-modal';
-import { NotificationService } from '../../app/core/services/notification.service';
-import { extraerMensajeError } from '../../app/core/utils/api-error.util';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
+import { extraerMensajeError } from '../../shared/errores-api/mensajes-error-api';
 import { RegistroPresupuestos } from '../registro-presupuestos';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -21,7 +21,7 @@ import { MonedaPresupuestaria } from '../contratos-catalogos-presupuestarios';
 export class FormularioPresupuesto implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly registroPresupuestos = inject(RegistroPresupuestos);
-  private readonly notifications = inject(NotificationService);
+  private readonly notifications = inject(Notificaciones);
   readonly cerrar = output<void>();
   readonly presupuesto = input<Presupuesto | null>(null);
   readonly centrosCosto = input.required<CentroCostoResumen[]>();

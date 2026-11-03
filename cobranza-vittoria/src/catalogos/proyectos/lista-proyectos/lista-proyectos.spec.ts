@@ -8,7 +8,7 @@ import { ListaProyectos } from './lista-proyectos';
 import { FormularioProyecto } from '../formulario-proyecto/formulario-proyecto';
 import { CatalogoProyectos } from '../catalogo-proyectos';
 import { Proyecto } from '../contratos-proyectos';
-import { NotificationService } from '../../../app/core/services/notification.service';
+import { Notificaciones } from '../../../shared/notificaciones/notificaciones';
 import {
   PROYECTO,
   PROYECTO_REQUEST,
@@ -38,7 +38,7 @@ describe('ListaProyectos sin Zone.js', () => {
       providers: [
         provideZonelessChangeDetection(),
         { provide: CatalogoProyectos, useValue: api },
-        { provide: NotificationService, useValue: { show: vi.fn() } },
+        { provide: Notificaciones, useValue: { show: vi.fn() } },
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(ListaProyectos);

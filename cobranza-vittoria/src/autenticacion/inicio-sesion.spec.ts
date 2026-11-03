@@ -6,7 +6,7 @@ import { Subject } from 'rxjs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { InicioSesion } from './inicio-sesion';
 import { SesionUsuario } from '../core/sesion/sesion-usuario';
-import { NotificationService } from '../app/core/services/notification.service';
+import { Notificaciones } from '../shared/notificaciones/notificaciones';
 import { Session } from '../core/sesion/contratos-sesion';
 
 const SESION: Session = {
@@ -22,19 +22,19 @@ describe('InicioSesion sin Zone.js', () => {
   let router: Router;
   let respuesta: Subject<Session>;
   let autenticacion: Pick<SesionUsuario, 'login'>;
-  let notificaciones: Pick<NotificationService, 'show'>;
+  let notificaciones: Pick<Notificaciones, 'show'>;
 
   async function crearPagina(returnUrl?: string): Promise<void> {
     respuesta = new Subject<Session>();
     autenticacion = { login: vi.fn<SesionUsuario['login']>().mockReturnValue(respuesta) };
-    notificaciones = { show: vi.fn<NotificationService['show']>() };
+    notificaciones = { show: vi.fn<Notificaciones['show']>() };
     await TestBed.configureTestingModule({
       imports: [InicioSesion],
       providers: [
         provideZonelessChangeDetection(),
         provideRouter([]),
         { provide: SesionUsuario, useValue: autenticacion },
-        { provide: NotificationService, useValue: notificaciones },
+        { provide: Notificaciones, useValue: notificaciones },
         {
           provide: ActivatedRoute,
           useValue: {

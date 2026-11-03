@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import { ApiService } from '../app/core/services/api.service';
+import { ApiHttp } from '../core/http/api-http';
 import { FiltrosStockProyecto, StockProyecto } from './stock/contratos-stock-proyecto';
 import {
   KardexEntradaCreateDto,
@@ -18,7 +18,7 @@ import {
 export class RegistroInventario {
   private readonly base = '/api/almacen/kardex';
 
-  private readonly api = inject(ApiService);
+  private readonly api = inject(ApiHttp);
 
   listarEntradas(filtros?: KardexFiltroInventarioDto): Observable<KardexEntradaResponseDto[]> {
     const params = this.construirQueryParams({

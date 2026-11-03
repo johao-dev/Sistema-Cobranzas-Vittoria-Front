@@ -11,8 +11,8 @@ import {
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable, Subscription, finalize } from 'rxjs';
-import { NotificationService } from '../../../app/core/services/notification.service';
-import { extraerMensajeError } from '../../../app/core/utils/api-error.util';
+import { Notificaciones } from '../../../shared/notificaciones/notificaciones';
+import { extraerMensajeError } from '../../../shared/errores-api/mensajes-error-api';
 import { DialogoModal } from '../../../shared/dialogos/dialogo-modal';
 import { Rol, RolConPermisosResponse } from '../contratos-roles';
 import { RegistroRoles } from '../registro-roles';
@@ -33,7 +33,7 @@ interface BorradorRol {
 export class FormularioRol implements OnChanges {
   private readonly registro = inject(RegistroRoles);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly notificaciones = inject(NotificationService);
+  private readonly notificaciones = inject(Notificaciones);
   private consulta?: Subscription;
   readonly valor = input<Rol | null>(null);
   readonly guardado = output<void>();

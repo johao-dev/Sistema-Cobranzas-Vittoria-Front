@@ -94,7 +94,7 @@
     }
   </dialogo-catalogo>
   @if (importAbierto()) {
-    <app-import-modal
+    <modal-importacion
       modulo="proveedor"
       (cerrado)="importAbierto.set(false)"
       (importacionCompletada)="importado()"

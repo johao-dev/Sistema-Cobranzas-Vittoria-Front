@@ -13,7 +13,7 @@ import { CatalogoCentrosCosto } from '../presupuestos/centros-costo/catalogo-cen
 import { CatalogoPartidas } from '../presupuestos/partidas/catalogo-partidas';
 import { ConsultasPresupuestarias } from '../presupuestos/consultas/consultas-presupuestarias';
 import { SesionUsuario } from '../core/sesion/sesion-usuario';
-import { NotificationService } from '../app/core/services/notification.service';
+import { Notificaciones } from '../shared/notificaciones/notificaciones';
 import {
   EstadoRequerimiento,
   RequerimientoActionResponse,
@@ -116,7 +116,7 @@ describe('ListaRequerimientos — gestión de ítems en almacén', () => {
           provide: SesionUsuario,
           useValue: { hasPermission: (permiso: string) => permisos.has(permiso) },
         },
-        { provide: NotificationService, useValue: notificaciones },
+        { provide: Notificaciones, useValue: notificaciones },
         ...[
           CatalogoEspecialidades,
           CatalogoProyectos,

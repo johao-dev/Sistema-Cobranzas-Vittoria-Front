@@ -2,8 +2,8 @@ import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angula
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { catchError, finalize, of, startWith, Subject, Subscription, switchMap } from 'rxjs';
-import { NotificationService } from '../../../app/core/services/notification.service';
-import { ImportModalComponent } from '../../../app/shared/components/import-modal/import-modal.component';
+import { Notificaciones } from '../../../shared/notificaciones/notificaciones';
+import { ModalImportacion } from '../../../shared/importacion/modal-importacion/modal-importacion';
 import { DialogoCatalogo } from '../../dialogo-catalogo/dialogo-catalogo';
 import { filtrarCatalogo } from '../../busqueda-catalogo';
 import { mensajeCatalogo } from '../../mensaje-catalogo';
@@ -13,14 +13,14 @@ import { FormularioProveedor } from '../formulario-proveedor/formulario-proveedo
 
 @Component({
   selector: 'lista-proveedores',
-  imports: [FormsModule, DialogoCatalogo, FormularioProveedor, ImportModalComponent],
+  imports: [FormsModule, DialogoCatalogo, FormularioProveedor, ModalImportacion],
   templateUrl: './lista-proveedores.html',
   styleUrl: './lista-proveedores.css',
 })
 export class ListaProveedores implements OnInit {
   private readonly api: CatalogoProveedores = inject(CatalogoProveedores);
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
-  private readonly notificaciones: NotificationService = inject(NotificationService);
+  private readonly notificaciones: Notificaciones = inject(Notificaciones);
   private readonly recargas: Subject<void> = new Subject<void>();
   private detalleSub?: Subscription;
   protected readonly cargandoDetalle = signal(false);

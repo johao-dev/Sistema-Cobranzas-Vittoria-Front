@@ -9,7 +9,7 @@ import { DetalleCompra } from '../detalle-compra/detalle-compra';
 import { AceptacionCompra, esCompraAceptable } from '../aceptacion-compra/aceptacion-compra';
 import { siguienteNumeroCompra } from '../formulario-compra/datos-compra';
 import { exportarComprasExcel, exportarComprasPdf } from '../documentos-compras/exportar-compras';
-import { extraerMensajeError } from '../../app/core/utils/api-error.util';
+import { extraerMensajeError } from '../../shared/errores-api/mensajes-error-api';
 @Component({
   selector: 'compras-bandeja',
   imports: [CommonModule, FormularioCompra, DetalleCompra, AceptacionCompra],

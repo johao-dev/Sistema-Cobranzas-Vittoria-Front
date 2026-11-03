@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../app/core/services/api.service';
+import { ApiHttp } from '../../core/http/api-http';
 import {
   Proveedor,
   ProveedorUpsert,
@@ -12,7 +12,7 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class CatalogoProveedores {
-  private readonly api: ApiService = inject(ApiService);
+  private readonly api: ApiHttp = inject(ApiHttp);
 
   proveedores(activo?: boolean | null, idEspecialidad?: number | null): Observable<Proveedor[]> {
     let params = new HttpParams();

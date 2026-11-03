@@ -4,7 +4,7 @@ import { Observable, Subject, of, throwError } from 'rxjs';
 import { NuevoMaterial } from './nuevo-material';
 import { CatalogoMateriales } from '../../catalogos/materiales/catalogo-materiales';
 import { Material, MaterialUpsert } from '../../catalogos/materiales/contratos-materiales';
-import { NotificationService } from '../../app/core/services/notification.service';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 import { muestraMaterial, simularDialogosRequerimiento } from '../pruebas/muestras-requerimientos';
 
 describe('NuevoMaterial desde un requerimiento', () => {
@@ -26,7 +26,7 @@ describe('NuevoMaterial desde un requerimiento', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: CatalogoMateriales, useValue: api },
-        { provide: NotificationService, useValue: { show: vi.fn() } },
+        { provide: Notificaciones, useValue: { show: vi.fn() } },
       ],
     });
 

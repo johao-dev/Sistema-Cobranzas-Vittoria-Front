@@ -1,12 +1,12 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../app/core/services/api.service';
+import { ApiHttp } from '../../core/http/api-http';
 import { Especialidad, EspecialidadUpsert } from './contratos-especialidades';
 
 @Injectable({ providedIn: 'root' })
 export class CatalogoEspecialidades {
-  private readonly api: ApiService = inject(ApiService);
+  private readonly api: ApiHttp = inject(ApiHttp);
 
   especialidades(activo?: boolean | null): Observable<Especialidad[]> {
     let params = new HttpParams();

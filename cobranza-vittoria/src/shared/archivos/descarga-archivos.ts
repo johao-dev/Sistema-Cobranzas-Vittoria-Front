@@ -1,0 +1,52 @@
+/**
+ * Utilidades para descarga de archivos en el navegador.
+ *
+ * Centraliza la mecánica de Blob + ObjectURL + <a download> para evitar
+ * duplicación entre páginas que descargan binarios (CSV, XLSX, etc.).
+ */
+
+/**
+ * Dispara la descarga de un Blob en el navegador.
+ *
+ * Crea un <a> temporal con download, hace click programático y libera
+ * el ObjectURL después. El <a> se inserta fuera de pantalla y se
+ * elimina del DOM para no afectar el layout ni acumular nodos.
+ */
+export function descargarArchivo(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  // Liberar el ObjectURL en el siguiente tick para asegurar que la descarga arrancó.
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+/**
+ * Extrae el filename del header HTTP Content-Disposition.
+ *
+ * Soporta las dos formas comunes:
+ *   - attachment; filename="kardex-stock-20260818-1635.xlsx"
+ *   - attachment; filename=kardex-stock-20260818-1635.xlsx
+ *
+ * Si no se encuentra filename, devuelve el fallback.
+ */
+export function extraerFilenameDeContentDisposition(
+  header: string | null,
+  fallback: string,
+): string {
+  if (!header) return fallback;
+  const encoded = /filename\*\s*=\s*UTF-8''([^;]+)/i.exec(header);
+  if (encoded) {
+    try {
+      return decodeURIComponent(encoded[1].trim());
+    } catch {
+      // Un filename* inválido permite usar filename o el nombre de respaldo.
+    }
+  }
+  const m = /filename\s*=\s*"?([^";]+)"?/i.exec(header);
+  return m?.[1].trim() || fallback;
+}

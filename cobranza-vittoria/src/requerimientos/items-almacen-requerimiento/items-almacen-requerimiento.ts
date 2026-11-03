@@ -5,7 +5,7 @@ import {
 import { ItemRequerimiento } from '../contratos-formulario-requerimiento';
 import { Injectable, inject, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NotificationService } from '../../app/core/services/notification.service';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 import { SesionUsuario } from '../../core/sesion/sesion-usuario';
 import { RegistroRequerimientos } from '../registro-requerimientos';
 import { mensajeRequerimiento } from '../mensaje-requerimiento';
@@ -28,7 +28,7 @@ import { EdicionItemRequerimiento } from '../edicion-item-requerimiento/edicion-
 export class ItemsAlmacenRequerimiento {
   private readonly requerimientos = inject(RegistroRequerimientos);
   readonly auth = inject(SesionUsuario);
-  private readonly notifyService = inject(NotificationService);
+  private readonly notifyService = inject(Notificaciones);
   private readonly destroyRef = inject(DestroyRef);
   private readonly consulta = inject(ConsultaRequerimientos);
   private readonly borrador = inject(BorradorRequerimiento);

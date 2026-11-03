@@ -1,12 +1,12 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../app/core/services/api.service';
+import { ApiHttp } from '../../core/http/api-http';
 import { Material, MaterialUpsert } from './contratos-materiales';
 
 @Injectable({ providedIn: 'root' })
 export class CatalogoMateriales {
-  private readonly api: ApiService = inject(ApiService);
+  private readonly api: ApiHttp = inject(ApiHttp);
 
   materiales(activo?: boolean | null, idEspecialidad?: number | null): Observable<Material[]> {
     let params = new HttpParams();

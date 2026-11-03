@@ -19,7 +19,7 @@ import { CargaMontosPresupuesto } from '../carga-montos/carga-montos-presupuesto
 import { DialogoModal } from '../../shared/dialogos/dialogo-modal';
 import { ImportacionPresupuesto } from '../importacion/importacion-presupuesto';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { extraerMensajeError } from '../../app/core/utils/api-error.util';
+import { extraerMensajeError } from '../../shared/errores-api/mensajes-error-api';
 import {
   Presupuesto,
   VersionPresupuesto,
@@ -32,7 +32,7 @@ import { RegistroPresupuestos } from '../registro-presupuestos';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NodoArbol } from '../arbol/contratos-arbol-presupuestario';
-import { NotificationService } from '../../app/core/services/notification.service';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 import { AccionPartida, ArbolPresupuestario } from '../arbol/arbol-presupuestario';
 
 @Component({
@@ -53,7 +53,7 @@ import { AccionPartida, ArbolPresupuestario } from '../arbol/arbol-presupuestari
 export class VersionesPresupuesto implements OnChanges, OnDestroy {
   private readonly destroyRef = inject(DestroyRef);
   private readonly registroPresupuestos = inject(RegistroPresupuestos);
-  private readonly notifications = inject(NotificationService);
+  private readonly notifications = inject(Notificaciones);
 
   readonly presupuesto = input.required<Presupuesto>();
   readonly partidas = input.required<PartidaCatalogo[]>();

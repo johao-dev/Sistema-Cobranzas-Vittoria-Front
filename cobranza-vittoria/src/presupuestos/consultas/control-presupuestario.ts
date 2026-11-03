@@ -1,5 +1,5 @@
 import { crearCsvPresupuestario } from './exportacion-presupuestaria';
-import { descargarArchivo } from '../../app/core/utils/file-download.util';
+import { descargarArchivo } from '../../shared/archivos/descarga-archivos';
 import { normalizarBusqueda } from '../presentacion-presupuestos';
 import { Subscription, Observable } from 'rxjs';
 import {
@@ -7,7 +7,7 @@ import {
   HistorialPresupuestario,
 } from '../movimientos/historial-presupuestario';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { extraerMensajeError } from '../../app/core/utils/api-error.util';
+import { extraerMensajeError } from '../../shared/errores-api/mensajes-error-api';
 import { Presupuesto } from '../contratos-presupuestos';
 import { CentroCostoResumen } from '../centros-costo/contratos-centros-costo';
 import {
@@ -24,7 +24,7 @@ import { DestroyRef, inject, ChangeDetectorRef, Component, OnInit } from '@angul
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NodoArbol } from '../arbol/contratos-arbol-presupuestario';
-import { NotificationService } from '../../app/core/services/notification.service';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 import { TableroPresupuestario } from '../tablero/tablero-presupuestario';
 import { ArbolPresupuestario } from '../arbol/arbol-presupuestario';
 
@@ -77,7 +77,7 @@ export class ControlPresupuestario implements OnInit {
   /** Nivel más profundo del centro de costo / presupuesto elegido, informado por el dashboard. */
   nivelMaximoTablero = 0;
 
-  private readonly notifications = inject(NotificationService);
+  private readonly notifications = inject(Notificaciones);
   private readonly cdr = inject(ChangeDetectorRef);
 
   ngOnInit(): void {

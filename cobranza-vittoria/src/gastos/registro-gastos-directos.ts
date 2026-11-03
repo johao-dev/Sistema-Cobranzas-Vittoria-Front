@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApiService } from '../app/core/services/api.service';
+import { ApiHttp } from '../core/http/api-http';
 import {
   CategoriaGasto,
   CentroCostoGastoDirecto,
@@ -21,7 +21,7 @@ import {
  * la imputación económica continúa determinada por idPresupuestoDetalle. */
 @Injectable({ providedIn: 'root' })
 export class RegistroGastosDirectos {
-  private readonly api = inject(ApiService);
+  private readonly api = inject(ApiHttp);
   private readonly base = `${this.api.baseUrl}/api/contable/gastos-directos`;
 
   listar(filtro: GastoDirectoFiltro = {}): Observable<GastoDirectoListado[]> {

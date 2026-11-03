@@ -257,7 +257,7 @@
   />
 }
 @if (importOpen() && puedeOperar) {
-  <app-import-modal
+  <modal-importacion
     modulo="gastos-directos"
     (cerrado)="importOpen.set(false)"
     (importacionCompletada)="load()"

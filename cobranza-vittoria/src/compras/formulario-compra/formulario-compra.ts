@@ -18,7 +18,7 @@ import { DetalleOrdenCompra } from '../../ordenes-compra/contratos-ordenes-compr
 import { CatalogoMateriales } from '../../catalogos/materiales/catalogo-materiales';
 import { DialogoModal } from '../../shared/dialogos/dialogo-modal';
 import { EditorImporte } from '../editor-importe/editor-importe';
-import { extraerMensajeError } from '../../app/core/utils/api-error.util';
+import { extraerMensajeError } from '../../shared/errores-api/mensajes-error-api';
 import {
   PrecioItem,
   prepararItems,

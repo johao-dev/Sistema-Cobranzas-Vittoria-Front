@@ -2,12 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { CentroCostoResumen } from './contratos-centros-costo';
 import { BorradorCentroCosto } from './borrador-centro-costo';
-import { ApiService } from '../../app/core/services/api.service';
+import { ApiHttp } from '../../core/http/api-http';
 import { parametrosConsulta, textoOpcional } from '../parametros-presupuestarios';
 
 @Injectable({ providedIn: 'root' })
 export class CatalogoCentrosCosto {
-  private readonly api = inject(ApiService);
+  private readonly api = inject(ApiHttp);
   private readonly base = `${this.api.baseUrl}/api/control-presupuestario`;
 
   centrosCosto(

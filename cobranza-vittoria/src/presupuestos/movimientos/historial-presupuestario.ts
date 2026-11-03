@@ -3,7 +3,7 @@ import { Component, DestroyRef, OnInit, inject, input, output, signal } from '@a
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { DialogoModal } from '../../shared/dialogos/dialogo-modal';
-import { extraerMensajeError } from '../../app/core/utils/api-error.util';
+import { extraerMensajeError } from '../../shared/errores-api/mensajes-error-api';
 import { RegistroPresupuestos } from '../registro-presupuestos';
 import { MovimientoPresupuestario } from '../contratos-presupuestos';
 

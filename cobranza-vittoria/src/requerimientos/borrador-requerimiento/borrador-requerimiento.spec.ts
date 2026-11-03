@@ -4,7 +4,7 @@ import { BorradorRequerimiento } from './borrador-requerimiento';
 import { ConsultaRequerimientos } from '../consulta-requerimientos/consulta-requerimientos';
 import { RegistroRequerimientos } from '../registro-requerimientos';
 import { SesionUsuario } from '../../core/sesion/sesion-usuario';
-import { NotificationService } from '../../app/core/services/notification.service';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 import { RequerimientoActionResponse } from '../contratos-requerimientos';
 import { muestraRequerimiento } from '../pruebas/muestras-requerimientos';
 
@@ -25,7 +25,7 @@ describe('BorradorRequerimiento sin coordinador ni componentes', () => {
         ConsultaRequerimientos,
         { provide: RegistroRequerimientos, useValue: { actualizar, listar: () => of([]) } },
         { provide: SesionUsuario, useValue: { hasPermission: () => true } },
-        { provide: NotificationService, useValue: { show: vi.fn() } },
+        { provide: Notificaciones, useValue: { show: vi.fn() } },
       ],
     });
 

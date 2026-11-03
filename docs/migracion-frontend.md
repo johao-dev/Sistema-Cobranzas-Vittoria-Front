@@ -4,14 +4,14 @@
 
 - **Fecha del acuerdo:** 2026-10-16.
 - **Contrato para agentes:** [AGENTS.md](../AGENTS.md).
-- **Estado:** preparación técnica y migración de autenticación realizadas el 2026-10-19. Autenticación verificada funcionalmente con backend por el usuario. Dashboard, los cinco catálogos generales y Requerimientos migrados y cerrados por el usuario. Órdenes de compra migrada y validada funcionalmente y en navegador por el usuario. Compras migrada y validada funcionalmente con backend y navegador por el usuario. Inventario migrado y validado funcionalmente con backend y navegador por el usuario. Gastos migrado y verificado por el usuario el 2026-10-30 tras completar sus pruebas funcionales con backend; Presupuestos migrado y verificado funcionalmente con navegador y backend por el usuario el 2026-11-02; Control de accesos migrado y verificado funcionalmente con navegador y backend por el usuario el 2026-11-02. Valorizaciones fue retirada del frontend; su API y datos del backend se conservan. Solo infraestructura y elementos compartidos continúan en curso.
+- **Estado:** preparación técnica y migración de autenticación realizadas el 2026-10-19. Autenticación verificada funcionalmente con backend por el usuario. Dashboard, los cinco catálogos generales y Requerimientos migrados y cerrados por el usuario. Órdenes de compra migrada y validada funcionalmente y en navegador por el usuario. Compras migrada y validada funcionalmente con backend y navegador por el usuario. Inventario migrado y validado funcionalmente con backend y navegador por el usuario. Gastos migrado y verificado por el usuario el 2026-10-30 tras completar sus pruebas funcionales con backend; Presupuestos migrado y verificado funcionalmente con navegador y backend por el usuario el 2026-11-02; Control de accesos migrado y verificado funcionalmente con navegador y backend por el usuario el 2026-11-02. Valorizaciones fue retirada del frontend; su API y datos del backend se conservan. Infraestructura y elementos compartidos migrados y verificados el 2026-11-03, incluida la retirada de `src/app`. El usuario confirmó «Validación funcional en navegador y backend OK»; la migración frontend acordada queda cerrada globalmente el 2026-11-03.
 - **Alcance:** refactor progresivo del frontend manteniendo comportamiento, contratos, permisos, importes y apariencia, con mejoras locales de accesibilidad y adaptación móvil. No incluye cambios de negocio en backend o base de datos ni pruebas automatizadas de navegador por ahora.
 
 Las rutas de la aplicación de este documento son relativas a `cobranza-vittoria/`, salvo indicación contraria. `AGENTS.md` contiene las reglas; este registro conserva decisiones, avance y evidencias sin sustituir ese contrato.
 
 ## Decisiones acordadas
 
-| Tema | Estado actual | Objetivo y transición |
+| Tema | Punto de partida del acuerdo (2026-10-16) | Objetivo y transición |
 | --- | --- | --- |
 | Estructura | `src/app/pages`, servicios y modelos globales | Funcionalidades directamente en `src/<funcionalidad>/`, sin `app/` ni carpeta contenedora `features/`. Agrupar subfuncionalidades por concepto según crezcan. |
 | Servicios y modelos | `src/app/core/services` y `src/app/models` | Permanecen dentro de `src`, junto a la funcionalidad que los posee. No trasladarlos fuera de `src` por no ser componentes visuales. |
@@ -32,7 +32,7 @@ Las rutas de la aplicación de este documento son relativas a `cobranza-vittoria
 
 La aclaración posterior al acuerdo inicial mantiene servicios y modelos dentro de `src`. Eliminar `app/` es una elección de organización, no una obligación de Angular. La ausencia de prefijo global en selectores es una elección distinta de la recomendación oficial de usar uno consistente.
 
-## Organización objetivo ilustrativa
+## Organización resultante (resumen)
 
 ```text
 cobranza-vittoria/
@@ -41,6 +41,10 @@ cobranza-vittoria/
 ├─ tsconfig.json
 └─ src/
    ├─ main.ts
+   ├─ aplicacion.ts / .html / .css / .spec.ts
+   ├─ configuracion-aplicacion.ts
+   ├─ rutas.ts
+   ├─ reglas-acceso.ts
    ├─ styles.css
    ├─ autenticacion/
    ├─ dashboard/
@@ -54,19 +58,29 @@ cobranza-vittoria/
    │  ├─ entradas/
    │  ├─ salidas/
    │  ├─ stock/
-   │  └─ kardex/
+   │  ├─ kardex-compras/
+   │  └─ transferencias/
    ├─ gastos/
    ├─ presupuestos/
    ├─ control-accesos/
    ├─ core/
+   │  ├─ http/
+   │  ├─ sesion/
+   │  └─ config/
    └─ shared/
+      ├─ archivos/
+      ├─ dialogos/
+      ├─ errores-api/
+      ├─ importacion/
+      ├─ notificaciones/
+      └─ presentacion/
 ```
 
-El árbol ilustra agrupaciones acordadas, no directorios ya creados ni una obligación de crearlos todos antes de migrar. Los archivos del contenedor principal, rutas y proveedores de arranque también quedarán en `src`. Definir sus nombres concretos al migrarlos, conforme a `AGENTS.md`. Servicios, contratos y pruebas se ubican junto a su concepto; la estructura interna se adapta al tamaño real de cada funcionalidad.
+El árbol resume las ubicaciones vigentes tras la entrega de infraestructura; no enumera todos los archivos internos. El contenedor, las rutas, las reglas concretas y los proveedores de arranque están directamente en `src`. Servicios, contratos y pruebas se ubican junto a su concepto; no quedan archivos en `src/app`.
 
 ## Seguimiento por funcionalidad
 
-Las ubicaciones actuales indican el punto de partida; no prueban que todos sus archivos sigan activos. Confirmar consumidores antes de mover o retirar código.
+Las ubicaciones describen el código vigente y las evidencias distinguen comprobación técnica de validación funcional humana. Confirmar consumidores antes de mover o retirar código.
 
 | Funcionalidad | Ubicación actual de referencia | Destino | Estado | Evidencias |
 | --- | --- | --- | --- | --- |
@@ -80,13 +94,13 @@ Las ubicaciones actuales indican el punto de partida; no prueban que todos sus a
 | Gastos | `src/gastos/{listado,formulario,transiciones,documentos,categorias,proveedores-gasto,proveedores-terreno,proveedores-especificos}` | `src/gastos`, agrupado por concepto | Verificada | Cinco vistas de gastos directos y tres mantenimientos migrados; contratos HTTP, partidas, referencias, formularios, documentos e importación comprobados técnicamente. Implementaciones sin consumidores retiradas. Se conservan proveedores canónicos del agregado y registros específicos separados. El usuario confirmó «Validación funcional y backend OK» y posteriormente indicó que ya probó y solicitó registrar Gastos como Verificada el 2026-10-30; validación humana cerrada, sin desglose de escenarios |
 | Presupuestos | `src/presupuestos/{listado,versiones,formulario-presupuesto,carga-montos,importacion,movimientos,consultas,arbol,tablero,centros-costo,partidas}` | `src/presupuestos`, por concepto | Verificada | Contratos y servicios públicos tipados, formularios y operaciones separados, consumidores actualizados y pantalla bancaria retirada con autorización del usuario. 709 pruebas y ambas compilaciones correctas. El usuario confirmó «Validación funcional con navegador y backend OK» el 2026-11-02; validación humana cerrada, sin desglose de escenarios |
 | Control de accesos | `src/control-accesos/{usuarios,roles,permisos}` | `src/control-accesos`, por concepto | Verificada | Contratos y registros HTTP propios, formularios y asignaciones separados, rutas diferidas y código anterior sin consumidores retirado. 80 pruebas del módulo; 763 pruebas totales correctas. Envío del formulario corregido y componentes agrupados en subcarpetas por concepto. Producción, staging y lint comprobados. El usuario confirmó «Validación funcional con navegador y backend OK» el 2026-11-02, después de la corrección de envío y organización por conceptos; confirmación general sin desglose de escenarios |
-| Infraestructura y elementos compartidos | Sesión y ambientes en `src/core`; servicios, modelos, compartidos y contenedor pendientes en `src/app` | Distribuir por propietario; conservar infraestructura en `src/core` y reutilización real en `src/shared` | En curso | Sesión y ambientes migrados con consumidores; notificaciones y utilidades compartidas se reutilizan desde su ubicación actual. Limpieza de las 61 advertencias completada el 2026-11-02: lint sin errores ni advertencias; importación y menú actualizados. La ubicación y migración restante de infraestructura siguen pendientes. Retirar `src/app` al finalizar |
+| Infraestructura y elementos compartidos | Contenedor y arranque en `src`; HTTP, sesión y ambientes en `src/core`; conceptos reutilizados en `src/shared` | Estructura objetivo aplicada; `src/app` retirada | Verificada | Migración completada el 2026-11-03 con consumidores, nombres y selectores actualizados. Servicios/modelos sin consumidores retirados; ESLint sin excepciones transitorias. 791 pruebas en 116 archivos, lint sin incidencias y producción/staging correctos. El usuario confirmó «Validación funcional en navegador y backend OK» el 2026-11-03; validación humana cerrada, sin desglose de escenarios. Cierre global registrado al final del documento |
 
 Estados de seguimiento: **Pendiente**, **En curso**, **Pendiente de validación funcional** y **Verificada**. Si existe una limitación o bloqueo, describirlo con su causa y siguiente paso; no marcar como verificada una entrega por haber movido archivos o por haber compilado únicamente.
 
 ## Herramientas e iteraciones pendientes
 
-- ESLint incorporado el 2026-10-19 mediante `npm run lint`. Resolver las advertencias de cada concepto durante su migración; la configuración transitoria de `src/app/` se retirará al completar la migración. No añadir nuevas advertencias al código pendiente.
+- ESLint incorporado el 2026-10-19 mediante `npm run lint`. La configuración transitoria de `src/app/` se retiró el 2026-11-03; los conjuntos recomendados y las reglas de accesibilidad se aplican como errores en todo `src`. La tabla de decisiones conserva el punto de partida y la transición histórica; esta es la configuración vigente.
 - La automatización de los límites entre funcionalidades puede implementarse después; la convención ya está acordada.
 - OpenAPI es una futura iteración del contrato backend. La generación de tipos y sus herramientas se definirán entonces.
 - No incorporar pruebas automatizadas de navegador en el alcance actual. Mantener validación funcional humana de los flujos críticos y registrar las comprobaciones que no puedan realizarse.
@@ -124,6 +138,9 @@ Estados de seguimiento: **Pendiente**, **En curso**, **Pendiente de validación 
 | 2026-11-02 | Validación funcional de Control de accesos | El usuario confirmó «Validación funcional con navegador y backend OK» tras la corrección del formulario y la organización por conceptos | Control de accesos pasa a Verificada. Confirmación general sin desglose de escenarios. Cierre exclusivamente documental; no se repitieron pruebas ni compilaciones. |
 | 2026-11-02 | Corrección de las 61 advertencias restantes de lint | Control de flujo nativo, accesibilidad del menú y diálogo de importación, outputs actualizados, inyección y tipado de infraestructura; servicio huérfano retirado | 0 errores y 0 advertencias de ESLint; 777 pruebas en 115 archivos; producción/staging correctos. Pendiente de revisión en navegador del teclado/foco y de importación; detalle al final del registro. |
 | 2026-11-03 | Corrección del seguimiento de Valorizaciones | Retirada de la fila pendiente y del destino ilustrativo de una pantalla ya eliminada; estado general actualizado | Revisión del registro, del árbol de archivos vigente y de `git diff --check`. Cambio documental; no se repitieron pruebas ni compilaciones. Las menciones de entregas anteriores se conservan como evidencia histórica. |
+| 2026-11-03 | Migración de infraestructura y elementos compartidos | Contenedor/arranque en `src`, `ApiHttp` en `core/http`, importación/notificaciones/errores/descargas por concepto en `shared`; consumidores actualizados, código sin consumidores y `src/app` retirados | 791 pruebas en 116 archivos, lint sin errores ni advertencias y producción/staging correctos. Retirada la configuración transitoria de ESLint. Pendiente de validación funcional final con navegador y backend; detalle al final del registro. |
+| 2026-11-03 | Validación de infraestructura y cierre global | El usuario confirmó «Validación funcional en navegador y backend OK» tras la entrega final | Infraestructura pasa a Verificada y la migración frontend acordada queda cerrada globalmente. Confirmación general sin desglose de escenarios. Actualización documental; no se repitieron pruebas ni compilaciones. |
+| 2026-11-03 | Reporte de retiradas para backend | Matriz de 42 endpoints sin consumidor frontend, dos antecedentes y CSV de 186 archivos retirados o sustituidos, con fuentes Git y contraste del cliente vigente | Entrega documental; rutas exactas, consumidores actuales, contratos locales, conteos, enlaces y `git diff --check` revisados. No se modificó backend ni se repitieron pruebas/compilaciones. |
 
 En cada entrega futura registrar:
 
@@ -135,7 +152,11 @@ En cada entrega futura registrar:
 
 ## Cierre global
 
-La migración termina cuando todas las funcionalidades acordadas satisfagan los criterios de la sección 8 de `AGENTS.md`: estructura objetivo, responsabilidades separadas, tipado, consumidores actualizados, verificaciones técnicas y validación funcional del desarrollador responsable. No atribuir el cierre a esta entrega documental.
+**Migración frontend cerrada globalmente el 2026-11-03.** Todas las funcionalidades del seguimiento están **Verificadas**. La entrega de infraestructura completó la estructura objetivo, la retirada de `src/app`, los consumidores y las verificaciones técnicas; el usuario confirmó después «Validación funcional en navegador y backend OK», cerrando la validación humana final conforme a la sección 8 de `AGENTS.md`.
+
+La confirmación es general, sin resultados individuales por escenario o dispositivo. Se conservan las evidencias técnicas e históricas y sus límites. OpenAPI, la automatización de límites entre funcionalidades y las evoluciones de backend o discrepancias documentales expresamente aplazadas continúan como trabajos independientes; no forman parte del cierre de la migración acordada.
+
+Reporte para backend: [retiradas funcionales, endpoints sin consumidores y archivos sustituidos](reporte-retiros-frontend-para-backend.md), con matrices CSV y límites de la evidencia.
 
 Referencias: [estructura y estilo de Angular](https://angular.dev/style-guide), [selectores](https://angular.dev/guide/components/selectors) y [TypeScript de Google](https://google.github.io/styleguide/tsguide.html).
 
@@ -539,7 +560,7 @@ A petición del usuario se completa la separación del estado compartido. La con
 - En Salida, Especialidad pasa de la cabecera al editor de cada ítem, que reproduce la secuencia Especialidad → Material de Entrada. La edición preselecciona la especialidad desde Material; cambiarla limpia únicamente la selección del material de ese editor. Los demás ítems permanecen, permitiendo una salida con materiales de distintas especialidades. La especialidad no se envía en cabecera ni en ítems.
 - Se conservan los campos de especialidad en contratos de lectura y filtros. Al editar desde un listado filtrado por especialidad se recuperan todos los detalles sin ese filtro antes de abrir el formulario, evitando que el PUT elimine los ocultos. La edición sin filtro conserva su flujo local. Se impiden acciones durante la consulta y no se abre un borrador parcial si falla o la salida ya no existe. Eliminar sigue actuando sobre toda la salida; su confirmación con filtro activo usa el ID completo en lugar del conteo parcial.
 - Materiales presenta un mensaje específico para HTTP 409 con `error: ESPECIALIDAD_MATERIAL_CON_MOVIMIENTOS`, mantiene los datos y permite corregir/reintentar. La aceptación de cambios de especialidad y otros campos sigue dependiendo del servidor. Los demás errores conservan su tratamiento.
-- Sin cambios en plantillas ni lógica de Entrada, salvo su petición; Stock permanece intacto. No se agregan textos explicativos ni columnas a formularios. Sin cambios de backend, rutas, permisos, dependencias, exportaciones, contratos legacy ligados a Compras ni implementación de Stock por Proyecto. Archivos y consideraciones en [el reporte de integración](integracion-normalizacion-inventario.md).
+- Sin cambios en plantillas ni lógica de Entrada, salvo su petición; Stock permanece intacto. No se agregan textos explicativos ni columnas a formularios. Sin cambios de backend, rutas, permisos, dependencias, exportaciones, contratos legacy ligados a Compras ni implementación de Stock por Proyecto. Archivos y consideraciones en `integracion-normalizacion-inventario.md` (reporte histórico no presente en este checkout).
 - `npm test -- --watch=false`: **513 pruebas correctas en 78 archivos**. Verificación focalizada: **93 pruebas correctas en 22 archivos** de Inventario/Materiales. ESLint del alcance con `--max-warnings=0`: correcto sin advertencias. Lint global: **0 errores y 1108 advertencias** preexistentes. Prettier del código y reporte, revisión del diff y `git diff --check`: correctos.
 - Producción compila con **622.55 kB** iniciales y los avisos de tamaño preexistentes (inicial y cinco CSS). El primer intento restringido falló por Google Fonts; la repetición autorizada pasó. `npm run build -- --configuration staging` también pasa, con **622.56 kB** y los mismos avisos, usando acceso autorizado a las fuentes.
 - Las pruebas de interfaz usan jsdom y estabilización de Angular sin Zone.js. Falta validar esta versión con navegador y backend actualizado. La recuperación al editar con filtro usa el listado completo porque el contrato no ofrece detalle por ID; se registra su posible costo con volúmenes mayores.
@@ -559,7 +580,7 @@ A petición del usuario se completa la separación del estado compartido. La con
 - `npm test -- --watch=false`: **552 pruebas correctas en 83 archivos**, frente a 513 en 78; incluye **112 pruebas de Inventario en 24 archivos**. Se verifican contratos HTTP, filtros, cambio global/proyecto, exportación sin proyecto, múltiples materiales, validaciones, errores, bloqueo de duplicados, preservación del borrador, listado/detalle/404 y mensajes de Salida. La comprobación focalizada previa también pasó sus 112 casos.
 - Lint global: **0 errores y 1108 advertencias preexistentes**, sin incremento. ESLint de Inventario con `--max-warnings=0`, Prettier del alcance y revisión de whitespace correctos. No se relajan reglas. Producción y staging compilan con **623.04 kB** y **623.05 kB** iniciales; conservan el aviso inicial de 500 kB y los cinco avisos CSS previos. Los intentos restringidos fallaron al descargar Google Fonts y las repeticiones autorizadas pasaron.
 - Las pruebas de interfaz usan jsdom y estabilización de Angular sin Zone.js, con simulación de `showModal`. No se dispuso de navegador ni se realizaron escrituras reales contra la API. Falta validar con Almacén los saldos después de transferir, salida con insuficiencia por proyecto, exportación global con filtro seleccionado, permisos efectivos, foco y uso móvil. La distribución inicial requiere activación administrativa en DB.
-- Relación de archivos, contratos, comandos, resultados y pendientes en [el reporte de implementación](stock-proyecto-implementacion.md). No se creó commit ni PR.
+- Relación de archivos, contratos, comandos, resultados y pendientes en `stock-proyecto-implementacion.md` (reporte histórico no presente en este checkout). No se creó commit ni PR.
 
 
 ### Ajustes de Stock y organización de Transferencias — 2026-10-23
@@ -572,7 +593,7 @@ A petición del usuario se completa la separación del estado compartido. La con
 - Stock Actual agrega Distribución junto al nombre del material, visible con hover, foco y dispositivos táctiles, sin columna de acciones ni flecha adicional. Despliega una fila inferior con la distribución completa actual de ese material en todos sus proyectos; consulta únicamente `idMaterial`, incluso con filtros de proyecto/fecha en la tabla principal. Se consulta al expandir/reabrir, se cierra al filtrar y cancela solicitudes al cerrar/cambiar de material. Si no hay distribución, el área queda en blanco; errores y carga mantienen su propia presentación y reintento. La consulta y tabla se sitúan en `stock/distribucion-material/`, fuera del coordinador general.
 - Verificación: **561 pruebas correctas en 83 archivos**, incluidas **121 de Inventario en 24 archivos**. Se agregan nueve casos de límite, selección de proyectos, distribución, vacío/error/reintento, respuestas tardías y cancelación. Lint global: **0 errores y 1108 advertencias preexistentes**; ESLint de Inventario con `--max-warnings=0` y Prettier del alcance correctos.
 - Producción compila con **623.04 kB** iniciales y los avisos previos (inicial y cinco CSS), tras repetir con acceso autorizado por el fallo de DNS de Google Fonts del intento restringido. Staging también compila con **623.05 kB** iniciales y los mismos avisos, usando el acceso autorizado a fuentes. `git diff --check` correcto.
-- Interfaz comprobada en jsdom sin Zone.js; pendiente validación funcional con API real y navegador, incluidas interacción con hover, teclado y móvil. Sin cambios de backend, dependencias, permisos ni exportaciones. Detalles y pendientes en [el reporte de implementación actualizado](stock-proyecto-implementacion.md).
+- Interfaz comprobada en jsdom sin Zone.js; pendiente validación funcional con API real y navegador, incluidas interacción con hover, teclado y móvil. Sin cambios de backend, dependencias, permisos ni exportaciones. Detalles y pendientes en `stock-proyecto-implementacion.md` (reporte histórico no presente en este checkout).
 
 
 ## Entrega de Gastos — 2026-10-30
@@ -749,3 +770,49 @@ control-accesos/
 - Tipos y plantillas (`ngc --noEmit -p tsconfig.app.json` y `tsc --noEmit -p tsconfig.spec.json`), formato de los archivos de la entrega y `git diff --check`: correctos. En `app.css` solo se añaden dos reglas de presentación del botón de fondo; no se reformatea el CSS previo ajeno a esa corrección. La búsqueda final no encuentra `any`/`$any` ni supresiones de TypeScript en producción, ni referencias a los outputs anteriores o al servicio huérfano.
 - Producción y staging compilan correctamente con **339.70 kB** iniciales en ambas configuraciones. Permanecen los avisos de presupuesto de tamaño CSS de `app.css` (**5.50 kB**) y del tablero presupuestario (**5.83 kB**); son avisos de compilación, no de ESLint. No se cambian presupuestos de tamaño, dependencias, lockfile ni configuración de herramientas. Las compilaciones usan acceso autorizado a Google Fonts.
 - La comprobación de interfaz se realizó con TestBed/jsdom, que simula `showModal`. No se ejecutó navegador ni API real. Queda pendiente revisar foco/teclado y adaptación móvil del menú/modal, además de una importación con sus callbacks en navegador y backend; no se atribuye esa validación a confirmaciones humanas anteriores.
+
+
+## Migración de infraestructura y elementos compartidos — 2026-11-03
+
+**Estado:** Verificada. El usuario confirmó «Validación funcional en navegador y backend OK» el 2026-11-03, después de la entrega técnica. Esta confirmación cierra la validación humana final y la migración frontend acordada.
+
+### Propietarios y consumidores
+
+| Concepto anterior | Ubicación e identificador vigentes |
+| --- | --- |
+| `app/app.ts`, plantilla, estilos y pruebas | `src/aplicacion.ts`, `aplicacion.html`, `aplicacion.css` y `aplicacion.spec.ts`; componente `Aplicacion` |
+| Configuración, rutas y reglas del contenedor | `src/configuracion-aplicacion.ts`, `src/rutas.ts` y `src/reglas-acceso.ts`; `main.ts` consume `configuracionAplicacion` y `Aplicacion` |
+| `ApiService` | `src/core/http/api-http.ts`, `ApiHttp`; conserva `environment.apiUrl`, `HttpClient` y los interceptores globales |
+| `NotificationService` y `NotificationComponent` | `src/shared/notificaciones/notificaciones.ts` y `aviso-notificacion/`, con pruebas junto al servicio/componente |
+| `ImportService`, modelos y modal | `src/shared/importacion/`: contratos, metadatos, `RegistroImportacion`, errores y `modal-importacion/`, con sus pruebas |
+| Utilidades de errores y descargas | `src/shared/errores-api/mensajes-error-api.ts` y `src/shared/archivos/descarga-archivos.ts` |
+
+- Se actualizaron todos los consumidores de HTTP, notificaciones, importación, errores y descargas, incluidos los mocks de pruebas y las cargas diferidas. Una comparación de la configuración anterior y la vigente confirma equivalencia de rutas, redirecciones, guards, datos y destinos diferidos; la revisión de imports no encuentra dependencias prohibidas desde `core` o `shared`. Se conservan URL públicas, redirecciones, reglas de permisos, configuración por ambiente, orden de interceptores y funcionamiento sin Zone.js. Sesión, tokens, refresh y logout no cambian de implementación.
+- Los selectores son `vittoria-aplicacion`, `aviso-notificacion` y `modal-importacion`. `index.html`, las plantillas consumidoras y sus imports están actualizados. No se añaden reexports de compatibilidad ni implementaciones duplicadas.
+- Se retiraron `CatalogosService`, `CotizacionesService`, `SunatService`, sus modelos exclusivos (`catalogos.models.ts`, `cotizaciones.models.ts`, `tipo-cambio.models.ts`) y `common.models.ts` después de comprobar ausencia de consumidores por clases, rutas de módulos, imports y referencias, incluidas cargas dinámicas. Los catálogos activos conservan sus servicios públicos propios. No se retira ninguna API ni dato del backend.
+- La generación del nombre de Excel de stock, que tenía un único consumidor, queda dentro de `inventario/stock/exportacion-stock.ts`; solo la descarga genérica y la lectura de `Content-Disposition` permanecen compartidas.
+- Se corrigieron tres enlaces documentales históricos cuyos dos reportes de destino ya no están en el checkout; se conservan sus nombres con esa limitación explícita.
+- Se retiró completamente `src/app` y la función/overrides que rebajaban reglas de ESLint a advertencias en esa ubicación. Se conservan los conjuntos recomendados, accesibilidad, reglas de selectores y severidades estrictas de todo `src`. `AGENTS.md` describe las ubicaciones vigentes.
+
+### Estado, errores e interfaz
+
+- El contenedor usa signals para URL y navegación, y `computed` para login y perfil. Conserva navegación, permisos, menús y apariencia. Los desplegables comunican su estado con `aria-expanded`; el menú móvil cerrado queda `inert`, sus controles no son alcanzables por teclado y el fondo no entra en la tabulación. Al abrir se enfoca el primer control de navegación; Escape o el fondo cierran y restauran el foco al botón de apertura. El cambio de ancho restablece los estados de móvil/escritorio.
+- `ModalImportacion` usa `input()`/`output()`, signals y valores derivados con `computed`. Conserva archivo, extensiones/límites, formato de plantilla, permisos, usuario, rutas multipart y resultados por fila. Los errores se siguen mostrando como rechazos, con el borrador disponible para reintentar; `cerrado` y `importacionCompletada` conservan sus contratos. La carga y descarga bloquean acciones concurrentes y cierre; `finalize` y `takeUntilDestroyed` restauran los estados y cancelan al destruirse.
+- Se retiró la aserción `as Partial<ImportErrorResponse>` del borde HTTP. Los cuerpos desconocidos se validan por estructura, códigos y tipos; filas malformadas no se pasan a la plantilla como DTOs y contadores inválidos no se presentan como números. Se conserva el rechazo aunque el cuerpo sea inválido y los errores 500/red siguen mostrando el mensaje genérico. Las descargas usan `HttpParams` para el formato y conservan Blob JSON, nombre del servidor y nombre de respaldo.
+- Las notificaciones consumen el signal compartido, anuncian el mensaje mediante una región de estado y ajustan su ancho en móvil. La selección de archivo valida el elemento HTML antes de acceder a `files`; se elimina la aserción de ese control.
+
+### Verificaciones y límites
+
+- Línea base antes de editar: **777 pruebas correctas en 115 archivos**. Verificación final con `npm test -- --watch=false`: **791 pruebas correctas en 116 archivos**. Se trasladaron las pruebas existentes y se añadieron 14 casos sobre navegación a login, permisos del menú, cambio de ancho, foco/Escape, DOM de notificaciones sin detección manual, errores malformados de importación, cancelación HTTP, recuperación de errores inesperados y actualización de metadatos del modal. Los consumidores de Gastos y las rutas de Control de accesos siguen pasando.
+- `npm run lint`: sin errores ni advertencias. Tipos y plantillas con `ngc --noEmit -p tsconfig.app.json`, tipos de pruebas con `tsc --noEmit -p tsconfig.spec.json`, formato del alcance migrado y `git diff --check`: correctos. No se introduce `any`, `$any` ni supresiones de TypeScript en producción.
+- `npm run build` y `npm run build -- --configuration staging`: correctos, con **345.86 kB** y **345.87 kB** iniciales respectivamente. Permanecen dos avisos previos por tamaño de estilos: `aplicacion.css` (**5.50 kB**, antes `app.css`) y el tablero presupuestario (**5.83 kB**). No se modifican presupuestos de tamaño, dependencias ni lockfile. El primer intento restringido de producción falló por DNS de Google Fonts; las compilaciones completas se realizaron con acceso autorizado a las fuentes.
+- Las pruebas usan TestBed/jsdom y HTTP simulado; `showModal` se simula. El control `inert` se comprueba por su atributo, porque jsdom no reproduce el comportamiento nativo. Estas comprobaciones no acreditan foco/teclado nativos, apariencia, adaptación móvil ni comunicación con la API real. No hubo navegador conectado ni se añadieron herramientas e2e.
+- La entrega técnica dejó pendiente la validación humana de navegación/acceso por rol, menú móvil/escritorio, notificaciones, importación y descargas. Posteriormente, el usuario confirmó «Validación funcional en navegador y backend OK» el 2026-11-03. Esta confirmación general cierra el pendiente funcional de la reorganización transversal; no aporta resultados individuales de escenarios o dispositivos.
+
+
+### Validación funcional y cierre global — 2026-11-03
+
+- El usuario confirmó «Validación funcional en navegador y backend OK» después de la entrega de infraestructura y elementos compartidos. Esta funcionalidad pasa a **Verificada** y queda cerrada globalmente la migración frontend acordada.
+- Se conservan las 791 pruebas correctas en 116 archivos, lint sin errores ni advertencias, compilaciones de producción/staging y las demás evidencias de la entrega técnica. No se atribuyen nuevas ejecuciones al cierre documental.
+- La confirmación humana es general, sin desglose por escenario o dispositivo. Los avisos CSS y los trabajos futuros o aplazados documentados se conservan como tales; el cierre no los presenta como resueltos.
+- Esta actualización modifica solo `AGENTS.md` y este registro. Se revisaron estado general, tabla de seguimiento, cierre global, historial y evidencias, y se ejecutó `git diff --check`; no se modificó código ni se repitieron pruebas o compilaciones.

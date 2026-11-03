@@ -6,8 +6,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { SesionUsuario } from '../core/sesion/sesion-usuario';
 import { LoginPayload } from '../core/sesion/contratos-sesion';
-import { NotificationService } from '../app/core/services/notification.service';
-import { extraerMensajeError } from '../app/core/utils/api-error.util';
+import { Notificaciones } from '../shared/notificaciones/notificaciones';
+import { extraerMensajeError } from '../shared/errores-api/mensajes-error-api';
 
 @Component({
   selector: 'inicio-sesion',
@@ -19,7 +19,7 @@ export class InicioSesion {
   private readonly sesion: SesionUsuario = inject(SesionUsuario);
   private readonly router: Router = inject(Router);
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
-  private readonly notifications: NotificationService = inject(NotificationService);
+  private readonly notifications: Notificaciones = inject(Notificaciones);
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
 
   protected readonly loading: WritableSignal<boolean> = signal(false);

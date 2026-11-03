@@ -4,7 +4,7 @@ import { Subject, of } from 'rxjs';
 import { CambioEstadoOrden } from './cambio-estado-orden';
 import { RegistroOrdenesCompra } from '../registro-ordenes-compra';
 import { SesionUsuario } from '../../core/sesion/sesion-usuario';
-import { NotificationService } from '../../app/core/services/notification.service';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 import { ordenPrueba } from '../ordenes-compra.fixture';
 
 describe('CambioEstadoOrden', () => {
@@ -32,7 +32,7 @@ describe('CambioEstadoOrden', () => {
             },
           },
         },
-        { provide: NotificationService, useValue: notificaciones },
+        { provide: Notificaciones, useValue: notificaciones },
       ],
     });
   });

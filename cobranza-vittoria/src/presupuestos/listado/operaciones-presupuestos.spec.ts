@@ -14,7 +14,7 @@ import { RegistroPresupuestos } from '../registro-presupuestos';
 import { CatalogoCentrosCosto } from '../centros-costo/catalogo-centros-costo';
 import { CatalogoPartidas } from '../partidas/catalogo-partidas';
 import { CatalogosPresupuestarios } from '../catalogos-presupuestarios';
-import { NotificationService } from '../../app/core/services/notification.service';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 import { CatalogoProyectos } from '../../catalogos/proyectos/catalogo-proyectos';
 import { partidaPrueba, detallePrueba, presupuestoPrueba } from '../presupuestos.fixture';
 
@@ -41,7 +41,7 @@ describe('Operaciones presupuestarias separadas por concepto', () => {
         { provide: CatalogoCentrosCosto, useValue: api },
         { provide: CatalogoPartidas, useValue: api },
         { provide: CatalogosPresupuestarios, useValue: {} },
-        { provide: NotificationService, useValue: notificaciones },
+        { provide: Notificaciones, useValue: notificaciones },
         { provide: CatalogoProyectos, useValue: {} },
       ],
     });

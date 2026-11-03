@@ -5,13 +5,30 @@ import { catchError, finalize, from, map, of, switchMap } from 'rxjs';
 
 import { RegistroInventario } from '../registro-inventario';
 import { KardexStockFiltroDto } from '../contratos-inventario';
-import { NotificationService } from '../../app/core/services/notification.service';
-import { extraerMensajeError } from '../../app/core/utils/api-error.util';
+import { Notificaciones } from '../../shared/notificaciones/notificaciones';
+import { extraerMensajeError } from '../../shared/errores-api/mensajes-error-api';
 import {
   descargarArchivo,
   extraerFilenameDeContentDisposition,
-  generarNombreKardexStockXlsx,
-} from '../../app/core/utils/file-download.util';
+} from '../../shared/archivos/descarga-archivos';
+
+/**
+ * Genera el nombre de archivo por defecto para el export de Kardex Stock.
+ *
+ * Patrón: kardex-stock-yyyyMMdd-HHmm.xlsx
+ * Ejemplo: kardex-stock-20260818-1635.xlsx
+ *
+ * Se usa como fallback cuando el backend no envía Content-Disposition.
+ */
+function generarNombreKardexStockXlsx(): string {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const MM = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const HH = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `kardex-stock-${yyyy}${MM}${dd}-${HH}${mm}.xlsx`;
+}
 
 const ERROR_EXPORTACION = 'No se pudo exportar el Excel.';
 
@@ -42,7 +59,7 @@ async function procesarRespuestaStock(respuesta: HttpResponse<Blob>): Promise<vo
 @Injectable()
 export class ExportacionStock {
   private readonly registro = inject(RegistroInventario);
-  private readonly notificaciones = inject(NotificationService);
+  private readonly notificaciones = inject(Notificaciones);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly exportando = signal(false);

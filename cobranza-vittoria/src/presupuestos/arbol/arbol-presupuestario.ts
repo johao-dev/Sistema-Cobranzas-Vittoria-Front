@@ -1,6 +1,6 @@
 import { normalizarBusqueda } from '../presentacion-presupuestos';
 import { HttpErrorResponse } from '@angular/common/http';
-import { extraerMensajeError } from '../../app/core/utils/api-error.util';
+import { extraerMensajeError } from '../../shared/errores-api/mensajes-error-api';
 import {
   input,
   output,

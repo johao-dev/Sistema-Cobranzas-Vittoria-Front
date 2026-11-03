@@ -11,11 +11,11 @@ import {
   AceptarCompraRequest,
   CompraDocumentoFilaSql,
 } from './contratos-compras';
-import { ApiService } from '../app/core/services/api.service';
+import { ApiHttp } from '../core/http/api-http';
 
 @Injectable({ providedIn: 'root' })
 export class RegistroCompras {
-  private readonly api = inject(ApiService);
+  private readonly api = inject(ApiHttp);
 
   compras(filters?: FiltrosCompra): Observable<CompraFilaSql[]> {
     let params = new HttpParams();

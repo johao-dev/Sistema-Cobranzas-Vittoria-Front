@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { RegistroOrdenesCompra } from './registro-ordenes-compra';
-import { ApiService } from '../app/core/services/api.service';
+import { ApiHttp } from '../core/http/api-http';
 import { detallePrueba, ordenPrueba, requerimientoPrueba } from './ordenes-compra.fixture';
 import { controlesItemOrden, peticionOrden } from './formulario-orden/datos-formulario-orden';
 
@@ -18,7 +18,7 @@ describe('RegistroOrdenesCompra — contrato HTTP', () => {
     });
     registro = TestBed.inject(RegistroOrdenesCompra);
     http = TestBed.inject(HttpTestingController);
-    endpoint = TestBed.inject(ApiService).baseUrl + '/api/compras/ordenes-compra';
+    endpoint = TestBed.inject(ApiHttp).baseUrl + '/api/compras/ordenes-compra';
   });
 
   afterEach(() => http.verify());

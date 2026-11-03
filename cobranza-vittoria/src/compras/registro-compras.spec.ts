@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { RegistroCompras } from './registro-compras';
-import { ApiService } from '../app/core/services/api.service';
+import { ApiHttp } from '../core/http/api-http';
 import { compraPrueba, pendientePrueba, detalleCompraPrueba } from './compras.fixture';
 import { prepararItems, peticionCompra } from './formulario-compra/datos-compra';
 import { detallePrueba } from '../ordenes-compra/ordenes-compra.fixture';
@@ -16,7 +16,7 @@ describe('RegistroCompras — contrato HTTP', () => {
     });
     api = TestBed.inject(RegistroCompras);
     http = TestBed.inject(HttpTestingController);
-    base = TestBed.inject(ApiService).baseUrl + '/api/compras/compras';
+    base = TestBed.inject(ApiHttp).baseUrl + '/api/compras/compras';
   });
   afterEach(() => http.verify());
   it('conserva false y cero en filtros y omite null', () => {

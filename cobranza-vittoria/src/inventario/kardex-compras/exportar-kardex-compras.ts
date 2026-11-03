@@ -1,4 +1,4 @@
-import { descargarArchivo } from '../../app/core/utils/file-download.util';
+import { descargarArchivo } from '../../shared/archivos/descarga-archivos';
 
 export function exportarKardexCompras(tabla: HTMLTableElement, formato: 'excel' | 'pdf'): void {
   if (formato === 'excel') {

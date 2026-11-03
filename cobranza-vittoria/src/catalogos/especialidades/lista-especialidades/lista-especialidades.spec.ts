@@ -8,7 +8,7 @@ import { ListaEspecialidades } from './lista-especialidades';
 import { FormularioEspecialidad } from '../formulario-especialidad/formulario-especialidad';
 import { CatalogoEspecialidades } from '../catalogo-especialidades';
 import { Especialidad } from '../contratos-especialidades';
-import { NotificationService } from '../../../app/core/services/notification.service';
+import { Notificaciones } from '../../../shared/notificaciones/notificaciones';
 import {
   ESPECIALIDAD,
   ESPECIALIDAD_REQUEST,
@@ -40,7 +40,7 @@ describe('ListaEspecialidades sin Zone.js', () => {
       providers: [
         provideZonelessChangeDetection(),
         { provide: CatalogoEspecialidades, useValue: api },
-        { provide: NotificationService, useValue: { show: vi.fn() } },
+        { provide: Notificaciones, useValue: { show: vi.fn() } },
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(ListaEspecialidades);

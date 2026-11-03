@@ -16,26 +16,25 @@
 - **Lenguaje:** TypeScript 5.9 con modo estricto y plantillas Angular estrictas.
 - **Framework:** Angular y Angular CLI 21.2, componentes standalone y detección de cambios sin Zone.js mediante `provideZonelessChangeDetection()`.
 - **HTTP y asincronía:** `HttpClient` y RxJS 7.8.
-- **Formularios actuales:** `FormsModule` y `ngModel`. Mantener el patrón de la funcionalidad que se modifica mientras no se migre; en código nuevo o migrado, elegir según complejidad conforme a la sección 4.
+- **Formularios:** `FormsModule`/`ngModel` para formularios sencillos y formularios reactivos tipados para los complejos, según los criterios de la sección 4.
 - **Presentación:** HTML y CSS; estilos globales en `src/styles.css` y estilos por componente.
 - **Pruebas:** Vitest 4, jsdom y utilidades de Angular TestBed mediante `ng test`.
 - **Formato:** Prettier y `.editorconfig` dentro de `cobranza-vittoria/`.
 
 ## 3. Arquitectura y responsabilidades
 
-**Arquitectura actual:** en transición: autenticación está en `src/autenticacion`, el dashboard en `src/dashboard`, los cinco catálogos generales en `src/catalogos`, Requerimientos en `src/requerimientos`, Órdenes de compra en `src/ordenes-compra`, Compras en `src/compras`, Inventario en `src/inventario`, Gastos en `src/gastos`, Presupuestos en `src/presupuestos`, Control de accesos en `src/control-accesos`, la sesión en `src/core/sesion` y los ambientes en `src/core/config`. El código pendiente conserva el contenedor y arranque en `src/app`, servicios en `src/app/core/services` y modelos en `src/app/models`. Las páginas de dominios se han migrado o retirado; `src/app/pages` ya no contiene implementaciones vigentes. No asumir que ya implementa un monolito modular o todas las capas de arquitectura limpia.
-
-**Futura migración:** arquitectura por funcionalidades directamente en `src/<funcionalidad>/`, sin la carpeta `app/` ni una carpeta contenedora `features/`. La tabla siguiente describe las ubicaciones actuales, que siguen vigentes para el código no migrado; no representa la estructura objetivo.
+**Arquitectura actual:** organizada por funcionalidades directamente en `src/`: autenticación, dashboard, catálogos, Requerimientos, Órdenes de compra, Compras, Inventario, Gastos, Presupuestos y Control de accesos. El contenedor, las rutas, las reglas concretas de acceso y los proveedores de arranque están en la raíz de `src`. La infraestructura transversal está en `src/core` y los conceptos reutilizados en `src/shared`. `src/app` fue retirada; no recrear contenedores globales de servicios, modelos o componentes. La migración frontend acordada está completada y cerrada globalmente el 2026-11-03, tras la confirmación del usuario de validación funcional en navegador y backend; las evidencias se conservan en el seguimiento. No asumir capas de arquitectura limpia que el código no implementa.
 
 Todas las rutas de esta sección son relativas a `cobranza-vittoria/src/`:
 
 | Ubicación | Responsabilidad |
 | --- | --- |
-| `main.ts`, `app/app.config.ts` | Arranque, proveedores globales, router, HTTP e interceptores. |
-| `app/app.ts`, `app/app.html`, `app/app.css` | Contenedor principal, navegación y estructura general de la aplicación. |
-| `app/app.routes.ts` | Rutas, redirecciones, carga de páginas y reglas de acceso. |
-| `app/shared/components/` | Componentes reutilizables, como notificaciones, importación y tipo de cambio. |
-| `app/core/services/` | Servicios de dominios pendientes e infraestructura reutilizada. `MaestraService` fue sustituido por los servicios públicos de cada concepto en `src/catalogos`. |
+| `main.ts`, `configuracion-aplicacion.ts` | Arranque, proveedores globales, router, HTTP e interceptores. |
+| `aplicacion.ts`, `aplicacion.html`, `aplicacion.css` | Contenedor principal, navegación y estructura general de la aplicación. |
+| `rutas.ts` | Rutas, redirecciones, carga de páginas y reglas de acceso. |
+| `shared/notificaciones/` | Servicio `Notificaciones`, contratos de estado y componente `AvisoNotificacion`, con sus pruebas. |
+| `shared/importacion/` | Contratos, metadatos, `RegistroImportacion`, validación de errores HTTP y `ModalImportacion`; servicio, componente y pruebas junto a sus conceptos. |
+| `core/http/` | `ApiHttp` centraliza la base de API y el `HttpClient` con los interceptores globales. Los servicios de negocio pertenecen a sus funcionalidades. |
 | `autenticacion/` | Inicio de sesión, plantilla, estilos y pruebas migrados. |
 | `catalogos/<concepto>/` | Especialidades, materiales, proveedores generales, proyectos y unidades de medida; contratos y servicio público propios, con listas y formularios en sus subcarpetas. |
 | `dashboard/` | Conceptos en `resumen-compras/`, `grafico-materiales/`, `carga-dashboard/` e `indicadores/`, con sus pruebas colocadas junto al concepto. Contratos compartidos en la raíz del dashboard. Consulta solo Compras; Valorizaciones y sus cuatro indicadores se retiraron por indicación del usuario. |
@@ -49,43 +48,40 @@ Todas las rutas de esta sección son relativas a `cobranza-vittoria/src/`:
 | `shared/dialogos/`, `shared/presentacion/`, `shared/errores-api/` | Diálogo nativo reutilizado por Requerimientos, Órdenes de compra, Compras, Inventario, Gastos, Presupuestos, Control de accesos y el modal compartido de importación; presentación del solicitante compartida por Requerimientos y Órdenes de compra; contratos genéricos de errores de validación. |
 | `core/sesion/` | Sesión y contratos públicos, claims, reglas genéricas de acceso, protección de rutas e interceptor HTTP. |
 | `core/config/` | Configuración de API por ambiente; consumidores y reemplazos de compilación actualizados. |
-| `app/reglas-acceso.ts` | Reglas concretas compartidas por rutas y menú del contenedor pendiente de migración. |
-| `app/core/utils/` | Utilidades compartidas de errores y descarga de archivos. |
-| `app/models/` | Contratos de petición, respuesta y tipos compartidos. |
+| `reglas-acceso.ts` | Reglas concretas compartidas por rutas y menú del contenedor. |
+| `shared/errores-api/mensajes-error-api.ts`, `shared/archivos/descarga-archivos.ts` | Presentación de errores HTTP y mecánica genérica de descargas. Los nombres específicos de documentos se generan en su funcionalidad propietaria. |
 | `styles.css` | Variables de diseño y estilos globales reutilizables. |
 
 - Las páginas coordinan interacción, formularios y estado visual; los servicios encapsulan las llamadas HTTP y la adaptación de datos de su dominio.
 - Los componentes reutilizables comunican eventos y datos mediante entradas y salidas; evitar acoplarlos a una página concreta.
-- Los modelos no deben depender de páginas o componentes. Los servicios de `core` no deben importar desde `pages`. Los dominios pendientes consumen los servicios públicos `CatalogoEspecialidades`, `CatalogoMateriales`, `CatalogoProveedores`, `CatalogoProyectos` y `CatalogoUnidadesMedida` desde sus conceptos en `src/catalogos`; no recrear un servicio global de maestras.
+- Los modelos no deben depender de páginas o componentes. `core` no depende de funcionalidades. Los dominios consumen los servicios públicos `CatalogoEspecialidades`, `CatalogoMateriales`, `CatalogoProveedores`, `CatalogoProyectos` y `CatalogoUnidadesMedida` desde sus conceptos en `src/catalogos`; no recrear un servicio global de maestras.
 - Reutilizar servicios, modelos y utilidades existentes antes de crear otros. Mantener los componentes propios de una funcionalidad junto a su página.
 - Aplicar patrones GoF y principios SOLID cuando resuelvan una necesidad concreta. Evitar capas, repositorios, interfaces o dependencias nuevas sin justificación.
 - No reorganizar toda la aplicación ni migrar patrones como parte incidental de una corrección.
 
-### Arquitectura objetivo y convivencia durante la migración
+### Organización por funcionalidades y evolución
 
 - Agrupar por funcionalidad y, cuando crezca, por subfuncionalidad o concepto. Dominios iniciales: `autenticacion`, `dashboard`, `catalogos`, `requerimientos`, `ordenes-compra`, `compras`, `inventario`, `gastos`, `presupuestos` y `control-accesos`. Valorizaciones se retiró del frontend por indicación del usuario; su API y datos del backend se conservan. Por ejemplo, `src/inventario/entradas/` y `src/inventario/salidas/`; presupuesto y control presupuestario se agrupan en `src/presupuestos/` con sus propios conceptos.
 - Mantener dentro de `src` todo el código de la aplicación frontend, incluidos servicios, modelos, validaciones y utilidades utilizadas en ejecución. Servicios y modelos de negocio se ubican junto a la funcionalidad que los posee. Sacar de componentes una responsabilidad no implica sacarla de `src`.
-- Reservar `src/core/` para infraestructura transversal, como HTTP, sesión, guards, interceptores y configuración de ejecución. Reservar `src/shared/` para conceptos realmente reutilizados, agrupados por propósito. No trasladar los actuales directorios globales de servicios, modelos o componentes en bloque a otra carpeta global equivalente.
-- Mantener `main.ts` directamente en `src`. El contenedor principal, las rutas y los proveedores de arranque estarán en `src` al retirar `app/`. Scripts, documentación y configuración de herramientas permanecen fuera de `src`, dentro del proyecto o repositorio según su alcance; crear `scripts/` solo cuando existan scripts que alojar. La configuración importada por la aplicación, como los ambientes, sigue siendo código de ejecución dentro de `src`.
+- Reservar `src/core/` para infraestructura transversal, como HTTP, sesión, guards, interceptores y configuración de ejecución. Reservar `src/shared/` para conceptos realmente reutilizados, agrupados por propósito. No crear directorios globales de servicios, modelos o componentes por tipo de archivo.
+- Mantener `main.ts` directamente en `src`. El contenedor principal, las rutas y los proveedores de arranque permanecen directamente en `src`. Scripts, documentación y configuración de herramientas permanecen fuera de `src`, dentro del proyecto o repositorio según su alcance; crear `scripts/` solo cuando existan scripts que alojar. La configuración importada por la aplicación, como los ambientes, sigue siendo código de ejecución dentro de `src`.
 - Colocar juntos TypeScript, plantilla, estilos y pruebas del mismo concepto. No imponer carpetas vacías ni capas `domain/application/infrastructure`, repositorios o fachadas en todas las funcionalidades.
 - Prohibir que una funcionalidad importe componentes internos de otra. La colaboración entre funcionalidades utiliza contratos y servicios públicos explícitos; los modelos no dependen de componentes. `core` no depende de funcionalidades y `shared` no depende de funcionalidades concretas. Extraer elementos compartidos cuando exista reutilización real; no crear abstracciones anticipadas.
 - Las vistas generales son contenedores/coordinadores. Delegar formularios, detalles y diálogos en componentes propios con responsabilidad concreta. Extraer transformaciones y validaciones independientes de la UI a funciones o servicios; introducir una fachada de estado solo cuando la complejidad lo justifique. No imponer un máximo arbitrario de líneas por archivo.
 - Aplicar Boy Scout y Strangler de forma progresiva: mantener operativa la implementación actual mientras se sustituyen funcionalidades o conceptos delimitados. En una corrección ordinaria, conservar el patrón local; en una entrega de migración, aplicar las convenciones objetivo al alcance migrado, actualizar sus consumidores y comprobar el flujo afectado.
 - Conservar las ubicaciones actuales hasta migrar también sus consumidores. No duplicar contratos o lógica como implementación permanente ni renombrar masivamente código ajeno a la entrega. Ajustar imports, rutas, referencias de plantillas, selectores, configuración y pruebas cuando un movimiento lo requiera.
-- Las convenciones objetivo prevalecen en código nuevo o migrado; las reglas identificadas como actuales siguen describiendo el código pendiente. Los límites de dependencias se aplican por convención desde ahora; su automatización puede incorporarse después.
+- Estas convenciones se aplican a todo el código de la aplicación. Los límites de dependencias se mantienen por convención; su automatización puede incorporarse después.
 - Consultar y actualizar el [registro de migración](docs/migracion-frontend.md) en cada entrega. Documentar decisiones y evidencias reales; mover archivos o actualizar este contrato no significa que una funcionalidad haya sido migrada o verificada.
 
 ## 4. Convenciones de código
 
 ### Nombres y formato
 
-- **Carpetas y archivos:** Usar minúsculas y kebab-case. En código pendiente, conservar nombres como `ordenes-compra/`, `requerimientos.service.ts` e `import-modal.component.ts` hasta migrar el concepto correspondiente.
-- **Sufijos actuales:** `.page.ts` para páginas, `.component.ts` para componentes compartidos o secundarios, `.service.ts`, `.models.ts`, `.guard.ts`, `.interceptor.ts` y `.util.ts` según su responsabilidad. Mantener las excepciones existentes del arranque, como `app.ts`, mientras no se migren.
-- **Nombrado objetivo:** usar nombres que describan el concepto y coincidan con su identificador TypeScript, sin los sufijos tipológicos actuales. Por ejemplo, `FormularioRequerimiento` en `formulario-requerimiento.ts`, con `formulario-requerimiento.html`, `formulario-requerimiento.css` y `formulario-requerimiento.spec.ts`. Para contratos con varios tipos, usar un nombre temático como `contratos-requerimientos.ts`; evitar `common.ts`, `helpers.ts` o `utils.ts` genéricos. Conservar `.spec.ts` y las convenciones requeridas por las herramientas.
+- **Carpetas y archivos:** Usar minúsculas y kebab-case, agrupados por funcionalidad o concepto.
+- **Nombrado:** usar nombres que describan el concepto y coincidan con su identificador TypeScript, sin sufijos tipológicos como `.component.ts` o `.service.ts`. Por ejemplo, `FormularioRequerimiento` en `formulario-requerimiento.ts`, con `formulario-requerimiento.html`, `formulario-requerimiento.css` y `formulario-requerimiento.spec.ts`. Para contratos con varios tipos, usar un nombre temático como `contratos-requerimientos.ts`; evitar `common.ts`, `helpers.ts` o `utils.ts` genéricos. Conservar `.spec.ts` y las convenciones requeridas por las herramientas.
 - **Clases, interfaces y tipos:** PascalCase. El frontend usa interfaces sin prefijo `I`, por ejemplo `RequerimientoRequest` y `ImportResumen`; mantener esa convención sin renombrados masivos.
 - **Variables, propiedades y métodos:** lowerCamelCase. Constantes de dominio en UPPER_SNAKE_CASE, como `ACCESS_RULES` y `IMPORT_MODULOS_META`.
-- **Selectores actuales:** prefijo `app-` y kebab-case, hasta migrar sus componentes y consumidores.
-- **Selectores objetivo:** eliminar `app-` sin sustituirlo por otro prefijo global. Es una decisión del proyecto, independiente de retirar `app/`, y difiere de la recomendación de Angular de mantener un prefijo consistente. Usar nombres de elemento descriptivos y únicos en kebab-case con al menos un guion, como `requerimiento-detalle`; no usar nombres de elementos HTML nativos ni el prefijo reservado `ng`. Para directivas de atributo, usar nombres descriptivos en camelCase. Al migrar, actualizar consumidores, estilos, pruebas y la configuración de generación correspondiente.
+- **Selectores:** sin prefijo global. Es una decisión del proyecto, independiente de retirar `app/`, y difiere de la recomendación de Angular de mantener un prefijo consistente. Usar nombres de elemento descriptivos y únicos en kebab-case con al menos un guion, como `requerimiento-detalle`; no usar nombres de elementos HTML nativos ni el prefijo reservado `ng`. Para directivas de atributo, usar nombres descriptivos en camelCase. Al migrar, actualizar consumidores, estilos, pruebas y la configuración de generación correspondiente.
 - **Idioma:** Código, comentarios y textos de interfaz en español; conservar el uso de inglés o spanglish establecido y los nombres exigidos por Angular o la API.
 - Respetar dos espacios, comillas simples en TypeScript y la configuración de Prettier (`printWidth: 100`, parser Angular para HTML). Evitar reformatear archivos ajenos al cambio.
 
@@ -104,10 +100,10 @@ Todas las rutas de esta sección son relativas a `cobranza-vittoria/src/`:
 ### Componentes, estado y asincronía
 
 - Mantener componentes standalone e importar explícitamente lo que requiere su plantilla.
-- **Inyección actual:** respetar el patrón existente en el archivo, ya sea constructor o `inject()`, fuera del alcance de migración. **Objetivo:** preferir `inject()` y dependencias `readonly` en código nuevo o migrado, agrupadas antes de los métodos.
+- **Inyección:** preferir `inject()` y dependencias `readonly`, agrupadas antes de los métodos.
 - La aplicación funciona sin Zone.js: garantizar que los cambios asíncronos se reflejen en pantalla. Usar signals, `AsyncPipe` o el mecanismo de `ChangeDetectorRef` correspondiente al patrón local; no agregar Zone.js como solución.
-- **Estado actual:** conservar el patrón de la funcionalidad fuera del alcance de migración; no migrar pantallas completas a signals como parte incidental de una corrección ni introducir una biblioteca de estado sin necesidad concreta. **Objetivo:** signals para estado visual nuevo o extraído, `computed` para valores derivados y RxJS para HTTP y composición asíncrona, manteniendo la actualización visual sin Zone.js.
-- En componentes nuevos o migrados, preferir `protected` para miembros usados exclusivamente por la plantilla, `readonly` para referencias que no deban reasignarse y `input()`/`output()` para sus contratos cuando correspondan. Conservar los contratos existentes hasta actualizar sus consumidores. Implementar las interfaces de los ciclos de vida utilizados y mantener sus métodos breves, delegando en operaciones con nombres descriptivos.
+- **Estado:** signals para estado visual, `computed` para valores derivados y RxJS para HTTP y composición asíncrona, manteniendo la actualización visual sin Zone.js. No introducir una biblioteca de estado sin necesidad concreta.
+- En componentes nuevos o migrados, preferir `protected` para miembros usados exclusivamente por la plantilla, `readonly` para referencias que no deban reasignarse y `input()`/`output()` para sus contratos cuando correspondan. Actualizar los consumidores cuando cambien los contratos de componentes. Implementar las interfaces de los ciclos de vida utilizados y mantener sus métodos breves, delegando en operaciones con nombres descriptivos.
 - **Formularios objetivo:** decidir según complejidad. Mantener `ngModel` para formularios sencillos; preferir formularios reactivos tipados en formularios complejos que se refactoricen. La complejidad depende de validaciones, estructura dinámica y coordinación de campos, no solo del número de controles. No migrar todos los formularios a un único patrón por uniformidad.
 - Componer operaciones con RxJS y evitar suscripciones anidadas. Liberar suscripciones que sobrevivan al componente mediante `takeUntilDestroyed`, `AsyncPipe` o el mecanismo existente.
 - Restaurar los estados de carga y guardado tanto en éxito como en error; utilizar `finalize` cuando corresponda. Impedir envíos duplicados durante una operación.
@@ -116,25 +112,25 @@ Todas las rutas de esta sección son relativas a `cobranza-vittoria/src/`:
 
 ### Integración con el backend
 
-- Reutilizar `ApiService` y el servicio del dominio para las llamadas de negocio. La base de la API se obtiene de `environment.apiUrl`; no duplicar URLs en componentes.
+- Reutilizar `ApiHttp` de `core/http/api-http.ts` y el servicio del dominio para las llamadas de negocio. La base de la API se obtiene de `environment.apiUrl`; no duplicar URLs en componentes.
 - Los ambientes están en `core/config/environment.ts`, `environment.staging.ts` y `environment.production.ts`. `angular.json` configura sus reemplazos al compilar.
 - Mantener endpoints, métodos HTTP, parámetros y DTOs acordes al contrato disponible. No inventar campos o respuestas ni convertir una falla en un éxito aparente.
-- **Contratos actuales:** tipar peticiones y respuestas en `app/models/` para las funcionalidades pendientes. **Objetivo:** colocarlos junto a su funcionalidad y compartir únicamente los contratos que tengan consumidores reales en varios dominios. Conservar los estados y permisos del backend, incluidos sus valores exactos; separar DTO de API y modelos de formulario cuando sus responsabilidades difieran.
+- **Contratos:** tipar peticiones y respuestas junto a su funcionalidad y compartir únicamente los contratos que tengan consumidores reales en varios dominios. Conservar los estados y permisos del backend, incluidos sus valores exactos; separar DTO de API y modelos de formulario cuando sus responsabilidades difieran.
 - **Fuente de verdad actual:** contratos del backend confirmados con el desarrollador responsable, mantenidos manualmente y reflejados en modelos frontend. No inferir respuestas definitivas a partir de usos con `any`. **Futura iteración:** adoptar OpenAPI como única fuente de verdad del contrato; la generación y sus herramientas se definirán cuando exista ese estándar. No presentar OpenAPI ni generación de tipos como implementados actualmente.
-- Usar `HttpParams` para filtros y las utilidades existentes para descargas. Para importación, reutilizar `ImportService`, `ImportModalComponent` y los metadatos de `import.models.ts`. El modal emite `cerrado` al solicitar cierre e `importacionCompletada` con el número de filas insertadas al completar una importación.
+- Usar `HttpParams` para filtros y las utilidades existentes para descargas. Para importación, reutilizar `RegistroImportacion`, `ModalImportacion` y los metadatos de `shared/importacion/metadatos-importacion.ts`. El modal emite `cerrado` al solicitar cierre e `importacionCompletada` con el número de filas insertadas al completar una importación.
 - No incluir secretos, contraseñas o claves privadas en código, configuración de ambientes ni archivos públicos; la configuración del frontend es visible en el navegador.
 
 ### Validaciones y manejo de errores
 
 - Validar los formularios para dar respuesta inmediata al usuario: campos requeridos, formatos, rangos y coherencia básica. El backend conserva la validación definitiva de negocio.
 - Consumir los errores HTTP en la capa que pueda dar una respuesta útil al usuario; los servicios propagan el error salvo que su contrato modele explícitamente un resultado de éxito o error, como en importación.
-- Reutilizar `extraerMensajeError`, `esCodigoError` y `obtenerErrores` de `core/utils/api-error.util.ts` para los contratos compatibles. Esta utilidad contempla `errores[]`, errores de modelo en `errors` y mensajes del servidor.
-- Mostrar mensajes claros mediante `NotificationService` o los errores de formulario existentes. No silenciar errores ni exponer tokens, datos sensibles o detalles internos en mensajes o registros.
+- Reutilizar `extraerMensajeError`, `esCodigoError` y `obtenerErrores` de `shared/errores-api/mensajes-error-api.ts` para los contratos compatibles. Esta utilidad contempla `errores[]`, errores de modelo en `errors` y mensajes del servidor.
+- Mostrar mensajes claros mediante `Notificaciones` o los errores de formulario existentes. No silenciar errores ni exponer tokens, datos sensibles o detalles internos en mensajes o registros.
 - Las reglas de `ApiMiddlewareException` y DataAnnotations corresponden al backend; el frontend interpreta sus respuestas y presenta los errores.
 
 ### Autenticación y permisos
 
-- Reutilizar `SesionUsuario`, `interceptarSesion` y `protegerRuta` de `src/core/sesion/`. Las reglas genéricas de acceso están en `control-acceso.ts`; las reglas concretas del menú y rutas se conservan en `src/app/reglas-acceso.ts` hasta migrar sus conceptos.
+- Reutilizar `SesionUsuario`, `interceptarSesion` y `protegerRuta` de `src/core/sesion/`. Las reglas genéricas de acceso están en `control-acceso.ts`; las reglas concretas del menú y rutas están en `src/reglas-acceso.ts`.
 - Mantener coherencia entre rutas (`data.access`), menú y acciones visibles usando `canAccess`, `hasPermission` o `hasRole` según la regla existente. El backend conserva la decisión final de autorización.
 - No enviar tokens a servicios externos ni duplicar manualmente cabeceras Bearer en los componentes. Preservar la renovación compartida de sesión y el control de reintentos del interceptor.
 - No alterar el almacenamiento o el flujo de tokens como parte incidental de otros cambios; cualquier modificación debe considerar login, refresh y logout.
@@ -165,7 +161,7 @@ npm run lint
 
 - `npm start` sirve el frontend en `http://localhost:4200`; el entorno de desarrollo actual espera la API en `http://localhost:5000`.
 - `npm run build` usa producción por defecto. Usar la configuración correspondiente al cambio y respetar los presupuestos de tamaño de `angular.json`.
-- **Estado actual:** ESLint configurado para TypeScript y plantillas Angular mediante `npm run lint`; Vitest se conserva. Los conjuntos recomendados y las reglas de accesibilidad reportan advertencias en `src/app/` mientras se migra; fuera de esa carpeta se aplican como errores. No añadir nuevas advertencias al código pendiente; corregir las del concepto migrado al moverlo. Prettier conserva la responsabilidad de formato. No hay framework e2e configurado; las pruebas automatizadas de navegador no forman parte del alcance acordado por ahora.
+- **Estado actual:** ESLint configurado para TypeScript y plantillas Angular mediante `npm run lint`; Vitest se conserva. Los conjuntos recomendados y las reglas de accesibilidad se aplican como errores en todo `src`, sin excepciones transitorias por ubicación. Prettier conserva la responsabilidad de formato. No hay framework e2e configurado; las pruebas automatizadas de navegador no forman parte del alcance acordado por ahora.
 
 Como alternativa, desde la raíz del repositorio:
 

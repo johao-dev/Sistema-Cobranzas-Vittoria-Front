@@ -8,7 +8,7 @@ import { ListaUnidadesMedida } from './lista-unidades-medida';
 import { FormularioUnidadMedida } from '../formulario-unidad-medida/formulario-unidad-medida';
 import { CatalogoUnidadesMedida } from '../catalogo-unidades-medida';
 import { UnidadMedida } from '../contratos-unidades-medida';
-import { NotificationService } from '../../../app/core/services/notification.service';
+import { Notificaciones } from '../../../shared/notificaciones/notificaciones';
 import {
   UNIDAD,
   UNIDAD_REQUEST,
@@ -40,7 +40,7 @@ describe('ListaUnidadesMedida sin Zone.js', () => {
       providers: [
         provideZonelessChangeDetection(),
         { provide: CatalogoUnidadesMedida, useValue: api },
-        { provide: NotificationService, useValue: { show: vi.fn() } },
+        { provide: Notificaciones, useValue: { show: vi.fn() } },
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(ListaUnidadesMedida);
