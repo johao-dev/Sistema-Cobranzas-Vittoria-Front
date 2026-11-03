@@ -19,7 +19,6 @@ import { DialogoModal } from '../../shared/dialogos/dialogo-modal';
 import {
   GastoDirectoListado,
   GastoDirectoRequest,
-  GastoDirectoVistaConfig,
   PartidaDisponibleGastoDirecto,
 } from '../contratos-gastos-directos';
 import { RegistroGastosDirectos } from '../registro-gastos-directos';
@@ -41,7 +40,6 @@ export class FormularioGasto implements OnInit {
   protected readonly referencias = inject(ReferenciasGastos);
 
   readonly valor = input<GastoDirectoListado | null>(null);
-  readonly config = input.required<GastoDirectoVistaConfig>();
 
   readonly cancelar = output<void>();
   readonly guardado = output<void>();
@@ -74,6 +72,16 @@ export class FormularioGasto implements OnInit {
   protected readonly errorPartidas = signal('');
   protected readonly guardando = signal(false);
   protected readonly error = signal('');
+
+  protected readonly categoriaNoDisponible = computed(() => {
+    const gasto = this.valor();
+    return (
+      gasto !== null &&
+      !this.referencias
+        .categorias()
+        .some((categoria) => categoria.idCategoriaGasto === gasto.idCategoriaGasto)
+    );
+  });
 
   protected readonly partidaSeleccionada = computed(
     () =>
@@ -151,10 +159,12 @@ export class FormularioGasto implements OnInit {
         fechaTipoCambio: row.fechaTipoCambio?.substring(0, 10) ?? '',
       });
       this.cargarPartidas();
-    } else if (this.referencias.categorias().length === 1) {
-      this.form.controls.idCategoriaGasto.setValue(
-        this.referencias.categorias()[0].idCategoriaGasto,
-      );
+    } else {
+      const categoriaAdministrativa = this.referencias
+        .categorias()
+        .find((categoria) => categoria.codigo.trim().toUpperCase() === 'ADMINISTRATIVO');
+
+      this.form.controls.idCategoriaGasto.setValue(categoriaAdministrativa?.idCategoriaGasto ?? '');
     }
   }
 

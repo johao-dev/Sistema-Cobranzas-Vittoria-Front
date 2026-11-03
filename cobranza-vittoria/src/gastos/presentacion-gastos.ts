@@ -1,27 +1,4 @@
-import {
-  CategoriaGasto,
-  GastoDirectoListado,
-  MonedaColumnaGasto,
-} from './contratos-gastos-directos';
-
-export function resolverCategoriasPorCodigo(
-  catalogo: CategoriaGasto[],
-  codigos: string[],
-): {
-  categorias: CategoriaGasto[];
-  faltantes: string[];
-} {
-  const porCodigo = new Map(
-    catalogo.map((categoria) => [categoria.codigo.trim().toUpperCase(), categoria]),
-  );
-  const normalizados = codigos.map((codigo) => codigo.trim().toUpperCase());
-  return {
-    categorias: normalizados
-      .map((codigo) => porCodigo.get(codigo))
-      .filter((item): item is CategoriaGasto => !!item),
-    faltantes: normalizados.filter((codigo) => !porCodigo.has(codigo)),
-  };
-}
+import { GastoDirectoListado, MonedaColumnaGasto } from './contratos-gastos-directos';
 
 export function normalizarBusquedaGasto(valor: string): string {
   return valor

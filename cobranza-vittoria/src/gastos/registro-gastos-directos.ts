@@ -17,7 +17,7 @@ import {
   DocumentosGastoAdjuntados,
 } from './contratos-gastos-directos';
 
-/** Cliente HTTP de Gastos Directos. La categoría clasifica el contexto visual;
+/** Cliente HTTP de Gastos Directos. La categoría clasifica el gasto;
  * la imputación económica continúa determinada por idPresupuestoDetalle. */
 @Injectable({ providedIn: 'root' })
 export class RegistroGastosDirectos {

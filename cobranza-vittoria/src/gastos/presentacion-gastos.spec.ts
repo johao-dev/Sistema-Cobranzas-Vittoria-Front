@@ -1,24 +1,7 @@
-import {
-  esGastoHistorico,
-  montoEnGasto,
-  normalizarBusquedaGasto,
-  resolverCategoriasPorCodigo,
-} from './presentacion-gastos';
-import { categoriasGastoPrueba, gastoPrueba } from './gastos.fixture';
+import { esGastoHistorico, montoEnGasto, normalizarBusquedaGasto } from './presentacion-gastos';
+import { gastoPrueba } from './gastos.fixture';
 
 describe('Presentación de Gastos', () => {
-  it('resuelve códigos sin depender de IDs fijos y comunica faltantes', () => {
-    expect(
-      resolverCategoriasPorCodigo(categoriasGastoPrueba, [
-        ' terreno ',
-        'ANTEPROYECTO',
-        'inexistente',
-      ]),
-    ).toEqual({
-      categorias: [categoriasGastoPrueba[4], categoriasGastoPrueba[5]],
-      faltantes: ['INEXISTENTE'],
-    });
-  });
   it('distingue el monto presupuestario de la referencia sin conversión', () => {
     expect(montoEnGasto(gastoPrueba, 'PEN')).toEqual({ valor: 100, referencia: false });
     expect(montoEnGasto(gastoPrueba, 'USD')).toEqual({ valor: 25, referencia: true });

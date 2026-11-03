@@ -144,7 +144,7 @@ describe('ModalImportacion compartido', () => {
     expect(fixture.nativeElement.querySelector('input').accept).toBe('.xlsx');
     expect(texto()).toContain('10 MB');
     expect(texto()).toContain('200 registros no vacíos');
-    expect(texto()).toContain('diferentes módulos');
+    expect(texto()).toContain('diferentes categorías');
     expect(texto()).toContain('no se registra ninguna fila');
     expect(texto()).toContain('plantilla descargada desde el sistema');
   });

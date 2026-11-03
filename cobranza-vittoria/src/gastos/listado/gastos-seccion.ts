@@ -1,27 +1,10 @@
-import {
-  Component,
-  DestroyRef,
-  OnInit,
-  computed,
-  effect,
-  inject,
-  signal,
-  untracked,
-} from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { of } from 'rxjs';
 import { SesionUsuario } from '../../core/sesion/sesion-usuario';
-import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 import { ModalImportacion } from '../../shared/importacion/modal-importacion/modal-importacion';
-import {
-  AccionGasto,
-  GastoDirectoListado,
-  GastoDirectoVistaConfig,
-  MonedaColumnaGasto,
-} from '../contratos-gastos-directos';
+import { AccionGasto, GastoDirectoListado, MonedaColumnaGasto } from '../contratos-gastos-directos';
 import { RegistroGastosDirectos } from '../registro-gastos-directos';
 import { ReferenciasGastos } from '../referencias-gastos';
 import { ConsultaGastos } from '../consulta-gastos';
@@ -29,19 +12,6 @@ import { esGastoHistorico, montoEnGasto, normalizarBusquedaGasto } from '../pres
 import { FormularioGasto } from '../formulario/formulario-gasto';
 import { DocumentosGasto } from '../documentos/documentos-gasto';
 import { TransicionGasto } from '../transiciones/transicion-gasto';
-
-/** Convierte únicamente la configuración declarada por las rutas de esta funcionalidad. */
-function configurarVista(data: Record<string, unknown>): GastoDirectoVistaConfig {
-  const codigos = data['codigosCategoria'];
-  return {
-    titulo: typeof data['titulo'] === 'string' ? data['titulo'] : '',
-    subtitulo: typeof data['subtitulo'] === 'string' ? data['subtitulo'] : '',
-    codigosCategoria: Array.isArray(codigos)
-      ? codigos.filter((codigo: unknown): codigo is string => typeof codigo === 'string')
-      : [],
-    permiteSeleccionCategoria: data['permiteSeleccionCategoria'] === true,
-  };
-}
 
 @Component({
   selector: 'gastos-seccion',
@@ -58,23 +28,15 @@ function configurarVista(data: Record<string, unknown>): GastoDirectoVistaConfig
   styleUrl: '../gastos-directos.css',
 })
 export class GastosSeccion implements OnInit {
-  private readonly route = inject(ActivatedRoute);
   private readonly registro = inject(RegistroGastosDirectos);
   private readonly sesion = inject(SesionUsuario);
-  private readonly notifications = inject(Notificaciones);
-  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly referencias = inject(ReferenciasGastos);
 
   protected readonly consulta = new ConsultaGastos<GastoDirectoListado>(
     'No se pudieron cargar los gastos.',
   );
-  protected readonly config = signal<GastoDirectoVistaConfig>({
-    titulo: '',
-    subtitulo: '',
-    codigosCategoria: [],
-    permiteSeleccionCategoria: false,
-  });
+  protected readonly filtroCategoria = signal('');
   protected readonly filtroEstado = signal('');
   protected readonly filtroCentroCosto = signal('');
   protected readonly filtroDesde = signal('');
@@ -101,6 +63,7 @@ export class GastosSeccion implements OnInit {
         normalizarBusquedaGasto(
           [
             row.concepto,
+            row.nombreCategoriaGasto,
             row.proveedor,
             row.codigoPartida,
             row.partida,
@@ -124,22 +87,9 @@ export class GastosSeccion implements OnInit {
     usd: this.vigentes().some((row) => row.moneda === 'USD'),
   }));
 
-  constructor() {
-    effect(() => {
-      if (this.referencias.listas()) untracked(() => this.load());
-    });
-  }
-
   ngOnInit(): void {
-    this.route.data.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((data) => {
-      this.config.set(configurarVista(data));
-      this.filtroEstado.set('');
-      this.filtroCentroCosto.set('');
-      this.filtroBusqueda.set('');
-      this.cerrarModales();
-      this.consulta.cargar(of([]));
-      this.referencias.cargar(this.config());
-    });
+    this.referencias.cargar();
+    this.load();
   }
 
   protected get puedeOperar(): boolean {
@@ -153,7 +103,6 @@ export class GastosSeccion implements OnInit {
   }
 
   protected load(): void {
-    if (!this.referencias.listas()) return;
     if (this.filtroDesde() && this.filtroHasta() && this.filtroDesde() > this.filtroHasta()) {
       this.errorFiltro.set('La fecha desde no puede ser posterior a la fecha hasta.');
       this.consulta.cargar(of([]));
@@ -162,9 +111,9 @@ export class GastosSeccion implements OnInit {
     this.errorFiltro.set('');
     this.consulta.cargar(
       this.registro.listar({
-        idCategoriaGasto: this.referencias
-          .categorias()
-          .map((categoria) => categoria.idCategoriaGasto),
+        ...(this.filtroCategoria() === ''
+          ? {}
+          : { idCategoriaGasto: [Number(this.filtroCategoria())] }),
         estado: this.filtroEstado() || null,
         idCentroCosto: this.filtroCentroCosto() === '' ? null : Number(this.filtroCentroCosto()),
         desde: this.filtroDesde() || null,
@@ -174,8 +123,7 @@ export class GastosSeccion implements OnInit {
   }
 
   protected reintentarReferencias(): void {
-    this.consulta.cargar(of([]));
-    this.referencias.cargar(this.config());
+    this.referencias.cargar();
   }
 
   protected abrirImportModal(): void {
@@ -189,18 +137,7 @@ export class GastosSeccion implements OnInit {
   }
 
   protected editar(row: GastoDirectoListado): void {
-    if (!this.puedeOperar || row.estado !== 'REGISTRADO') return;
-    if (
-      !this.referencias
-        .categorias()
-        .some((categoria) => categoria.idCategoriaGasto === row.idCategoriaGasto)
-    ) {
-      this.notifications.show(
-        'La categoría del gasto no pertenece a esta vista y no puede editarse aquí.',
-        'error',
-      );
-      return;
-    }
+    if (!this.puedeOperar || !this.referencias.listas() || row.estado !== 'REGISTRADO') return;
     this.edicion.set(row);
     this.modalGasto.set(true);
   }
@@ -225,12 +162,5 @@ export class GastosSeccion implements OnInit {
   protected guardado(): void {
     this.modalGasto.set(false);
     this.load();
-  }
-
-  private cerrarModales(): void {
-    this.importOpen.set(false);
-    this.modalGasto.set(false);
-    this.gastoDocumentos.set(null);
-    this.modalConfirmacion.set(null);
   }
 }

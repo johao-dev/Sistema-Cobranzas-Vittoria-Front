@@ -1,14 +1,15 @@
 <div class="page-header">
   <div>
-    <div class="page-title">{{ config().titulo }}</div>
-    <div class="page-subtitle">{{ config().subtitulo }}</div>
+    <div class="page-title">Gastos</div>
+    <div class="page-subtitle">
+      Registro y seguimiento de gastos directos de todas las categorías.
+    </div>
   </div>
 </div>
 
 @if (referencias.errorCategorias()) {
   <div class="alerta-bloqueo">
-    {{ referencias.errorCategorias() }} No se cargarán ni guardarán gastos hasta corregir el
-    catálogo.
+    {{ referencias.errorCategorias() }} Puedes seguir consultando los gastos existentes.
     <button type="button" class="btn btn-ghost" (click)="reintentarReferencias()">
       Reintentar
     </button>
@@ -38,7 +39,7 @@
           id="gastos-seccion-campo-1"
           type="text"
           [(ngModel)]="filtroBusqueda"
-          placeholder="Concepto, proveedor o partida"
+          placeholder="Concepto, categoría, proveedor o partida"
         />
       </div>
     </div>
@@ -59,7 +60,7 @@
     }
   </div>
 
-  @if (!consulta.cargando() && !consulta.error() && referencias.listas() && !errorFiltro()) {
+  @if (!consulta.cargando() && !consulta.error() && !errorFiltro()) {
     <div class="resumen-cards">
       <div class="resumen-card resumen-card--total">
         <span>Total registrado</span>
@@ -80,6 +81,15 @@
   </p>
 
   <div class="filters">
+    <div class="field">
+      <label for="gastos-filtro-categoria">Categoría</label>
+      <select id="gastos-filtro-categoria" [(ngModel)]="filtroCategoria" (change)="load()">
+        <option value="">Todas</option>
+        @for (categoria of referencias.categorias(); track categoria.idCategoriaGasto) {
+          <option [value]="categoria.idCategoriaGasto">{{ categoria.nombre }}</option>
+        }
+      </select>
+    </div>
     <div class="field">
       <label for="gastos-seccion-campo-2">Estado</label>
       <select id="gastos-seccion-campo-2" [(ngModel)]="filtroEstado" (change)="load()">
@@ -120,15 +130,8 @@
   @if (consulta.cargando()) {
     <div class="empty-state">Cargando gastos...</div>
   }
-  @if (
-    !consulta.cargando() &&
-    !referencias.errorCategorias() &&
-    !consulta.error() &&
-    !errorFiltro() &&
-    !referencias.cargando() &&
-    !rowsFiltradas().length
-  ) {
-    <div class="empty-state">No hay gastos registrados en esta vista.</div>
+  @if (!consulta.cargando() && !consulta.error() && !errorFiltro() && !rowsFiltradas().length) {
+    <div class="empty-state">No hay gastos registrados para los filtros seleccionados.</div>
   }
 
   @if (!consulta.cargando() && rowsFiltradas().length) {
@@ -199,7 +202,12 @@
                 >
                   <option value="">Acciones</option>
                   @if (puedeOperar) {
-                    <option value="edit" [disabled]="row.estado !== 'REGISTRADO'">Editar</option>
+                    <option
+                      value="edit"
+                      [disabled]="row.estado !== 'REGISTRADO' || !referencias.listas()"
+                    >
+                      Editar
+                    </option>
                   }
                   @if (puedeOperar && !esHistorico(row)) {
                     <option value="confirmar" [disabled]="row.estado !== 'REGISTRADO'">
@@ -235,7 +243,6 @@
 @if (modalGasto()) {
   <formulario-gasto
     [valor]="edicion()"
-    [config]="config()"
     (cancelar)="modalGasto.set(false)"
     (guardado)="guardado()"
   />

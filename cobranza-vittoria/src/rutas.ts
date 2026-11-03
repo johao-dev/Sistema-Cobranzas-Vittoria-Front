@@ -14,62 +14,11 @@ export const rutas: Routes = [
       import('./dashboard/resumen-compras/resumen-compras').then((m) => m.ResumenCompras),
     canActivate: [protegerRuta],
   },
-  // Operaciones → Gastos del proyecto: cada vista declara únicamente sus categorías descriptivas.
+  // Operaciones → Gastos: una bandeja para todas las categorías.
   {
-    path: 'gastos-administrativos',
+    path: 'gastos',
     canActivate: [protegerRuta],
     loadComponent: () => import('./gastos/listado/gastos-seccion').then((m) => m.GastosSeccion),
-    data: {
-      codigosCategoria: ['ADMINISTRATIVO'],
-      permiteSeleccionCategoria: false,
-      titulo: 'Gastos administrativos',
-      subtitulo: 'Gastos de oficina y áreas de la empresa: alquiler, servicios, planilla y bancos.',
-    },
-  },
-  {
-    path: 'terreno',
-    canActivate: [protegerRuta],
-    loadComponent: () => import('./gastos/listado/gastos-seccion').then((m) => m.GastosSeccion),
-    data: {
-      codigosCategoria: ['TERRENO', 'ANTEPROYECTO', 'PROYECTO'],
-      permiteSeleccionCategoria: true,
-      titulo: 'Terreno - Anteproyecto - Proyecto',
-      subtitulo: 'Compra de terreno, alcabala, estudios previos y desarrollo del proyecto.',
-    },
-  },
-  {
-    path: 'marketing-publicidad',
-    canActivate: [protegerRuta],
-    loadComponent: () => import('./gastos/listado/gastos-seccion').then((m) => m.GastosSeccion),
-    data: {
-      codigosCategoria: ['MARKETING_VENTAS'],
-      permiteSeleccionCategoria: false,
-      titulo: 'Marketing / Ventas',
-      subtitulo: 'Publicidad, marketing, comisiones por ventas y sala de ventas.',
-    },
-  },
-  {
-    path: 'otros-gastos',
-    canActivate: [protegerRuta],
-    loadComponent: () => import('./gastos/listado/gastos-seccion').then((m) => m.GastosSeccion),
-    data: {
-      codigosCategoria: ['OTROS'],
-      permiteSeleccionCategoria: false,
-      titulo: 'Otros gastos',
-      subtitulo: 'Gastos del proyecto que no pertenecen a otra categoría.',
-    },
-  },
-  {
-    path: 'gastos-municipales-distritales',
-    canActivate: [protegerRuta],
-    loadComponent: () => import('./gastos/listado/gastos-seccion').then((m) => m.GastosSeccion),
-    data: {
-      codigosCategoria: ['MUNICIPAL'],
-      permiteSeleccionCategoria: false,
-      titulo: 'Gastos municipales y distritales',
-      subtitulo:
-        'Licencias, independización, declaratoria de fábrica, conformidad de obra e instalaciones.',
-    },
   },
   {
     path: 'especialidades',
@@ -213,8 +162,6 @@ export const rutas: Routes = [
           import('./presupuestos/listado/lista-presupuestos').then((m) => m.ListaPresupuestos),
         data: { access: ACCESS_RULES.controlPresupuestarioPresupuestos },
       },
-      // Gasto directo vive en Operaciones → Gastos del proyecto.
-      { path: 'gastos-directos', redirectTo: '/gastos-administrativos', pathMatch: 'full' },
       {
         path: 'centros-costo',
         canActivate: [protegerRuta],

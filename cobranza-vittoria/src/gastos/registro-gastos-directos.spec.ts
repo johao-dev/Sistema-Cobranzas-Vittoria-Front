@@ -35,6 +35,13 @@ describe('RegistroGastosDirectos', () => {
 
   afterEach(() => http.verify());
 
+  it('consulta todas las categorías sin enviar un filtro de categoría', () => {
+    service.listar({ estado: 'REGISTRADO', idCategoriaGasto: null }).subscribe();
+    const req = http.expectOne(`${base}?estado=REGISTRADO`);
+    expect(req.request.params.has('idCategoriaGasto')).toBe(false);
+    req.flush([]);
+  });
+
   it('lista con una categoría', () => {
     service.listar({ idCategoriaGasto: [9] }).subscribe();
     const req = http.expectOne(`${base}?idCategoriaGasto=9`);

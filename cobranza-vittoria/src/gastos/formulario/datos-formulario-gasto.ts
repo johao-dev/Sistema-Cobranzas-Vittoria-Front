@@ -27,7 +27,7 @@ export function validarFormularioGasto(
   partida: PartidaDisponibleGastoDirecto | null,
 ): string {
   if (!categorias.some((categoria) => categoria.idCategoriaGasto === datos.idCategoriaGasto))
-    return 'Selecciona una categoría válida para esta vista.';
+    return 'Selecciona una categoría de gasto disponible.';
   if (!datos.idCentroCosto) return 'Selecciona el centro de costo.';
   if (!datos.idPresupuestoDetalle || !partida)
     return 'Selecciona la partida a la que se carga el gasto.';

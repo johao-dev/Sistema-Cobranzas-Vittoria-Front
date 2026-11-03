@@ -13,7 +13,7 @@ export const IMPORT_MODULOS_META: Record<ImportModulo, ImportModuloMeta> = {
     maxFileSizeBytes: 10 * 1024 * 1024,
     maxRegistros: 200,
     instrucciones:
-      'Utiliza la plantilla descargada desde el sistema. Puede contener gastos de diferentes módulos. Si una fila es inválida, no se registra ninguna fila del archivo.',
+      'Utiliza la plantilla descargada desde el sistema. Puede contener gastos de diferentes categorías. Si una fila es inválida, no se registra ninguna fila del archivo.',
     nombrePlantilla: 'Plantilla_Carga_Masiva_Gastos_Directos.xlsx',
     plantillaConFormato: false,
     enviarUsuario: false,

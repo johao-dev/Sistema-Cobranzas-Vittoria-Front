@@ -145,7 +145,7 @@ describe('Aplicacion', () => {
     };
     abrir('Operaciones');
     abrir('Gestión de obra');
-    abrir('Gastos del proyecto');
+    abrir('Gastos');
     abrir('Inventario');
     await fixture.whenStable();
     const elemento: unknown = fixture.nativeElement;
@@ -157,6 +157,7 @@ describe('Aplicacion', () => {
       '/proveedores',
       '/materiales',
       '/unidades-medida',
+      '/gastos',
       '/categorias-gasto',
       '/proveedores-gasto',
       '/proveedores-terreno',
@@ -168,7 +169,17 @@ describe('Aplicacion', () => {
     expect(inventario?.textContent).toContain('Inventario');
     const gastos: Element | null =
       elemento.querySelector('a[href="/categorias-gasto"]')?.closest('.nav-subsection') ?? null;
-    expect(gastos?.textContent).toContain('Gastos del proyecto');
+    expect(gastos?.textContent).toContain('Gastos');
+    expect(elemento.querySelectorAll('a[href="/gastos"]')).toHaveLength(1);
+    for (const anterior of [
+      '/gastos-administrativos',
+      '/terreno',
+      '/marketing-publicidad',
+      '/otros-gastos',
+      '/gastos-municipales-distritales',
+    ]) {
+      expect(elemento.querySelector(`a[href="${anterior}"]`)).toBeNull();
+    }
   });
   it('permite cerrar el menú móvil con un control nativo accesible', async () => {
     const fixture = TestBed.createComponent(Aplicacion);

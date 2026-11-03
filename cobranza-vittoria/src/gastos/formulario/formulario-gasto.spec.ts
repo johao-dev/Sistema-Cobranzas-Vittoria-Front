@@ -6,12 +6,7 @@ import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 import { ReferenciasGastos } from '../referencias-gastos';
 import { RegistroGastosDirectos } from '../registro-gastos-directos';
 import { GastoDirectoGuardado, PartidaDisponibleGastoDirecto } from '../contratos-gastos-directos';
-import {
-  categoriasGastoPrueba,
-  configGastoPrueba,
-  gastoPrueba,
-  partidaGastoPrueba,
-} from '../gastos.fixture';
+import { categoriasGastoPrueba, gastoPrueba, partidaGastoPrueba } from '../gastos.fixture';
 import {
   botonGasto,
   escribirGasto,
@@ -44,7 +39,7 @@ describe('FormularioGasto: partidas, importes y guardado', () => {
         {
           provide: ReferenciasGastos,
           useValue: {
-            categorias: signal(categoriasGastoPrueba.slice(4)),
+            categorias: signal(categoriasGastoPrueba),
             centrosCosto: signal([
               { idCentroCosto: 12, codigo: 'CC-12', nombre: 'Proyecto' },
               { idCentroCosto: 20, codigo: 'CC-20', nombre: 'Oficina' },
@@ -63,11 +58,40 @@ describe('FormularioGasto: partidas, importes y guardado', () => {
 
   async function abrir(edicion = true): Promise<void> {
     fixture = TestBed.createComponent(FormularioGasto);
-    fixture.componentRef.setInput('config', configGastoPrueba);
     fixture.componentRef.setInput('valor', edicion ? gastoPrueba : null);
     fixture.detectChanges();
     await fixture.whenStable();
   }
+
+  it('selecciona gastos administrativos por código al crear, sin depender del ID ni del orden', async () => {
+    TestBed.inject(ReferenciasGastos).categorias.set([
+      ...categoriasGastoPrueba.slice(1),
+      { ...categoriasGastoPrueba[0], idCategoriaGasto: 731 },
+    ]);
+    await abrir(false);
+    const raiz: HTMLElement = fixture.nativeElement;
+    const selector = raiz.querySelector<HTMLSelectElement>('#formulario-gasto-campo-1');
+    expect(selector?.selectedOptions[0]?.textContent?.trim()).toBe('GASTOS ADMINISTRATIVOS');
+
+    await seleccionarGasto(fixture, '#formulario-gasto-campo-2', 'Proyecto');
+    await seleccionarGasto(fixture, '#formulario-gasto-campo-3', 'Estudios');
+    await escribirGasto(fixture, '#formulario-gasto-campo-6', 'Nuevo gasto administrativo');
+    await escribirGasto(fixture, '#formulario-gasto-campo-4', '100');
+    botonGasto(fixture, 'Guardar gasto').click();
+    expect(api.crear).toHaveBeenCalledWith(expect.objectContaining({ idCategoriaGasto: 731 }));
+  });
+
+  it('deja la categoría sin seleccionar si gastos administrativos no está disponible', async () => {
+    TestBed.inject(ReferenciasGastos).categorias.set([categoriasGastoPrueba[4]]);
+    await abrir(false);
+    const raiz: HTMLElement = fixture.nativeElement;
+    const selector = raiz.querySelector<HTMLSelectElement>('#formulario-gasto-campo-1');
+    expect(selector?.value).toBe('');
+    botonGasto(fixture, 'Guardar gasto').click();
+    await fixture.whenStable();
+    expect(raiz.textContent).toContain('Selecciona una categoría de gasto disponible');
+    expect(api.crear).not.toHaveBeenCalled();
+  });
 
   it('edita preservando fechas, moneda de partida y referencia original', async () => {
     await abrir();
@@ -88,6 +112,40 @@ describe('FormularioGasto: partidas, importes y guardado', () => {
     });
   });
 
+  it('ofrece todo el catálogo y permite cambiar de categoría al editar', async () => {
+    await abrir();
+    const raiz: HTMLElement = fixture.nativeElement;
+    expect(raiz.querySelectorAll('#formulario-gasto-campo-1 option')).toHaveLength(8);
+    await seleccionarGasto(fixture, '#formulario-gasto-campo-1', 'MARKETING Y VENTAS');
+    botonGasto(fixture, 'Guardar gasto').click();
+    expect(api.actualizar).toHaveBeenCalledWith(
+      90,
+      expect.objectContaining({ idCategoriaGasto: 22 }),
+    );
+  });
+
+  it.each([null, 999])(
+    'exige elegir una categoría vigente si la original es %s',
+    async (idCategoriaGasto) => {
+      fixture = TestBed.createComponent(FormularioGasto);
+      fixture.componentRef.setInput('valor', {
+        ...gastoPrueba,
+        idCategoriaGasto,
+        nombreCategoriaGasto: null,
+      });
+      await fixture.whenStable();
+      expect(fixture.nativeElement.textContent).toContain('no está disponible');
+      botonGasto(fixture, 'Guardar gasto').click();
+      expect(api.actualizar).not.toHaveBeenCalled();
+      await seleccionarGasto(fixture, '#formulario-gasto-campo-1', 'OTROS GASTOS');
+      botonGasto(fixture, 'Guardar gasto').click();
+      expect(api.actualizar).toHaveBeenCalledWith(
+        90,
+        expect.objectContaining({ idCategoriaGasto: 35 }),
+      );
+    },
+  );
+
   it('el cálculo sugerido solo cambia el monto cuando el usuario lo aplica', async () => {
     await abrir();
     await escribirGasto(fixture, '#formulario-gasto-campo-11', '3');
@@ -98,13 +156,16 @@ describe('FormularioGasto: partidas, importes y guardado', () => {
     expect(raiz.querySelector<HTMLInputElement>('#formulario-gasto-campo-4')?.value).toBe('75');
   });
 
-  it('valida categoría en terreno y crea en moneda presupuestaria sin confirmar', async () => {
+  it('valida la categoría obligatoria y crea en moneda presupuestaria sin confirmar', async () => {
     await abrir(false);
+    await seleccionarGasto(fixture, '#formulario-gasto-campo-1', 'Seleccione');
     botonGasto(fixture, 'Guardar gasto').click();
     await fixture.whenStable();
-    expect(fixture.nativeElement.textContent).toContain('Selecciona una categoría válida');
+    expect(fixture.nativeElement.textContent).toContain(
+      'Selecciona una categoría de gasto disponible',
+    );
     expect(api.crear).not.toHaveBeenCalled();
-    await seleccionarGasto(fixture, '#formulario-gasto-campo-1', 'TERRENO');
+    await seleccionarGasto(fixture, '#formulario-gasto-campo-1', 'GASTOS ADMINISTRATIVOS');
     await seleccionarGasto(fixture, '#formulario-gasto-campo-2', 'Proyecto');
     await seleccionarGasto(fixture, '#formulario-gasto-campo-3', 'Estudios');
     await escribirGasto(fixture, '#formulario-gasto-campo-6', 'Nuevo estudio');
@@ -112,7 +173,7 @@ describe('FormularioGasto: partidas, importes y guardado', () => {
     expect(fixture.nativeElement.textContent).toContain('El monto supera el saldo disponible');
     botonGasto(fixture, 'Guardar gasto').click();
     expect(api.crear).toHaveBeenCalledWith(
-      expect.objectContaining({ idCategoriaGasto: 13, idMoneda: 1, monto: 900 }),
+      expect.objectContaining({ idCategoriaGasto: 61, idMoneda: 1, monto: 900 }),
     );
   });
 

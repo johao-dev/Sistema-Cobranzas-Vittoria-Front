@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { ActivatedRoute, Data } from '@angular/router';
-import { BehaviorSubject, Observable, Subject, of, throwError } from 'rxjs';
+import { provideRouter, Router } from '@angular/router';
+import { RouterTestingHarness } from '@angular/router/testing';
+import { Observable, Subject, of, throwError } from 'rxjs';
 import { rutas } from '../../rutas';
 import { SesionUsuario } from '../../core/sesion/sesion-usuario';
 import { CatalogosPresupuestarios } from '../../presupuestos/catalogos-presupuestarios';
@@ -12,6 +13,7 @@ import { ModalImportacion } from '../../shared/importacion/modal-importacion/mod
 import { RegistroGastosDirectos } from '../registro-gastos-directos';
 import { GastoDirectoListado } from '../contratos-gastos-directos';
 import { categoriasGastoPrueba, gastoPrueba } from '../gastos.fixture';
+import { FormularioGasto } from '../formulario/formulario-gasto';
 import {
   botonGasto,
   escribirGasto,
@@ -21,22 +23,8 @@ import {
 } from '../pruebas/dom-gastos';
 import { GastosSeccion } from './gastos-seccion';
 
-const paths = [
-  'gastos-administrativos',
-  'terreno',
-  'marketing-publicidad',
-  'otros-gastos',
-  'gastos-municipales-distritales',
-];
-function datosRuta(path: string): Data {
-  const data = rutas.find((route) => route.path === path)?.data;
-  if (!data) throw new Error('Falta configuración de ruta');
-  return data;
-}
-
-describe('GastosSeccion: cinco vistas y operaciones compartidas', () => {
+describe('GastosSeccion: módulo único y operaciones compartidas', () => {
   let fixture: ComponentFixture<GastosSeccion>;
-  let ruta: BehaviorSubject<Data>;
   let permiso: boolean;
   const imports = { importar: vi.fn(), descargarPlantilla: vi.fn() };
   const registro = {
@@ -44,6 +32,7 @@ describe('GastosSeccion: cinco vistas y operaciones compartidas', () => {
     centrosCosto: vi.fn(),
     proveedores: vi.fn(),
     listar: vi.fn<() => Observable<GastoDirectoListado[]>>(),
+    partidasDisponibles: vi.fn(),
   };
   const notificaciones = { show: vi.fn() };
 
@@ -51,22 +40,27 @@ describe('GastosSeccion: cinco vistas y operaciones compartidas', () => {
     vi.resetAllMocks();
     simularDialogosGastos();
     permiso = true;
-    ruta = new BehaviorSubject(datosRuta('terreno'));
     registro.categorias.mockReturnValue(of(categoriasGastoPrueba));
     registro.centrosCosto.mockReturnValue(
       of([{ idCentroCosto: 12, codigo: 'CC-12', nombre: 'Proyecto' }]),
     );
     registro.proveedores.mockReturnValue(of([]));
     registro.listar.mockReturnValue(of([]));
+    registro.partidasDisponibles.mockReturnValue(of([]));
     imports.descargarPlantilla.mockReturnValue(of({ ok: true }));
     TestBed.configureTestingModule({
       providers: [
-        { provide: ActivatedRoute, useValue: { data: ruta } },
+        provideRouter(rutas),
         { provide: RegistroGastosDirectos, useValue: registro },
         { provide: CatalogosPresupuestarios, useValue: { monedas: () => of([]) } },
         {
           provide: SesionUsuario,
-          useValue: { hasPermission: () => permiso, session: { usuarioLogin: 'operador' } },
+          useValue: {
+            hasPermission: () => permiso,
+            isAuthenticated: () => true,
+            canAccess: () => true,
+            session: { usuarioLogin: 'operador' },
+          },
         },
         { provide: Notificaciones, useValue: notificaciones },
         { provide: RegistroImportacion, useValue: imports },
@@ -75,40 +69,103 @@ describe('GastosSeccion: cinco vistas y operaciones compartidas', () => {
   });
   afterEach(restaurarDialogosGastos);
 
-  async function abrir(path = 'terreno'): Promise<void> {
-    ruta.next(datosRuta(path));
+  async function abrir(): Promise<void> {
     fixture = TestBed.createComponent(GastosSeccion);
     fixture.detectChanges();
     await fixture.whenStable();
   }
 
-  it.each(paths)('%s mantiene URL, protección y categorías por código', async (path) => {
-    await abrir(path);
-    const route = rutas.find((item) => item.path === path);
+  it('carga una única ruta protegida y consulta sin restringir categorías', async () => {
+    const harness = await RouterTestingHarness.create('/gastos');
+    expect(TestBed.inject(Router).url).toBe('/gastos');
+    expect(harness.routeDebugElement?.componentInstance).toBeInstanceOf(GastosSeccion);
+    const route = rutas.find((item) => item.path === 'gastos');
     expect(await route?.loadComponent?.()).toBe(GastosSeccion);
     expect(route?.canActivate).toHaveLength(1);
-    const codigos: string[] = datosRuta(path)['codigosCategoria'];
-    const esperadas = codigos.map(
-      (codigo) =>
-        categoriasGastoPrueba.find((categoria) => categoria.codigo === codigo)?.idCategoriaGasto,
-    );
-    expect(registro.listar).toHaveBeenCalledExactlyOnceWith(
-      expect.objectContaining({ idCategoriaGasto: esperadas }),
-    );
+    expect(registro.listar).toHaveBeenCalledExactlyOnceWith({
+      estado: null,
+      idCentroCosto: null,
+      desde: null,
+      hasta: null,
+    });
   });
 
-  it.each(paths)('%s oculta las acciones de escritura sin permiso', async (path) => {
+  it('retira las cinco rutas anteriores y el alias de control presupuestario', () => {
+    for (const path of [
+      'gastos-administrativos',
+      'terreno',
+      'marketing-publicidad',
+      'otros-gastos',
+      'gastos-municipales-distritales',
+    ]) {
+      expect(rutas.some((route) => route.path === path)).toBe(false);
+    }
+    const control = rutas.find((route) => route.path === 'control-presupuestario');
+    expect(control?.children?.some((route) => route.path === 'gastos-directos')).toBe(false);
+  });
+
+  it('oculta las acciones de escritura sin permiso', async () => {
     permiso = false;
-    await abrir(path);
+    registro.listar.mockReturnValue(of([gastoPrueba]));
+    await abrir();
     const raiz: HTMLElement = fixture.nativeElement;
     expect(raiz.textContent).not.toContain('Importar gastos');
     expect(raiz.textContent).not.toContain('+ Nuevo gasto');
+    expect(raiz.querySelector('option[value="edit"]')).toBeNull();
+    expect(raiz.querySelector('option[value="confirmar"]')).toBeNull();
+    expect(raiz.querySelector('option[value="anular"]')).toBeNull();
+    expect(raiz.querySelector('option[value="documentos"]')).not.toBeNull();
+  });
+
+  it('filtra por una categoría y vuelve a consultar todas al quitarla', async () => {
+    await abrir();
+    registro.listar.mockClear();
+    await seleccionarGasto(fixture, '#gastos-filtro-categoria', 'MARKETING Y VENTAS');
+    expect(registro.listar).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ idCategoriaGasto: [22] }),
+    );
+    registro.listar.mockClear();
+    await seleccionarGasto(fixture, '#gastos-filtro-categoria', 'Todas');
+    expect(registro.listar).toHaveBeenCalledExactlyOnceWith({
+      estado: null,
+      idCentroCosto: null,
+      desde: null,
+      hasta: null,
+    });
+  });
+
+  it('muestra gastos de distintas categorías, sin categoría y con una categoría retirada', async () => {
+    registro.listar.mockReturnValue(
+      of([
+        gastoPrueba,
+        {
+          ...gastoPrueba,
+          idGastoDirecto: 91,
+          idCategoriaGasto: 22,
+          nombreCategoriaGasto: 'MARKETING Y VENTAS',
+        },
+        { ...gastoPrueba, idGastoDirecto: 92, idCategoriaGasto: null, nombreCategoriaGasto: null },
+        {
+          ...gastoPrueba,
+          idGastoDirecto: 93,
+          idCategoriaGasto: 999,
+          nombreCategoriaGasto: 'Categoría retirada',
+        },
+      ]),
+    );
+    await abrir();
+    const raiz: HTMLElement = fixture.nativeElement;
+    expect(raiz.querySelectorAll('tbody tr')).toHaveLength(4);
+    expect(raiz.textContent).toContain('Categoría retirada');
+    await seleccionarGasto(fixture, 'tbody tr:last-child .actions-select', 'Editar');
+    expect(fixture.debugElement.query(By.directive(FormularioGasto))).not.toBeNull();
   });
 
   it('importa con el diálogo público, recarga una sola vez y conserva filtros y resumen', async () => {
     const respuesta = new Subject<ImportResultado>();
     imports.importar.mockReturnValue(respuesta);
     await abrir();
+    await seleccionarGasto(fixture, '#gastos-filtro-categoria', 'TERRENO');
     await seleccionarGasto(fixture, '#gastos-seccion-campo-2', 'Registrado');
     await seleccionarGasto(fixture, '#gastos-seccion-campo-3', 'Proyecto');
     await escribirGasto(fixture, '#gastos-seccion-campo-4', '2026-10-01');
@@ -139,7 +196,7 @@ describe('GastosSeccion: cinco vistas y operaciones compartidas', () => {
     });
     await fixture.whenStable();
     expect(registro.listar).toHaveBeenCalledExactlyOnceWith({
-      idCategoriaGasto: [13, 14, 15],
+      idCategoriaGasto: [13],
       estado: 'REGISTRADO',
       idCentroCosto: 12,
       desde: '2026-10-01',
@@ -208,10 +265,10 @@ describe('GastosSeccion: cinco vistas y operaciones compartidas', () => {
     expect(pendiente.observed).toBe(false);
   });
 
-  it('bloquea categorías faltantes y fechas invertidas antes de consultar', async () => {
+  it('mantiene la consulta sin categorías y bloquea fechas invertidas', async () => {
     registro.categorias.mockReturnValue(of([]));
     await abrir();
-    expect(registro.listar).not.toHaveBeenCalled();
+    expect(registro.listar).toHaveBeenCalledTimes(1);
     expect(botonGasto(fixture, '+ Nuevo gasto').disabled).toBe(true);
     registro.categorias.mockReturnValue(of(categoriasGastoPrueba));
     botonGasto(fixture, 'Reintentar').click();
@@ -223,7 +280,7 @@ describe('GastosSeccion: cinco vistas y operaciones compartidas', () => {
     expect(fixture.nativeElement.textContent).toContain('La fecha desde no puede ser posterior');
   });
 
-  it('reintentar referencias cancela el listado si después falla el catálogo', async () => {
+  it('reintentar referencias conserva el listado pendiente aunque falle el catálogo', async () => {
     const listado = new Subject<GastoDirectoListado[]>();
     registro.listar.mockReturnValue(listado);
     registro.proveedores.mockReturnValue(throwError(() => new Error('Sin conexión')));
@@ -233,16 +290,16 @@ describe('GastosSeccion: cinco vistas y operaciones compartidas', () => {
     botonGasto(fixture, 'Reintentar referencias').click();
     await fixture.whenStable();
 
-    expect(listado.observed).toBe(false);
+    expect(listado.observed).toBe(true);
+    listado.next([gastoPrueba]);
+    listado.complete();
+    await fixture.whenStable();
+    expect(fixture.nativeElement.textContent).toContain(gastoPrueba.concepto);
     expect(botonGasto(fixture, '+ Nuevo gasto').disabled).toBe(true);
     expect(fixture.nativeElement.textContent).not.toContain('No hay gastos registrados');
   });
 
-  it('mantiene retirado Resumen Total y el alias de gastos directos', () => {
+  it('mantiene retirado Resumen Total', () => {
     expect(rutas.some((route) => route.path === 'resumen-total')).toBe(false);
-    const control = rutas.find((route) => route.path === 'control-presupuestario');
-    expect(control?.children?.find((route) => route.path === 'gastos-directos')?.redirectTo).toBe(
-      '/gastos-administrativos',
-    );
   });
 });

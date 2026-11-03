@@ -107,13 +107,6 @@ export interface GastoDirectoFiltro {
   idCategoriaGasto?: number[] | null;
 }
 
-export interface GastoDirectoVistaConfig {
-  titulo: string;
-  subtitulo: string;
-  codigosCategoria: string[];
-  permiteSeleccionCategoria: boolean;
-}
-
 export interface GastoDirectoGuardado {
   idGastoDirecto: number;
 }

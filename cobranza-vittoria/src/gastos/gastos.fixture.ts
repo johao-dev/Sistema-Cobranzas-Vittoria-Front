@@ -3,7 +3,6 @@ import {
   GastoDirectoDocumento,
   GastoDirectoListado,
   GastoDirectoRequest,
-  GastoDirectoVistaConfig,
   PartidaDisponibleGastoDirecto,
 } from './contratos-gastos-directos';
 
@@ -16,12 +15,6 @@ export const categoriasGastoPrueba: CategoriaGasto[] = [
   { idCategoriaGasto: 14, codigo: 'ANTEPROYECTO', nombre: 'ANTEPROYECTO' },
   { idCategoriaGasto: 15, codigo: 'PROYECTO', nombre: 'PROYECTO' },
 ];
-export const configGastoPrueba: GastoDirectoVistaConfig = {
-  titulo: 'Terreno',
-  subtitulo: 'Estudios',
-  permiteSeleccionCategoria: true,
-  codigosCategoria: ['TERRENO', 'ANTEPROYECTO', 'PROYECTO'],
-};
 export const gastoPrueba: GastoDirectoListado = {
   idGastoDirecto: 90,
   idPresupuestoDetalle: 42,

@@ -7,26 +7,29 @@
 >
   <button type="button" class="modal-close" (click)="cerrar()" aria-label="Cerrar">&times;</button>
   <div class="panel-title">
-    {{ valor() ? 'Editar gasto' : 'Nuevo gasto' }} · {{ config().titulo }}
+    {{ valor() ? 'Editar gasto' : 'Nuevo gasto' }}
   </div>
 
   <fieldset class="campos-formulario-gasto" [disabled]="guardando()">
-    @if (config().permiteSeleccionCategoria) {
-      <div class="field">
-        <label for="formulario-gasto-campo-1">Categoría</label>
-        <select id="formulario-gasto-campo-1" [formControl]="form.controls.idCategoriaGasto">
-          <option value="">Seleccione…</option>
-          @for (categoria of referencias.categorias(); track categoria) {
-            <option [ngValue]="categoria.idCategoriaGasto">
-              {{ categoria.nombre }}
-            </option>
-          }
-        </select>
-        <small class="field-hint"
-          >Elige si el gasto corresponde a terreno, anteproyecto o proyecto.</small
-        >
-      </div>
-    }
+    <div class="field">
+      <label for="formulario-gasto-campo-1">Categoría</label>
+      <select id="formulario-gasto-campo-1" [formControl]="form.controls.idCategoriaGasto">
+        <option value="">Seleccione…</option>
+        @for (categoria of referencias.categorias(); track categoria) {
+          <option [ngValue]="categoria.idCategoriaGasto">
+            {{ categoria.nombre }}
+          </option>
+        }
+      </select>
+      <small class="field-hint">Selecciona la categoría que describe el gasto.</small>
+      @if (categoriaNoDisponible()) {
+        <p role="status" class="field-hint">
+          La categoría original de este gasto ({{
+            valor()?.nombreCategoriaGasto || 'sin categoría'
+          }}) no está disponible. Selecciona una categoría vigente para guardar los cambios.
+        </p>
+      }
+    </div>
 
     @if (error()) {
       <p role="alert" class="alerta-bloqueo">{{ error() }}</p>
