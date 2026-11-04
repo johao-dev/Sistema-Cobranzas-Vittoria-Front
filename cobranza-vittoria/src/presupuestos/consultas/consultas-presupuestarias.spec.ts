@@ -33,7 +33,6 @@ describe('ConsultasPresupuestarias: filtros y rutas públicas', () => {
       idPresupuestoVersion: 20,
       idCatalogoPartida: null,
       idMoneda: 1,
-      soloExcedidos: false,
       estadoPresupuesto: 'APROBADO',
       incluirInactivos: false,
     });
@@ -41,7 +40,14 @@ describe('ConsultasPresupuestarias: filtros y rutas públicas', () => {
     const req = http.expectOne((r) => r.url === `${base}/consultas/${ruta}`);
     expect(req.request.method).toBe('GET');
     expect(req.request.params.get('idPresupuestoVersion')).toBe('20');
-    expect(req.request.params.get('soloExcedidos')).toBe('false');
+    expect(req.request.params.keys()).toEqual([
+      'idCentroCosto',
+      'idPresupuesto',
+      'idPresupuestoVersion',
+      'idMoneda',
+      'estadoPresupuesto',
+      'incluirInactivos',
+    ]);
     expect(req.request.params.get('incluirInactivos')).toBe('false');
     expect(req.request.params.get('estadoPresupuesto')).toBe('APROBADO');
     expect(req.request.params.has('idCatalogoPartida')).toBe(false);

@@ -9,18 +9,6 @@
   margin: 0;
 }
 
-.field--check label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 500;
-  margin-top: 18px;
-}
-
-.field--check input {
-  width: auto;
-}
-
 /* Tarjetas de indicadores */
 .kpi-grid {
   display: grid;
@@ -164,10 +152,6 @@
 
   .maintenance-search {
     flex-basis: 100%;
-  }
-
-  .field--check label {
-    margin-top: 0;
   }
 }
 

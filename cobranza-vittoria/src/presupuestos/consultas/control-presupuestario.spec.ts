@@ -40,7 +40,6 @@ describe('ControlPresupuestario: selección y consultas concurrentes', () => {
     expect(api.saldos).toHaveBeenLastCalledWith({
       idCentroCosto: 6,
       idPresupuesto: null,
-      soloExcedidos: null,
     });
   });
 

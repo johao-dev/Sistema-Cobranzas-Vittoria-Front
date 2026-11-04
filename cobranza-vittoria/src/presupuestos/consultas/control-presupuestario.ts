@@ -70,7 +70,6 @@ export class ControlPresupuestario implements OnInit {
 
   filtroCentroCosto = '';
   filtroPresupuesto = '';
-  soloExcedidos = false;
   filtroBusqueda = '';
   /** Nivel de anidamiento del dashboard; '' = partidas finales. */
   filtroNivel = '';
@@ -117,7 +116,6 @@ export class ControlPresupuestario implements OnInit {
     return {
       idCentroCosto: this.filtroCentroCosto === '' ? null : Number(this.filtroCentroCosto),
       idPresupuesto: this.filtroPresupuesto === '' ? null : Number(this.filtroPresupuesto),
-      soloExcedidos: this.soloExcedidos ? true : null,
     };
   }
 

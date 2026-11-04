@@ -5,7 +5,6 @@ export interface ReporteFiltro {
   idCatalogoPartida?: number | null;
   idMoneda?: number | null;
   estadoPresupuesto?: string | null;
-  soloExcedidos?: boolean | null;
   incluirInactivos?: boolean | null;
 }
 
