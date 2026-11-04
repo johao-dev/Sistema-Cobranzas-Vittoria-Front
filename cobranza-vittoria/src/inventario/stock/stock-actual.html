@@ -14,7 +14,6 @@
 <inventario-filtros
   [especialidades]="referencias.especialidades()"
   [proyectos]="referencias.proyectos()"
-  (cambio)="filtros.set($event)"
   (consultar)="filtrar($event)"
 >
   <button
@@ -27,17 +26,11 @@
       exportacion.exportando()
         ? 'Exportando…'
         : filtros().idProyecto
-          ? 'Exportar Stock Global a Excel'
+          ? 'Exportar stock del proyecto a Excel'
           : 'Exportar a Excel'
     }}
   </button>
 </inventario-filtros>
-@if (filtros().idProyecto) {
-  <p>
-    La exportación disponible corresponde al Stock Global y aplica especialidad y fechas. No incluye
-    el filtro de proyecto.
-  </p>
-}
 @if (porProyecto()) {
   <p>
     Las fechas filtran el último cambio de asignación, incluidas transferencias y reversiones; no

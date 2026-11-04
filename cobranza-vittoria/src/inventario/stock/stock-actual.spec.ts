@@ -69,17 +69,30 @@ describe('StockActual — filtros y búsqueda', () => {
     expect(raiz.textContent).toContain('Stock Global');
   });
 
-  it('exporta con filtros actuales aunque no se haya pulsado Filtrar y sin proyecto', async () => {
+  it('exporta los filtros aplicados aunque cambien los controles o la búsqueda local', async () => {
     await seleccionarInventario(fixture, '#inventario-filtro-especialidad', 'Eléctrica');
+    await seleccionarInventario(fixture, '#inventario-filtro-proyecto', 'Obra');
     botonInventario(fixture, 'Exportar a Excel').click();
 
-    expect(exportacion.exportar).toHaveBeenCalledWith({
-      idProyecto: null,
+    expect(exportacion.exportar).toHaveBeenLastCalledWith({});
+    expect(api.listarStockActual).toHaveBeenCalledTimes(1);
+    botonInventario(fixture, 'Filtrar').click();
+    await fixture.whenStable();
+    await seleccionarInventario(fixture, '#inventario-filtro-proyecto', 'Todos');
+    await escribirInventario(fixture, '#inventario-filtro-desde', '2026-11-01');
+    await escribirInventario(
+      fixture,
+      'input[placeholder="Buscar por ID, código o nombre"]',
+      'sin coincidencias',
+    );
+    botonInventario(fixture, 'Exportar stock del proyecto a Excel').click();
+
+    expect(exportacion.exportar).toHaveBeenLastCalledWith({
+      idProyecto: 3,
       idEspecialidad: 2,
       fechaDesde: null,
       fechaHasta: null,
     });
-    expect(api.listarStockActual).toHaveBeenCalledTimes(1);
   });
   it('combina proyecto, especialidad y fechas, y vuelve al global al limpiar', async () => {
     await seleccionarInventario(fixture, '#inventario-filtro-proyecto', 'Obra');
@@ -102,15 +115,22 @@ describe('StockActual — filtros y búsqueda', () => {
     expect(raiz.textContent).toContain('3.25');
     expect(raiz.querySelector('thead')?.textContent).toContain('Proyecto');
     expect(raiz.querySelector('thead')?.textContent).not.toContain('Entrada');
-    botonInventario(fixture, 'Exportar Stock Global a Excel').click();
+    botonInventario(fixture, 'Exportar stock del proyecto a Excel').click();
     expect(exportacion.exportar).toHaveBeenCalledWith(expect.objectContaining({ idProyecto: 3 }));
-    expect(raiz.textContent).toContain('No incluye el filtro de proyecto');
+    expect(raiz.textContent).not.toContain('No incluye el filtro de proyecto');
     botonInventario(fixture, 'Limpiar filtros').click();
     await fixture.whenStable();
 
     expect(api.listarStockActual).toHaveBeenCalledTimes(2);
     expect(raiz.textContent).toContain('Stock Global');
     expect(raiz.querySelector('thead')?.textContent).toContain('Entrada');
+    botonInventario(fixture, 'Exportar a Excel').click();
+    expect(exportacion.exportar).toHaveBeenLastCalledWith({
+      idProyecto: null,
+      idEspecialidad: null,
+      fechaDesde: null,
+      fechaHasta: null,
+    });
   });
 
   it('distingue lista vacía de error y permite reintentar', async () => {

@@ -12,6 +12,10 @@ export interface KardexStockFiltroDto {
   fechaHasta?: string | null;
 }
 
+export interface FiltrosExportacionStock extends KardexStockFiltroDto {
+  idProyecto?: number | null;
+}
+
 export interface KardexEntradaCreateDto {
   idKardexEntrada?: number | null;
   idMaterial: number;

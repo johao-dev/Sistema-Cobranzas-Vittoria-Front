@@ -154,7 +154,7 @@ describe('RegistroInventario — contrato HTTP', () => {
     consulta.flush([stockPrueba]);
 
     api
-      .exportarStockExcel({ idEspecialidad: 2 })
+      .exportarStockExcel({ idProyecto: null, idEspecialidad: 2, fechaDesde: '' })
       .subscribe((res) => expect(res.body).toBeInstanceOf(Blob));
 
     const req = http.expectOne((r) => r.url === base + '/stock-actual/exportar-excel');
@@ -184,7 +184,7 @@ describe('RegistroInventario — contrato HTTP', () => {
 
     expect(error).toHaveBeenCalledWith(expect.objectContaining({ status: 422 }));
   });
-  it('consulta stock por proyecto con todos sus filtros y nunca los exporta al global', () => {
+  it('consulta y exporta stock por proyecto sin enviar el material a la descarga', () => {
     const filtros = {
       idProyecto: 3,
       idMaterial: 10,
@@ -211,8 +211,13 @@ describe('RegistroInventario — contrato HTTP', () => {
 
     const excel = http.expectOne((r) => r.url === base + '/stock-actual/exportar-excel');
 
-    expect(excel.request.params.keys()).toEqual(['idEspecialidad', 'fechaDesde', 'fechaHasta']);
-    expect(excel.request.params.has('idProyecto')).toBe(false);
+    expect(excel.request.params.keys()).toEqual([
+      'idProyecto',
+      'idEspecialidad',
+      'fechaDesde',
+      'fechaHasta',
+    ]);
+    expect(excel.request.params.get('idProyecto')).toBe('3');
     expect(excel.request.params.has('idMaterial')).toBe(false);
     excel.flush(new Blob(['xlsx']));
   });

@@ -53,16 +53,29 @@ describe('ExportacionStock — XLSX y errores binarios', () => {
         }),
       ),
     );
-    exportacion.exportar({ idEspecialidad: 2, fechaDesde: '2026-10-01' });
+    exportacion.exportar({ idProyecto: 3, idEspecialidad: 2, fechaDesde: '2026-10-01' });
     await completar();
 
     expect(api.exportarStockExcel).toHaveBeenCalledWith({
+      idProyecto: 3,
       idEspecialidad: 2,
       fechaDesde: '2026-10-01',
     });
     expect(descargas.crearUrl).toHaveBeenCalledWith(blob);
     expect(descargas.nombres).toEqual(['stock obra.xlsx']);
     expect(notify.show).toHaveBeenCalledWith('Excel descargado correctamente.', 'success');
+    expect(exportacion.exportando()).toBe(false);
+  });
+
+  it('rechaza un rango invertido antes de solicitar la descarga', () => {
+    exportacion.exportar({ fechaDesde: '2026-11-04', fechaHasta: '2026-11-01' });
+
+    expect(api.exportarStockExcel).not.toHaveBeenCalled();
+    expect(descargas.crearUrl).not.toHaveBeenCalled();
+    expect(notify.show).toHaveBeenCalledWith(
+      'La fecha desde no puede ser posterior a la fecha hasta.',
+      'error',
+    );
     expect(exportacion.exportando()).toBe(false);
   });
 
@@ -101,12 +114,12 @@ describe('ExportacionStock — XLSX y errores binarios', () => {
     expect(exportacion.exportando()).toBe(false);
   });
 
-  it('interpreta 422 con Blob JSON y conserva errores por campo', async () => {
+  it('interpreta 400 con Blob JSON y conserva errores por campo', async () => {
     api.exportarStockExcel.mockReturnValue(
       throwError(
         () =>
           new HttpErrorResponse({
-            status: 422,
+            status: 400,
             error: blobJson('{"errors":{"fecha":["Rango inválido"]}}'),
           }),
       ),

@@ -100,7 +100,7 @@ export class StockActual implements OnInit {
   }
 
   protected filtrar(filtros: FiltrosStockProyecto): void {
-    this.filtros.set(filtros);
+    this.filtros.set({ ...filtros });
     this.cargar();
   }
 

@@ -4,7 +4,7 @@ import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { catchError, finalize, from, map, of, switchMap } from 'rxjs';
 
 import { RegistroInventario } from '../registro-inventario';
-import { KardexStockFiltroDto } from '../contratos-inventario';
+import { FiltrosExportacionStock } from '../contratos-inventario';
 import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 import { extraerMensajeError } from '../../shared/errores-api/mensajes-error-api';
 import {
@@ -64,8 +64,13 @@ export class ExportacionStock {
 
   readonly exportando = signal(false);
 
-  exportar(filtros: KardexStockFiltroDto): void {
+  exportar(filtros: FiltrosExportacionStock): void {
     if (this.exportando()) return;
+
+    if (filtros.fechaDesde && filtros.fechaHasta && filtros.fechaDesde > filtros.fechaHasta) {
+      this.notificaciones.show('La fecha desde no puede ser posterior a la fecha hasta.', 'error');
+      return;
+    }
 
     this.exportando.set(true);
 

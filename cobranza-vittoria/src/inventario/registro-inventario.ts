@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { ApiHttp } from '../core/http/api-http';
 import { FiltrosStockProyecto, StockProyecto } from './stock/contratos-stock-proyecto';
 import {
+  FiltrosExportacionStock,
   KardexEntradaCreateDto,
   KardexEntradaResponseDto,
   KardexFiltroInventarioDto,
@@ -97,8 +98,9 @@ export class RegistroInventario {
     );
   }
 
-  exportarStockExcel(filtros?: KardexStockFiltroDto): Observable<HttpResponse<Blob>> {
+  exportarStockExcel(filtros?: FiltrosExportacionStock): Observable<HttpResponse<Blob>> {
     const params = this.construirQueryParams({
+      idProyecto: filtros?.idProyecto,
       idEspecialidad: filtros?.idEspecialidad,
       fechaDesde: filtros?.fechaDesde,
       fechaHasta: filtros?.fechaHasta,
