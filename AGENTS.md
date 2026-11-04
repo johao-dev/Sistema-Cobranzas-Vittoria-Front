@@ -23,7 +23,7 @@
 
 ## 3. Arquitectura y responsabilidades
 
-**Arquitectura actual:** organizada por funcionalidades directamente en `src/`: autenticación, dashboard, catálogos, Requerimientos, Órdenes de compra, Compras, Inventario, Gastos, Presupuestos y Control de accesos. El contenedor, las rutas, las reglas concretas de acceso y los proveedores de arranque están en la raíz de `src`. La infraestructura transversal está en `src/core` y los conceptos reutilizados en `src/shared`. `src/app` fue retirada; no recrear contenedores globales de servicios, modelos o componentes. La migración frontend acordada está completada y cerrada globalmente el 2026-11-03, tras la confirmación del usuario de validación funcional en navegador y backend; las evidencias se conservan en el seguimiento. No asumir capas de arquitectura limpia que el código no implementa.
+**Arquitectura actual:** organizada por funcionalidades directamente en `src/`: autenticación, dashboard, catálogos, Requerimientos, Órdenes de compra, Compras, Inventario, Gastos, Presupuestos y Control de accesos. El contenedor, las rutas, las reglas concretas de acceso y los proveedores de arranque están en la raíz de `src`. La infraestructura transversal está en `src/core`.
 
 Todas las rutas de esta sección son relativas a `cobranza-vittoria/src/`:
 
@@ -68,10 +68,7 @@ Todas las rutas de esta sección son relativas a `cobranza-vittoria/src/`:
 - Colocar juntos TypeScript, plantilla, estilos y pruebas del mismo concepto. No imponer carpetas vacías ni capas `domain/application/infrastructure`, repositorios o fachadas en todas las funcionalidades.
 - Prohibir que una funcionalidad importe componentes internos de otra. La colaboración entre funcionalidades utiliza contratos y servicios públicos explícitos; los modelos no dependen de componentes. `core` no depende de funcionalidades y `shared` no depende de funcionalidades concretas. Extraer elementos compartidos cuando exista reutilización real; no crear abstracciones anticipadas.
 - Las vistas generales son contenedores/coordinadores. Delegar formularios, detalles y diálogos en componentes propios con responsabilidad concreta. Extraer transformaciones y validaciones independientes de la UI a funciones o servicios; introducir una fachada de estado solo cuando la complejidad lo justifique. No imponer un máximo arbitrario de líneas por archivo.
-- Aplicar Boy Scout y Strangler de forma progresiva: mantener operativa la implementación actual mientras se sustituyen funcionalidades o conceptos delimitados. En una corrección ordinaria, conservar el patrón local; en una entrega de migración, aplicar las convenciones objetivo al alcance migrado, actualizar sus consumidores y comprobar el flujo afectado.
-- Conservar las ubicaciones actuales hasta migrar también sus consumidores. No duplicar contratos o lógica como implementación permanente ni renombrar masivamente código ajeno a la entrega. Ajustar imports, rutas, referencias de plantillas, selectores, configuración y pruebas cuando un movimiento lo requiera.
 - Estas convenciones se aplican a todo el código de la aplicación. Los límites de dependencias se mantienen por convención; su automatización puede incorporarse después.
-- Consultar y actualizar el [registro de migración](docs/migracion-frontend.md) en cada entrega. Documentar decisiones y evidencias reales; mover archivos o actualizar este contrato no significa que una funcionalidad haya sido migrada o verificada.
 
 ## 4. Convenciones de código
 
@@ -81,7 +78,6 @@ Todas las rutas de esta sección son relativas a `cobranza-vittoria/src/`:
 - **Nombrado:** usar nombres que describan el concepto y coincidan con su identificador TypeScript, sin sufijos tipológicos como `.component.ts` o `.service.ts`. Por ejemplo, `FormularioRequerimiento` en `formulario-requerimiento.ts`, con `formulario-requerimiento.html`, `formulario-requerimiento.css` y `formulario-requerimiento.spec.ts`. Para contratos con varios tipos, usar un nombre temático como `contratos-requerimientos.ts`; evitar `common.ts`, `helpers.ts` o `utils.ts` genéricos. Conservar `.spec.ts` y las convenciones requeridas por las herramientas.
 - **Clases, interfaces y tipos:** PascalCase. El frontend usa interfaces sin prefijo `I`, por ejemplo `RequerimientoRequest` y `ImportResumen`; mantener esa convención sin renombrados masivos.
 - **Variables, propiedades y métodos:** lowerCamelCase. Constantes de dominio en UPPER_SNAKE_CASE, como `ACCESS_RULES` y `IMPORT_MODULOS_META`.
-- **Selectores:** sin prefijo global. Es una decisión del proyecto, independiente de retirar `app/`, y difiere de la recomendación de Angular de mantener un prefijo consistente. Usar nombres de elemento descriptivos y únicos en kebab-case con al menos un guion, como `requerimiento-detalle`; no usar nombres de elementos HTML nativos ni el prefijo reservado `ng`. Para directivas de atributo, usar nombres descriptivos en camelCase. Al migrar, actualizar consumidores, estilos, pruebas y la configuración de generación correspondiente.
 - **Idioma:** Código, comentarios y textos de interfaz en español; conservar el uso de inglés o spanglish establecido y los nombres exigidos por Angular o la API.
 - Respetar dos espacios, comillas simples en TypeScript y la configuración de Prettier (`printWidth: 100`, parser Angular para HTML). Evitar reformatear archivos ajenos al cambio.
 
@@ -91,7 +87,6 @@ Todas las rutas de esta sección son relativas a `cobranza-vittoria/src/`:
 - Preferir tipos explícitos en contratos, propiedades, parámetros, retornos y resultados asíncronos cuando aclaren su intención. Permitir inferencia local cuando el tipo sea evidente.
 - Usar `const` por defecto y `let` solo cuando exista reasignación; no usar `var`.
 - No introducir `any` para eludir el compilador. Reutilizar o definir modelos; para datos desconocidos, usar `unknown` y validar antes de acceder a sus propiedades.
-- **Objetivo de tipado:** reemplazar los `any` existentes del código propio de producción por contratos estáticos. Reservar `unknown` para datos genuinamente desconocidos y límites que requieran validación. Admitir excepciones inevitables, incluidas las de pruebas, solo con justificación localizada; no reemplazar `any` por aserciones, `$any`, `@ts-ignore` o `@ts-nocheck` que oculten incompatibilidades. La migración no exige tipar código interno de dependencias externas.
 - Respetar `strict`, `strictTemplates` y las demás opciones de `tsconfig.json`. No desactivarlas para resolver errores.
 - Mantener contratos coherentes, incluidos valores opcionales, `null`, identificadores, estados y formatos de fecha. Evitar aserciones de tipo que oculten incompatibilidades con la API.
 - Separar con líneas en blanco las validaciones, obtención de datos, transformación, envío y actualización visual.
@@ -177,12 +172,3 @@ docker compose --profile test run --rm test
 - Para cambios de interfaz, comprobar el flujo afectado y la actualización visual sin Zone.js cuando se disponga de navegador. Informar si esa comprobación no pudo realizarse.
 - Revisar el diff, preservar cambios previos del usuario y no modificar dependencias, lockfile ni archivos generados salvo que la tarea lo requiera.
 - Al terminar, indicar qué cambió, qué verificaciones se ejecutaron y cualquier limitación real. No afirmar que una comprobación pasó si no se ejecutó.
-
-## 8. Criterios de cierre de la migración y referencias
-
-- Todas las funcionalidades acordadas están en la estructura objetivo y sus consumidores actualizados; retirar `src/app/` solo cuando no queden dependencias de esa ubicación.
-- Los contratos HTTP, formularios y estados del código migrado están tipados, con las excepciones de `any` justificadas conforme a esta guía. Las vistas coordinan y sus componentes y servicios tienen responsabilidades concretas.
-- Pasan compilaciones de producción y staging, pruebas pertinentes y reglas estáticas efectivamente configuradas. Las pruebas cubren contratos HTTP, permisos, validaciones y comportamiento relevante; no se exige una cifra arbitraria de cobertura ni pruebas que solo repliquen la implementación.
-- El desarrollador responsable valida los flujos críticos: autenticación y acceso por rol, requerimientos → OC → compras, entradas y salidas de inventario y kardex, gastos y presupuestos, con importaciones y descargas donde existan. Registrar qué se verificó y qué sigue pendiente.
-- El [registro de migración](docs/migracion-frontend.md) refleja el estado real, las verificaciones y las limitaciones de cada entrega. Documentación acordada, configuración pendiente y migración terminada son estados distintos.
-- Referencias: [guía de estilo de Angular](https://angular.dev/style-guide), [selectores de Angular](https://angular.dev/guide/components/selectors) y [guía de TypeScript de Google](https://google.github.io/styleguide/tsguide.html). Estas fuentes orientan las convenciones; las decisiones explícitas del proyecto y las instrucciones del usuario prevalecen. No atribuir a las guías decisiones propias, como retirar `app/` o prescindir de un prefijo global de selectores.
