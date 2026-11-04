@@ -143,7 +143,7 @@ describe('RegistroInventario — contrato HTTP', () => {
     salida.flush({ ok: true });
   });
 
-  it('consulta stock sin proyecto y exporta XLSX binario con false explícito', () => {
+  it('consulta stock sin proyecto y exporta XLSX binario con los filtros indicados', () => {
     api
       .listarStockActual({ idEspecialidad: 2, fechaDesde: '2026-10-01' })
       .subscribe((rows) => expect(rows).toEqual([stockPrueba]));
@@ -154,13 +154,14 @@ describe('RegistroInventario — contrato HTTP', () => {
     consulta.flush([stockPrueba]);
 
     api
-      .exportarStockExcel({ idEspecialidad: 2 }, false)
+      .exportarStockExcel({ idEspecialidad: 2 })
       .subscribe((res) => expect(res.body).toBeInstanceOf(Blob));
 
     const req = http.expectOne((r) => r.url === base + '/stock-actual/exportar-excel');
 
     expect(req.request.responseType).toBe('blob');
-    expect(req.request.params.get('incluirTotales')).toBe('false');
+    expect(req.request.params.keys()).toEqual(['idEspecialidad']);
+    expect(req.request.params.get('idEspecialidad')).toBe('2');
     req.flush(new Blob(['xlsx']));
   });
 
@@ -206,16 +207,11 @@ describe('RegistroInventario — contrato HTTP', () => {
     expect(req.request.params.get('idProyecto')).toBe('3');
     expect(req.request.params.get('idMaterial')).toBe('10');
     req.flush([]);
-    api.exportarStockExcel(filtros, true).subscribe();
+    api.exportarStockExcel(filtros).subscribe();
 
     const excel = http.expectOne((r) => r.url === base + '/stock-actual/exportar-excel');
 
-    expect(excel.request.params.keys()).toEqual([
-      'idEspecialidad',
-      'fechaDesde',
-      'fechaHasta',
-      'incluirTotales',
-    ]);
+    expect(excel.request.params.keys()).toEqual(['idEspecialidad', 'fechaDesde', 'fechaHasta']);
     expect(excel.request.params.has('idProyecto')).toBe(false);
     expect(excel.request.params.has('idMaterial')).toBe(false);
     excel.flush(new Blob(['xlsx']));

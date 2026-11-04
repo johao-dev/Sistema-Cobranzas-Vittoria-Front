@@ -44,7 +44,6 @@ export class StockActual implements OnInit {
   protected readonly filtros = signal<FiltrosStockProyecto>({});
   protected readonly porProyecto = signal(false);
   protected readonly busqueda = signal('');
-  protected readonly incluirTotales = signal(false);
   protected readonly idDistribucion = signal<number | null>(null);
 
   protected readonly fecha = fechaInventario;

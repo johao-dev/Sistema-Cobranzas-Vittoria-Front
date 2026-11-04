@@ -97,15 +97,11 @@ export class RegistroInventario {
     );
   }
 
-  exportarStockExcel(
-    filtros?: KardexStockFiltroDto,
-    incluirTotales?: boolean | null,
-  ): Observable<HttpResponse<Blob>> {
+  exportarStockExcel(filtros?: KardexStockFiltroDto): Observable<HttpResponse<Blob>> {
     const params = this.construirQueryParams({
       idEspecialidad: filtros?.idEspecialidad,
       fechaDesde: filtros?.fechaDesde,
       fechaHasta: filtros?.fechaHasta,
-      incluirTotales: incluirTotales,
     });
 
     return this.api.http.get(`${this.api.baseUrl}${this.base}/stock-actual/exportar-excel`, {

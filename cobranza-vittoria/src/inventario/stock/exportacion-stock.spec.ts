@@ -40,7 +40,7 @@ describe('ExportacionStock — XLSX y errores binarios', () => {
 
   afterEach(restaurarDescargasInventario);
 
-  it('descarga con nombre del servidor y conserva filtros/incluirTotales false', async () => {
+  it('descarga con nombre del servidor y conserva filtros', async () => {
     const blob = new Blob(['xlsx']);
 
     api.exportarStockExcel.mockReturnValue(
@@ -53,13 +53,13 @@ describe('ExportacionStock — XLSX y errores binarios', () => {
         }),
       ),
     );
-    exportacion.exportar({ idEspecialidad: 2, fechaDesde: '2026-10-01' }, false);
+    exportacion.exportar({ idEspecialidad: 2, fechaDesde: '2026-10-01' });
     await completar();
 
-    expect(api.exportarStockExcel).toHaveBeenCalledWith(
-      { idEspecialidad: 2, fechaDesde: '2026-10-01' },
-      false,
-    );
+    expect(api.exportarStockExcel).toHaveBeenCalledWith({
+      idEspecialidad: 2,
+      fechaDesde: '2026-10-01',
+    });
     expect(descargas.crearUrl).toHaveBeenCalledWith(blob);
     expect(descargas.nombres).toEqual(['stock obra.xlsx']);
     expect(notify.show).toHaveBeenCalledWith('Excel descargado correctamente.', 'success');
@@ -68,7 +68,7 @@ describe('ExportacionStock — XLSX y errores binarios', () => {
 
   it('usa nombre de respaldo si falta Content-Disposition', async () => {
     api.exportarStockExcel.mockReturnValue(of(new HttpResponse({ body: new Blob(['xlsx']) })));
-    exportacion.exportar({}, true);
+    exportacion.exportar({});
     await completar();
 
     expect(descargas.nombres[0]).toMatch(/^kardex-stock-\d{8}-\d{4}\.xlsx$/);
@@ -78,8 +78,8 @@ describe('ExportacionStock — XLSX y errores binarios', () => {
     const respuesta = new Subject<HttpResponse<Blob>>();
 
     api.exportarStockExcel.mockReturnValue(respuesta);
-    exportacion.exportar({}, false);
-    exportacion.exportar({}, true);
+    exportacion.exportar({});
+    exportacion.exportar({});
 
     expect(api.exportarStockExcel).toHaveBeenCalledOnce();
     respuesta.next(new HttpResponse({ body: new Blob(['xlsx']) }));
@@ -93,7 +93,7 @@ describe('ExportacionStock — XLSX y errores binarios', () => {
     api.exportarStockExcel.mockReturnValue(
       of(new HttpResponse({ body: blobJson('{"message":"No disponible"}') })),
     );
-    exportacion.exportar({}, false);
+    exportacion.exportar({});
     await completar();
 
     expect(descargas.crearUrl).not.toHaveBeenCalled();
@@ -111,7 +111,7 @@ describe('ExportacionStock — XLSX y errores binarios', () => {
           }),
       ),
     );
-    exportacion.exportar({}, false);
+    exportacion.exportar({});
     await completar();
 
     expect(notify.show).toHaveBeenCalledWith('Rango inválido', 'error');
@@ -121,12 +121,12 @@ describe('ExportacionStock — XLSX y errores binarios', () => {
 
   it('informa cuerpo vacío o JSON inválido sin descargar', async () => {
     api.exportarStockExcel.mockReturnValue(of(new HttpResponse<Blob>({ body: null })));
-    exportacion.exportar({}, false);
+    exportacion.exportar({});
     await completar();
 
     expect(notify.show).toHaveBeenCalledWith('La respuesta no contiene un archivo Excel.', 'error');
     api.exportarStockExcel.mockReturnValue(of(new HttpResponse({ body: blobJson('no json') })));
-    exportacion.exportar({}, false);
+    exportacion.exportar({});
     await completar();
 
     expect(notify.show).toHaveBeenCalledWith('No se pudo exportar el Excel.', 'error');

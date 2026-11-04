@@ -64,13 +64,13 @@ export class ExportacionStock {
 
   readonly exportando = signal(false);
 
-  exportar(filtros: KardexStockFiltroDto, incluirTotales: boolean): void {
+  exportar(filtros: KardexStockFiltroDto): void {
     if (this.exportando()) return;
 
     this.exportando.set(true);
 
     this.registro
-      .exportarStockExcel(filtros, incluirTotales)
+      .exportarStockExcel(filtros)
       .pipe(
         switchMap((respuesta) => from(procesarRespuestaStock(respuesta))),
         map(() => ({ exito: true, mensaje: 'Excel descargado correctamente.' })),

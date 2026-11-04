@@ -73,10 +73,12 @@ describe('StockActual — filtros y búsqueda', () => {
     await seleccionarInventario(fixture, '#inventario-filtro-especialidad', 'Eléctrica');
     botonInventario(fixture, 'Exportar a Excel').click();
 
-    expect(exportacion.exportar).toHaveBeenCalledWith(
-      { idProyecto: null, idEspecialidad: 2, fechaDesde: null, fechaHasta: null },
-      false,
-    );
+    expect(exportacion.exportar).toHaveBeenCalledWith({
+      idProyecto: null,
+      idEspecialidad: 2,
+      fechaDesde: null,
+      fechaHasta: null,
+    });
     expect(api.listarStockActual).toHaveBeenCalledTimes(1);
   });
   it('combina proyecto, especialidad y fechas, y vuelve al global al limpiar', async () => {
@@ -101,10 +103,7 @@ describe('StockActual — filtros y búsqueda', () => {
     expect(raiz.querySelector('thead')?.textContent).toContain('Proyecto');
     expect(raiz.querySelector('thead')?.textContent).not.toContain('Entrada');
     botonInventario(fixture, 'Exportar Stock Global a Excel').click();
-    expect(exportacion.exportar).toHaveBeenCalledWith(
-      expect.objectContaining({ idProyecto: 3 }),
-      false,
-    );
+    expect(exportacion.exportar).toHaveBeenCalledWith(expect.objectContaining({ idProyecto: 3 }));
     expect(raiz.textContent).toContain('No incluye el filtro de proyecto');
     botonInventario(fixture, 'Limpiar filtros').click();
     await fixture.whenStable();
