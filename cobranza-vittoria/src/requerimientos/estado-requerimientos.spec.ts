@@ -891,8 +891,46 @@ describe('ListaRequerimientos — gestión de ítems en almacén', () => {
     expect(reciente.observed).toBe(false);
   });
 
-  it('presenta fechaValidacion del contrato al mostrar el historial autorizado', async () => {
-    permisos.add('requerimientos.ver_depuracion_almacen');
+  it('muestra descripción y observación general antes de los ítems al abrir el detalle', async () => {
+    detalle.requerimiento.descripcion = 'Materiales para obra gris';
+    detalle.requerimiento.observacion = 'Coordinar la entrega con el residente';
+
+    page.view({ idRequerimiento: 45 });
+
+    await fixture.whenStable();
+
+    const raiz: HTMLElement = fixture.nativeElement;
+    const tablas = raiz.querySelectorAll('dialog table');
+    const informacionGeneral = raiz.querySelector(
+      'table[aria-label="Información general del requerimiento"]',
+    );
+
+    expect(tablas[0]).toBe(informacionGeneral);
+    expect(tablas[1].textContent).toContain('Cemento');
+    expect(tablas[1].textContent).toContain('Original');
+    expect(informacionGeneral?.textContent).toContain('Materiales para obra gris');
+    expect(informacionGeneral?.textContent).toContain('Coordinar la entrega con el residente');
+    expect(informacionGeneral?.textContent).not.toContain('Original');
+  });
+
+  it('muestra un guion para descripción y observación general ausentes aunque no haya ítems', async () => {
+    detalle.requerimiento.descripcion = null;
+    detalle.requerimiento.observacion = null;
+    detalle.items = [];
+
+    page.view({ idRequerimiento: 45 });
+
+    await fixture.whenStable();
+
+    const raiz: HTMLElement = fixture.nativeElement;
+    const valores = raiz.querySelectorAll(
+      'table[aria-label="Información general del requerimiento"] td',
+    );
+
+    expect(Array.from(valores, (celda) => celda.textContent?.trim())).toEqual(['-', '-']);
+  });
+
+  it('muestra las validaciones debajo de los ítems sin exigir el permiso de depuración', async () => {
     page.cerrarFormModal();
 
     page.detalle.update((actual) =>
@@ -902,6 +940,7 @@ describe('ListaRequerimientos — gestión de ítems en almacén', () => {
             validaciones: [
               {
                 resultado: 'Conforme',
+                observacion: 'Stock revisado',
                 usuario: 'Almacén',
                 fechaValidacion: '2026-10-20T12:00:00Z',
               },
@@ -913,9 +952,28 @@ describe('ListaRequerimientos — gestión de ítems en almacén', () => {
     await fixture.whenStable();
 
     const raiz: HTMLElement = fixture.nativeElement;
+    const tablas = raiz.querySelectorAll('dialog table');
+    const validaciones = raiz.querySelector('table[aria-label="Validaciones de almacén"]');
 
-    expect(raiz.textContent).toContain('20/10/2026');
-    expect(raiz.textContent).toContain('Almacén');
+    expect(permisos.has('requerimientos.ver_depuracion_almacen')).toBe(false);
+    expect(tablas[1].textContent).toContain('Cemento');
+    expect(tablas[2]).toBe(validaciones);
+    expect(validaciones?.textContent).toContain('Conforme');
+    expect(validaciones?.textContent).toContain('Stock revisado');
+    expect(validaciones?.textContent).toContain('20/10/2026');
+    expect(validaciones?.textContent).toContain('Almacén');
+  });
+
+  it('indica cuando el requerimiento todavía no tiene validaciones de almacén', async () => {
+    page.cerrarFormModal();
+
+    await fixture.whenStable();
+
+    const raiz: HTMLElement = fixture.nativeElement;
+
+    expect(raiz.textContent).toContain('Validaciones de almacén');
+    expect(raiz.textContent).toContain('Sin validaciones registradas.');
+    expect(raiz.querySelector('table[aria-label="Validaciones de almacén"]')).toBeNull();
   });
 
   it('conserva los catálogos disponibles y permite reintentar el catálogo fallido', async () => {

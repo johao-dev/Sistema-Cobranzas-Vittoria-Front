@@ -56,6 +56,23 @@
             }
           </div>
         </div>
+        <div class="detail-card">
+          <div class="panel-title detail-card__title">Información general</div>
+          <div class="table-wrap table-wrap--fit detail-general">
+            <table aria-label="Información general del requerimiento">
+              <tbody>
+                <tr>
+                  <th scope="row">Descripción</th>
+                  <td>{{ detalle.requerimiento.descripcion || '-' }}</td>
+                </tr>
+                <tr>
+                  <th scope="row">Observación general</th>
+                  <td>{{ detalle.requerimiento.observacion || '-' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
         @if (vm.detalleAlmacenDesactualizado() && !vm.recargandoItems()) {
           <div class="error-box" role="alert">
             Es necesario recargar el detalle antes de continuar.
@@ -99,44 +116,42 @@
             </table>
           </div>
         }
-        @if (vm.auth.hasPermission('requerimientos.ver_depuracion_almacen')) {
-          <div class="detail-card">
-            <div class="panel-title detail-card__title">Validaciones de almacén</div>
-            @if (!detalle.validaciones.length) {
-              <div class="empty-state empty-state--tight">Sin validaciones registradas.</div>
-            }
-            @if (detalle.validaciones.length) {
-              <div class="table-wrap">
-                <table>
-                  <thead>
+        <div class="detail-card">
+          <div class="panel-title detail-card__title">Validaciones de almacén</div>
+          @if (!detalle.validaciones.length) {
+            <div class="empty-state empty-state--tight">Sin validaciones registradas.</div>
+          }
+          @if (detalle.validaciones.length) {
+            <div class="table-wrap">
+              <table aria-label="Validaciones de almacén">
+                <thead>
+                  <tr>
+                    <th>Resultado</th>
+                    <th>Observación</th>
+                    <th>Usuario</th>
+                    <th>Fecha</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (validacion of detalle.validaciones; track validacion) {
                     <tr>
-                      <th>Resultado</th>
-                      <th>Observación</th>
-                      <th>Usuario</th>
-                      <th>Fecha</th>
+                      <td>{{ validacion.resultado || '-' }}</td>
+                      <td>{{ validacion.observacion || '-' }}</td>
+                      <td>{{ validacion.usuario || '-' }}</td>
+                      <td>
+                        {{
+                          validacion.fechaValidacion
+                            ? (validacion.fechaValidacion | date: 'dd/MM/yyyy HH:mm')
+                            : '-'
+                        }}
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    @for (validacion of detalle.validaciones; track validacion) {
-                      <tr>
-                        <td>{{ validacion.resultado || '-' }}</td>
-                        <td>{{ validacion.observacion || '-' }}</td>
-                        <td>{{ validacion.usuario || '-' }}</td>
-                        <td>
-                          {{
-                            validacion.fechaValidacion
-                              ? (validacion.fechaValidacion | date: 'dd/MM/yyyy HH:mm')
-                              : '-'
-                          }}
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
-            }
-          </div>
-        }
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
       </div>
     }
   </dialog>

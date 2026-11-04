@@ -27,3 +27,13 @@
   justify-content: flex-end;
   gap: 8px;
 }
+
+.detail-general th {
+  width: 35%;
+  white-space: normal;
+}
+
+.detail-general td {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
