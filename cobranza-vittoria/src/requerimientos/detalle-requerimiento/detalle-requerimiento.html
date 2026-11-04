@@ -62,11 +62,29 @@
             <table aria-label="Información general del requerimiento">
               <tbody>
                 <tr>
+                  <th scope="row">Solicitante</th>
+                  <td>{{ vm.normalizarNombreSolicitante(detalle.requerimiento.solicitante) }}</td>
+                </tr>
+                <tr>
+                  <th scope="row">Fecha de Solicitud</th>
+                  <td>
+                    {{ (detalle.requerimiento.fechaRequerimiento | date: 'dd/MM/yyyy') || '-' }}
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">Fecha de Entrega</th>
+                  <td>{{ (detalle.requerimiento.fechaEntrega | date: 'dd/MM/yyyy') || '-' }}</td>
+                </tr>
+                <tr>
+                  <th scope="row">Proyecto</th>
+                  <td>{{ detalle.requerimiento.nombreProyecto || '-' }}</td>
+                </tr>
+                <tr>
                   <th scope="row">Descripción</th>
                   <td>{{ detalle.requerimiento.descripcion || '-' }}</td>
                 </tr>
                 <tr>
-                  <th scope="row">Observación general</th>
+                  <th scope="row">Observación</th>
                   <td>{{ detalle.requerimiento.observacion || '-' }}</td>
                 </tr>
               </tbody>

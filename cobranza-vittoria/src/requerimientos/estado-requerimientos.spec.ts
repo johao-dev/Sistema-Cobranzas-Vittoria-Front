@@ -891,7 +891,8 @@ describe('ListaRequerimientos — gestión de ítems en almacén', () => {
     expect(reciente.observed).toBe(false);
   });
 
-  it('muestra descripción y observación general antes de los ítems al abrir el detalle', async () => {
+  it('muestra la información general en el orden solicitado antes de los ítems', async () => {
+    detalle.requerimiento.solicitante = '  Ana   Pérez ';
     detalle.requerimiento.descripcion = 'Materiales para obra gris';
     detalle.requerimiento.observacion = 'Coordinar la entrega con el residente';
 
@@ -908,12 +909,36 @@ describe('ListaRequerimientos — gestión de ítems en almacén', () => {
     expect(tablas[0]).toBe(informacionGeneral);
     expect(tablas[1].textContent).toContain('Cemento');
     expect(tablas[1].textContent).toContain('Original');
-    expect(informacionGeneral?.textContent).toContain('Materiales para obra gris');
-    expect(informacionGeneral?.textContent).toContain('Coordinar la entrega con el residente');
+    expect(
+      Array.from(informacionGeneral?.querySelectorAll('th') ?? [], (celda) =>
+        celda.textContent?.trim(),
+      ),
+    ).toEqual([
+      'Solicitante',
+      'Fecha de Solicitud',
+      'Fecha de Entrega',
+      'Proyecto',
+      'Descripción',
+      'Observación',
+    ]);
+    expect(
+      Array.from(informacionGeneral?.querySelectorAll('td') ?? [], (celda) =>
+        celda.textContent?.trim(),
+      ),
+    ).toEqual([
+      'Ana Pérez',
+      '16/10/2026',
+      '20/10/2026',
+      'Obra',
+      'Materiales para obra gris',
+      'Coordinar la entrega con el residente',
+    ]);
     expect(informacionGeneral?.textContent).not.toContain('Original');
   });
 
-  it('muestra un guion para descripción y observación general ausentes aunque no haya ítems', async () => {
+  it('muestra un guion para los datos generales ausentes aunque no haya ítems', async () => {
+    detalle.requerimiento.fechaEntrega = null;
+    detalle.requerimiento.nombreProyecto = null;
     detalle.requerimiento.descripcion = null;
     detalle.requerimiento.observacion = null;
     detalle.items = [];
@@ -927,7 +952,14 @@ describe('ListaRequerimientos — gestión de ítems en almacén', () => {
       'table[aria-label="Información general del requerimiento"] td',
     );
 
-    expect(Array.from(valores, (celda) => celda.textContent?.trim())).toEqual(['-', '-']);
+    expect(Array.from(valores, (celda) => celda.textContent?.trim())).toEqual([
+      '-',
+      '16/10/2026',
+      '-',
+      '-',
+      '-',
+      '-',
+    ]);
   });
 
   it('muestra las validaciones debajo de los ítems sin exigir el permiso de depuración', async () => {
