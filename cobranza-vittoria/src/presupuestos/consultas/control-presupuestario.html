@@ -2,7 +2,8 @@
   <div>
     <div class="page-title">Control presupuestario</div>
     <div class="page-subtitle">
-      Presupuesto, comprometido, ejecutado y saldo disponible. Fuente única del módulo.
+      Situación financiera acumulada: presupuesto base aprobado vigente y compromiso/ejecución de
+      versiones aprobadas e históricas.
     </div>
   </div>
 </div>
@@ -87,19 +88,26 @@
   <section class="panel">
     <div class="panel-title">Árbol de partidas</div>
     <p class="modal-nota">
-      Presupuesto vigente (versiones aprobadas) con subtotales por categoría. Haz clic en una
-      categoría para abrirla y en una partida para ver sus movimientos.
+      Presupuesto base aprobado vigente con compromiso y ejecución acumulados, y subtotales por
+      categoría. Haz clic en una categoría para abrirla y en una partida para ver sus movimientos.
     </p>
     <arbol-presupuestario
       modo="vigente"
       [idCentroCosto]="idCentroCostoDashboard"
       [idPresupuesto]="idPresupuestoDashboard"
       [nivelSincronizado]="nivelDashboard"
+      [accionesBloqueadas]="!puedeVerMovimientos"
       (abrirHoja)="verMovimientosNodo($event)"
     ></arbol-presupuestario>
   </section>
 }
 
+@if (errorResumen) {
+  <div class="empty-state" role="alert">{{ errorResumen }}</div>
+  <button type="button" class="btn btn-secondary btn-sm" (click)="cargarResumen()">
+    Reintentar resumen
+  </button>
+}
 @if (totales) {
   <div class="kpi-grid">
     <div class="kpi-card">
@@ -147,6 +155,9 @@
             <th class="num">Comprometido</th>
             <th class="num">Ejecutado</th>
             <th class="num">Exceso</th>
+            @if (puedeVerMovimientos) {
+              <th>Acciones</th>
+            }
           </tr>
         </thead>
         <tbody>
@@ -161,6 +172,18 @@
               <td class="num num--danger">
                 {{ f.simboloMoneda }} {{ f.montoExcedido | number: '1.2-2' }}
               </td>
+              @if (puedeVerMovimientos) {
+                <td>
+                  <button
+                    type="button"
+                    class="btn btn-ghost btn-sm"
+                    [disabled]="!puedeAbrirHistorial(f)"
+                    (click)="verMovimientos(f)"
+                  >
+                    Historial
+                  </button>
+                </td>
+              }
             </tr>
           }
         </tbody>
@@ -183,7 +206,12 @@
         />
       </div>
     </div>
-    <button type="button" class="btn btn-secondary btn-sm" (click)="exportarCsv()">
+    <button
+      type="button"
+      class="btn btn-secondary btn-sm"
+      [disabled]="cargando || !filasFiltradas.length"
+      (click)="exportarCsv()"
+    >
       Exportar CSV
     </button>
   </div>
@@ -234,7 +262,13 @@
   @if (cargando) {
     <div class="empty-state">Cargando reporte...</div>
   }
-  @if (!cargando && !filasFiltradas.length) {
+  @if (errorReporte) {
+    <div class="empty-state" role="alert">{{ errorReporte }}</div>
+    <button type="button" class="btn btn-secondary btn-sm" (click)="cargarVista()">
+      Reintentar reporte
+    </button>
+  }
+  @if (!cargando && !errorReporte && !filasFiltradas.length) {
     <div class="empty-state">No hay información para los filtros seleccionados.</div>
   }
 
@@ -248,7 +282,7 @@
             @if (muestraPartida) {
               <th>Partida</th>
             }
-            <th>Versión</th>
+            <th>Versión base aprobada vigente</th>
             <th class="num">Presupuestado</th>
             @if (muestraComprometido) {
               <th class="num">Comprometido</th>
@@ -260,7 +294,7 @@
               <th class="num">Saldo</th>
             }
             <th class="barra-col">Avance</th>
-            @if (muestraPartida) {
+            @if (muestraPartida && puedeVerMovimientos) {
               <th class="actions-col">Acciones</th>
             }
           </tr>
@@ -298,9 +332,14 @@
                 </div>
                 <span class="barra__label">{{ porcentaje(f) | number: '1.1-1' }}%</span>
               </td>
-              @if (muestraPartida) {
+              @if (muestraPartida && puedeVerMovimientos) {
                 <td class="actions-col">
-                  <button type="button" class="btn btn-ghost btn-sm" (click)="verMovimientos(f)">
+                  <button
+                    type="button"
+                    class="btn btn-ghost btn-sm"
+                    [disabled]="!puedeAbrirHistorial(f)"
+                    (click)="verMovimientos(f)"
+                  >
                     Historial
                   </button>
                 </td>
@@ -314,5 +353,5 @@
 </section>
 
 @if (modalMovimientos && contextoMovimientos) {
-  <historial-presupuestario [contexto]="contextoMovimientos" (cerrar)="modalMovimientos = false" />
+  <historial-presupuestario [contexto]="contextoMovimientos" (cerrar)="cerrarModal()" />
 }

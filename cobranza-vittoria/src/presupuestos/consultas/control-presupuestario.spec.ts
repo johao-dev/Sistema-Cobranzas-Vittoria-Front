@@ -1,3 +1,5 @@
+import { HttpErrorResponse } from '@angular/common/http';
+import { NodoArbol } from '../arbol/contratos-arbol-presupuestario';
 import { TestBed } from '@angular/core/testing';
 import { NEVER, of, Subject, throwError } from 'rxjs';
 import { ControlPresupuestario } from './control-presupuestario';
@@ -5,13 +7,22 @@ import { ConsultasPresupuestarias } from './consultas-presupuestarias';
 import { RegistroPresupuestos } from '../registro-presupuestos';
 import { CatalogoCentrosCosto } from '../centros-costo/catalogo-centros-costo';
 import { Notificaciones } from '../../shared/notificaciones/notificaciones';
-import { FilaReportePresupuestario } from './contratos-consultas-presupuestarias';
+import { simularDialogosPresupuestos } from '../dialogos.fixture';
+import { crearCsvPresupuestario } from './exportacion-presupuestaria';
+import { FilaReportePresupuestario, SaldoPartida } from './contratos-consultas-presupuestarias';
 import { partidaPrueba, presupuestoPrueba } from '../presupuestos.fixture';
 import { CatalogoPartidas } from '../partidas/catalogo-partidas';
 import { SesionUsuario } from '../../core/sesion/sesion-usuario';
 
 describe('ControlPresupuestario: selección y consultas concurrentes', () => {
-  const api = { saldos: vi.fn(), presupuestoVsComprometido: vi.fn(), resumen: vi.fn() };
+  const api = {
+    saldos: vi.fn(),
+    presupuestoVsComprometido: vi.fn(),
+    resumen: vi.fn(),
+    presupuestoVsEjecutado: vi.fn(),
+    gastosPorPartida: vi.fn(),
+    gastosPorCentroCosto: vi.fn(),
+  };
   const notificaciones = { show: vi.fn() };
   const catalogo = { partidas: vi.fn() };
   const sesion = { hasPermission: vi.fn() };
@@ -20,7 +31,7 @@ describe('ControlPresupuestario: selección y consultas concurrentes', () => {
     notificaciones.show.mockReset();
     catalogo.partidas.mockReset().mockReturnValue(of([]));
     sesion.hasPermission.mockReset().mockReturnValue(true);
-    api.saldos.mockReturnValue(of([]));
+    Object.values(api).forEach((mock) => mock.mockReturnValue(of([])));
     api.presupuestoVsComprometido.mockReturnValue(of([]));
     api.resumen.mockReturnValue(of({ totales: null, porCentroCosto: [], partidasExcedidas: [] }));
     TestBed.configureTestingModule({
@@ -46,6 +57,7 @@ describe('ControlPresupuestario: selección y consultas concurrentes', () => {
     pagina.onCentroCostoChange();
     expect(pagina.filtroPresupuesto).toBe('');
     expect(api.saldos).toHaveBeenLastCalledWith({
+      consolidado: true,
       idCentroCosto: 6,
       idPresupuesto: null,
     });
@@ -76,7 +88,7 @@ describe('ControlPresupuestario: selección y consultas concurrentes', () => {
     expect(pagina.cargandoResumen).toBe(false);
   });
 
-  it('una vista agregada no abre movimientos sin identificar un detalle', () => {
+  it('una vista agregada no abre movimientos sin identificar una partida', () => {
     const pagina = TestBed.createComponent(ControlPresupuestario).componentInstance;
     pagina.verMovimientos({ idPresupuesto: 10, ejecutado: 20 });
     expect(pagina.modalMovimientos).toBe(false);
@@ -105,7 +117,11 @@ describe('ControlPresupuestario: selección y consultas concurrentes', () => {
     pagina.filtroPresupuesto = '';
     pagina.recargar();
     expect(pagina['partidasExcluidas']()).toEqual([]);
-    expect(api.saldos).toHaveBeenLastCalledWith({ idCentroCosto: 5, idPresupuesto: null });
+    expect(api.saldos).toHaveBeenLastCalledWith({
+      consolidado: true,
+      idCentroCosto: 5,
+      idPresupuesto: null,
+    });
     pagina['cambiarExclusiones']([3]);
     pagina.recargar();
     expect(pagina['partidasExcluidas']()).toEqual([3]);
@@ -115,6 +131,152 @@ describe('ControlPresupuestario: selección y consultas concurrentes', () => {
     pagina.onCentroCostoChange();
     expect(pagina['partidasExcluidas']()).toEqual([]);
     expect(api.saldos).toHaveBeenCalledTimes(3);
+  });
+
+  it.each([
+    ['saldos', 'saldos'],
+    ['comprometido', 'presupuestoVsComprometido'],
+    ['ejecutado', 'presupuestoVsEjecutado'],
+    ['gastos-partida', 'gastosPorPartida'],
+    ['gastos-centro', 'gastosPorCentroCosto'],
+  ] as const)(
+    'la vista %s y el resumen solicitan consolidación con los mismos filtros',
+    (vista, metodo) => {
+      const pagina = TestBed.createComponent(ControlPresupuestario).componentInstance;
+      pagina.filtroCentroCosto = '5';
+      pagina.filtroPresupuesto = '10';
+      pagina.cargarResumen();
+      pagina.cambiarVista(vista);
+      const filtro = { consolidado: true, idCentroCosto: 5, idPresupuesto: 10 };
+      expect(api.resumen).toHaveBeenCalledWith(filtro);
+      expect(api[metodo]).toHaveBeenCalledWith(filtro);
+    },
+  );
+
+  it.each(['saldos', 'comprometido', 'ejecutado', 'gastos-partida'] as const)(
+    'abre historial consolidado desde %s sin requerir ID de detalle o versión',
+    (vista) => {
+      const pagina = TestBed.createComponent(ControlPresupuestario).componentInstance;
+      pagina.cambiarVista(vista);
+      pagina.verMovimientos({ idPresupuesto: 10, idCatalogoPartida: 25 });
+      expect(pagina.contextoMovimientos).toEqual({
+        modo: 'consolidado',
+        idPresupuesto: 10,
+        idCatalogoPartida: 25,
+        codigo: null,
+        nombre: null,
+      });
+      expect(pagina.modalMovimientos).toBe(true);
+    },
+  );
+
+  it.each(['control_presupuestario.reporte.ver', 'control_presupuestario.movimiento.ver'])(
+    'no habilita historial sin %s',
+    (faltante) => {
+      sesion.hasPermission.mockImplementation((permiso: string) => permiso !== faltante);
+      const pagina = TestBed.createComponent(ControlPresupuestario).componentInstance;
+      const fila = { idPresupuesto: 10, idCatalogoPartida: 25 };
+      expect(pagina.puedeAbrirHistorial(fila)).toBe(false);
+      pagina.verMovimientos(fila);
+      expect(pagina.modalMovimientos).toBe(false);
+    },
+  );
+
+  it('el árbol vigente consulta por partida común sin requerir un detalle de versión', () => {
+    const pagina = TestBed.createComponent(ControlPresupuestario).componentInstance;
+    const nodo: NodoArbol = {
+      idPresupuesto: 10,
+      idCatalogoPartida: 25,
+      idPresupuestoVersion: null,
+      idPresupuestoDetalle: null,
+      codigo: '1',
+      nombre: 'Concreto',
+      idPartidaPadre: null,
+      nivel: 1,
+      esHoja: true,
+      cantidadHijas: 0,
+      cantidadHojas: 1,
+      montoPresupuestado: 100,
+      montoComprometido: 0,
+      montoEjecutado: 0,
+      saldoDisponible: 100,
+      porcentajeComprometido: 0,
+      porcentajeEjecutado: 0,
+      excedido: false,
+      partidasExcedidas: 0,
+    };
+    pagina.verMovimientosNodo(nodo);
+    expect(pagina.contextoMovimientos).toMatchObject({
+      modo: 'consolidado',
+      idCatalogoPartida: 25,
+    });
+    pagina.cerrarModal();
+    pagina.verMovimientosNodo({ ...nodo, idPresupuesto: null });
+    expect(pagina.modalMovimientos).toBe(false);
+    expect(notificaciones.show).toHaveBeenLastCalledWith(
+      expect.stringContaining('varios presupuestos'),
+      'info',
+    );
+  });
+
+  it.each([
+    [0, 25, 0, '0%'],
+    [100, -25, -25, '0%'],
+    [100, 150, 150, '100%'],
+    [-100, 25, -25, '0%'],
+    [200, 50, 25, '25%'],
+  ])(
+    'saldo con presupuesto %s y ejecutado %s conserva porcentaje y limita solo el ancho',
+    (base, ejecutado, porcentaje, ancho) => {
+      const pagina = TestBed.createComponent(ControlPresupuestario).componentInstance;
+      const fila = { montoPresupuestado: base, ejecutado };
+      expect(pagina.porcentaje(fila)).toBe(porcentaje);
+      expect(pagina.anchoBarra(pagina.porcentaje(fila))).toBe(ancho);
+      if (porcentaje > 100) expect(pagina.claseBarra(porcentaje)).toContain('danger');
+      expect(fila).toEqual({ montoPresupuestado: base, ejecutado });
+    },
+  );
+
+  it.each([
+    [400, { error: 'MONEDAS_MIXTAS' }, 'Selecciona un presupuesto'],
+    [400, { error: 'FILTROS_INCOMPATIBLES' }, 'versión o estado'],
+    [403, {}, 'permisos necesarios'],
+    [400, { errors: { Id: ['Identificador inválido'] } }, 'Identificador inválido'],
+  ])('limpia datos previos y conserva filtros ante HTTP %s %j', (status, error, mensaje) => {
+    const pagina = TestBed.createComponent(ControlPresupuestario).componentInstance;
+    api.resumen.mockReturnValueOnce(
+      of({ totales: { presupuestado: 100 }, partidasExcedidas: [{}], porCentroCosto: [{}] }),
+    );
+    pagina.cargarResumen();
+    pagina.filas = [{ ejecutado: 100 }];
+    pagina.filtroCentroCosto = '5';
+    pagina.filtroPresupuesto = '10';
+    const fallo = throwError(() => new HttpErrorResponse({ status, error }));
+    api.resumen.mockReturnValue(fallo);
+    api.saldos.mockReturnValue(fallo);
+    pagina.recargar();
+    expect(pagina.totales).toBeNull();
+    expect(pagina.partidasExcedidas).toEqual([]);
+    expect(pagina.porCentroCosto).toEqual([]);
+    expect(pagina.filas).toEqual([]);
+    expect(pagina.errorResumen).toContain(mensaje);
+    expect(pagina.errorReporte).toContain(mensaje);
+    expect(pagina.filtroCentroCosto).toBe('5');
+    expect(pagina.filtroPresupuesto).toBe('10');
+    expect(pagina.cargando || pagina.cargandoResumen).toBe(false);
+  });
+
+  it('limpia resultados y cierra el historial mientras carga otro contexto', () => {
+    const pagina = TestBed.createComponent(ControlPresupuestario).componentInstance;
+    pagina.filas = [{ ejecutado: 999 }];
+    pagina.verMovimientos({ idPresupuesto: 10, idCatalogoPartida: 25 });
+    api.resumen.mockReturnValue(NEVER);
+    api.saldos.mockReturnValue(NEVER);
+    pagina.recargar();
+    expect(pagina.filas).toEqual([]);
+    expect(pagina.totales).toBeNull();
+    expect(pagina.modalMovimientos).toBe(false);
+    expect(pagina.cargando && pagina.cargandoResumen).toBe(true);
   });
 
   it('comparte una única carga del catálogo completo, sin filtro de activos', () => {
@@ -206,4 +368,194 @@ describe('ControlPresupuestario: integración del selector con los reportes', ()
     await fixture.whenStable();
     expect(api.dashboard).toHaveBeenCalledTimes(tableros + 1);
   });
+});
+
+describe('ControlPresupuestario: presentación consolidada con plantilla real', () => {
+  const fila: SaldoPartida = {
+    idCentroCosto: 5,
+    codigoCentroCosto: 'MC2',
+    centroCosto: 'Obra MC2',
+    idPresupuesto: 10,
+    codigoPresupuesto: 'P-10',
+    presupuesto: 'Obra',
+    idMoneda: 1,
+    moneda: 'PEN',
+    simboloMoneda: 'S/',
+    idPresupuestoVersion: 103,
+    numeroVersion: 3,
+    estado: 'APROBADO',
+    idPresupuestoDetalle: 1031,
+    idCatalogoPartida: 25,
+    codigoPartida: '1',
+    partida: 'Concreto',
+    nivel: 1,
+    montoPresupuestado: 400,
+    comprometido: 375,
+    ejecutado: 530,
+    saldoDisponible: -505,
+    montoExcedido: 505,
+    excedido: true,
+  };
+  const filaCero: SaldoPartida = {
+    ...fila,
+    idPresupuestoDetalle: 1032,
+    idCatalogoPartida: 26,
+    codigoPartida: '2',
+    partida: 'Acero',
+    montoPresupuestado: 0,
+    comprometido: 0,
+    ejecutado: 25,
+    saldoDisponible: -25,
+    montoExcedido: 25,
+  };
+  const api = {
+    resumen: vi.fn(),
+    saldos: vi.fn(),
+    gastosPorPartida: vi.fn(),
+    gastosPorCentroCosto: vi.fn(),
+    movimientosConsolidados: vi.fn(),
+  };
+  const sesion = { hasPermission: vi.fn() };
+  let restaurar: () => void;
+
+  beforeEach(() => {
+    restaurar = simularDialogosPresupuestos();
+    sesion.hasPermission.mockReset().mockReturnValue(true);
+    Object.values(api).forEach((mock) => mock.mockReset());
+    api.resumen.mockReturnValue(
+      of({
+        totales: {
+          presupuestado: 400,
+          comprometido: 375,
+          ejecutado: 555,
+          saldoDisponible: -530,
+          porcentajeEjecutado: 138.75,
+          centrosCosto: 1,
+          partidas: 2,
+          partidasExcedidas: 2,
+        },
+        porCentroCosto: [],
+        partidasExcedidas: [fila, filaCero],
+      }),
+    );
+    api.saldos.mockReturnValue(of([fila, filaCero]));
+    api.gastosPorPartida.mockReturnValue(
+      of([
+        {
+          idPresupuesto: 10,
+          idCatalogoPartida: 25,
+          numeroVersion: 3,
+          estado: 'APROBADO',
+          codigoPartida: '1',
+          partida: 'Concreto',
+          montoPresupuestado: 400,
+          ejecutado: 530,
+          porcentajeEjecutado: 132.5,
+        },
+      ]),
+    );
+    api.gastosPorCentroCosto.mockReturnValue(
+      of([
+        {
+          idPresupuesto: 10,
+          numeroVersion: 3,
+          estado: 'APROBADO',
+          ejecutado: 555,
+          montoPresupuestado: 400,
+          comprometido: 375,
+          saldoDisponible: -530,
+          porcentajeEjecutado: 138.75,
+        },
+      ]),
+    );
+    api.movimientosConsolidados.mockReturnValue(of([]));
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: ConsultasPresupuestarias, useValue: api },
+        { provide: CatalogoPartidas, useValue: { partidas: () => of([]) } },
+        { provide: SesionUsuario, useValue: sesion },
+        {
+          provide: RegistroPresupuestos,
+          useValue: { presupuestos: () => of([presupuestoPrueba()]) },
+        },
+        { provide: CatalogoCentrosCosto, useValue: { centrosCosto: () => of([]) } },
+        { provide: Notificaciones, useValue: { show: vi.fn() } },
+      ],
+    });
+  });
+  afterEach(() => {
+    TestBed.resetTestingModule();
+    restaurar();
+  });
+
+  it('presenta importes acumulados recibidos, porcentaje de saldo y CSV filtrado', async () => {
+    const fixture = TestBed.createComponent(ControlPresupuestario);
+    await fixture.whenStable();
+    const host: HTMLElement = fixture.nativeElement;
+    const tarjetas = Array.from(host.querySelectorAll('.kpi-card__value')).map((e) =>
+      e.textContent?.trim(),
+    );
+    expect(tarjetas).toEqual(['400.00', '375.00', '555.00', '-530.00', '138.75%', '2 / 2']);
+    expect(host.textContent).toContain('Versión base aprobada vigente');
+    expect(host.querySelector('.table-wrap--sticky-actions')?.textContent).toContain(
+      'v3 · APROBADO',
+    );
+    const avances = Array.from(host.querySelectorAll('.barra__label')).map((e) =>
+      e.textContent?.trim(),
+    );
+    expect(avances).toEqual(['132.5%', '0.0%']);
+    const barra = host.querySelector<HTMLElement>('.barra__fill');
+    expect(barra?.style.width).toBe('100%');
+    expect(barra?.className).toContain('danger');
+    const busqueda = host.querySelector<HTMLInputElement>('#control-presupuestario-campo-4')!;
+    busqueda.value = 'Concreto';
+    busqueda.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    const csv = crearCsvPresupuestario(fixture.componentInstance.filasFiltradas);
+    expect(csv.split('\r\n')).toHaveLength(2);
+    expect(csv).toContain('"400";"375";"530";"-505";"505";"true"');
+    expect(csv).toContain('"103";"3";"APROBADO"');
+    expect(csv).not.toContain('Acero');
+  });
+
+  it.each(['excedidas', 'gastos-partida'] as const)(
+    'la acción de %s abre la partida entre versiones',
+    async (origen) => {
+      const fixture = TestBed.createComponent(ControlPresupuestario);
+      await fixture.whenStable();
+      if (origen === 'gastos-partida') fixture.componentInstance.cambiarVista('gastos-partida');
+      await fixture.whenStable();
+      const host: HTMLElement = fixture.nativeElement;
+      const alcance = origen === 'excedidas' ? '.table-wrap' : '.table-wrap--sticky-actions';
+      host.querySelector<HTMLButtonElement>(`${alcance} tbody button`)!.click();
+      await fixture.whenStable();
+      expect(api.movimientosConsolidados).toHaveBeenCalledExactlyOnceWith(10, 25);
+      expect(host.querySelector('dialog')?.textContent).toContain('Historial consolidado');
+    },
+  );
+
+  it('gastos por centro no ofrece historial de partida', async () => {
+    const fixture = TestBed.createComponent(ControlPresupuestario);
+    await fixture.whenStable();
+    fixture.componentInstance.cambiarVista('gastos-centro');
+    await fixture.whenStable();
+    const host: HTMLElement = fixture.nativeElement;
+    expect(host.querySelector('.table-wrap--sticky-actions tbody button')).toBeNull();
+    expect(api.movimientosConsolidados).not.toHaveBeenCalled();
+  });
+
+  it.each(['control_presupuestario.reporte.ver', 'control_presupuestario.movimiento.ver'])(
+    'la plantilla oculta acciones sin %s',
+    async (faltante) => {
+      sesion.hasPermission.mockImplementation((permiso: string) => permiso !== faltante);
+      const fixture = TestBed.createComponent(ControlPresupuestario);
+      await fixture.whenStable();
+      const host: HTMLElement = fixture.nativeElement;
+      expect(
+        Array.from(host.querySelectorAll('button')).filter(
+          (e) => e.textContent?.trim() === 'Historial',
+        ),
+      ).toHaveLength(0);
+    },
+  );
 });

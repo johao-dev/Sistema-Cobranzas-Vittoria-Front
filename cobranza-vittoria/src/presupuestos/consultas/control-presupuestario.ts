@@ -7,6 +7,7 @@ import {
   HistorialPresupuestario,
 } from '../movimientos/historial-presupuestario';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { mensajeErrorConsultaPresupuestaria } from './mensajes-consultas-presupuestarias';
 import { extraerMensajeError } from '../../shared/errores-api/mensajes-error-api';
 import { Presupuesto } from '../contratos-presupuestos';
 import { CentroCostoResumen } from '../centros-costo/contratos-centros-costo';
@@ -84,6 +85,8 @@ export class ControlPresupuestario implements OnInit {
   vista: Vista = 'saldos';
   cargando = false;
   cargandoResumen = false;
+  errorResumen = '';
+  errorReporte = '';
 
   filtroCentroCosto = '';
   filtroPresupuesto = '';
@@ -140,6 +143,7 @@ export class ControlPresupuestario implements OnInit {
 
   get filtro(): ReporteFiltro {
     return {
+      consolidado: true,
       idCentroCosto: this.idCentroCostoDashboard,
       idPresupuesto: this.idPresupuestoDashboard,
     };
@@ -246,6 +250,7 @@ export class ControlPresupuestario implements OnInit {
   recargar(): void {
     if (this.contextoConsultado === this.contextoFiltros) return;
     this.contextoConsultado = this.contextoFiltros;
+    this.cerrarModal();
     this.partidasExcluidas.set([]);
     this.cargarResumen();
     this.cargarVista();
@@ -283,6 +288,10 @@ export class ControlPresupuestario implements OnInit {
   cargarResumen(): void {
     this.consultaCargarResumen?.unsubscribe();
     this.cargandoResumen = true;
+    this.totales = null;
+    this.porCentroCosto = [];
+    this.partidasExcedidas = [];
+    this.errorResumen = '';
     this.consultaCargarResumen = this.consultasPresupuestarias
       .resumen(this.filtro)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -296,10 +305,11 @@ export class ControlPresupuestario implements OnInit {
         },
         error: (err: unknown) => {
           this.cargandoResumen = false;
-          this.notifications.show(
-            extraerMensajeError(err, 'No se pudo cargar el resumen.'),
-            'error',
+          this.errorResumen = mensajeErrorConsultaPresupuestaria(
+            err,
+            'No se pudo cargar el resumen.',
           );
+          this.notifications.show(this.errorResumen, 'error');
           this.cdr.detectChanges();
         },
       });
@@ -313,6 +323,8 @@ export class ControlPresupuestario implements OnInit {
   cargarVista(): void {
     this.consultaCargarVista?.unsubscribe();
     this.cargando = true;
+    this.filas = [];
+    this.errorReporte = '';
     const filtro = this.filtro;
 
     const peticion: Observable<FilaReportePresupuestario[]> =
@@ -335,7 +347,11 @@ export class ControlPresupuestario implements OnInit {
       error: (err: unknown) => {
         this.cargando = false;
         this.filas = [];
-        this.notifications.show(extraerMensajeError(err, 'No se pudo cargar el reporte.'), 'error');
+        this.errorReporte = mensajeErrorConsultaPresupuestaria(
+          err,
+          'No se pudo cargar el reporte.',
+        );
+        this.notifications.show(this.errorReporte, 'error');
         this.cdr.detectChanges();
       },
     });
@@ -343,24 +359,37 @@ export class ControlPresupuestario implements OnInit {
 
   // -------------------------------------------------------------- movimientos
 
+  get puedeVerMovimientos(): boolean {
+    return (
+      this.sesion.hasPermission('control_presupuestario.reporte.ver') &&
+      this.sesion.hasPermission('control_presupuestario.movimiento.ver')
+    );
+  }
+
+  puedeAbrirHistorial(fila: FilaReportePresupuestario): boolean {
+    return this.puedeVerMovimientos && !!fila.idPresupuesto && !!fila.idCatalogoPartida;
+  }
+
   verMovimientos(fila: FilaReportePresupuestario): void {
-    if (!fila.idPresupuesto || !fila.idPresupuestoVersion || !fila.idPresupuestoDetalle) {
-      this.notifications.show('Esta vista no permite abrir el historial de una partida.', 'info');
+    if (!this.puedeVerMovimientos) return;
+    if (!fila.idPresupuesto || !fila.idCatalogoPartida) {
+      this.notifications.show('Selecciona una partida para consultar su historial.', 'info');
       return;
     }
     this.contextoMovimientos = {
+      modo: 'consolidado',
       idPresupuesto: fila.idPresupuesto,
-      idVersion: fila.idPresupuestoVersion,
-      idDetalle: fila.idPresupuestoDetalle,
+      idCatalogoPartida: fila.idCatalogoPartida,
       codigo: fila.codigoPartida ?? null,
       nombre: fila.partida ?? null,
     };
     this.modalMovimientos = true;
   }
 
-  /** Hoja del árbol: solo tiene detalle propio si pertenece a un único presupuesto. */
+  /** Una hoja agregada requiere elegir un presupuesto antes de consultar su historial. */
   verMovimientosNodo(nodo: NodoArbol): void {
-    if (!nodo.idPresupuestoDetalle || !nodo.idPresupuesto || !nodo.idPresupuestoVersion) {
+    if (!this.puedeVerMovimientos) return;
+    if (!nodo.idPresupuesto) {
       this.notifications.show(
         'Esta partida suma montos de varios presupuestos. Elige un presupuesto en el filtro para ver sus movimientos.',
         'info',
@@ -369,8 +398,7 @@ export class ControlPresupuestario implements OnInit {
     }
     this.verMovimientos({
       idPresupuesto: nodo.idPresupuesto,
-      idPresupuestoVersion: nodo.idPresupuestoVersion,
-      idPresupuestoDetalle: nodo.idPresupuestoDetalle,
+      idCatalogoPartida: nodo.idCatalogoPartida,
       codigoPartida: nodo.codigo,
       partida: nodo.nombre,
     });
@@ -378,11 +406,15 @@ export class ControlPresupuestario implements OnInit {
 
   cerrarModal(): void {
     this.modalMovimientos = false;
-    this.cdr.detectChanges();
+    this.contextoMovimientos = null;
   }
 
   porcentaje(fila: FilaReportePresupuestario): number {
     if (this.vista === 'comprometido') return Number(fila.porcentajeComprometido ?? 0);
+    if (this.vista === 'saldos') {
+      const presupuesto = Number(fila.montoPresupuestado ?? 0);
+      return presupuesto === 0 ? 0 : (Number(fila.ejecutado ?? 0) / presupuesto) * 100;
+    }
     return Number(fila.porcentajeEjecutado ?? 0);
   }
 

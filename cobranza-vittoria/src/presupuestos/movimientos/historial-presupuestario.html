@@ -1,16 +1,29 @@
 <dialog
   dialogoModal
   class="panel panel--form design-modal-card design-modal-card--wide"
-  (solicitarCierre)="cerrar.emit()"
-  aria-label="Operación presupuestaria"
+  (solicitarCierre)="solicitarCierre()"
+  [attr.aria-label]="consolidado() ? 'Historial consolidado' : 'Historial de la versión'"
 >
-  <button type="button" class="modal-close" (click)="cerrar.emit()" aria-label="Cerrar">
+  <button type="button" class="modal-close" (click)="solicitarCierre()" aria-label="Cerrar">
     &times;
   </button>
-  <div class="panel-title">Historial de movimientos</div>
+  <div class="panel-title">
+    {{
+      consolidado()
+        ? 'Historial consolidado de movimientos'
+        : 'Historial de movimientos de la versión'
+    }}
+  </div>
+  <p class="modal-nota">
+    {{
+      consolidado()
+        ? 'Incluye movimientos de versiones APROBADO e HISTORICO. Los efectos con signo permiten conciliar el compromiso y la ejecución acumulados.'
+        : 'Incluye únicamente los movimientos del detalle de la versión seleccionada.'
+    }}
+  </p>
   @if (error()) {
     <p role="alert">{{ error() }}</p>
-    <button class="btn btn-secondary" (click)="cargar()">Reintentar</button>
+    <button class="btn btn-secondary" (click)="reintentar()">Reintentar</button>
   }
   @if (contexto()) {
     <p class="modal-nota">{{ contexto().codigo }} — {{ contexto().nombre }}</p>
@@ -27,23 +40,39 @@
         <thead>
           <tr>
             <th>Fecha</th>
+            <th>Versión de origen</th>
             <th>Tipo</th>
             <th>Afectación</th>
             <th>Dirección</th>
             <th>Origen</th>
             <th class="num">Monto</th>
+            @if (consolidado()) {
+              <th class="num">Efecto comprometido</th>
+              <th class="num">Efecto ejecutado</th>
+            }
             <th>Observación</th>
           </tr>
         </thead>
         <tbody>
-          @for (m of movimientos(); track m) {
+          @for (m of movimientos(); track m.idMovimientoPresupuestal) {
             <tr>
               <td>{{ m.fecha | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td>v{{ m.numeroVersion }} · {{ m.estadoPresupuesto || '—' }}</td>
               <td>{{ m.tipo }}</td>
               <td>{{ m.afectacion || '—' }}</td>
               <td>{{ m.direccion || '—' }}</td>
               <td>{{ m.origen }} #{{ m.idOrigen }}</td>
               <td class="num">{{ m.simboloMoneda }} {{ m.monto | number: '1.2-2' }}</td>
+              @if (consolidado()) {
+                <td class="num">
+                  {{ m.simboloMoneda }} {{ efectoComprometido(m) > 0 ? '+' : ''
+                  }}{{ efectoComprometido(m) | number: '1.2-2' }}
+                </td>
+                <td class="num">
+                  {{ m.simboloMoneda }} {{ efectoEjecutado(m) > 0 ? '+' : ''
+                  }}{{ efectoEjecutado(m) | number: '1.2-2' }}
+                </td>
+              }
               <td>{{ m.observacion || '—' }}</td>
             </tr>
           }
@@ -51,7 +80,15 @@
       </table>
     </div>
   }
+  @if (consolidado() && !cargando() && !error()) {
+    <div class="modal-nota" aria-live="polite">
+      Comprometido acumulado: {{ movimientos()[0]?.simboloMoneda }}
+      {{ totales().comprometido | number: '1.2-2' }} · Ejecutado acumulado:
+      {{ movimientos()[0]?.simboloMoneda }} {{ totales().ejecutado | number: '1.2-2' }}. Totales de
+      los efectos firmados de todos los movimientos.
+    </div>
+  }
   <div class="toolbar toolbar--compact">
-    <button class="btn btn-ghost" (click)="cerrar.emit()">Cerrar</button>
+    <button class="btn btn-ghost" (click)="solicitarCierre()">Cerrar</button>
   </div>
 </dialog>

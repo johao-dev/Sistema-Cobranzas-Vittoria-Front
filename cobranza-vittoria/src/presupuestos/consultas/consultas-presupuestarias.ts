@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
   ReporteFiltro,
+  MovimientoConsolidado,
   GastoPorCentroCosto,
   GastoPorPartida,
   PresupuestoVsComprometido,
@@ -95,6 +96,15 @@ export class ConsultasPresupuestarias {
       { params: parametrosConsulta({ ...filtro }) },
     );
   }
+  movimientosConsolidados(
+    idPresupuesto: number,
+    idCatalogoPartida: number,
+  ): Observable<MovimientoConsolidado[]> {
+    return this.api.http.get<MovimientoConsolidado[]>(`${this.base}/consultas/movimientos`, {
+      params: parametrosConsulta({ idPresupuesto, idCatalogoPartida }),
+    });
+  }
+
   private rutaVersion(idPresupuesto: number, idVersion: number): string {
     return `${this.base}/presupuestos/${idPresupuesto}/versiones/${idVersion}`;
   }

@@ -54,6 +54,50 @@ describe('ConsultasPresupuestarias: filtros y rutas públicas', () => {
     req.flush(metodo === 'resumen' ? {} : []);
   });
 
+  const reportes = [
+    ['resumen', 'resumen'],
+    ['saldos', 'saldo'],
+    ['presupuestoVsComprometido', 'presupuesto-vs-comprometido'],
+    ['presupuestoVsEjecutado', 'presupuesto-vs-ejecutado'],
+    ['gastosPorPartida', 'gastos-por-partida'],
+    ['gastosPorCentroCosto', 'gastos-por-centro-costo'],
+  ] as const;
+
+  it.each(reportes)(
+    '%s admite consolidación opcional sin modificar sus filtros',
+    (metodo, ruta) => {
+      for (const consolidado of [undefined, false, true]) {
+        const consulta: Observable<unknown> = consultas[metodo]({
+          consolidado,
+          idCentroCosto: 5,
+          idPresupuesto: 10,
+          idMoneda: 1,
+        });
+        consulta.subscribe();
+        const req = http.expectOne((r) => r.url === `${base}/consultas/${ruta}`);
+        expect(req.request.params.get('consolidado')).toBe(
+          consolidado === undefined ? null : String(consolidado),
+        );
+        expect(req.request.params.get('idCentroCosto')).toBe('5');
+        expect(req.request.params.get('idPresupuesto')).toBe('10');
+        expect(req.request.params.get('idMoneda')).toBe('1');
+        expect(req.request.params.has('idPresupuestoVersion')).toBe(false);
+        expect(req.request.params.has('estadoPresupuesto')).toBe(false);
+        req.flush(metodo === 'resumen' ? {} : []);
+      }
+    },
+  );
+
+  it('el historial consolidado solo envía presupuesto y partida, sin versión ni estado', () => {
+    consultas.movimientosConsolidados(10, 25).subscribe();
+    const req = http.expectOne((r) => r.url === `${base}/consultas/movimientos`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.params.keys()).toEqual(['idPresupuesto', 'idCatalogoPartida']);
+    expect(req.request.params.get('idPresupuesto')).toBe('10');
+    expect(req.request.params.get('idCatalogoPartida')).toBe('25');
+    req.flush([]);
+  });
+
   it('el tablero envía el nivel y la rama sin mutar el filtro', () => {
     consultas.dashboard(5, 10, 2, 3).subscribe();
     const req = http.expectOne((r) => r.url === `${base}/consultas/dashboard`);

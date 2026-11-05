@@ -1,4 +1,7 @@
+import { MovimientoPresupuestario } from '../contratos-presupuestos';
+
 export interface ReporteFiltro {
+  consolidado?: boolean;
   idCentroCosto?: number | null;
   idPresupuesto?: number | null;
   idPresupuestoVersion?: number | null;
@@ -151,3 +154,10 @@ export type FilaReportePresupuestario = Partial<
     GastoPorPartida &
     GastoPorCentroCosto
 >;
+
+/** Asiento original y efectos firmados del historial entre versiones. */
+export interface MovimientoConsolidado extends MovimientoPresupuestario {
+  idTipoMovimientoPresupuestal: number;
+  efectoComprometido: number;
+  efectoEjecutado: number;
+}

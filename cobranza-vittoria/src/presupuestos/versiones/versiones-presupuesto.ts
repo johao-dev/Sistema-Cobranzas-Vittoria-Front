@@ -450,6 +450,7 @@ export class VersionesPresupuesto implements OnChanges, OnDestroy {
     if (!versionSeleccionada) return;
     this.detalleSeleccionado.set(detalle);
     this.contextoMovimientos.set({
+      modo: 'individual',
       idPresupuesto: this.presupuesto().idPresupuesto,
       idVersion: versionSeleccionada.idPresupuestoVersion,
       idDetalle: detalle.idPresupuestoDetalle,
