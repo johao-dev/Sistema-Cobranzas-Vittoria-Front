@@ -1,0 +1,78 @@
+<div class="field">
+  <span id="etiqueta-partidas-incluidas" class="etiqueta">Partidas incluidas</span>
+  @if (deshabilitado()) {
+    <button
+      type="button"
+      class="selector-resumen"
+      disabled
+      aria-labelledby="etiqueta-partidas-incluidas"
+    >
+      Todas las partidas
+    </button>
+    <small>{{ motivo() }}</small>
+  } @else {
+    <details #desplegable tabindex="-1" (keydown.escape)="cerrarConEscape($event, desplegable)">
+      <summary
+        class="selector-resumen"
+        aria-labelledby="etiqueta-partidas-incluidas resumen-exclusiones"
+      >
+        <span id="resumen-exclusiones" aria-live="polite">
+          {{
+            excluidas().length ? excluidas().length + ' partidas excluidas' : 'Todas las partidas'
+          }}
+        </span>
+        <span aria-hidden="true">▾</span>
+      </summary>
+      <div class="selector-panel">
+        <label for="buscar-partidas">Buscar por código o nombre</label>
+        <input
+          id="buscar-partidas"
+          type="search"
+          [ngModel]="busqueda()"
+          (ngModelChange)="busqueda.set($event)"
+        />
+        <div class="selector-acciones">
+          <button type="button" class="btn btn-ghost btn-sm" (click)="seleccionarTodas(true)">
+            Seleccionar todas
+          </button>
+          <button type="button" class="btn btn-ghost btn-sm" (click)="seleccionarTodas(false)">
+            Deseleccionar todas
+          </button>
+        </div>
+        <small
+          >Las acciones se aplican a todo el catálogo, aunque haya una búsqueda. Solo afectan a la
+          distribución del gasto.</small
+        >
+        @if (error()) {
+          <p role="alert">{{ error() }}</p>
+          <button type="button" class="btn btn-secondary btn-sm" (click)="reintentar.emit()">
+            Reintentar
+          </button>
+        } @else {
+          <div class="selector-lista">
+            @for (fila of filas(); track fila.partida.idCatalogoPartida) {
+              <label
+                class="selector-opcion"
+                [style.padding-left.rem]="0.5 + fila.profundidad * 0.8"
+              >
+                <input
+                  #casilla
+                  type="checkbox"
+                  [checked]="fila.incluida"
+                  [indeterminate]="fila.parcial"
+                  (change)="cambiar(fila.partida.idCatalogoPartida, casilla.checked)"
+                />
+                <span
+                  >{{ fila.partida.codigo }} — {{ fila.partida.nombre
+                  }}{{ fila.partida.activo ? '' : ' (inactiva)' }}</span
+                >
+              </label>
+            } @empty {
+              <p class="empty-state">No hay partidas para esta búsqueda.</p>
+            }
+          </div>
+        }
+      </div>
+    </details>
+  }
+</div>

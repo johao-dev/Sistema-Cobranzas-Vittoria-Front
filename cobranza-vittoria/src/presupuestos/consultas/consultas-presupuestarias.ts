@@ -56,9 +56,15 @@ export class ConsultasPresupuestarias {
     idPresupuesto?: number | null,
     nivel?: number | null,
     idPartidaPadre?: number | null,
-  ) {
+    partidasExcluidas: readonly number[] = [],
+  ): Observable<Tablero> {
+    let params = parametrosConsulta({ idCentroCosto, idPresupuesto, nivel, idPartidaPadre });
+    for (const id of partidasExcluidas) {
+      params = params.append('partidasExcluidas', id);
+    }
+
     return this.api.http.get<Tablero>(`${this.base}/consultas/dashboard`, {
-      params: parametrosConsulta({ ...{ idCentroCosto, idPresupuesto, nivel, idPartidaPadre } }),
+      params,
     });
   }
 

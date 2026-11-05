@@ -72,6 +72,27 @@ describe('ConsultasPresupuestarias: filtros y rutas públicas', () => {
     http.expectOne(`${base}/presupuestos/10/versiones/20/arbol`).flush({});
   });
 
+  it('envía exclusiones como enteros repetidos y conserva todos los filtros previos', () => {
+    consultas.dashboard(5, 10, 2, 3, [7, 9]).subscribe();
+    const req = http.expectOne((r) => r.url === `${base}/consultas/dashboard`);
+    expect(req.request.params.getAll('partidasExcluidas')).toEqual(['7', '9']);
+    expect(req.request.params.get('idCentroCosto')).toBe('5');
+    expect(req.request.params.get('idPresupuesto')).toBe('10');
+    expect(req.request.params.get('nivel')).toBe('2');
+    expect(req.request.params.get('idPartidaPadre')).toBe('3');
+    req.flush({});
+  });
+
+  it.each([{ ids: undefined }, { ids: [] }])(
+    'omite la colección vacía de exclusiones ($ids)',
+    ({ ids }) => {
+      consultas.dashboard(5, null, null, null, ids).subscribe();
+      const req = http.expectOne((r) => r.url === `${base}/consultas/dashboard`);
+      expect(req.request.params.keys()).toEqual(['idCentroCosto']);
+      req.flush({});
+    },
+  );
+
   it('propaga MONEDAS_MIXTAS al consumidor', () => {
     const error = vi.fn();
     consultas.arbolVigente(5).subscribe({ error });

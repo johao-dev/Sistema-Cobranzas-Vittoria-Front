@@ -2,6 +2,7 @@ export interface Tablero {
   encabezado: TableroEncabezado;
   resumen: TableroResumen;
   rubros: TableroRubro[];
+  rubrosFiltrados: TableroRubro[];
   semanas: TableroPuntoSemana[];
   alCorte: TableroAlCorte;
   desviacionPorRubro: TableroDesviacionRubro[];

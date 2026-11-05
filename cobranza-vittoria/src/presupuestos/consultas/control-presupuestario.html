@@ -8,7 +8,7 @@
 </div>
 
 <section class="panel">
-  <div class="filters filters--two">
+  <div class="filters filtros-panel">
     <div class="field">
       <label for="control-presupuestario-campo-1">Centro de costo</label>
       <select
@@ -48,6 +48,21 @@
         }
       </select>
     </div>
+    <selector-partidas
+      [partidas]="partidas()"
+      [excluidas]="partidasExcluidas()"
+      [deshabilitado]="!puedeConsultarPartidas || cargandoPartidas() || !idCentroCostoDashboard"
+      [motivo]="
+        !puedeConsultarPartidas
+          ? 'Se requiere permiso para consultar el catálogo de partidas.'
+          : cargandoPartidas()
+            ? 'Cargando partidas...'
+            : 'Elige un centro de costo.'
+      "
+      [error]="errorPartidas()"
+      (excluidasChange)="cambiarExclusiones($event)"
+      (reintentar)="cargarPartidas()"
+    />
   </div>
 </section>
 
@@ -56,6 +71,8 @@
     [idCentroCosto]="idCentroCostoDashboard"
     [idPresupuesto]="idPresupuestoDashboard"
     [nivel]="nivelDashboard"
+    [partidasExcluidas]="partidasExcluidas()"
+    [partidas]="partidas()"
     (nivelMaximo)="onNivelMaximo($event)"
   ></tablero-presupuestario>
 }

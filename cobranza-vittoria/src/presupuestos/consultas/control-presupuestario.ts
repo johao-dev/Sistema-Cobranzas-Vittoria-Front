@@ -20,13 +20,17 @@ import {
 import { RegistroPresupuestos } from '../registro-presupuestos';
 import { ConsultasPresupuestarias } from './consultas-presupuestarias';
 import { CatalogoCentrosCosto } from '../centros-costo/catalogo-centros-costo';
-import { DestroyRef, inject, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { DestroyRef, inject, ChangeDetectorRef, Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NodoArbol } from '../arbol/contratos-arbol-presupuestario';
 import { Notificaciones } from '../../shared/notificaciones/notificaciones';
 import { TableroPresupuestario } from '../tablero/tablero-presupuestario';
 import { ArbolPresupuestario } from '../arbol/arbol-presupuestario';
+import { CatalogoPartidas } from '../partidas/catalogo-partidas';
+import { PartidaCatalogo } from '../partidas/contratos-partidas';
+import { SelectorPartidas } from '../partidas/selector-partidas';
+import { SesionUsuario } from '../../core/sesion/sesion-usuario';
 
 type Vista = 'saldos' | 'comprometido' | 'ejecutado' | 'gastos-partida' | 'gastos-centro';
 
@@ -39,6 +43,7 @@ type Vista = 'saldos' | 'comprometido' | 'ejecutado' | 'gastos-partida' | 'gasto
     FormsModule,
     TableroPresupuestario,
     ArbolPresupuestario,
+    SelectorPartidas,
   ],
   templateUrl: './control-presupuestario.html',
   styleUrls: ['../dialogos-presupuesto.css', './control-presupuestario.css'],
@@ -51,6 +56,18 @@ export class ControlPresupuestario implements OnInit {
   private readonly catalogoCentrosCosto = inject(CatalogoCentrosCosto);
   private readonly consultasPresupuestarias = inject(ConsultasPresupuestarias);
   private readonly registroPresupuestos = inject(RegistroPresupuestos);
+  private readonly catalogoPartidas = inject(CatalogoPartidas);
+  private readonly sesion = inject(SesionUsuario);
+  private contextoConsultado: string | null = null;
+  private catalogoPartidasCargado = false;
+
+  protected readonly partidas = signal<PartidaCatalogo[]>([]);
+  protected readonly partidasExcluidas = signal<readonly number[]>([]);
+  protected readonly cargandoPartidas = signal(false);
+  protected readonly errorPartidas = signal('');
+  protected readonly puedeConsultarPartidas = this.sesion.hasPermission(
+    'control_presupuestario.partida.ver',
+  );
 
   centrosCosto: CentroCostoResumen[] = [];
   presupuestos: Presupuesto[] = [];
@@ -90,11 +107,20 @@ export class ControlPresupuestario implements OnInit {
 
   /** El dashboard se arma por centro de costo (y opcionalmente por presupuesto). */
   get idCentroCostoDashboard(): number | null {
-    return this.filtroCentroCosto === '' ? null : Number(this.filtroCentroCosto);
+    return this.normalizarIdentificador(this.filtroCentroCosto);
   }
 
   get idPresupuestoDashboard(): number | null {
-    return this.filtroPresupuesto === '' ? null : Number(this.filtroPresupuesto);
+    return this.normalizarIdentificador(this.filtroPresupuesto);
+  }
+
+  private normalizarIdentificador(valor: string): number | null {
+    const id = Number(valor);
+    return Number.isInteger(id) && id > 0 ? id : null;
+  }
+
+  private get contextoFiltros(): string {
+    return `${this.idCentroCostoDashboard}:${this.idPresupuestoDashboard}`;
   }
 
   get nivelDashboard(): number | null {
@@ -114,16 +140,14 @@ export class ControlPresupuestario implements OnInit {
 
   get filtro(): ReporteFiltro {
     return {
-      idCentroCosto: this.filtroCentroCosto === '' ? null : Number(this.filtroCentroCosto),
-      idPresupuesto: this.filtroPresupuesto === '' ? null : Number(this.filtroPresupuesto),
+      idCentroCosto: this.idCentroCostoDashboard,
+      idPresupuesto: this.idPresupuestoDashboard,
     };
   }
 
   get presupuestosDisponibles(): Presupuesto[] {
     if (this.filtroCentroCosto === '') return this.presupuestos;
-    return this.presupuestos.filter(
-      (p) => String(p.idCentroCosto) === String(this.filtroCentroCosto),
-    );
+    return this.presupuestos.filter((p) => p.idCentroCosto === this.idCentroCostoDashboard);
   }
 
   private readonly normalizar = normalizarBusqueda;
@@ -184,6 +208,7 @@ export class ControlPresupuestario implements OnInit {
   // -------------------------------------------------------------------- carga
 
   cargarCatalogos(): void {
+    this.cargarPartidas();
     this.catalogoCentrosCosto
       .centrosCosto(true, null, null)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -209,17 +234,50 @@ export class ControlPresupuestario implements OnInit {
   }
 
   onCentroCostoChange(): void {
+    if (this.contextoConsultado === this.contextoFiltros) return;
     // El presupuesto elegido puede no pertenecer al nuevo centro de costo.
     const sigueValido = this.presupuestosDisponibles.some(
-      (p) => String(p.idPresupuesto) === String(this.filtroPresupuesto),
+      (p) => p.idPresupuesto === this.idPresupuestoDashboard,
     );
     if (!sigueValido) this.filtroPresupuesto = '';
     this.recargar();
   }
 
   recargar(): void {
+    if (this.contextoConsultado === this.contextoFiltros) return;
+    this.contextoConsultado = this.contextoFiltros;
+    this.partidasExcluidas.set([]);
     this.cargarResumen();
     this.cargarVista();
+  }
+
+  protected cambiarExclusiones(ids: readonly number[]): void {
+    const actuales = this.partidasExcluidas();
+    const nuevos = [...new Set(ids)].sort((a, b) => a - b);
+    if (actuales.length === nuevos.length && actuales.every((id, i) => id === nuevos[i])) return;
+    this.partidasExcluidas.set(nuevos);
+  }
+
+  protected cargarPartidas(): void {
+    if (!this.puedeConsultarPartidas || this.catalogoPartidasCargado || this.cargandoPartidas())
+      return;
+    this.cargandoPartidas.set(true);
+    this.errorPartidas.set('');
+    // Sin filtros: incluye partidas inactivas que pueden tener ejecución histórica.
+    this.catalogoPartidas
+      .partidas()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (partidas) => {
+          this.partidas.set(partidas);
+          this.catalogoPartidasCargado = true;
+          this.cargandoPartidas.set(false);
+        },
+        error: (err: unknown) => {
+          this.errorPartidas.set(extraerMensajeError(err, 'No se pudieron cargar las partidas.'));
+          this.cargandoPartidas.set(false);
+        },
+      });
   }
 
   cargarResumen(): void {

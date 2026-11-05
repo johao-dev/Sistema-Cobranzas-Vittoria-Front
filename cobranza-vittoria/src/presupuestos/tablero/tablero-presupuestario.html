@@ -1,6 +1,11 @@
 <div class="tablero" [class.tablero--cargando]="cargando">
   @if (error) {
-    <div class="tablero-aviso tablero-aviso--error" role="alert">{{ error }}</div>
+    <div class="tablero-aviso tablero-aviso--error" role="alert">
+      {{ error }}
+      <button type="button" class="btn btn-secondary btn-sm" (click)="cargar(true)">
+        Reintentar
+      </button>
+    </div>
   }
   @if (!datos && cargando) {
     <div class="empty-state">Cargando dashboard...</div>
@@ -42,11 +47,11 @@
       }
       @if (!segmentos.length) {
         <div class="empty-state">
-          Aún no hay gasto ejecutado en {{ rama.length ? 'esta rama' : 'este centro de costo' }}.
+          {{ mensajeDistribucionVacia }}
         </div>
       }
-      @if (segmentos.length) {
-        <div class="distribucion">
+      <div class="distribucion" [class.distribucion--sin-dona]="!segmentos.length">
+        @if (segmentos.length) {
           <div class="dona">
             <svg
               viewBox="0 0 200 200"
@@ -55,7 +60,7 @@
                 'Distribución del gasto total de ' +
                 simbolo +
                 ' ' +
-                (datos.resumen.ejecutado | number: '1.0-0') +
+                (totalDistribucion | number: '1.0-0') +
                 ' por rubro'
               "
             >
@@ -88,9 +93,9 @@
             </svg>
             <div class="dona__centro" aria-hidden="true">
               @if (!segmentoActivo) {
-                <span class="dona__label">Gasto total</span>
+                <span class="dona__label">Gasto incluido</span>
                 <strong class="dona__valor"
-                  >{{ simbolo }} {{ datos.resumen.ejecutado | number: '1.0-0' }}</strong
+                  >{{ simbolo }} {{ totalDistribucion | number: '1.0-0' }}</strong
                 >
               }
               @if (segmentoActivo) {
@@ -102,82 +107,87 @@
               }
             </div>
           </div>
-          <div class="table-wrap distribucion__tabla">
-            <table>
-              <thead>
-                <tr>
-                  <th>{{ datos.encabezado.nivel ? 'Categoría' : 'Partida' }}</th>
-                  <th class="num">Gasto ({{ simbolo }})</th>
-                  <th class="num">% del total</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (r of rubrosConGasto; track r; let i = $index) {
-                  <tr [class.fila-navegable]="puedeBajar(r)" (click)="bajarA(r)">
-                    <td>
-                      <span
-                        class="swatch"
-                        [style.background]="colorRubro(i)"
-                        aria-hidden="true"
-                      ></span>
-                      @if (puedeBajar(r)) {
-                        <button
-                          type="button"
-                          class="rubro-enlace"
-                          (click)="$event.stopPropagation(); bajarA(r)"
-                        >
-                          {{ nombreRubro(r) }}
-                        </button>
-                      }
-                      @if (!puedeBajar(r)) {
+        }
+        <div class="table-wrap distribucion__tabla">
+          <table>
+            <thead>
+              <tr>
+                <th>{{ datos.encabezado.nivel ? 'Categoría' : 'Partida' }}</th>
+                <th class="num">Gasto ({{ simbolo }})</th>
+                <th class="num">% del total</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of rubrosDistribucion; track r; let i = $index) {
+                <tr [class.fila-navegable]="puedeBajar(r)" (click)="bajarA(r)">
+                  <td>
+                    <span
+                      class="swatch"
+                      [style.background]="colorRubro(i)"
+                      aria-hidden="true"
+                    ></span>
+                    @if (puedeBajar(r)) {
+                      <button
+                        type="button"
+                        class="rubro-enlace"
+                        (click)="$event.stopPropagation(); bajarA(r)"
+                      >
                         {{ nombreRubro(r) }}
-                      }
-                      @if (i >= 5) {
-                        <small class="otros-tag">(en "Otros")</small>
-                      }
-                    </td>
-                    <td class="num">{{ r.ejecutado | number: '1.0-0' }}</td>
-                    <td class="num">{{ r.porcentajeDelTotal | number: '1.0-1' }}%</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-          <aside class="resumen">
-            <div class="resumen__titulo">Resumen</div>
-            <div class="resumen__fila">
-              <span>Presupuesto vigente</span>
-              <strong>{{ simbolo }} {{ datos.resumen.presupuestado | number: '1.0-0' }}</strong>
-            </div>
-            <div class="resumen__fila">
-              <span>Gasto real (ejecutado)</span>
-              <strong>{{ simbolo }} {{ datos.resumen.ejecutado | number: '1.0-0' }}</strong>
-            </div>
-            <div class="resumen__fila">
-              <span>Avance del gasto</span>
-              <strong>{{ datos.resumen.porcentajeEjecutado ?? 0 | number: '1.1-1' }}%</strong>
-            </div>
-            <div class="resumen__fila">
-              <span>Desviación</span>
-              <strong
-                [class.txt-malo]="datos.resumen.desviacion > 0"
-                [class.txt-bueno]="datos.resumen.desviacion <= 0"
-              >
-                {{ datos.resumen.desviacion > 0 ? '▲' : '▼' }} {{ simbolo }}
-                {{ abs(datos.resumen.desviacion) | number: '1.0-0' }}
-              </strong>
-              <small
-                >{{
-                  datos.resumen.desviacion > 0
-                    ? 'Sobre el presupuesto'
-                    : 'Por debajo del presupuesto'
-                }}
-                ({{ abs(datos.resumen.desviacionPorcentaje ?? 0) | number: '1.1-1' }}%)</small
-              >
-            </div>
-          </aside>
+                      </button>
+                    }
+                    @if (!puedeBajar(r)) {
+                      {{ nombreRubro(r) }}
+                    }
+                    @if (segmentos.length && i >= 5) {
+                      <small class="otros-tag">(en "Otros")</small>
+                    }
+                  </td>
+                  <td class="num">{{ r.ejecutado | number: '1.0-0' }}</td>
+                  <td class="num">{{ r.porcentajeDelTotal | number: '1.0-1' }}%</td>
+                </tr>
+              }
+            </tbody>
+            <tfoot>
+              <tr>
+                <th>Total incluido</th>
+                <th class="num">{{ totalDistribucion | number: '1.0-0' }}</th>
+                <th></th>
+              </tr>
+            </tfoot>
+          </table>
         </div>
-      }
+        <aside class="resumen">
+          <div class="resumen__titulo">Resumen</div>
+          <div class="resumen__fila">
+            <span>Presupuesto vigente</span>
+            <strong>{{ simbolo }} {{ datos.resumen.presupuestado | number: '1.0-0' }}</strong>
+          </div>
+          <div class="resumen__fila">
+            <span>Gasto real (ejecutado)</span>
+            <strong>{{ simbolo }} {{ datos.resumen.ejecutado | number: '1.0-0' }}</strong>
+          </div>
+          <div class="resumen__fila">
+            <span>Avance del gasto</span>
+            <strong>{{ datos.resumen.porcentajeEjecutado ?? 0 | number: '1.1-1' }}%</strong>
+          </div>
+          <div class="resumen__fila">
+            <span>Desviación</span>
+            <strong
+              [class.txt-malo]="datos.resumen.desviacion > 0"
+              [class.txt-bueno]="datos.resumen.desviacion <= 0"
+            >
+              {{ datos.resumen.desviacion > 0 ? '▲' : '▼' }} {{ simbolo }}
+              {{ abs(datos.resumen.desviacion) | number: '1.0-0' }}
+            </strong>
+            <small
+              >{{
+                datos.resumen.desviacion > 0 ? 'Sobre el presupuesto' : 'Por debajo del presupuesto'
+              }}
+              ({{ abs(datos.resumen.desviacionPorcentaje ?? 0) | number: '1.1-1' }}%)</small
+            >
+          </div>
+        </aside>
+      </div>
     </section>
     <!-- 2. Evolución del gasto: real vs presupuesto -->
     <section class="panel tablero-card">

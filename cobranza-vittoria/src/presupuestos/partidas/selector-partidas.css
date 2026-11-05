@@ -1,0 +1,99 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.etiqueta {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+details {
+  position: relative;
+}
+
+.selector-resumen {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  list-style: none;
+}
+
+.selector-resumen::-webkit-details-marker {
+  display: none;
+}
+
+.selector-resumen:disabled {
+  cursor: default;
+  opacity: 0.65;
+}
+
+.selector-panel {
+  position: absolute;
+  z-index: 10;
+  right: 0;
+  box-sizing: border-box;
+  width: min(460px, calc(100% + 160px), 85vw);
+  margin-top: 6px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 8px 24px #0002;
+  max-height: 65vh;
+  overflow: auto;
+}
+
+.selector-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 8px 0;
+}
+
+.selector-lista {
+  margin-top: 8px;
+  max-height: 280px;
+  overflow: auto;
+}
+
+.selector-opcion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.selector-opcion span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.selector-opcion input {
+  flex: 0 0 auto;
+  width: 16px;
+  min-height: 16px;
+  margin: 0;
+}
+
+.selector-opcion:hover {
+  background: #f5f7fa;
+}
+
+@media (max-width: 720px) {
+  .selector-panel {
+    width: 100%;
+  }
+}

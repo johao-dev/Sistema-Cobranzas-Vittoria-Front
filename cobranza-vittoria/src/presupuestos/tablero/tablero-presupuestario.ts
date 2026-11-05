@@ -7,8 +7,10 @@ import {
   ChangeDetectorRef,
   Component,
   OnChanges,
+  SimpleChanges,
+  computed,
 } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { debounceTime, Subject, Subscription } from 'rxjs';
 import {
   Tablero,
   TableroRubro,
@@ -16,7 +18,7 @@ import {
   TableroPuntoSemana,
   TableroDesviacionRubro,
 } from './contratos-tablero-presupuestario';
-import { CatalogoPartidas } from '../partidas/catalogo-partidas';
+import { PartidaCatalogo } from '../partidas/contratos-partidas';
 import { ConsultasPresupuestarias } from '../consultas/consultas-presupuestarias';
 import { CommonModule } from '@angular/common';
 
@@ -59,18 +61,37 @@ interface Punto {
 export class TableroPresupuestario implements OnChanges, OnDestroy {
   private readonly consultasPresupuestarias = inject(ConsultasPresupuestarias);
   private consulta?: Subscription;
-  private consultaCategorias?: Subscription;
-  ngOnDestroy(): void {
-    this.consulta?.unsubscribe();
-    this.consultaCategorias?.unsubscribe();
-  }
+  private contextoDatos = '';
+  private seleccionObservada = '';
+  private seleccionDatos: string | null = null;
+  private readonly cambiosSeleccion = new Subject<string | null>();
+  private readonly esperaSeleccion = this.cambiosSeleccion
+    .pipe(debounceTime(250))
+    .subscribe((seleccion) => {
+      if (seleccion === null) return;
+      // Si el usuario deshace sus cambios durante la espera, los datos vigentes siguen sirviendo.
+      if (
+        this.datos &&
+        !this.error &&
+        this.contextoDatos === this.contextoConsulta &&
+        this.seleccionDatos === seleccion
+      )
+        return;
+      this.cargar(true);
+    });
 
-  private readonly catalogoPartidas = inject(CatalogoPartidas);
+  ngOnDestroy(): void {
+    this.esperaSeleccion.unsubscribe();
+    this.cambiosSeleccion.complete();
+    this.consulta?.unsubscribe();
+  }
 
   readonly idCentroCosto = input.required<number>();
   readonly idPresupuesto = input<number | null>(null);
   /** Nivel de anidamiento de los rubros (1 = categorías principales); null = partidas finales. */
   readonly nivel = input<number | null>(null);
+  readonly partidasExcluidas = input<readonly number[]>([]);
+  readonly partidas = input<readonly PartidaCatalogo[]>([]);
   /** Nivel más profundo de las partidas del tablero, para el rango del selector del panel. */
   readonly nivelMaximo = output<number>();
 
@@ -83,7 +104,14 @@ export class TableroPresupuestario implements OnChanges, OnDestroy {
   cargando = false;
   /** Rama elegida con clic en la dona; null = todo el centro de costo. */
   idPartidaPadre: number | null = null;
-  private categorias: Set<number> | null = null;
+  private readonly categorias = computed(
+    () =>
+      new Set(
+        this.partidas()
+          .filter((p) => !p.esHoja)
+          .map((p) => p.idCatalogoPartida),
+      ),
+  );
   error = '';
 
   segmentos: Segmento[] = [];
@@ -115,34 +143,76 @@ export class TableroPresupuestario implements OnChanges, OnDestroy {
 
   private readonly cdr = inject(ChangeDetectorRef);
 
-  ngOnChanges(): void {
+  ngOnChanges(cambios: SimpleChanges): void {
     if (!this.idCentroCosto()) return;
-    // Otro centro, presupuesto o nivel: se vuelve a la vista completa.
-    this.idPartidaPadre = null;
-    this.cargar();
-    this.cargarCategorias();
+    const cambiaContexto = !!(
+      cambios['idCentroCosto'] ||
+      cambios['idPresupuesto'] ||
+      cambios['nivel']
+    );
+    const seleccion = this.exclusionesNormalizadas.join(',');
+    const cambiaSeleccion = seleccion !== this.seleccionObservada;
+    this.seleccionObservada = seleccion;
+    if (cambiaContexto) {
+      this.idPartidaPadre = null;
+      this.cargar();
+    } else if (cambios['partidasExcluidas'] && cambiaSeleccion) {
+      // Cancelar ahora impide que una respuesta antigua se aplique durante el debounce.
+      this.consulta?.unsubscribe();
+      this.cargando = false;
+      this.cambiosSeleccion.next(seleccion);
+    }
   }
 
-  cargar(): void {
+  private get exclusionesNormalizadas(): number[] {
+    return [...new Set(this.partidasExcluidas())].sort((a, b) => a - b);
+  }
+
+  private get contextoConsulta(): string {
+    const nivel = this.idPartidaPadre ? null : this.nivel();
+    return `${this.idCentroCosto()}:${this.idPresupuesto()}:${nivel}:${this.idPartidaPadre}`;
+  }
+
+  cargar(soloExclusiones = false): void {
+    // Las cargas inmediatas invalidan cualquier selección pendiente del contexto anterior.
+    this.cambiosSeleccion.next(null);
     this.cargando = true;
     this.error = '';
     // Dentro de una rama se agrupa por sus hijas directas: el nivel del filtro no aplica.
     const nivel = this.idPartidaPadre ? null : this.nivel();
+    const contexto = this.contextoConsulta;
+    const exclusiones = this.exclusionesNormalizadas;
+    const soloDistribucion = soloExclusiones && contexto === this.contextoDatos;
     this.consulta?.unsubscribe();
     this.consulta = this.consultasPresupuestarias
-      .dashboard(this.idCentroCosto(), this.idPresupuesto(), nivel, this.idPartidaPadre)
+      .dashboard(
+        this.idCentroCosto(),
+        this.idPresupuesto(),
+        nivel,
+        this.idPartidaPadre,
+        exclusiones,
+      )
       .subscribe({
         next: (datos) => {
-          this.datos = datos;
+          this.datos =
+            soloDistribucion && this.datos
+              ? { ...this.datos, rubrosFiltrados: datos.rubrosFiltrados }
+              : datos;
+          this.contextoDatos = contexto;
+          this.seleccionDatos = exclusiones.join(',');
           this.cargando = false;
           const maximo = Number(datos?.encabezado?.nivelMaximo);
-          if (maximo > 0) this.nivelMaximo.emit(maximo);
+          if (!soloDistribucion && maximo > 0) this.nivelMaximo.emit(maximo);
           this.construirDona();
-          this.construirLineas();
+          if (!soloDistribucion) this.construirLineas();
           this.cdr.detectChanges();
         },
         error: (err: unknown) => {
-          // Se conserva el render anterior (atenuado) y se informa el motivo.
+          // No mostrar una distribución anterior como si correspondiera a las exclusiones actuales.
+          this.seleccionDatos = null;
+          if (this.datos) this.datos = { ...this.datos, rubrosFiltrados: [] };
+          this.segmentos = [];
+          this.segmentoActivo = null;
           this.cargando = false;
           this.error = extraerMensajeError(err, 'No se pudo cargar el dashboard.');
           this.cdr.detectChanges();
@@ -152,24 +222,9 @@ export class TableroPresupuestario implements OnChanges, OnDestroy {
 
   // ------------------------------------------------------------ drill-down
 
-  /** Categorías (partidas con hijas) del catálogo: solo en ellas se puede bajar un nivel. */
-  private cargarCategorias(): void {
-    if (this.categorias) return;
-    this.consultaCategorias?.unsubscribe();
-    this.consultaCategorias = this.catalogoPartidas.partidas({ esHoja: false }).subscribe({
-      next: (rows) => {
-        this.categorias = new Set((rows ?? []).map((p) => Number(p.idCatalogoPartida)));
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.categorias = null;
-      },
-    });
-  }
-
   puedeBajar(rubro: TableroRubro | null): boolean {
     const id = Number(rubro?.idCatalogoPartida);
-    return !!id && !!this.categorias?.has(id);
+    return !!id && this.categorias().has(id);
   }
 
   /** Clic en un segmento o fila: el tablero entero se limita a esa rama. */
@@ -187,7 +242,7 @@ export class TableroPresupuestario implements OnChanges, OnDestroy {
   }
 
   get hayNavegables(): boolean {
-    return this.rubrosConGasto.some((r) => this.puedeBajar(r));
+    return this.rubrosDistribucion.some((r) => this.puedeBajar(r));
   }
 
   get rama(): TableroRama[] {
@@ -204,9 +259,20 @@ export class TableroPresupuestario implements OnChanges, OnDestroy {
     return this.datos?.encabezado?.simboloMoneda || this.datos?.encabezado?.codigoMoneda || '';
   }
 
-  /** Rubros con gasto, en el orden de la dona; los que van en "Otros" llevan su color gris. */
-  get rubrosConGasto(): TableroRubro[] {
-    return (this.datos?.rubros ?? []).filter((r) => Number(r.ejecutado) !== 0);
+  /** Distribución del backend con sus importes originales, incluidos ceros y negativos. */
+  get rubrosDistribucion(): TableroRubro[] {
+    return this.datos?.rubrosFiltrados ?? [];
+  }
+
+  get totalDistribucion(): number {
+    return this.rubrosDistribucion.reduce((total, r) => total + r.ejecutado, 0);
+  }
+
+  get mensajeDistribucionVacia(): string {
+    if (this.error) return 'La distribución no está disponible. Reintenta la consulta.';
+    if (!this.rubrosDistribucion.length)
+      return 'No hay partidas incluidas con datos para esta distribución.';
+    return 'Estos importes no se pueden representar en un donut: hay valores negativos o el total neto no es positivo. Consulta los valores con su signo en la tabla.';
   }
 
   /** Código y nombre de la categoría o partida, si el backend manda el código. */
@@ -227,20 +293,23 @@ export class TableroPresupuestario implements OnChanges, OnDestroy {
   // ------------------------------------------------------------------ dona
 
   private construirDona(): void {
-    const rubros = this.rubrosConGasto;
+    const rubros = this.rubrosDistribucion;
     const total = rubros.reduce((acc, r) => acc + Number(r.ejecutado), 0);
     this.segmentoActivo = null;
-    if (total <= 0) {
+    if (total <= 0 || rubros.some((r) => r.ejecutado < 0)) {
       this.segmentos = [];
       return;
     }
     const max = TableroPresupuestario.MAX_SEGMENTOS;
-    const base: Omit<Segmento, 'porcentaje' | 'path'>[] = rubros.slice(0, max).map((r, i) => ({
-      nombre: this.nombreRubro(r),
-      monto: Number(r.ejecutado),
-      color: TableroPresupuestario.COLORES[i],
-      rubro: r,
-    }));
+    const base: Omit<Segmento, 'porcentaje' | 'path'>[] = rubros
+      .slice(0, max)
+      .filter((r) => r.ejecutado > 0)
+      .map((r) => ({
+        nombre: this.nombreRubro(r),
+        monto: Number(r.ejecutado),
+        color: this.colorRubro(rubros.indexOf(r)),
+        rubro: r,
+      }));
     const resto = rubros.slice(max).reduce((acc, r) => acc + Number(r.ejecutado), 0);
     if (resto !== 0)
       base.push({
